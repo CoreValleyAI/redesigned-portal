@@ -123,7 +123,7 @@ function KathmanduClock() {
     <span className="flex items-center gap-2 font-mono text-[12.5px] tracking-wide text-ink-200 tabular-nums">
       <Heartbeat size={14} className="text-hydro" aria-hidden="true" />
       <time suppressHydrationWarning>{time ?? "--:--:-- --"}</time>
-      <span className="text-fg-muted">NPT</span>
+      <span className="text-ink-500">NPT</span>
     </span>
   );
 }
@@ -147,7 +147,7 @@ function NodeCard({ node, mode }: { node: MeshNode; mode: MeshMode }) {
       <div className="flex items-start justify-between gap-3">
         <div>
           <p className="font-mono text-[13px] text-ink-100">{node.label}</p>
-          <p className="mt-0.5 font-body text-[11.5px] font-light text-ink-500">
+          <p className="mt-0.5 text-[11.5px] text-ink-500">
             {node.region}
           </p>
         </div>
@@ -187,7 +187,7 @@ function NodeCard({ node, mode }: { node: MeshNode; mode: MeshMode }) {
             {node.endpoints.map((e) => (
               <li
                 key={e}
-                className="rounded-sm border border-line bg-carbon-600/60 px-1.5 py-0.5 font-mono text-[10px] text-ink-300"
+                className="rounded-md border border-line bg-carbon-600 px-1.5 py-0.5 font-mono text-[10px] text-ink-300"
               >
                 {e}
               </li>
@@ -196,7 +196,7 @@ function NodeCard({ node, mode }: { node: MeshNode; mode: MeshMode }) {
         </div>
       ) : null}
 
-      <p className="mt-3.5 border-t border-line-subtle pt-3 font-body text-[11.5px] font-light leading-relaxed text-ink-400">
+      <p className="mt-3.5 border-t border-line-subtle pt-3 text-[11.5px] leading-relaxed text-ink-400">
         {node.note}
       </p>
 
@@ -535,7 +535,7 @@ export function SovereignMesh({ className }: SovereignMeshProps) {
   return (
     <div
       className={cn(
-        "relative overflow-hidden rounded-xl border border-line bg-carbon-800/60",
+        "relative overflow-hidden rounded-lg border border-line bg-carbon-800/60",
         className,
       )}
     >
@@ -600,7 +600,7 @@ export function SovereignMesh({ className }: SovereignMeshProps) {
                     "font-mono text-[11.5px] transition-colors duration-fast ease-standard",
                     on
                       ? "border-line-strong bg-carbon-600"
-                      : "border-line bg-carbon-700/70 hover:bg-carbon-600",
+                      : "border-line bg-carbon-700 hover:bg-carbon-600",
                   )}
                 >
                   <span
@@ -801,7 +801,7 @@ export function SovereignMesh({ className }: SovereignMeshProps) {
         <p className="text-center font-mono text-[10.5px] tracking-label uppercase text-ink-300 sm:text-[11.5px]">
           {MESH_TAGLINE}
         </p>
-        <p className="mt-1.5 text-center font-body text-[10.5px] font-light text-ink-600">
+        <p className="mt-1.5 text-center text-[10.5px] text-ink-600">
           {MESH_DISCLOSURE}
         </p>
       </div>

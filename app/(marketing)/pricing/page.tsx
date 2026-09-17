@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Button, Card, Icon } from "@/components/ui";
 import { PageHero, Section } from "@/components/marketing/page-hero";
+import { Reveal, RevealGroup } from "@/components/fx/reveal";
 import { PricingTables } from "@/components/marketing/pricing-tables";
 
 export const metadata = {
@@ -14,7 +15,11 @@ const COMPARISON: [string, string, string][] = [
   ["Power, cooling, maintenance", "Your responsibility", "Included"],
   ["Time to first experiment", "Weeks to months", "Minutes"],
   ["Scaling", "Limited to what you own", "Up or down on demand"],
-  ["Technology refresh", "You carry obsolescence risk", "New GPUs as they land"],
+  [
+    "Technology refresh",
+    "You carry obsolescence risk",
+    "New GPUs as they land",
+  ],
   ["Billing", "Often USD plus import duty", "NPR, local payment rails"],
   ["Data location", "Wherever the vendor puts it", "Kathmandu, always"],
 ];
@@ -101,11 +106,11 @@ export default function PricingPage() {
             <tbody>
               {COMPARISON.map(([aspect, buy, cv]) => (
                 <tr key={aspect} className="border-t border-line-subtle">
-                  <td className="px-5 py-3.5 font-body text-sm font-semibold text-ink-200">
+                  <td className="px-5 py-3.5 text-sm font-semibold text-ink-200">
                     {aspect}
                   </td>
                   <td className="px-5 py-3.5">
-                    <span className="flex items-start gap-2 font-body text-[13.5px] font-light text-ink-400">
+                    <span className="flex items-start gap-2 text-[13.5px] text-ink-400">
                       <Icon
                         name="x"
                         size={14}
@@ -115,7 +120,7 @@ export default function PricingPage() {
                     </span>
                   </td>
                   <td className="px-5 py-3.5">
-                    <span className="flex items-start gap-2 font-body text-[13.5px] font-light text-ink-200">
+                    <span className="flex items-start gap-2 text-[13.5px] text-ink-200">
                       <Icon
                         name="check"
                         size={14}
@@ -132,58 +137,68 @@ export default function PricingPage() {
       </Section>
 
       <Section eyebrow="Always included" title="In every plan.">
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <RevealGroup
+          step={70}
+          className="grid gap-4 md:grid-cols-2 lg:grid-cols-4"
+        >
           {INCLUDED.map((i) => (
             <Card key={i.title} padding={22} className="h-full">
-              <Icon name="check-circle" size={20} weight="duotone" className="text-hydro" />
-              <h3 className="mt-3.5 font-body text-base font-bold tracking-tight text-ink-100">
+              <Icon
+                name="check-circle"
+                size={20}
+                weight="duotone"
+                className="text-ink-100"
+              />
+              <h3 className="mt-3.5 text-base font-semibold tracking-tight text-ink-100">
                 {i.title}
               </h3>
-              <p className="mt-2 font-body text-[13px] font-light leading-relaxed text-ink-400">
+              <p className="mt-2 text-[13px] leading-relaxed text-ink-400">
                 {i.body}
               </p>
             </Card>
           ))}
-        </div>
+        </RevealGroup>
       </Section>
 
       <Section eyebrow="Questions" title="Common questions." alt>
-        <div className="grid gap-4 md:grid-cols-2">
+        <RevealGroup step={60} className="grid gap-4 md:grid-cols-2">
           {FAQ.map((f) => (
             <Card key={f.q} surface="solid" padding={22} className="h-full">
-              <h3 className="font-body text-[15px] font-bold tracking-tight text-ink-100">
+              <h3 className="text-[15px] font-semibold tracking-tight text-ink-100">
                 {f.q}
               </h3>
-              <p className="mt-2 font-body text-[13.5px] font-light leading-relaxed text-ink-400">
+              <p className="mt-2 text-[13.5px] leading-relaxed text-ink-400">
                 {f.a}
               </p>
             </Card>
           ))}
-        </div>
+        </RevealGroup>
       </Section>
 
       <Section>
-        <Card padding={40} className="text-center">
-          <h2 className="font-body text-[clamp(1.5rem,3vw,2rem)] font-extrabold tracking-tight text-ink-100">
-            Get an NPR quote.
-          </h2>
-          <p className="mx-auto mt-4 max-w-xl font-body font-light leading-relaxed text-ink-300">
-            Share your expected GPU hours, model sizes and whether you need
-            pods, notebooks, endpoints or dedicated capacity. We will respond
-            with firm pricing.
-          </p>
-          <div className="mt-7 flex justify-center">
-            <Link href="/contact">
-              <Button
-                variant="primary"
-                size="lg"
-                iconRight={<Icon name="arrow-right" size={17} />}
-              >
-                Request a quote
-              </Button>
-            </Link>
-          </div>
-        </Card>
+        <Reveal kind="scale">
+          <Card padding={40} className="text-center">
+            <h2 className="display text-[clamp(1.5rem,3vw,2rem)]">
+              Get an NPR quote.
+            </h2>
+            <p className="mx-auto mt-4 max-w-xl leading-relaxed text-ink-300">
+              Share your expected GPU hours, model sizes and whether you need
+              pods, notebooks, endpoints or dedicated capacity. We will respond
+              with firm pricing.
+            </p>
+            <div className="mt-7 flex justify-center">
+              <Link href="/contact">
+                <Button
+                  variant="primary"
+                  size="lg"
+                  iconRight={<Icon name="arrow-right" size={17} />}
+                >
+                  Request a quote
+                </Button>
+              </Link>
+            </div>
+          </Card>
+        </Reveal>
       </Section>
     </>
   );

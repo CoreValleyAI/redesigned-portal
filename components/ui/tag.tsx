@@ -26,6 +26,8 @@ export function Tag({
   className,
   style,
 }: TagProps) {
+  /* Selected = Hydro text on a 10% Hydro wash behind a Hydro hairline; rest
+     = Ink on the raised Carbon surface. Straight from Tag.jsx. */
   const tone = selected
     ? "text-hydro bg-hydro/10 border-hydro"
     : "text-ink-300 bg-carbon-600 border-line";
@@ -61,7 +63,7 @@ export function Tag({
           BASE,
           tone,
           "cursor-pointer transition-[background-color] duration-fast ease-standard",
-          !selected && "hover:bg-carbon-500",
+          !selected && "hover:bg-carbon-500 hover:text-ink-100",
           "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-hydro",
           className,
         )}

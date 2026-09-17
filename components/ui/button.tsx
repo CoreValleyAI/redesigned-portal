@@ -28,6 +28,9 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
+        /* Hydro is the action colour — one primary per view. Hover steps to
+           Hydro Dark, press to hydro-700, exactly as the design system's
+           palette table specifies. */
         primary: [
           "bg-hydro text-carbon-900 border-transparent",
           "hover:bg-hydro-dark active:bg-hydro-700",

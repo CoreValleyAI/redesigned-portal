@@ -24,6 +24,16 @@ residency.
 
 ---
 
+## Documentation
+
+| Where | What |
+|---|---|
+| [`docs/`](docs/README.md) | **Platform engineering wiki** — architecture, control plane, identity, data model, billing, design system, build/deploy, operations, security, implementation status |
+| [`KeyCloak_Readme.md`](KeyCloak_Readme.md) | Keycloak setup and operator guide |
+| This file | Product overview and quick start |
+
+---
+
 ## ⚠️ Not production-ready yet
 
 Three things must be resolved before this is published:
@@ -31,7 +41,7 @@ Three things must be resolved before this is published:
 | Blocker | Where | Detail |
 |---|---|---|
 | **Placeholder pricing** | `lib/catalog.ts` | All 24 NPR rates were invented for UI development. None has commercial approval. |
-| **No authentication** | `components/layout/auth-modal.tsx` | The sign-in modal sets a cookie and redirects. There is no auth. |
+| **Single-realm identity** | `lib/auth.ts` | Keycloak SSO works, but there is one shared realm and `role` is never enforced. See [`docs/10`](docs/10-implementation-status.md). |
 | **Mock data only** | `lib/api/mock.ts` | The portal runs on an in-memory mock. No backend is wired. |
 
 Placeholder pricing is enforced in three layers so it cannot ship by accident:
@@ -74,6 +84,112 @@ npm run dev          # http://localhost:3000
 
 ---
 
+<<<<<<< Updated upstream
+=======
+## Authentication
+
+Real OIDC through **Keycloak**, wired up with **NextAuth.js v5 (Auth.js)**.
+Keycloak owns login, registration, password reset and MFA; the app only
+consumes tokens.
+
+> **Setup and operations: [`KeyCloak_Readme.md`](KeyCloak_Readme.md)** — realm
+> reference, claim mapping, token lifecycle, troubleshooting, production
+> checklist.
+> **Architecture: [`docs/03`](docs/03-keycloak-identity.md)** — realm strategy,
+> SSO integration matrix, RBAC and token propagation.
+> The summary below is just enough to get running.
+
+### Beta testing against a local Keycloak
+
+```bash
+npm run keycloak:up               # Keycloak 25 + Postgres, realm auto-imported
+cp .env.example .env.local        # already points at the local realm
+npm run dev
+```
+
+| | |
+|---|---|
+| Admin console | <http://localhost:8080> — `admin` / `admin` |
+| Realm | `corevalley` (imported from `keycloak/corevalley-realm.json`) |
+| Client | `corevalley-portal`, confidential, secret `corevalley-portal-dev-secret` |
+| Test user | `kaustuv@corevalley.ai` / `kaustuv123` — realm role `admin` |
+| Test user | `beta@corevalley.ai` / `beta123` — realm role `member` |
+
+The realm ships with self-registration and password reset enabled, so the
+"Create an account" button lands directly on Keycloak's Register screen.
+
+### Three modes, one session shape
+
+`lib/auth.ts` picks a mode from the environment. Every consumer —
+`middleware.ts`, server components, `useSession()` — sees the same
+`session.user` (`id`, `name`, `email`, `image`, `role`, `org`) regardless.
+
+| Mode | Trigger | Sign-in |
+|---|---|---|
+| **keycloak** | `KEYCLOAK_ISSUER` set | Real OIDC authorization-code flow |
+| **mock** | `KEYCLOAK_ISSUER` unset **and** `AUTH_ALLOW_MOCK=true`, non-production | Local Credentials provider returning a seeded `member` — lets you work on the console with nothing else running |
+| **static demo** | `NEXT_STATIC_EXPORT=true` | No server exists, so a session object is baked into `<SessionProvider>` at build time |
+
+Mock mode is opt-in, never a fallback: it signs in whoever clicks the button with
+no credential check, so a server that cannot reach either real mode throws at
+import time instead of quietly downgrading to it. `AUTH_SECRET` is likewise
+required in every mode and has no default. See
+[`KeyCloak_Readme.md §3`](KeyCloak_Readme.md#3-the-three-modes).
+
+`role` comes from Keycloak's `realm_access.roles` (`admin` if present, else
+`member`); `org` comes from a custom `org` user attribute — administrator-assigned,
+not user-editable — falling back to the email domain. Both are exposed through
+protocol mappers declared in the realm export, and typed by module augmentation in
+`types/next-auth.d.ts`.
+
+### Files
+
+| Path | Role |
+|---|---|
+| `docker-compose.yml` | Keycloak 25 + Postgres 16, `start-dev --import-realm` |
+| `keycloak/corevalley-realm.json` | Realm, client, protocol mappers, roles, seeded users |
+| `lib/auth.ts` | Provider selection, token → user mapping, refresh, RP-initiated logout |
+| `app/api/auth/[...nextauth]/route.node.ts` | The Auth.js handler |
+| `middleware.ts` | Gates `/portal/*`, redirects to `/?signin=1&callbackUrl=…` |
+| `components/layout/auth-provider.tsx` | `<SessionProvider>` + the server's auth mode as context |
+| `components/layout/auth-modal.tsx` | Hands off to the IdP — collects no credentials |
+| `types/next-auth.d.ts` | `role` / `org` module augmentation |
+
+<details>
+<summary><b>Why the auth route is named <code>route.node.ts</code></b></summary>
+
+<br>
+
+The marketing site deploys to GitHub Pages as a static export, and
+`output: "export"` refuses to build a dynamic route handler. `pageExtensions`
+in `next.config.ts` only includes `node.ts` for server builds, so the static
+build simply does not see the file — no stub handler, no conditional
+`export const dynamic`, and the server build is unaffected.
+
+Static export also drops middleware, which is why that build falls back to the
+baked-in demo session rather than pretending to gate anything.
+
+</details>
+
+<details>
+<summary><b>Access-token refresh and federated logout</b></summary>
+
+<br>
+
+Keycloak access tokens live 15 minutes; the NextAuth session lives 8 hours. The
+`jwt` callback refreshes silently 30 seconds before expiry and marks
+`session.error = "RefreshAccessTokenError"` if the refresh token is gone.
+
+`signOut()` alone would clear only the app cookie — the Keycloak SSO cookie
+would survive and the next sign-in would succeed with no prompt. The `signOut`
+event therefore calls Keycloak's `end_session_endpoint` with the stored
+`id_token_hint`.
+
+</details>
+
+---
+
+>>>>>>> Stashed changes
 ## What's in it
 
 **24 routes.** Public pages are statically prerendered; the portal is
@@ -106,8 +222,10 @@ Billing · Audit log · Security · Settings
 - **CVA** for component variants, **Phosphor Icons** for glyphs
 - No CSS-in-JS, no animation library — canvas and CSS only
 
-Deploys anywhere Next.js runs. `output` is unset, so `npm run build && npm start`
-works as-is behind any reverse proxy.
+Deploys anywhere Next.js runs. `npm run build && npm start` produces a server
+build with middleware and `/api/auth/*` intact. `NEXT_STATIC_EXPORT=true` switches
+`output` to `"export"` for the GitHub Pages bundle — see
+[`docs/07`](docs/07-build-deploy-and-environments.md).
 
 ---
 
@@ -174,7 +292,7 @@ for free.
 
 | Deviation | Why |
 |---|---|
-| **Glassmorphism** replaces "transparency and blur, sparingly" | Explicit client direction. Ground, accent, motion, corners and the no-emoji rule are unchanged. Four sanctioned recipes exist as `@utility` (`glass-card`, `glass-nav`, `glass-modal`, `glass-panel`), each with a solid fallback under `@supports not (backdrop-filter)`. |
+| **Glassmorphism** replaces "transparency and blur, sparingly" | Explicit client direction. Ground, accent, motion, corners and the no-emoji rule are unchanged. Four sanctioned recipes (`glass-card`, `glass-nav`, `glass-modal`, `glass-panel`) live in `app/glass.css` as selector aliases over one liquid-glass recipe (native SVG refraction on Chromium, plain blur elsewhere), each with a solid Carbon fallback under `@supports not (backdrop-filter)`. Buttons, inputs, tags and the terminal stay solid Carbon as the design system specifies. |
 | **Phosphor Icons** replaces the hand-rolled 30-glyph Lucide subset | The subset had no glyphs for API keys, invoices, certificates, clusters or charts. Wrapped behind a closed `IconName` union, so swapping libraries is a one-file change. |
 | **CVA + Tailwind** replaces the primitives' inline styles | The originals drove hover and press through `useState`, forcing `"use client"` on 7 of 11 components, dragging icon path data into the client bundle, and breaking hover for keyboard users while latching it on touch. Moving state to CSS inverts the ratio to **9 server, 2 client**. |
 
@@ -184,7 +302,7 @@ worth raising with the designer:
 
 - `Button` size `md` is `14px`; the type scale has 13 and 15, not 14.
 - `Terminal` body text is `13.5px`, also off-scale.
-- `Terminal` window dots are `#2A2F38`, which has no token.
+- `Terminal` window dots are `#2A2F38`, which has no token; rendered as `ink-700` (`#333944`), the nearest Ink step.
 - `Button` hover glow is `rgba(74,222,128,0.30)` while `--glow-hydro-md` is `0.40`.
 
 </details>

@@ -50,7 +50,7 @@ export default async function PodDetailPage({
     <>
       <Link
         href="/portal/pods"
-        className="mb-4 inline-flex items-center gap-1.5 font-mono text-[12px] text-ink-500 hover:text-hydro"
+        className="mb-4 inline-flex items-center gap-1.5 font-mono text-[12px] text-ink-500 hover:text-ink-100"
       >
         <Icon name="caret-right" size={12} className="rotate-180" />
         all pods

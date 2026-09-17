@@ -13,8 +13,8 @@ const badgeVariants = cva(
   {
     variants: {
       tone: {
-        neutral: "text-ink-300 bg-carbon-500 border-line",
-        hydro: "text-hydro bg-hydro/10 border-hydro",
+        neutral: "text-ink-300 bg-carbon-600 border-line",
+        hydro: "text-hydro bg-hydro/10 border-hydro/35",
         success: "text-success bg-success/10 border-success/30",
         warning: "text-warning bg-warning/10 border-warning/30",
         danger: "text-danger bg-danger/10 border-danger/30",

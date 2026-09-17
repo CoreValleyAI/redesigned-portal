@@ -202,21 +202,21 @@ export default async function DocPage({
   return (
     <article>
       <p className="cv-label">Documentation</p>
-      <h1 className="mt-3 font-body text-[clamp(1.8rem,3.6vw,2.3rem)] font-extrabold leading-tight tracking-[-0.03em] text-ink-100">
+      <h1 className="mt-3 display text-[clamp(1.8rem,3.6vw,2.3rem)]">
         {doc.title}
       </h1>
-      <p className="mt-4 max-w-2xl font-body text-md font-light leading-relaxed text-ink-300">
+      <p className="mt-4 max-w-2xl text-md leading-relaxed text-ink-300">
         {doc.lead}
       </p>
 
       <div className="mt-10 space-y-10">
         {doc.sections.map((s) => (
           <section key={s.heading}>
-            <h2 className="font-body text-lg font-bold tracking-tight text-ink-100">
+            <h2 className="text-lg font-semibold tracking-tight text-ink-100">
               {s.heading}
             </h2>
             {s.body ? (
-              <p className="mt-2 max-w-2xl font-body text-[14px] font-light leading-relaxed text-ink-400">
+              <p className="mt-2 max-w-2xl text-[14px] leading-relaxed text-ink-400">
                 {s.body}
               </p>
             ) : null}
@@ -235,7 +235,7 @@ export default async function DocPage({
                         <td className="px-4 py-3 font-mono text-[12.5px] whitespace-nowrap text-hydro">
                           {cmd}
                         </td>
-                        <td className="px-4 py-3 font-body text-[13.5px] font-light text-ink-400">
+                        <td className="px-4 py-3 text-[13.5px] text-ink-400">
                           {desc}
                         </td>
                       </tr>
@@ -251,9 +251,9 @@ export default async function DocPage({
       <Card surface="solid" padding={22} className="mt-12">
         <div className="flex items-start gap-3">
           <Icon name="info" size={18} weight="duotone" className="mt-0.5 shrink-0 text-info" />
-          <p className="font-body text-[13.5px] font-light leading-relaxed text-ink-400">
+          <p className="text-[13.5px] leading-relaxed text-ink-400">
             Missing something? Email{" "}
-            <a href="mailto:info@corevalley.ai" className="text-hydro hover:underline">
+            <a href="mailto:info@corevalley.ai" className="text-hydro underline decoration-hydro/40 underline-offset-4 transition-colors duration-normal hover:text-hydro-300">
               info@corevalley.ai
             </a>
             .

@@ -9,7 +9,12 @@ export default function MarketingLayout({
   return (
     <div className="flex min-h-dvh flex-col">
       <SiteHeader />
-      <main className="flex-1">{children}</main>
+      {/* id="main" is the skip link's target (see app/layout.tsx). tabIndex
+          -1 makes it programmatically focusable so the skip actually moves
+          keyboard focus, not just the scroll position. */}
+      <main id="main" tabIndex={-1} className="flex-1 focus:outline-none">
+        {children}
+      </main>
       <SiteFooter />
     </div>
   );

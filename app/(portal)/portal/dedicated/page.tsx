@@ -38,7 +38,7 @@ export default async function DedicatedPage() {
                   <Icon name="node" size={18} className="text-hydro" />
                   <div>
                     <h2 className="font-mono text-[14px] text-ink-100">{n.name}</h2>
-                    <p className="mt-0.5 font-body text-[12px] font-light text-ink-500">
+                    <p className="mt-0.5 text-[12px] text-ink-500">
                       {n.gpuCount}x {sku.name} · {n.regionId}
                     </p>
                   </div>
@@ -93,16 +93,16 @@ export default async function DedicatedPage() {
             return (
               <Card key={d.id} surface="panel" padding={20}>
                 <h3 className="font-mono text-[13.5px] text-ink-100">{d.label}</h3>
-                <p className="mt-1 font-body text-[12px] font-light text-ink-500">
+                <p className="mt-1 text-[12px] text-ink-500">
                   {sku.name} · {d.gpuCount} GPUs
                 </p>
                 <p className="mt-4 font-mono text-[20px] text-ink-100">
                   {formatNpr(d.paisaPerMonth, { compact: true })}
-                  <span className="ml-1.5 text-[11px] text-fg-muted">/mo</span>
+                  <span className="ml-1.5 text-[11px] text-ink-500">/mo</span>
                 </p>
                 <p className="mt-2 border-t border-line-subtle pt-3 font-mono text-[12px] text-hydro">
                   {formatNpr(best, { compact: true })}/mo
-                  <span className="ml-1.5 text-[10.5px] text-fg-muted">
+                  <span className="ml-1.5 text-[10.5px] text-ink-500">
                     on a 36-month term
                   </span>
                 </p>

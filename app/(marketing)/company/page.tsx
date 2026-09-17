@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Button, Card, Icon, StatBlock } from "@/components/ui";
 import { PageHero, Section } from "@/components/marketing/page-hero";
+import { Reveal, RevealGroup } from "@/components/fx/reveal";
 import type { IconName } from "@/components/ui";
 
 export const metadata = {
@@ -62,10 +63,10 @@ export default function CompanyPage() {
       <Section>
         <div className="grid gap-12 lg:grid-cols-[1.15fr_0.85fr] lg:items-start">
           <div>
-            <h2 className="font-body text-2xl font-bold tracking-tight text-ink-100">
+            <h2 className="text-2xl font-semibold tracking-tight text-ink-100">
               Our mission
             </h2>
-            <div className="mt-5 space-y-5 font-body font-light leading-relaxed text-ink-300">
+            <div className="mt-5 space-y-5 leading-relaxed text-ink-300">
               <p>
                 CoreValley is building sovereign GPU infrastructure in Nepal so
                 that local talent can train models, fine-tune LLMs, run
@@ -89,7 +90,12 @@ export default function CompanyPage() {
 
           <Card padding={32}>
             <div className="grid grid-cols-2 gap-x-6 gap-y-9">
-              <StatBlock value="100%" label="sovereign compute" size="sm" accent />
+              <StatBlock
+                value="100%"
+                label="sovereign compute"
+                size="sm"
+                accent
+              />
               <StatBlock value="NPR" label="local billing" size="sm" />
               <StatBlock value="NPT" label="support timezone" size="sm" />
               <StatBlock value="0" label="data leaving nepal" size="sm" />
@@ -99,79 +105,96 @@ export default function CompanyPage() {
       </Section>
 
       <Section eyebrow="Principles" title="What guides us." alt>
-        <div className="grid gap-4 md:grid-cols-2">
+        <RevealGroup step={80} className="grid gap-4 md:grid-cols-2">
           {PRINCIPLES.map((p) => (
             <Card key={p.title} padding={26} className="h-full">
-              <Icon name={p.icon} size={21} weight="duotone" className="text-hydro" />
-              <h3 className="mt-4 font-body text-lg font-bold tracking-tight text-ink-100">
+              <Icon
+                name={p.icon}
+                size={21}
+                weight="duotone"
+                className="text-ink-100"
+              />
+              <h3 className="mt-4 text-lg font-semibold tracking-tight text-ink-100">
                 {p.title}
               </h3>
-              <p className="mt-2 font-body text-sm font-light leading-relaxed text-ink-400">
+              <p className="mt-2 text-sm leading-relaxed text-ink-400">
                 {p.body}
               </p>
             </Card>
           ))}
-        </div>
+        </RevealGroup>
       </Section>
 
+      {/* Three equal cards in a row was the same shape as the section above
+          it and the section below it. These are three audiences, not three
+          products — so they are a list with hanging icons and dividing rules,
+          which also lets each entry be as long as it needs to be. */}
       <Section eyebrow="Who we serve" title="Who we build for.">
-        <div className="grid gap-4 md:grid-cols-3">
-          {AUDIENCES.map((a) => (
-            <Card key={a.title} padding={26} className="h-full">
-              <Icon name={a.icon} size={21} weight="duotone" className="text-hydro" />
-              <h3 className="mt-4 font-body text-lg font-bold tracking-tight text-ink-100">
-                {a.title}
-              </h3>
-              <p className="mt-2 font-body text-sm font-light leading-relaxed text-ink-400">
-                {a.body}
-              </p>
-            </Card>
+        <ul className="flex flex-col">
+          {AUDIENCES.map((a, i) => (
+            <Reveal as="li" key={a.title} delay={i * 80}>
+              <div className="grid gap-5 border-t border-line-subtle py-9 md:grid-cols-[auto_1fr_1.4fr] md:gap-10">
+                <span className="inline-flex size-11 shrink-0 items-center justify-center rounded-lg border border-line bg-carbon-600">
+                  <Icon
+                    name={a.icon}
+                    size={20}
+                    weight="duotone"
+                    className="text-ink-100"
+                  />
+                </span>
+                <h3 className="self-center text-lg font-semibold tracking-tight text-ink-100">
+                  {a.title}
+                </h3>
+                <p className="max-w-[56ch] self-center leading-relaxed text-ink-400">
+                  {a.body}
+                </p>
+              </div>
+            </Reveal>
           ))}
-        </div>
+        </ul>
       </Section>
 
       <Section eyebrow="Contact" title="Where to find us." alt>
-        <div className="grid gap-4 md:grid-cols-3">
-          <Card surface="solid" padding={24}>
-            <Icon name="location" size={19} className="text-hydro" />
-            <h3 className="mt-3.5 font-body text-base font-bold text-ink-100">
-              Location
-            </h3>
-            <p className="mt-1.5 font-body text-sm font-light text-ink-400">
-              Kathmandu Valley, Nepal
-            </p>
-            <p className="mt-1 font-mono text-xs text-fg-muted">np-ktm-1</p>
-          </Card>
-
-          <Card surface="solid" padding={24}>
-            <Icon name="send" size={19} className="text-hydro" />
-            <h3 className="mt-3.5 font-body text-base font-bold text-ink-100">
-              Email
-            </h3>
-            <a
-              href="mailto:info@corevalley.ai"
-              className="mt-1.5 block font-body text-sm font-light text-hydro hover:underline"
-            >
-              info@corevalley.ai
-            </a>
-          </Card>
-
-          <Card surface="solid" padding={24}>
-            <Icon name="team" size={19} className="text-hydro" />
-            <h3 className="mt-3.5 font-body text-base font-bold text-ink-100">
-              Careers
-            </h3>
-            <a
-              href="https://www.linkedin.com/company/corevalleyai/jobs/"
-              target="_blank"
-              rel="noreferrer noopener"
-              className="mt-1.5 inline-flex items-center gap-1.5 font-body text-sm font-light text-hydro hover:underline"
-            >
-              Open roles
-              <Icon name="external" size={13} />
-            </a>
-          </Card>
-        </div>
+        <Reveal>
+          <dl className="grid gap-x-10 gap-y-8 border-t border-line-subtle pt-10 sm:grid-cols-3">
+            <div>
+              <dt className="cv-label text-[10px]">Location</dt>
+              <dd className="mt-3 text-ink-200">Kathmandu Valley, Nepal</dd>
+              <dd className="mt-1 font-mono text-xs text-ink-500">np-ktm-1</dd>
+            </div>
+            <div>
+              <dt className="cv-label text-[10px]">Email</dt>
+              <dd className="mt-3">
+                <a
+                  href="mailto:info@corevalley.ai"
+                  className="text-hydro underline decoration-hydro/40 underline-offset-4 transition-colors duration-normal hover:text-hydro-300"
+                >
+                  info@corevalley.ai
+                </a>
+              </dd>
+              <dd className="mt-1 font-mono text-xs text-ink-500">
+                replies within one business day
+              </dd>
+            </div>
+            <div>
+              <dt className="cv-label text-[10px]">Careers</dt>
+              <dd className="mt-3">
+                <a
+                  href="https://www.linkedin.com/company/corevalleyai/jobs/"
+                  target="_blank"
+                  rel="noreferrer noopener"
+                  className="inline-flex items-center gap-1.5 text-hydro underline decoration-hydro/40 underline-offset-4 transition-colors duration-normal hover:text-hydro-300"
+                >
+                  Open roles
+                  <Icon name="external" size={13} className="text-ink-500" />
+                </a>
+              </dd>
+              <dd className="mt-1 font-mono text-xs text-ink-500">
+                hiring in kathmandu
+              </dd>
+            </div>
+          </dl>
+        </Reveal>
 
         <div className="mt-8 flex justify-center">
           <Link href="/contact">

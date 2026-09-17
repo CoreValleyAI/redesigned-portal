@@ -39,7 +39,7 @@ export default function DocsLayout({
                     <li key={item.href}>
                       <Link
                         href={item.href}
-                        className="block rounded-md px-2.5 py-1.5 font-body text-[13.5px] text-ink-400 transition-colors duration-fast hover:bg-carbon-600 hover:text-ink-100"
+                        className="block rounded-md px-2.5 py-1.5 text-[13.5px] text-ink-400 transition-colors duration-fast hover:bg-carbon-600 hover:text-ink-100"
                       >
                         {item.label}
                       </Link>
@@ -52,7 +52,7 @@ export default function DocsLayout({
 
           <a
             href="mailto:info@corevalley.ai"
-            className="mt-8 inline-flex items-center gap-2 font-body text-[13px] font-light text-ink-500 hover:text-hydro"
+            className="mt-8 inline-flex items-center gap-2 text-[13px] text-ink-500 hover:text-ink-100"
           >
             <Icon name="send" size={14} />
             Docs feedback

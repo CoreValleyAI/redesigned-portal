@@ -26,7 +26,7 @@ export default async function KeysPage() {
       <Card surface="panel" padding={18} className="mb-5">
         <div className="flex items-start gap-3">
           <Icon name="lock" size={17} weight="duotone" className="mt-0.5 shrink-0 text-info" />
-          <p className="font-body text-[13px] font-light leading-relaxed text-ink-400">
+          <p className="text-[13px] leading-relaxed text-ink-400">
             Scope each key to the endpoints it actually needs. Rotating a key
             issues a new secret while the old one keeps working until you
             revoke it, so a deploy never has to race a credential change.
@@ -67,7 +67,7 @@ export default async function KeysPage() {
                     {k.scopedEndpointIds.map((id) => (
                       <span
                         key={id}
-                        className="rounded-sm border border-line bg-carbon-600/60 px-2 py-0.5 font-mono text-[10.5px] text-ink-300"
+                        className="rounded-md border border-line bg-carbon-600 px-2 py-0.5 font-mono text-[10.5px] text-ink-300"
                       >
                         {endpoints.find((e) => e.id === id)?.displayName ?? id}
                       </span>
