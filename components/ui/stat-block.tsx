@@ -42,10 +42,12 @@ export function StatBlock({
     >
       <div
         className={cn(
-          "font-mono font-medium leading-none tracking-tight",
+          // `nums` pins tabular figures so a value that animates or refreshes
+          // does not change width digit by digit.
+          "nums font-mono font-medium leading-none tracking-tight",
           VALUE_SIZE[size],
           accent
-            ? "text-hydro [text-shadow:0_0_28px_rgba(74,222,128,0.30)]"
+            ? "text-hydro [text-shadow:0_0_30px_rgba(74,222,128,0.28)]"
             : "text-ink-100",
         )}
       >
@@ -53,7 +55,7 @@ export function StatBlock({
       </div>
       <div className="mt-2.5 cv-label">{label}</div>
       {sub ? (
-        <div className="mt-1.5 font-body text-[13px] font-light text-ink-400">
+        <div className="mt-1.5 text-[13px] text-ink-400">
           {sub}
         </div>
       ) : null}

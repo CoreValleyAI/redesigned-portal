@@ -77,7 +77,7 @@ export default async function UsagePage() {
                 {rows.map((r, i) => (
                   <tr key={r.key} className={i > 0 ? "border-t border-line-subtle" : ""}>
                     <td className="px-4 py-3">
-                      <div className="font-body text-[13px] text-ink-200">
+                      <div className="text-[13px] text-ink-200">
                         {r.label}
                       </div>
                       <div className="mt-0.5 font-mono text-[11px] text-ink-600">

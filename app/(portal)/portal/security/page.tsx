@@ -72,12 +72,17 @@ export default async function SecurityPage() {
       {/* The framework claim is easy to overstate. State the limit plainly. */}
       <Card surface="panel" padding={20} className="mt-3">
         <div className="flex items-start gap-3">
-          <Icon name="info" size={18} weight="duotone" className="mt-0.5 shrink-0 text-info" />
+          <Icon
+            name="info"
+            size={18}
+            weight="duotone"
+            className="mt-0.5 shrink-0 text-info"
+          />
           <div>
-            <p className="font-body text-[13.5px] font-semibold text-ink-200">
+            <p className="text-[13.5px] font-semibold text-ink-200">
               What this attests to
             </p>
-            <p className="mt-1.5 font-body text-[13px] font-light leading-relaxed text-ink-400">
+            <p className="mt-1.5 text-[13px] leading-relaxed text-ink-400">
               {compliance.posture}
             </p>
             <p className="mt-2.5 font-mono text-[12px] text-hydro">
@@ -102,12 +107,12 @@ export default async function SecurityPage() {
                     className={`px-5 py-3.5 ${i > 0 ? "border-t border-line-subtle" : ""}`}
                   >
                     <div className="flex items-start justify-between gap-3">
-                      <span className="font-body text-[13.5px] text-ink-200">
+                      <span className="text-[13.5px] text-ink-200">
                         {c.name}
                       </span>
                       <Badge tone={CONTROL_TONE[c.status]}>{c.status}</Badge>
                     </div>
-                    <p className="mt-1.5 font-body text-[12.5px] font-light leading-relaxed text-ink-500">
+                    <p className="mt-1.5 text-[12.5px] leading-relaxed text-ink-500">
                       {c.evidence}
                     </p>
                   </li>
@@ -134,11 +139,14 @@ export default async function SecurityPage() {
           </thead>
           <tbody>
             {certificates.map((c, i) => (
-              <tr key={c.id} className={i > 0 ? "border-t border-line-subtle" : ""}>
+              <tr
+                key={c.id}
+                className={i > 0 ? "border-t border-line-subtle" : ""}
+              >
                 <td className="px-4 py-3.5 font-mono text-[12.5px] text-ink-100">
                   {c.commonName}
                 </td>
-                <td className="px-4 py-3.5 font-body text-[13px] font-light text-ink-400">
+                <td className="px-4 py-3.5 text-[13px] text-ink-400">
                   {c.issuer}
                 </td>
                 <td className="px-4 py-3.5 font-mono text-[11.5px] text-ink-500">
@@ -154,7 +162,7 @@ export default async function SecurityPage() {
             ))}
           </tbody>
         </TableScroll>
-        <p className="mt-3 font-body text-[12.5px] font-light text-ink-500">
+        <p className="mt-3 text-[12.5px] text-ink-500">
           Issuance and renewal are automated. No certificate has ever been
           renewed by hand, which is the point.
         </p>

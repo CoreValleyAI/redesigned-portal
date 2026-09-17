@@ -51,7 +51,6 @@ export default async function BillingPage() {
           label="current period"
           value={formatNpr(spend.totalPaisa, { compact: true })}
           sub={`${formatDate(spend.periodStart)} – ${formatDate(spend.periodEnd)}`}
-          accent
         />
         <MetricTile
           label="projected total"
@@ -94,9 +93,12 @@ export default async function BillingPage() {
           </thead>
           <tbody>
             {draft.lineItems.map((li, i) => (
-              <tr key={li.id} className={i > 0 ? "border-t border-line-subtle" : ""}>
+              <tr
+                key={li.id}
+                className={i > 0 ? "border-t border-line-subtle" : ""}
+              >
                 <td className="px-4 py-3.5">
-                  <div className="font-body text-[13.5px] text-ink-200">
+                  <div className="text-[13.5px] text-ink-200">
                     {li.description}
                   </div>
                   <div className="mt-0.5 font-mono text-[11px] text-ink-600">
@@ -115,7 +117,10 @@ export default async function BillingPage() {
               </tr>
             ))}
             <tr className="border-t border-line">
-              <td colSpan={3} className="px-4 py-2.5 text-right font-body text-[13px] text-ink-400">
+              <td
+                colSpan={3}
+                className="px-4 py-2.5 text-right text-[13px] text-ink-400"
+              >
                 Subtotal
               </td>
               <td className="px-4 py-2.5 text-right font-mono text-[12.5px] text-ink-200">
@@ -123,7 +128,10 @@ export default async function BillingPage() {
               </td>
             </tr>
             <tr>
-              <td colSpan={3} className="px-4 py-2.5 text-right font-body text-[13px] text-ink-400">
+              <td
+                colSpan={3}
+                className="px-4 py-2.5 text-right text-[13px] text-ink-400"
+              >
                 VAT ({VAT_RATE_PERCENT}%)
               </td>
               <td className="px-4 py-2.5 text-right font-mono text-[12.5px] text-ink-200">
@@ -132,7 +140,10 @@ export default async function BillingPage() {
             </tr>
             {draft.creditAppliedPaisa > 0 ? (
               <tr>
-                <td colSpan={3} className="px-4 py-2.5 text-right font-body text-[13px] text-ink-400">
+                <td
+                  colSpan={3}
+                  className="px-4 py-2.5 text-right text-[13px] text-ink-400"
+                >
                   Credit applied
                 </td>
                 <td className="px-4 py-2.5 text-right font-mono text-[12.5px] text-hydro">
@@ -141,7 +152,10 @@ export default async function BillingPage() {
               </tr>
             ) : null}
             <tr className="border-t border-line">
-              <td colSpan={3} className="px-4 py-3.5 text-right font-body text-[13.5px] font-semibold text-ink-100">
+              <td
+                colSpan={3}
+                className="px-4 py-3.5 text-right text-[13.5px] font-semibold text-ink-100"
+              >
                 Total due
               </td>
               <td className="px-4 py-3.5 text-right font-mono text-[15px] text-hydro">
@@ -154,7 +168,9 @@ export default async function BillingPage() {
 
       <div className="mt-8 grid gap-6 lg:grid-cols-[1.3fr_1fr] lg:items-start">
         <section>
-          <h2 className="mb-3 font-mono text-[14px] text-ink-200">invoice history</h2>
+          <h2 className="mb-3 font-mono text-[14px] text-ink-200">
+            invoice history
+          </h2>
           <TableScroll minWidth="34rem">
             <thead>
               <tr>
@@ -166,7 +182,10 @@ export default async function BillingPage() {
             </thead>
             <tbody>
               {history.map((inv, i) => (
-                <tr key={inv.id} className={i > 0 ? "border-t border-line-subtle" : ""}>
+                <tr
+                  key={inv.id}
+                  className={i > 0 ? "border-t border-line-subtle" : ""}
+                >
                   <td className="px-4 py-3.5 font-mono text-[12.5px] text-ink-100">
                     {inv.number}
                   </td>
@@ -186,7 +205,9 @@ export default async function BillingPage() {
         </section>
 
         <section>
-          <h2 className="mb-3 font-mono text-[14px] text-ink-200">payment methods</h2>
+          <h2 className="mb-3 font-mono text-[14px] text-ink-200">
+            payment methods
+          </h2>
           <Card surface="panel" padding={0}>
             {methods.map((m, i) => (
               <div
@@ -195,9 +216,9 @@ export default async function BillingPage() {
                   i > 0 ? "border-t border-line-subtle" : ""
                 }`}
               >
-                <Icon name="cost" size={16} className="text-hydro" />
+                <Icon name="cost" size={16} className="text-ink-400" />
                 <div className="min-w-0">
-                  <div className="font-body text-[13.5px] text-ink-200">
+                  <div className="text-[13.5px] text-ink-200">
                     {RAIL_LABEL[m.rail] ?? m.displayName}
                   </div>
                   <div className="mt-0.5 font-mono text-[11.5px] text-ink-600">
@@ -212,7 +233,7 @@ export default async function BillingPage() {
               </div>
             ))}
           </Card>
-          <p className="mt-3 font-body text-[12.5px] font-light leading-relaxed text-ink-500">
+          <p className="mt-3 text-[12.5px] leading-relaxed text-ink-500">
             All settlement is in Nepali Rupees. No foreign currency invoices and
             no FX exposure.
           </p>

@@ -72,9 +72,12 @@ export default async function JupyterPage() {
             {servers.map((s, i) => {
               const profile = profiles.find((p) => p.id === s.spawnerProfileId);
               return (
-                <tr key={s.id} className={i > 0 ? "border-t border-line-subtle" : ""}>
+                <tr
+                  key={s.id}
+                  className={i > 0 ? "border-t border-line-subtle" : ""}
+                >
                   <td className="px-4 py-3.5">
-                    <div className="font-body text-[13.5px] text-ink-100">
+                    <div className="text-[13.5px] text-ink-100">
                       {s.userName}
                     </div>
                     <div className="mt-0.5 font-mono text-[11px] text-ink-600">
@@ -85,7 +88,10 @@ export default async function JupyterPage() {
                     {profile?.displayName ?? s.spawnerProfileId}
                   </td>
                   <td className="px-4 py-3.5">
-                    <Badge tone={STATUS_TONE[s.status]} dot={s.status === "running"}>
+                    <Badge
+                      tone={STATUS_TONE[s.status]}
+                      dot={s.status === "running"}
+                    >
                       {s.status}
                     </Badge>
                   </td>
@@ -107,7 +113,9 @@ export default async function JupyterPage() {
 
       <section className="mt-8">
         <div className="mb-3 flex items-center gap-3">
-          <h2 className="font-mono text-[14px] text-ink-200">spawner profiles</h2>
+          <h2 className="font-mono text-[14px] text-ink-200">
+            spawner profiles
+          </h2>
           <PlaceholderPricingBadge />
         </div>
         <div className="grid gap-3 md:grid-cols-3">
@@ -125,13 +133,13 @@ export default async function JupyterPage() {
                     {p.displayName}
                   </span>
                 </div>
-                <p className="mt-3 font-body text-[12.5px] font-light leading-relaxed text-ink-400">
+                <p className="mt-3 text-[12.5px] leading-relaxed text-ink-400">
                   {p.description}
                 </p>
                 {rate ? (
                   <p className="mt-4 border-t border-line-subtle pt-3.5 font-mono text-[14px] text-hydro">
                     {formatNpr(rate.paisaPerHour)}
-                    <span className="ml-1 text-[11px] text-fg-muted">
+                    <span className="ml-1 text-[11px] text-ink-500">
                       per user-hour
                     </span>
                   </p>

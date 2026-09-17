@@ -31,7 +31,7 @@ export default async function ClustersPage() {
                 <Icon name="cluster" size={18} className="text-hydro" />
                 <div>
                   <h2 className="font-mono text-[14px] text-ink-100">{vc.name}</h2>
-                  <p className="mt-0.5 font-body text-[12px] font-light text-ink-500">
+                  <p className="mt-0.5 text-[12px] text-ink-500">
                     {project?.name ?? vc.projectId} · {vc.k8sVersion}
                   </p>
                 </div>
@@ -78,7 +78,7 @@ export default async function ClustersPage() {
                     );
                   })}
                   {vc.nodePools.length === 0 ? (
-                    <p className="font-body text-[13px] font-light text-ink-500">
+                    <p className="text-[13px] text-ink-500">
                       No node pools yet.
                     </p>
                   ) : null}

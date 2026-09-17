@@ -156,7 +156,7 @@ export function LaunchForm({
               </Tag>
             ))}
           </div>
-          <p className="mt-3 font-body text-[12.5px] font-light text-ink-500">
+          <p className="mt-3 text-[12.5px] text-ink-500">
             {skus.filter((s) => s.status === "coming-soon").length} more SKUs
             arriving — RTX PRO 6000 Blackwell, L40S and L4.
           </p>
@@ -219,7 +219,7 @@ export function LaunchForm({
             })}
           </div>
           {profile ? (
-            <p className="mt-3 font-body text-[12.5px] font-light leading-relaxed text-ink-400">
+            <p className="mt-3 text-[12.5px] leading-relaxed text-ink-400">
               {ISOLATION_NOTE[profile.isolation]}
             </p>
           ) : null}
@@ -246,7 +246,7 @@ export function LaunchForm({
                 <span className="font-mono text-[12.5px] text-ink-200">
                   {img.id}
                 </span>
-                <span className="font-body text-[12px] font-light text-ink-500">
+                <span className="text-[12px] text-ink-500">
                   {img.label}
                 </span>
               </button>
@@ -276,13 +276,13 @@ export function LaunchForm({
                 >
                   <Icon name="plus" size={14} />
                 </Button>
-                <span className="font-body text-[12.5px] font-light text-ink-500">
+                <span className="text-[12.5px] text-ink-500">
                   whole cards
                 </span>
               </div>
             </div>
           ) : (
-            <p className="mt-5 font-body text-[12.5px] font-light text-ink-500">
+            <p className="mt-5 text-[12.5px] text-ink-500">
               Sliced profiles run one instance per pod. Launch several pods to
               scale out.
             </p>
@@ -312,13 +312,13 @@ export function LaunchForm({
               <p className="mt-4 font-mono text-[28px] leading-none text-hydro">
                 {formatNpr(estimate.ratePaisaPerHour)}
               </p>
-              <p className="mt-1.5 font-mono text-[11px] text-fg-muted">
+              <p className="mt-1.5 font-mono text-[11px] text-ink-500">
                 per hour · metered per second
               </p>
 
               <dl className="mt-5 space-y-2.5 border-t border-line-subtle pt-4">
                 <div className="flex justify-between gap-3">
-                  <dt className="font-body text-[12.5px] font-light text-ink-400">
+                  <dt className="text-[12.5px] text-ink-400">
                     If left running a month
                   </dt>
                   <dd className="font-mono text-[12.5px] text-ink-200">
@@ -326,7 +326,7 @@ export function LaunchForm({
                   </dd>
                 </div>
                 <div className="flex justify-between gap-3">
-                  <dt className="font-body text-[12.5px] font-light text-ink-400">
+                  <dt className="text-[12.5px] text-ink-400">
                     Minimum billable
                   </dt>
                   <dd className="font-mono text-[12.5px] text-ink-200">
@@ -334,7 +334,7 @@ export function LaunchForm({
                   </dd>
                 </div>
                 <div className="flex justify-between gap-3">
-                  <dt className="font-body text-[12.5px] font-light text-ink-400">
+                  <dt className="text-[12.5px] text-ink-400">
                     Region
                   </dt>
                   <dd className="font-mono text-[12.5px] text-ink-200">
@@ -361,7 +361,7 @@ export function LaunchForm({
             {launching ? "launching…" : "launch pod"}
           </Button>
           {!name ? (
-            <p className="mt-2.5 text-center font-body text-[12px] font-light text-ink-600">
+            <p className="mt-2.5 text-center text-[12px] text-ink-600">
               Give the pod a name to continue.
             </p>
           ) : null}

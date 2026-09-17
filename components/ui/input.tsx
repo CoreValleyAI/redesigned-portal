@@ -35,6 +35,9 @@ export function Input({
       className={cn(
         "group flex items-center gap-2 rounded-md border border-line",
         "transition-[border-color,box-shadow] duration-fast ease-standard",
+        "hover:border-line-strong",
+        // The design system's focus state: a Hydro hairline plus a 3px
+        // 12%-alpha Hydro ring. Kept literal to match Input.jsx exactly.
         "focus-within:border-hydro focus-within:shadow-[0_0_0_3px_rgba(74,222,128,0.12)]",
         disabled ? "bg-carbon-700 opacity-55" : "bg-surface-input",
         s.box,

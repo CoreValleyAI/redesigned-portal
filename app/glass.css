@@ -1,0 +1,354 @@
+/* ══════════════════════════════════════════════════════════════════════════
+   CoreValley — glass surfaces and the shared motion helpers.
+
+   Glassmorphism is the ONE sanctioned deviation from design_system/ (explicit
+   client direction; recorded in the README). Everything in this file is
+   otherwise built from design-system tokens: Carbon surfaces, Ink hairlines,
+   Hydro as the only glow, and the mechanical easing curves and durations
+   declared in design_system/tokens/spacing.css. No value is restated.
+
+   REFRACTION
+   The optics are native. An SVG <feDisplacementMap> (components/fx/
+   liquid-filter.tsx) is applied through `backdrop-filter: url(#…)`, so the
+   compositor bends the backdrop texture it already holds — no capture, no
+   WebGL context, no JavaScript per frame. Chromium runs the displacement
+   pass; Safari and Firefox get blur + saturation and read as ordinary frosted
+   glass. Engines with no backdrop-filter at all fall back to the solid Carbon
+   surface token — never a transparent, unreadable box.
+   ══════════════════════════════════════════════════════════════════════════ */
+
+:root {
+  /* Elevation helpers for glass. A translucent pane on Carbon needs a faint
+     top-lit wash and a 1px inner highlight to read as a surface rather than
+     a hole. Ink-tinted, at the design system's hairline alphas. */
+  --grad-card: linear-gradient(
+    177deg,
+    rgb(232 236 239 / 0.045) 0%,
+    rgb(232 236 239 / 0.012) 40%,
+    rgb(232 236 239 / 0) 80%
+  );
+  --grad-raised: linear-gradient(
+    177deg,
+    rgb(232 236 239 / 0.07) 0%,
+    rgb(232 236 239 / 0.02) 46%,
+    rgb(232 236 239 / 0) 88%
+  );
+  --edge-top: inset 0 1px 0 rgb(232 236 239 / 0.08);
+  --edge-top-strong: inset 0 1px 0 rgb(232 236 239 / 0.14);
+}
+
+@layer components {
+  /* ── Glass ────────────────────────────────────────────────────────────── */
+
+  /* The four `glass-*` names are the recipe's public API — the portal shell,
+     the auth dialog and the Card primitive all reference them. They are
+     aliased by SELECTOR rather than by `@apply`: Tailwind v4's @apply resolves
+     only Tailwind utilities, so applying a plain component class is a build
+     error, not a no-op. */
+  .lg,
+  .glass-card,
+  .glass-nav,
+  .glass-modal,
+  .glass-panel {
+    position: relative;
+    isolation: isolate;
+    background-color: color-mix(in srgb, var(--carbon-700) 55%, transparent);
+    background-image: var(--grad-card);
+    border: 1px solid var(--border-default);
+    -webkit-backdrop-filter: blur(var(--lg-blur, 16px)) saturate(var(--lg-sat, 120%));
+    backdrop-filter: blur(var(--lg-blur, 16px)) saturate(var(--lg-sat, 120%));
+    box-shadow: var(--edge-top), var(--shadow-md);
+  }
+
+  /* ── Weights ──────────────────────────────────────────────────────────── */
+
+  /* Sticky navigation: thin and fast, so the page reads through it. */
+  .lg--nav,
+  .glass-nav {
+    --lg-blur: 18px;
+    --lg-sat: 120%;
+    background-color: color-mix(in srgb, var(--carbon-900) 60%, transparent);
+    background-image: none;
+    border: 0;
+    border-bottom: 1px solid var(--border-subtle);
+    box-shadow: none;
+  }
+
+  /* Dialogs sit over a scrim, so they can afford to be heavier and more
+     opaque — a modal you can read the page through is a modal nobody reads. */
+  .lg--modal,
+  .glass-modal {
+    --lg-blur: 28px;
+    --lg-sat: 115%;
+    background-color: color-mix(in srgb, var(--carbon-700) 72%, transparent);
+    background-image: var(--grad-raised);
+    border-color: var(--border-strong);
+    box-shadow: var(--edge-top-strong), var(--shadow-xl);
+  }
+
+  /* Data surfaces. Tables and logs are read for minutes at a time, so the
+     blur comes down and the floor comes up: legibility beats optics here. */
+  .lg--panel,
+  .glass-panel {
+    --lg-blur: 12px;
+    --lg-sat: 110%;
+    background-color: color-mix(in srgb, var(--carbon-800) 78%, transparent);
+    box-shadow: var(--edge-top);
+  }
+
+  /* Small controls: chips and pills. */
+  .lg--chip {
+    --lg-blur: 10px;
+    --lg-sat: 120%;
+    box-shadow: var(--edge-top);
+  }
+
+  /* ── Refraction pass (Chromium) ───────────────────────────────────────── */
+
+  /* `url()` inside backdrop-filter is the exact capability being tested: every
+     engine parses a filter list, but only Chromium resolves an SVG reference
+     filter against a backdrop, so this query is the feature gate rather than a
+     proxy for one.
+
+     DOUBLE-GUARDED. Each rule restates the plain blur first and the refracting
+     version second. If an engine passes the @supports test but then rejects
+     the url() declaration at parse time, the invalid declaration is dropped
+     and the plain blur on the line above it survives. */
+  @supports (backdrop-filter: url(#cv-lg-md)) {
+    .lg-refract,
+    .glass-card {
+      -webkit-backdrop-filter: blur(var(--lg-blur, 16px)) saturate(var(--lg-sat, 120%));
+      backdrop-filter: blur(var(--lg-blur, 16px)) saturate(var(--lg-sat, 120%));
+      -webkit-backdrop-filter: url(#cv-lg-md) blur(var(--lg-blur, 16px))
+        saturate(var(--lg-sat, 120%));
+      backdrop-filter: url(#cv-lg-md) blur(var(--lg-blur, 16px))
+        saturate(var(--lg-sat, 120%));
+    }
+    .lg-refract.lg--nav,
+    .glass-nav {
+      -webkit-backdrop-filter: blur(var(--lg-blur)) saturate(var(--lg-sat));
+      backdrop-filter: blur(var(--lg-blur)) saturate(var(--lg-sat));
+      -webkit-backdrop-filter: url(#cv-lg-sm) blur(var(--lg-blur)) saturate(var(--lg-sat));
+      backdrop-filter: url(#cv-lg-sm) blur(var(--lg-blur)) saturate(var(--lg-sat));
+    }
+    .lg-refract.lg--modal,
+    .glass-modal {
+      -webkit-backdrop-filter: blur(var(--lg-blur)) saturate(var(--lg-sat));
+      backdrop-filter: blur(var(--lg-blur)) saturate(var(--lg-sat));
+      -webkit-backdrop-filter: url(#cv-lg-lg) blur(var(--lg-blur)) saturate(var(--lg-sat));
+      backdrop-filter: url(#cv-lg-lg) blur(var(--lg-blur)) saturate(var(--lg-sat));
+    }
+  }
+
+  /* No backdrop-filter at all → the solid Carbon surface tokens. Mandatory:
+     without this the panes render as transparent boxes with unreadable text. */
+  @supports not (
+    (backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))
+  ) {
+    .lg,
+    .glass-card {
+      background-color: var(--carbon-700);
+    }
+    .lg--nav,
+    .glass-nav {
+      background-color: var(--carbon-900);
+    }
+    .lg--modal,
+    .glass-modal {
+      background-color: var(--carbon-600);
+    }
+    .lg--panel,
+    .glass-panel {
+      background-color: var(--carbon-800);
+    }
+  }
+
+  /* ── Hover behaviour for glass that is also a target ──────────────────── */
+
+  /* Matches the design system's Card: a 1px lift, a stronger hairline and
+     the deep shadow, on the standard mechanical curve. No overshoot. */
+  .lg-hover {
+    transition:
+      border-color var(--duration-normal) var(--ease-standard),
+      transform var(--duration-normal) var(--ease-standard),
+      box-shadow var(--duration-normal) var(--ease-standard);
+  }
+  .lg-hover:hover {
+    border-color: var(--border-strong);
+    transform: translateY(-1px);
+    box-shadow: var(--edge-top-strong), var(--shadow-lg);
+  }
+
+  /* ══ MOTION ══════════════════════════════════════════════════════════════
+     Scroll reveals. <Reveal> sets data-reveal and, once intersecting,
+     data-shown — so the resting state is declarative CSS and the observer
+     only ever flips one attribute. The --d custom property staggers a group.
+
+     Durations and curves are the design system's: --duration-slow (360ms) on
+     --ease-out. Opacity and a short translate only — no blur, no scale
+     overshoot; motion is mechanical. */
+
+  /* The hidden state is scoped to `prefers-reduced-motion: no-preference`
+     AND to .cv-js on <html>. Two failure modes are closed by that pair:
+     someone who asked for no motion never sees content animate in, and if
+     the reveal script never runs at all (JS off, hydration error) the hidden
+     rule was never applied in the first place — the page just renders. */
+  html.cv-js [data-reveal] {
+    opacity: 0;
+    transform: translate3d(0, var(--reveal-y, 14px), 0);
+    transition:
+      opacity var(--duration-slow) var(--ease-out) var(--d, 0ms),
+      transform var(--duration-slow) var(--ease-out) var(--d, 0ms);
+  }
+  html.cv-js [data-reveal][data-shown] {
+    opacity: 1;
+    transform: none;
+  }
+
+  /* Horizontal variants, for split sections that enter from the sides. */
+  html.cv-js [data-reveal="left"]:not([data-shown]) {
+    --reveal-y: 0px;
+    transform: translate3d(-20px, 0, 0);
+  }
+  html.cv-js [data-reveal="right"]:not([data-shown]) {
+    --reveal-y: 0px;
+    transform: translate3d(20px, 0, 0);
+  }
+  html.cv-js [data-reveal="scale"]:not([data-shown]) {
+    --reveal-y: 0px;
+    transform: scale(0.985);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html.cv-js [data-reveal] {
+      opacity: 1;
+      transform: none;
+    }
+  }
+
+  /* Marquee. Duplicated content plus a -50% translate is the only version
+     that loops without a visible seam at any width. */
+  .marquee {
+    display: flex;
+    width: max-content;
+    animation: cv-marquee var(--marquee-duration, 48s) linear infinite;
+  }
+  .marquee:hover {
+    animation-play-state: paused;
+  }
+  @keyframes cv-marquee {
+    to {
+      transform: translate3d(-50%, 0, 0);
+    }
+  }
+
+  /* Edge fade for any horizontally-scrolling strip. */
+  .edge-fade {
+    -webkit-mask-image: linear-gradient(
+      90deg,
+      transparent,
+      #000 9%,
+      #000 91%,
+      transparent
+    );
+    mask-image: linear-gradient(
+      90deg,
+      transparent,
+      #000 9%,
+      #000 91%,
+      transparent
+    );
+  }
+
+  /* A hairline that fades out at both ends — used instead of full-bleed
+     section rules, which chop a dark page into visible stripes. */
+  .rule-fade {
+    height: 1px;
+    border: 0;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      var(--border-default) 18%,
+      var(--border-default) 82%,
+      transparent
+    );
+  }
+
+  /* Vertical trace: the thin animated line that runs down a section spine.
+     Hydro — the one glow the system allows. */
+  .trace {
+    position: relative;
+    overflow: hidden;
+    background: var(--border-subtle);
+  }
+  .trace::after {
+    content: "";
+    position: absolute;
+    inset-inline: 0;
+    height: 28%;
+    background: linear-gradient(
+      180deg,
+      transparent,
+      var(--hydro) 50%,
+      transparent
+    );
+    animation: cv-trace 4.5s var(--ease-standard) infinite;
+  }
+  @keyframes cv-trace {
+    0% {
+      transform: translateY(-120%);
+      opacity: 0;
+    }
+    18%,
+    72% {
+      opacity: 0.9;
+    }
+    100% {
+      transform: translateY(420%);
+      opacity: 0;
+    }
+  }
+
+  /* Skeleton shimmer — used by the portal's loading states in place of a
+     spinner, so the page reserves the shape it is about to fill. */
+  .skeleton {
+    background:
+      linear-gradient(
+        90deg,
+        transparent,
+        rgb(232 236 239 / 0.06) 50%,
+        transparent
+      )
+      var(--carbon-700);
+    background-size: 220% 100%;
+    animation: cv-shimmer 1.6s linear infinite;
+  }
+  @keyframes cv-shimmer {
+    to {
+      background-position: -220% 0;
+    }
+  }
+
+  /* ══ TYPE ════════════════════════════════════════════════════════════════ */
+
+  /* Display type: the design system's headline role — Manrope, bold, tight
+     tracking, tight leading — plus balanced wrapping. */
+  .display {
+    font-family: var(--type-heading-family);
+    font-weight: var(--type-heading-weight);
+    letter-spacing: var(--type-heading-tracking);
+    line-height: var(--leading-tight);
+    text-wrap: balance;
+    color: var(--text-primary);
+  }
+  .display-sub {
+    color: var(--text-secondary);
+  }
+
+  /* Tabular figures everywhere a number can change: metrics, prices,
+     counters. Without this a live value visibly jitters as digits swap. */
+  .nums {
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: "tnum" 1;
+  }
+}

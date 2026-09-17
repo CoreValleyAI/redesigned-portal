@@ -48,7 +48,7 @@ export default async function ProductPage({
             <Button variant="secondary">See pricing</Button>
           </Link>
         </div>
-        <p className="mt-6 font-mono text-[11.5px] tracking-wide text-fg-muted">
+        <p className="mt-6 font-mono text-[11.5px] tracking-wide text-ink-500">
           built for {product.audience.toLowerCase()}
         </p>
       </PageHero>
@@ -58,10 +58,10 @@ export default async function ProductPage({
           <div className="grid gap-4 sm:grid-cols-2">
             {product.features.map((f) => (
               <Card key={f.title} padding={24} className="h-full">
-                <h3 className="font-body text-base font-bold tracking-tight text-ink-100">
+                <h3 className="text-base font-semibold tracking-tight text-ink-100">
                   {f.title}
                 </h3>
-                <p className="mt-2 font-body text-[13.5px] font-light leading-relaxed text-ink-400">
+                <p className="mt-2 text-[13.5px] leading-relaxed text-ink-400">
                   {f.body}
                 </p>
               </Card>
@@ -101,8 +101,8 @@ export default async function ProductPage({
                 className="transition-colors duration-fast hover:border-line-strong"
               >
                 <span className="flex items-center gap-2.5">
-                  <Icon name={p.icon} size={17} className="text-hydro" />
-                  <span className="font-body text-sm font-semibold text-ink-200">
+                  <Icon name={p.icon} size={17} className="text-ink-200" />
+                  <span className="text-sm font-semibold text-ink-200">
                     {p.name}
                   </span>
                 </span>

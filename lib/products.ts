@@ -18,7 +18,7 @@ export const PRODUCTS: ProductDef[] = [
   {
     slug: "gpu-pods",
     icon: "slice",
-    name: "GPU Pods",
+    name: "GPU pods",
     tagline: "Whole cards, or a fourteenth of one.",
     summary:
       "Containerised GPU workloads on H100 and H200. Take an exclusive card, a hardware-partitioned MIG instance, or a soft HAMi slice — and pay per second either way.",
@@ -118,7 +118,7 @@ export const PRODUCTS: ProductDef[] = [
   {
     slug: "model-endpoints",
     icon: "broadcast",
-    name: "Model API Endpoints",
+    name: "Model endpoints",
     tagline: "Open models, per token, in-country.",
     summary:
       "OpenAI-compatible inference for open-weight models, served on vLLM behind a LiteLLM gateway. Pay per token, keep every request inside Nepal, and never manage a GPU.",
@@ -168,7 +168,7 @@ export const PRODUCTS: ProductDef[] = [
   {
     slug: "dedicated",
     icon: "node",
-    name: "Dedicated & Bare Metal",
+    name: "Dedicated & bare metal",
     tagline: "A whole node, and no neighbours.",
     summary:
       "Entire H100 or H200 nodes reserved for one tenant, as bare metal or as a VM. For Sovereign and Dedicated tiers where isolation is a contractual requirement, not a preference.",

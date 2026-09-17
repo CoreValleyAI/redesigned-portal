@@ -48,10 +48,10 @@ export function PlaceholderBanner() {
     <div className="flex items-start gap-3 rounded-lg border border-warning/30 bg-warning/8 px-5 py-4">
       <Icon name="warning" size={18} weight="fill" className="mt-px text-warning" />
       <div>
-        <p className="font-body text-sm font-semibold text-warning">
+        <p className="text-sm font-semibold text-warning">
           Indicative pricing — not a quote
         </p>
-        <p className="mt-1 font-body text-[13.5px] font-light leading-relaxed text-ink-300">
+        <p className="mt-1 text-[13.5px] leading-relaxed text-ink-300">
           {CATALOG.meta.notice} Contact sales for rates that apply to your
           workload and commitment.
         </p>
@@ -72,7 +72,7 @@ function CurrencyToggle({
       <span
         className={cn(
           "font-mono text-[13px]",
-          currency === "NPR" ? "text-hydro" : "text-fg-muted",
+          currency === "NPR" ? "text-ink-100" : "text-ink-500",
         )}
       >
         NPR
@@ -86,7 +86,7 @@ function CurrencyToggle({
       <span
         className={cn(
           "font-mono text-[13px]",
-          currency === "USD" ? "text-hydro" : "text-fg-muted",
+          currency === "USD" ? "text-ink-100" : "text-ink-500",
         )}
       >
         USD
@@ -129,7 +129,7 @@ export function PricingTables() {
               <span
                 className={cn(
                   "font-mono text-[13px]",
-                  !monthly ? "text-hydro" : "text-fg-muted",
+                  !monthly ? "text-ink-100" : "text-ink-500",
                 )}
               >
                 hourly
@@ -143,7 +143,7 @@ export function PricingTables() {
               <span
                 className={cn(
                   "font-mono text-[13px]",
-                  monthly ? "text-hydro" : "text-fg-muted",
+                  monthly ? "text-ink-100" : "text-ink-500",
                 )}
               >
                 monthly
@@ -155,7 +155,7 @@ export function PricingTables() {
       </div>
 
       {currency === "USD" ? (
-        <p className="mt-4 font-body text-xs font-light text-fg-muted">
+        <p className="mt-4 text-xs text-ink-500">
           {USD_DISPLAY.disclaimer} Rate as of {USD_DISPLAY.rateAsOf}:{" "}
           {USD_DISPLAY.nprPerUsd} NPR/USD.
         </p>
@@ -194,7 +194,7 @@ export function PricingTables() {
                         <div className="font-mono text-[13px] text-ink-100">
                           {sku.shortName} · {profile.label}
                         </div>
-                        <div className="mt-0.5 font-body text-[12px] font-light text-ink-500">
+                        <div className="mt-0.5 text-[12px] text-ink-500">
                           {sku.name}
                         </div>
                       </td>
@@ -210,7 +210,7 @@ export function PricingTables() {
                       <td className="px-4 py-3.5 font-mono text-[13px] text-ink-400">
                         {profile.vcpus}
                       </td>
-                      <td className="px-4 py-3.5 text-right font-mono text-[13px] text-hydro">
+                      <td className="nums px-4 py-3.5 text-right font-mono text-[13px] text-ink-100">
                         {perUnit(rate.paisaPerHour)}
                       </td>
                     </tr>
@@ -224,19 +224,19 @@ export function PricingTables() {
             {Object.entries(ISOLATION_COPY).map(([key, v]) => (
               <Card key={key} surface="solid" padding={16}>
                 <Badge tone={v.tone}>{v.label}</Badge>
-                <p className="mt-2.5 font-body text-[12.5px] font-light leading-relaxed text-ink-400">
+                <p className="mt-2.5 text-[12.5px] leading-relaxed text-ink-400">
                   {v.note}
                 </p>
               </Card>
             ))}
           </div>
 
-          <p className="mt-4 font-body text-xs font-light text-fg-muted">
+          <p className="mt-4 text-xs text-ink-500">
             Metered per second with a {GPU_HOURLY[0]!.minimumBillableSeconds}-second
             minimum. Monthly figures assume 730 hours of continuous use.
           </p>
 
-          <h3 className="mt-10 font-body text-lg font-bold tracking-tight text-ink-100">
+          <h3 className="mt-10 text-lg font-semibold tracking-tight text-ink-100">
             JupyterHub
           </h3>
           <div className="mt-4 overflow-x-auto rounded-lg border border-line">
@@ -267,7 +267,7 @@ export function PricingTables() {
                         ? "—"
                         : `${profileById(r.profileId).gpuMemoryGb} GB`}
                     </td>
-                    <td className="px-4 py-3.5 text-right font-mono text-[13px] text-hydro">
+                    <td className="nums px-4 py-3.5 text-right font-mono text-[13px] text-ink-100">
                       {perUnit(r.paisaPerHour)}
                     </td>
                   </tr>
@@ -314,7 +314,7 @@ export function PricingTables() {
                         ? "—"
                         : price(r.cachedInputPaisaPerMillion)}
                     </td>
-                    <td className="px-4 py-3.5 text-right font-mono text-[13px] text-hydro">
+                    <td className="nums px-4 py-3.5 text-right font-mono text-[13px] text-ink-100">
                       {price(r.outputPaisaPerMillion)}
                     </td>
                   </tr>
@@ -322,7 +322,7 @@ export function PricingTables() {
               </tbody>
             </table>
           </div>
-          <p className="mt-4 font-body text-xs font-light text-fg-muted">
+          <p className="mt-4 text-xs text-ink-500">
             Billed per token on actual usage. Cached input applies to repeated
             prompt prefixes. No minimum commitment.
           </p>
@@ -341,10 +341,10 @@ export function PricingTables() {
                 onClick={() => setTerm(t)}
                 aria-pressed={term === t}
                 className={cn(
-                  "cursor-pointer rounded-sm border px-3 py-1.5 font-mono text-xs transition-colors duration-fast",
+                  "rounded-md border px-3 py-1.5 font-mono text-xs transition-colors duration-normal",
                   term === t
                     ? "border-hydro bg-hydro/10 text-hydro"
-                    : "border-line bg-carbon-600 text-ink-300 hover:bg-carbon-500",
+                    : "border-line bg-carbon-600 text-ink-300 hover:bg-carbon-500 hover:text-ink-100",
                 )}
               >
                 {t.replace("reserved-", "").replace("on-demand-monthly", "monthly")}
@@ -368,14 +368,14 @@ export function PricingTables() {
                   <h3 className="font-mono text-[15px] text-ink-100">
                     {node.label}
                   </h3>
-                  <p className="mt-1 font-body text-[12.5px] font-light text-ink-500">
+                  <p className="mt-1 text-[12.5px] text-ink-500">
                     {skuById(node.skuId).name} · {node.gpuCount} GPUs
                   </p>
                   <div className="mt-5">
-                    <div className="font-mono text-2xl text-hydro">
+                    <div className="nums font-mono text-2xl text-ink-100">
                       {price(effective)}
                     </div>
-                    <div className="mt-1 font-mono text-[11px] text-fg-muted">
+                    <div className="mt-1 font-mono text-[11px] text-ink-500">
                       per month
                       {discount > 0 ? (
                         <span className="ml-2 line-through opacity-60">
@@ -384,7 +384,7 @@ export function PricingTables() {
                       ) : null}
                     </div>
                   </div>
-                  <p className="mt-4 border-t border-line-subtle pt-4 font-body text-[12.5px] font-light text-ink-400">
+                  <p className="mt-4 border-t border-line-subtle pt-4 text-[12.5px] text-ink-400">
                     {node.form === "bare-metal"
                       ? "Bare metal with IPMI access and the full NVLink fabric."
                       : "KVM virtual machine with snapshots and fast rebuilds."}
@@ -402,24 +402,24 @@ export function PricingTables() {
           {Object.values(STORAGE_RATES).map((s) => (
             <Card key={s.id} padding={24}>
               <h3 className="font-mono text-[15px] text-ink-100">{s.label}</h3>
-              <div className="mt-4 font-mono text-2xl text-hydro">
+              <div className="nums mt-4 font-mono text-2xl text-ink-100">
                 {price(s.paisaPerGbMonth)}
               </div>
-              <div className="mt-1 font-mono text-[11px] text-fg-muted">
+              <div className="mt-1 font-mono text-[11px] text-ink-500">
                 per GB-month
               </div>
-              <p className="mt-4 border-t border-line-subtle pt-4 font-body text-[12.5px] font-light leading-relaxed text-ink-400">
+              <p className="mt-4 border-t border-line-subtle pt-4 text-[12.5px] leading-relaxed text-ink-400">
                 {s.description}
               </p>
             </Card>
           ))}
           <Card padding={24}>
             <h3 className="font-mono text-[15px] text-ink-100">egress</h3>
-            <div className="mt-4 font-mono text-2xl text-hydro">
+            <div className="nums mt-4 font-mono text-2xl text-ink-100">
               {price(CATALOG.egress.paisaPerGb)}
             </div>
-            <div className="mt-1 font-mono text-[11px] text-fg-muted">per GB</div>
-            <p className="mt-4 border-t border-line-subtle pt-4 font-body text-[12.5px] font-light leading-relaxed text-ink-400">
+            <div className="mt-1 font-mono text-[11px] text-ink-500">per GB</div>
+            <p className="mt-4 border-t border-line-subtle pt-4 text-[12.5px] leading-relaxed text-ink-400">
               First {CATALOG.egress.freeGbPerMonth} GB each month is free.
               Ingress and intra-region traffic are always free.
             </p>

@@ -33,10 +33,10 @@ export default function DocsPage() {
   return (
     <article>
       <p className="cv-label">Documentation</p>
-      <h1 className="mt-3 font-body text-[clamp(1.9rem,4vw,2.5rem)] font-extrabold leading-tight tracking-[-0.03em] text-ink-100">
+      <h1 className="mt-3 display text-[clamp(1.9rem,4vw,2.5rem)]">
         Build on CoreValley.
       </h1>
-      <p className="mt-4 max-w-2xl font-body text-md font-light leading-relaxed text-ink-300">
+      <p className="mt-4 max-w-2xl text-md leading-relaxed text-ink-300">
         Everything runs in <code className="text-hydro">np-ktm-1</code>, our
         Kathmandu region. Pods are metered per second, endpoints per token, and
         both appear on the same NPR invoice.
@@ -49,11 +49,11 @@ export default function DocsPage() {
               padding={22}
               className="h-full transition-[border-color] duration-fast group-hover:border-line-strong"
             >
-              <Icon name={p.icon} size={19} weight="duotone" className="text-hydro" />
-              <h2 className="mt-3.5 font-body text-base font-bold tracking-tight text-ink-100">
+              <Icon name={p.icon} size={19} weight="duotone" className="text-ink-100" />
+              <h2 className="mt-3.5 text-base font-semibold tracking-tight text-ink-100">
                 {p.title}
               </h2>
-              <p className="mt-1.5 font-body text-[13px] font-light leading-relaxed text-ink-400">
+              <p className="mt-1.5 text-[13px] leading-relaxed text-ink-400">
                 {p.body}
               </p>
             </Card>
@@ -61,7 +61,7 @@ export default function DocsPage() {
         ))}
       </div>
 
-      <h2 className="mt-14 font-body text-xl font-bold tracking-tight text-ink-100">
+      <h2 className="mt-14 text-xl font-semibold tracking-tight text-ink-100">
         Thirty seconds to a running pod
       </h2>
       <Terminal
@@ -78,7 +78,7 @@ export default function DocsPage() {
         ]}
       />
 
-      <h2 className="mt-14 font-body text-xl font-bold tracking-tight text-ink-100">
+      <h2 className="mt-14 text-xl font-semibold tracking-tight text-ink-100">
         Concepts worth knowing
       </h2>
       <dl className="mt-5 space-y-4">
@@ -102,7 +102,7 @@ export default function DocsPage() {
         ].map((c) => (
           <div key={c.term} className="border-l-2 border-line-hydro pl-5">
             <dt className="font-mono text-[14px] text-ink-100">{c.term}</dt>
-            <dd className="mt-1.5 font-body text-[14px] font-light leading-relaxed text-ink-400">
+            <dd className="mt-1.5 text-[14px] leading-relaxed text-ink-400">
               {c.def}
             </dd>
           </div>
@@ -112,10 +112,10 @@ export default function DocsPage() {
       <Card surface="solid" padding={22} className="mt-12">
         <div className="flex items-start gap-3">
           <Icon name="info" size={18} weight="duotone" className="mt-0.5 shrink-0 text-info" />
-          <p className="font-body text-[13.5px] font-light leading-relaxed text-ink-400">
+          <p className="text-[13.5px] leading-relaxed text-ink-400">
             These docs cover the platform as it ships today. For anything not
             documented here, email{" "}
-            <a href="mailto:info@corevalley.ai" className="text-hydro hover:underline">
+            <a href="mailto:info@corevalley.ai" className="text-hydro underline decoration-hydro/40 underline-offset-4 transition-colors duration-normal hover:text-hydro-300">
               info@corevalley.ai
             </a>{" "}
             — a Kathmandu engineer answers, not a ticket queue.

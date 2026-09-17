@@ -51,7 +51,7 @@ export function PodLivePanel({ initial }: { initial: Pod }) {
       <div className="mb-6 flex flex-wrap items-center gap-3">
         <PodStatusPill status={pod.status} />
         {pod.statusDetail ? (
-          <span className="font-body text-[13px] font-light text-ink-400">
+          <span className="text-[13px] text-ink-400">
             {pod.statusDetail}
           </span>
         ) : null}

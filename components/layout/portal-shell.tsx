@@ -53,26 +53,40 @@ export function PortalShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const [open, setOpen] = React.useState(false);
 
+  /* A failed token refresh means Keycloak has ended this session - the account
+     was disabled, an admin logged it out, or the refresh token was revoked.
+     Nothing expires the local cookie on its own, so an open console tab would
+     otherwise keep rendering a revoked identity until the 8-hour session ran
+     out. Middleware turns this into a redirect on the next navigation; this
+     ends it on the tab that is already sitting here. */
+  const sessionError = session?.error;
+  React.useEffect(() => {
+    if (sessionError === "RefreshAccessTokenError") {
+      void signOut({ callbackUrl: "/?signin=1" });
+    }
+  }, [sessionError]);
+
   React.useEffect(() => {
     setOpen(false);
   }, [pathname]);
 
   return (
-    <div className="flex min-h-dvh bg-carbon-900">
+    <div className="flex min-h-dvh">
       {/* Scrim behind the mobile drawer. */}
       {open ? (
         <button
           type="button"
           aria-label="Close menu"
           onClick={() => setOpen(false)}
-          className="fixed inset-0 z-40 bg-carbon-900/70 backdrop-blur-sm lg:hidden"
+          className="fixed inset-0 z-40 bg-carbon-900/75 backdrop-blur-sm lg:hidden"
         />
       ) : null}
 
       <aside
         className={cn(
-          "fixed inset-y-0 left-0 z-50 flex w-[15rem] flex-none flex-col border-r border-line bg-carbon-800/95 px-3.5 py-4",
-          "transition-transform duration-normal ease-standard lg:static lg:translate-x-0",
+          "fixed inset-y-0 left-0 z-50 flex w-[15.5rem] flex-none flex-col px-3.5 py-4",
+          "border-r border-line-subtle bg-carbon-900/80 backdrop-blur-xl",
+          "transition-transform duration-slow ease-out lg:static lg:translate-x-0",
           open ? "translate-x-0" : "-translate-x-full",
         )}
       >
@@ -84,7 +98,7 @@ export function PortalShell({ children }: { children: React.ReactNode }) {
             type="button"
             aria-label="Close menu"
             onClick={() => setOpen(false)}
-            className="cursor-pointer rounded-md p-1 text-ink-400 hover:bg-carbon-600 lg:hidden"
+            className="rounded-md p-1 text-ink-400 transition-colors duration-fast hover:bg-carbon-600 hover:text-ink-100 lg:hidden"
           >
             <Icon name="x" size={16} />
           </button>
@@ -105,10 +119,10 @@ export function PortalShell({ children }: { children: React.ReactNode }) {
                         href={item.href}
                         aria-current={on ? "page" : undefined}
                         className={cn(
-                          "flex items-center gap-2.5 rounded-md border px-2.5 py-2 font-mono text-[13px] font-medium",
-                          "transition-colors duration-fast ease-standard",
+                          "relative flex items-center gap-2.5 rounded-md border px-2.5 py-2 font-mono text-[13px] font-medium",
+                          "transition-colors duration-normal ease-standard",
                           on
-                            ? "border-hydro bg-hydro/10 text-hydro"
+                            ? "border-line bg-carbon-600 text-ink-100 before:absolute before:inset-y-1.5 before:-left-px before:w-0.5 before:rounded-pill before:bg-hydro before:content-['']"
                             : "border-transparent text-ink-400 hover:bg-carbon-600 hover:text-ink-200",
                         )}
                       >
@@ -127,9 +141,36 @@ export function PortalShell({ children }: { children: React.ReactNode }) {
           ))}
         </nav>
 
+<<<<<<< Updated upstream
         <div className="mt-4 rounded-md border border-line bg-carbon-700 p-3">
+=======
+        <div className="lg lg--panel mt-4 rounded-lg p-3.5">
+          <div className="flex items-center gap-2.5">
+            <Avatar user={user} size={30} />
+            <div className="min-w-0 flex-1">
+              <p className="truncate text-[12.5px] font-medium text-ink-100">
+                {displayName}
+              </p>
+              <p className="truncate font-mono text-[10.5px] text-ink-500">
+                {user?.org ?? user?.email ?? ""}
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={() => signOut({ callbackUrl: "/" })}
+              title="Sign out"
+              aria-label="Sign out"
+              className="rounded-md p-1.5 text-ink-500 transition-colors duration-fast hover:bg-carbon-600 hover:text-ink-100"
+            >
+              <Icon name="sign-out" size={15} />
+            </button>
+          </div>
+
+          <div className="my-3 h-px bg-[var(--border-subtle)]" />
+
+>>>>>>> Stashed changes
           <div className="flex items-center gap-2">
-            <Icon name="region" size={14} className="text-hydro" />
+            <Icon name="region" size={14} className="text-ink-400" />
             <span className="font-mono text-[11px] tracking-wide text-ink-300">
               np-ktm-1
             </span>
@@ -138,7 +179,7 @@ export function PortalShell({ children }: { children: React.ReactNode }) {
               <span className="font-mono text-[10px] text-hydro">live</span>
             </span>
           </div>
-          <p className="mt-2 font-body text-[11.5px] font-light leading-snug text-ink-500">
+          <p className="mt-2 text-[11.5px] leading-snug text-ink-500">
             Kathmandu · data residency in Nepal
           </p>
         </div>
@@ -150,7 +191,7 @@ export function PortalShell({ children }: { children: React.ReactNode }) {
             type="button"
             aria-label="Menu"
             onClick={() => setOpen(true)}
-            className="cursor-pointer rounded-md p-2 text-ink-300 hover:bg-carbon-600 lg:hidden"
+            className="rounded-md p-2 text-ink-300 transition-colors duration-fast hover:bg-carbon-600 hover:text-ink-100 lg:hidden"
           >
             <Icon name="menu" size={19} />
           </button>
@@ -179,8 +220,55 @@ export function PortalShell({ children }: { children: React.ReactNode }) {
           </Link>
         </header>
 
-        <main className="flex-1 px-4 py-6 md:px-6 md:py-8">{children}</main>
+        {/* Skip-link target, matching the marketing layout. tabIndex -1 so the
+            skip moves focus and not just scroll position. */}
+        <main
+          id="main"
+          tabIndex={-1}
+          className="flex-1 px-4 py-6 focus:outline-none md:px-6 md:py-8"
+        >
+          {children}
+        </main>
       </div>
     </div>
   );
 }
+<<<<<<< Updated upstream
+=======
+
+/** Keycloak profile picture when the realm supplies one, initials otherwise.
+ *  A plain <img> rather than next/image: the URL is an arbitrary IdP origin,
+ *  and next.config.ts runs images unoptimized anyway. */
+function Avatar({
+  user,
+  size,
+}: {
+  user?: { name?: string | null; email?: string | null; image?: string | null };
+  size: number;
+}) {
+  const label = initials(user?.name ?? user?.email);
+
+  if (user?.image) {
+    return (
+      <img
+        src={user.image}
+        alt=""
+        width={size}
+        height={size}
+        className="rounded-pill border border-line object-cover"
+        style={{ width: size, height: size }}
+      />
+    );
+  }
+
+  return (
+    <span
+      aria-hidden="true"
+      className="flex flex-none items-center justify-center rounded-pill border border-line bg-carbon-600 font-mono text-ink-200"
+      style={{ width: size, height: size, fontSize: Math.round(size * 0.38) }}
+    >
+      {label}
+    </span>
+  );
+}
+>>>>>>> Stashed changes

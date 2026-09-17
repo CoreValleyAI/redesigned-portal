@@ -3,6 +3,8 @@
 // <style> keyframes now live in app/globals.css as `animate-cursor`.
 //
 // The brand's signature surface: hero device, empty states, CLI previews.
+// Solid sunken Carbon, as in the original — not glass. A terminal is read,
+// and the block cursor is the only thing on it that should glow.
 import * as React from "react";
 import { cn } from "@/lib/cn";
 
@@ -28,26 +30,28 @@ export function Terminal({
   return (
     <div
       className={cn(
-        "overflow-hidden rounded-lg border border-line bg-carbon-800 font-mono",
-        "shadow-[0_12px_40px_rgba(0,0,0,0.5)]",
+        "relative overflow-hidden rounded-lg border border-line bg-carbon-800 font-mono shadow-lg",
         className,
       )}
       {...rest}
     >
       {title ? (
         <div className="flex items-center gap-2 border-b border-line-subtle bg-carbon-700 px-3.5 py-2.5">
-          {/* #2A2F38 has no design-system token; carried over verbatim. */}
-          <span className="size-2.25 rounded-pill bg-[#2A2F38]" />
-          <span className="size-2.25 rounded-pill bg-[#2A2F38]" />
-          <span className="size-2.25 rounded-pill bg-[#2A2F38]" />
+          {/* Window dots. Terminal.jsx paints them #2A2F38, which has no token;
+              ink-700 (#333944) is the nearest step on the Ink scale. */}
+          <span className="size-2.25 rounded-pill bg-ink-700" />
+          <span className="size-2.25 rounded-pill bg-ink-700" />
+          <span className="size-2.25 rounded-pill bg-ink-700" />
           <span className="ml-2 text-xs tracking-[0.02em] text-fg-muted">
             {title}
           </span>
         </div>
       ) : null}
 
-      {/* 13.5px is the design system's value and is not on its type scale. */}
-      <div className="px-4.5 py-4 text-[13.5px] leading-[1.9]">
+      {/* 13.5px is the design system's value and is not on its type scale.
+          overflow-x-auto so a long command scrolls inside the pane instead of
+          widening the page — the usual cause of horizontal body scroll. */}
+      <div className="overflow-x-auto px-4.5 py-4 text-[13.5px] leading-[1.9]">
         {lines.map((l, i) => {
           const last = i === lines.length - 1;
           if (l.comment !== undefined) {

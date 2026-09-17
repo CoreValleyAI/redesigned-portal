@@ -27,7 +27,8 @@ export default async function NetworkPage() {
   ]);
 
   const denyRate =
-    (flows.deniedFlows / Math.max(1, flows.allowedFlows + flows.deniedFlows)) * 100;
+    (flows.deniedFlows / Math.max(1, flows.allowedFlows + flows.deniedFlows)) *
+    100;
 
   return (
     <>
@@ -50,7 +51,6 @@ export default async function NetworkPage() {
           label="policies enforced"
           value={policies.length}
           sub="one per vcluster"
-          accent
         />
       </div>
 
@@ -62,8 +62,10 @@ export default async function NetworkPage() {
               <div className="flex flex-wrap items-center gap-3 border-b border-line-subtle px-5 py-4">
                 <Icon name="certificate" size={17} className="text-hydro" />
                 <div>
-                  <h2 className="font-mono text-[13.5px] text-ink-100">{p.name}</h2>
-                  <p className="mt-0.5 font-body text-[12px] font-light text-ink-500">
+                  <h2 className="font-mono text-[13.5px] text-ink-100">
+                    {p.name}
+                  </h2>
+                  <p className="mt-0.5 text-[12px] text-ink-500">
                     {vc?.name ?? p.vclusterId}
                   </p>
                 </div>
@@ -75,7 +77,7 @@ export default async function NetworkPage() {
                 </Badge>
               </div>
 
-              <p className="border-b border-line-subtle px-5 py-3 font-body text-[12.5px] font-light leading-relaxed text-ink-400">
+              <p className="border-b border-line-subtle px-5 py-3 text-[12.5px] leading-relaxed text-ink-400">
                 {MODE_COPY[p.mode]}
               </p>
 
@@ -88,9 +90,13 @@ export default async function NetworkPage() {
                 ).map(([label, rules], idx) => (
                   <div
                     key={label}
-                    className={idx === 1 ? "md:border-l md:border-line-subtle" : ""}
+                    className={
+                      idx === 1 ? "md:border-l md:border-line-subtle" : ""
+                    }
                   >
-                    <p className="cv-label px-5 pt-4 pb-2 text-[10px]">{label}</p>
+                    <p className="cv-label px-5 pt-4 pb-2 text-[10px]">
+                      {label}
+                    </p>
                     <ul>
                       {rules.map((r) => (
                         <li
@@ -107,7 +113,7 @@ export default async function NetworkPage() {
                             }
                           />
                           <span className="min-w-0">
-                            <span className="block font-body text-[13px] text-ink-200">
+                            <span className="block text-[13px] text-ink-200">
                               {r.description}
                             </span>
                             <span className="mt-0.5 block font-mono text-[11px] text-ink-600">

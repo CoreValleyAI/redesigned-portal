@@ -15,20 +15,22 @@ import { formatNpr } from "@/lib/money";
 import { formatCompactNumber, formatDuration } from "@/lib/format";
 import { profileById, skuById } from "@/lib/catalog";
 import { usageAt } from "@/lib/api/synthetic";
+import { cn } from "@/lib/cn";
 
 export const metadata = { title: "Overview" };
 
 export default async function OverviewPage() {
   const cv = getClient();
-  const [org, pods, spend, capacity, usage, audit, clusters] = await Promise.all([
-    cv.getOrganization(),
-    cv.listPods(),
-    cv.getCurrentSpend(),
-    cv.listCapacity(),
-    cv.getUsageSeries({ meterIds: ["gpu_seconds"], window: "hour" }),
-    cv.listAuditLog({ limit: 6 }),
-    cv.listVClusters(),
-  ]);
+  const [org, pods, spend, capacity, usage, audit, clusters] =
+    await Promise.all([
+      cv.getOrganization(),
+      cv.listPods(),
+      cv.getCurrentSpend(),
+      cv.listCapacity(),
+      cv.getUsageSeries({ meterIds: ["gpu_seconds"], window: "hour" }),
+      cv.listAuditLog({ limit: 6 }),
+      cv.listVClusters(),
+    ]);
 
   const running = pods.filter((p) => p.status === "running");
   const gpusAllocated = running.reduce((a, p) => a + p.gpuCount, 0);
@@ -63,11 +65,12 @@ export default async function OverviewPage() {
           label="spend month-to-date"
           value={formatNpr(spend.totalPaisa, { compact: true })}
           sub={`projected ${formatNpr(spend.projectedTotalPaisa, { compact: true })}`}
-          accent
         />
         <MetricTile
           label="gpu hours this cycle"
-          value={formatCompactNumber(Math.round((gpuSeries?.total ?? 0) / 3600))}
+          value={formatCompactNumber(
+            Math.round((gpuSeries?.total ?? 0) / 3600),
+          )}
           sub="metered per second"
         />
         <MetricTile
@@ -77,30 +80,60 @@ export default async function OverviewPage() {
         />
       </div>
 
-      {spend.spendCapPaisa ? (
-        <Card surface="panel" padding={18} className="mt-3">
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <div className="flex items-center gap-2.5">
-              <Icon name="cost" size={16} className="text-hydro" />
-              <span className="font-mono text-[13px] text-ink-200">
-                spend cap {formatNpr(spend.spendCapPaisa, { compact: true })}
-              </span>
-              <PlaceholderPricingBadge />
-            </div>
-            <span className="font-mono text-[12px] text-fg-muted">
-              {Math.round((spend.totalPaisa / spend.spendCapPaisa) * 100)}% used
-            </span>
-          </div>
-          <div className="mt-3 h-1.5 overflow-hidden rounded-pill bg-carbon-500">
-            <div
-              className="h-full rounded-pill bg-hydro"
-              style={{
-                width: `${Math.min(100, (spend.totalPaisa / spend.spendCapPaisa) * 100)}%`,
-              }}
-            />
-          </div>
-        </Card>
-      ) : null}
+      {spend.spendCapPaisa
+        ? /* The bar is TONED BY THRESHOLD, not always green.
+           It previously painted hydro at every value and clamped the width at
+           100%, so an account 795% through its cap rendered as a full, healthy
+           green bar — the single most misleading state this page can show.
+           Green below 75, amber to 100, red past it; the figure itself is never
+           clamped, only the bar's width. */
+          (() => {
+            const pct = (spend.totalPaisa / spend.spendCapPaisa) * 100;
+            const over = pct >= 100;
+            const near = pct >= 75;
+            const barTone = over
+              ? "bg-danger shadow-[0_0_10px_rgba(248,113,113,0.45)]"
+              : near
+                ? "bg-warning"
+                : "bg-hydro";
+            return (
+              <Card surface="panel" padding={18} className="mt-3">
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <div className="flex items-center gap-2.5">
+                    <Icon
+                      name={over ? "warning" : "cost"}
+                      size={16}
+                      className={over ? "text-danger" : "text-ink-400"}
+                    />
+                    <span className="font-mono text-[13px] text-ink-200">
+                      spend cap{" "}
+                      {formatNpr(spend.spendCapPaisa, { compact: true })}
+                    </span>
+                    <PlaceholderPricingBadge />
+                  </div>
+                  <span
+                    className={cn(
+                      "nums font-mono text-[12px]",
+                      over
+                        ? "text-danger"
+                        : near
+                          ? "text-warning"
+                          : "text-ink-500",
+                    )}
+                  >
+                    {Math.round(pct)}% used{over ? " · over cap" : ""}
+                  </span>
+                </div>
+                <div className="mt-3 h-1.5 overflow-hidden rounded-pill bg-carbon-500">
+                  <div
+                    className={cn("h-full rounded-pill", barTone)}
+                    style={{ width: `${Math.min(100, pct)}%` }}
+                  />
+                </div>
+              </Card>
+            );
+          })()
+        : null}
 
       <div className="mt-3 grid gap-3 lg:grid-cols-[1.5fr_1fr]">
         <Card surface="panel" padding={22}>
@@ -128,7 +161,7 @@ export default async function OverviewPage() {
                   <span className="font-mono text-[13px] text-ink-100">
                     {sku.shortName}
                   </span>
-                  <span className="font-mono text-[12px] text-fg-muted">
+                  <span className="font-mono text-[12px] text-ink-500">
                     {c.allocatedGpus}/{c.totalGpus} GPUs
                   </span>
                 </div>
@@ -220,7 +253,9 @@ export default async function OverviewPage() {
 
       <section className="mt-8">
         <div className="mb-3 flex items-center justify-between">
-          <h2 className="font-mono text-[14px] text-ink-200">recent activity</h2>
+          <h2 className="font-mono text-[14px] text-ink-200">
+            recent activity
+          </h2>
           <Link
             href="/portal/audit"
             className="flex items-center gap-1.5 font-mono text-[12px] text-hydro hover:underline"
@@ -240,7 +275,7 @@ export default async function OverviewPage() {
               <span className="font-mono text-[12.5px] text-hydro">
                 {entry.action}
               </span>
-              <span className="font-body text-[13px] font-light text-ink-400">
+              <span className="text-[13px] text-ink-400">
                 {entry.actorName}
               </span>
               <span className="font-mono text-[11.5px] text-ink-600">
