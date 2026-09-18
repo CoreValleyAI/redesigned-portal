@@ -60,7 +60,7 @@ verification record in [08](08-operations-runbook.md).
 
 | | |
 |---|---|
-| Repo | `CoreValleyAI/client-portal` |
+| Repo | `CoreValleyAI/redesigned-portal` |
 | Default branch | `main` |
 | Runtime | Node ≥ 20.9 |
 | Package name | `corevalley-web-portal` |
