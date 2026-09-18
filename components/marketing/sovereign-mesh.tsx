@@ -59,6 +59,27 @@ function rgba(c: readonly number[], a: number) {
 const tierRgb = (node: MeshNode) =>
   node.tier === "hyperscaler" ? RGB.hyperscaler : RGB.regional;
 
+/* Class-based colour for the HTML dots. Inline colour styles get rewritten
+   by dark-mode browser extensions before React hydrates, which trips the
+   hydration-mismatch check; classes are left alone. The same tokens as the
+   canvas palette above. */
+const DOT = {
+  regional: {
+    fill: "bg-info",
+    sm: "shadow-[0_0_6px_var(--info)]",
+    md: "shadow-[0_0_10px_var(--info)]",
+    lg: "shadow-[0_0_18px_var(--info)]",
+  },
+  hyperscaler: {
+    fill: "bg-danger",
+    sm: "shadow-[0_0_6px_var(--danger)]",
+    md: "shadow-[0_0_10px_var(--danger)]",
+    lg: "shadow-[0_0_18px_var(--danger)]",
+  },
+} as const;
+const dotTone = (node: MeshNode) =>
+  node.tier === "hyperscaler" ? DOT.hyperscaler : DOT.regional;
+
 interface Point {
   x: number;
   y: number;
@@ -152,11 +173,7 @@ function NodeCard({ node, mode }: { node: MeshNode; mode: MeshMode }) {
           </p>
         </div>
         <span
-          className="mt-1 size-2 shrink-0 rounded-pill"
-          style={{
-            background: rgba(tierRgb(node), 1),
-            boxShadow: `0 0 8px ${rgba(tierRgb(node), 0.8)}`,
-          }}
+          className={cn("mt-1 size-2 shrink-0 rounded-pill", dotTone(node).fill, dotTone(node).md)}
         />
       </div>
 
@@ -224,7 +241,6 @@ export function SovereignMesh({ className }: SovereignMeshProps) {
   const [activeId, setActiveId] = React.useState<string | null>(null);
   /** Screen positions keyed by node id, "nodeId:cityName", and "core". */
   const [pos, setPos] = React.useState<Record<string, Point>>({});
-  const [frameWidth, setFrameWidth] = React.useState(0);
 
   const wrapRef = React.useRef<HTMLDivElement>(null);
   const canvasRef = React.useRef<HTMLCanvasElement>(null);
@@ -263,6 +279,9 @@ export function SovereignMesh({ className }: SovereignMeshProps) {
     let raf = 0;
     let running = false;
     let lastTs = 0;
+    // Entrance: the links draw outward from Kathmandu over ~1.6 s the first
+    // time the map runs; particles wait for their link to reach them.
+    let intro = reduceMotion ? 1 : 0;
 
     /** Unit space (0..1 over the projected window) -> screen pixels. */
     const toScreen = (u: number, v: number): Point => ({
@@ -343,7 +362,6 @@ export function SovereignMesh({ className }: SovereignMeshProps) {
       }
 
       setPos(next);
-      setFrameWidth(width);
     }
 
     function drawGraticule() {
@@ -399,12 +417,12 @@ export function SovereignMesh({ className }: SovereignMeshProps) {
         if (link.dashed) ctx!.setLineDash([5, 5]);
         ctx!.beginPath();
         ctx!.moveTo(core.x, core.y);
-        ctx!.quadraticCurveTo(
-          link.control.x,
-          link.control.y,
-          link.target.x,
-          link.target.y,
-        );
+        // Drawn as a polyline up to the intro fraction, so the curve grows
+        // out from the core on entry and is complete thereafter.
+        for (let s = 1; s <= 24; s++) {
+          const q = bezier(core, link.control, link.target, (s / 24) * intro);
+          ctx!.lineTo(q.x, q.y);
+        }
         const grad = ctx!.createLinearGradient(
           core.x,
           core.y,
@@ -425,6 +443,7 @@ export function SovereignMesh({ className }: SovereignMeshProps) {
             p.t += p.speed * dt;
             if (p.t > 1) p.t -= 1;
           }
+          if (p.t > intro) continue;
           const pt = bezier(core, link.control, link.target, p.t);
           const fade = Math.sin(Math.PI * p.t);
           const alpha = (dim ? 0.16 : 0.9) * fade;
@@ -458,6 +477,7 @@ export function SovereignMesh({ className }: SovereignMeshProps) {
     function frame(ts: number) {
       const dt = Math.min(0.05, lastTs ? (ts - lastTs) / 1000 : 0.016);
       lastTs = ts;
+      intro = Math.min(1, intro + dt / 1.6);
       draw(dt);
       raf = requestAnimationFrame(frame);
     }
@@ -604,11 +624,7 @@ export function SovereignMesh({ className }: SovereignMeshProps) {
                   )}
                 >
                   <span
-                    className="size-1.5 shrink-0 rounded-pill"
-                    style={{
-                      background: rgba(tierRgb(node), 1),
-                      boxShadow: `0 0 6px ${rgba(tierRgb(node), 0.9)}`,
-                    }}
+                    className={cn("size-1.5 shrink-0 rounded-pill", dotTone(node).fill, dotTone(node).sm)}
                   />
                   <span className="text-ink-300">{node.label}</span>
                   <span
@@ -662,13 +678,12 @@ export function SovereignMesh({ className }: SovereignMeshProps) {
                 >
                   <span className="relative block size-0">
                     <span
-                      className="absolute -translate-x-1/2 -translate-y-1/2 rounded-pill transition-all duration-fast"
-                      style={{
-                        width: on ? 7 : 5,
-                        height: on ? 7 : 5,
-                        background: rgba(tierRgb(node), on ? 1 : 0.75),
-                        boxShadow: `0 0 ${on ? 12 : 6}px ${rgba(tierRgb(node), on ? 0.9 : 0.45)}`,
-                      }}
+                      className={cn(
+                        "absolute -translate-x-1/2 -translate-y-1/2 rounded-pill transition-all duration-fast",
+                        dotTone(node).fill,
+                        on ? dotTone(node).md : cn(dotTone(node).sm, "opacity-75"),
+                      )}
+                      style={{ width: on ? 7 : 5, height: on ? 7 : 5 }}
                     />
                     <span
                       className={cn(
@@ -693,7 +708,6 @@ export function SovereignMesh({ className }: SovereignMeshProps) {
           const hyper = node.tier === "hyperscaler";
           const primary = node.cities.find((c) => c.primary);
           const anchor: LabelAnchor = primary?.labelAnchor ?? "se";
-          const cardSide = frameWidth > 0 && p.x > frameWidth / 2 ? "left" : "right";
 
           return (
             <div
@@ -715,13 +729,12 @@ export function SovereignMesh({ className }: SovereignMeshProps) {
                   )}
                 >
                   <span
-                    className="block rounded-pill transition-all duration-fast"
-                    style={{
-                      width: on ? 12 : 9,
-                      height: on ? 12 : 9,
-                      background: rgba(tierRgb(node), 1),
-                      boxShadow: `0 0 ${on ? 18 : 10}px ${rgba(tierRgb(node), on ? 0.95 : 0.7)}`,
-                    }}
+                    className={cn(
+                      "block rounded-pill transition-all duration-fast",
+                      dotTone(node).fill,
+                      on ? dotTone(node).lg : dotTone(node).md,
+                    )}
+                    style={{ width: on ? 12 : 9, height: on ? 12 : 9 }}
                   />
                 </button>
 
@@ -741,17 +754,6 @@ export function SovereignMesh({ className }: SovereignMeshProps) {
                   </span>
                 </span>
 
-                {on ? (
-                  <div
-                    role="tooltip"
-                    className={cn(
-                      "absolute top-1/2 z-20 hidden -translate-y-1/2 lg:block",
-                      cardSide === "right" ? "left-5" : "right-5",
-                    )}
-                  >
-                    <NodeCard node={node} mode={mode} />
-                  </div>
-                ) : null}
               </span>
             </div>
           );
@@ -785,6 +787,23 @@ export function SovereignMesh({ className }: SovereignMeshProps) {
             </span>
           </div>
         ) : null}
+
+        {/* Detail card, docked to the top-right corner of the frame rather than
+            floated beside the node: it never moves, and never covers the
+            core, the links or the labels in the middle of the map. */}
+        <div
+          role="status"
+          aria-live="polite"
+          className="pointer-events-none absolute top-3 right-3 z-20 hidden w-[272px] lg:block"
+        >
+          {activeNode ? (
+            <NodeCard node={activeNode} mode={mode} />
+          ) : (
+            <p className="rounded-md border border-line bg-carbon-900/80 px-3 py-2 font-mono text-[10px] tracking-label text-ink-500 uppercase">
+              hover a city for its numbers
+            </p>
+          )}
+        </div>
 
         {/* Legend, pinned rather than attached to the core so it never collides
             with Delhi or Thimphu. */}

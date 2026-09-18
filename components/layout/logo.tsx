@@ -4,45 +4,71 @@
  *
  * On Carbon the GREEN variants are the default (Hydro wordmark + gradient
  * brandmark), per design_system/readme.md. White is the mono alternative,
- * kept reachable under explicit `-white` names for the few places that need
- * it. The two-tone colour lockup (Slate `core` + Hydro `valley`) is for light
- * grounds and is not used on the site.
+ * kept reachable under explicit `-white` names.
  *
  * Naming, as used across the codebase and by the brand team:
  *   brandmark    — the glyph alone
  *   wordmark     — the type alone
- *   combinedmark — glyph + type, locked up
- *
- * Intrinsic ratios are preserved: only height is set, width follows.
+ *   combinedmark — glyph + type, locked up (a stacked square)
  */
 import { cn } from "@/lib/cn";
 
 const BASE = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
 
-/* w/h are the assets' REAL viewBox dimensions, read out of the files:
-     brandmark    "70 105 860 600"  → 860 x 600, landscape
-     wordmark     "0 0 1000 180"    → 1000 x 180, a long horizontal strip
-     combinedmark "0 0 1000 1000"   → SQUARE: the glyph stacked over the type
+/* w/h are the assets' REAL viewBox dimensions; `ink` is the bounding box of
+   the actual glyphs inside that viewBox, measured with getBBox():
 
-   <img> honours the width/height attributes it is given, so a wrong ratio
-   here stretches the mark on every page. The combined lockup in particular
-   is a stacked square, not a horizontal bar. */
+     brandmark    viewBox 70 105 860 600  → glyphs at x 106–882, y 150–703
+     wordmark     viewBox 0 0 1000 180    → glyphs at x  96–904, y  32–149
+     combinedmark viewBox 0 0 1000 1000   → stacked lockup, glyph over type
+
+   The wordmark's glyphs fill only 65% of its box while the cloud fills 92%
+   of its own, so setting the two <img>s to comparable heights renders the
+   type at less than half the size it reads as. The lockup below sizes from
+   the glyph boxes, not the viewBoxes. */
 const MARKS = {
-  brandmark: { src: `${BASE}/brand/cv-brandmark.svg`, w: 860, h: 600 },
-  wordmark: { src: `${BASE}/brand/cv-wordmark-green.svg`, w: 1000, h: 180 },
-  combinedmark: { src: `${BASE}/brand/cv-combinedmark-green.svg`, w: 1000, h: 1000 },
+  brandmark: {
+    src: `${BASE}/brand/cv-brandmark.svg`,
+    w: 860,
+    h: 600,
+    ink: { x: 36, y: 45, w: 776, h: 553 },
+  },
+  wordmark: {
+    src: `${BASE}/brand/cv-wordmark-green.svg`,
+    w: 1000,
+    h: 180,
+    ink: { x: 96, y: 32, w: 808, h: 117 },
+  },
+  combinedmark: {
+    src: `${BASE}/brand/cv-combinedmark-green.svg`,
+    w: 1000,
+    h: 1000,
+    ink: { x: 0, y: 0, w: 1000, h: 1000 },
+  },
 
-  "brandmark-white": { src: `${BASE}/brand/cv-brandmark-white.svg`, w: 860, h: 600 },
-  "wordmark-white": { src: `${BASE}/brand/cv-wordmark-white.svg`, w: 1000, h: 180 },
+  "brandmark-white": {
+    src: `${BASE}/brand/cv-brandmark-white.svg`,
+    w: 860,
+    h: 600,
+    ink: { x: 36, y: 45, w: 776, h: 553 },
+  },
+  "wordmark-white": {
+    src: `${BASE}/brand/cv-wordmark-white.svg`,
+    w: 1000,
+    h: 180,
+    ink: { x: 96, y: 32, w: 808, h: 117 },
+  },
   "combinedmark-white": {
     src: `${BASE}/brand/cv-combinedmark-white.svg`,
     w: 1000,
     h: 1000,
+    ink: { x: 0, y: 0, w: 1000, h: 1000 },
   },
 } as const;
 
 export interface LogoProps {
   mark?: keyof typeof MARKS;
+  /** Rendered height of the asset box in px. */
   height?: number;
   priority?: boolean;
   className?: string;
@@ -69,18 +95,14 @@ export function Logo({
 }
 
 /**
- * The horizontal lockup used in navigation and in the console sidebar.
+ * The horizontal lockup used in navigation, the footer and the console
+ * sidebar: brandmark beside wordmark, sized by their GLYPH boxes so the two
+ * read as one mark.
  *
- * It composes the brandmark and the wordmark side by side rather than using
- * cv-combinedmark: that asset is a SQUARE, stacked lockup (glyph above type),
- * and a stacked lockup inside a 64px bar leaves the wordmark about four pixels
- * tall. The brand supplies the two marks separately precisely so a horizontal
- * bar can be set horizontally.
- *
- * `size` is the wordmark's cap height in px; the glyph is set to 1.55x that,
- * which is the optical match — a glyph at the same numeric height as lowercase
- * type reads as too small — and the gap scales with it so the lockup holds its
- * proportions at any size.
+ * `size` is the wordmark's glyph height (ascender to descender) in px. The
+ * cloud is set to 1.5× that — the optical match for a glyph beside lowercase
+ * type — and the gap is measured from the glyphs' edges, not the boxes', so
+ * the wordmark's built-in left padding does not double it.
  */
 export function LogoLockup({
   size = 20,
@@ -89,16 +111,45 @@ export function LogoLockup({
   size?: number;
   className?: string;
 }) {
+  const word = MARKS.wordmark;
+  const mark = MARKS.brandmark;
+
+  const wordH = (size * word.h) / word.ink.h; // box height for `size` glyphs
+  const wordW = (word.w / word.h) * wordH;
+  const wordPadL = (word.ink.x / word.w) * wordW;
+
+  const markGlyph = size * 1.5;
+  const markH = (markGlyph * mark.h) / mark.ink.h;
+  const markW = (mark.w / mark.h) * markH;
+  const markPadR = ((mark.w - mark.ink.x - mark.ink.w) / mark.w) * markW;
+
+  const gap = Math.round(size * 0.55);
+
   return (
     <span
       className={cn(
         "inline-flex items-center opacity-95 transition-opacity duration-normal ease-standard hover:opacity-100",
         className,
       )}
-      style={{ gap: Math.round(size * 0.52) }}
     >
-      <Logo mark="brandmark" height={Math.round(size * 1.55)} priority />
-      <Logo mark="wordmark" height={Math.round(size * 0.78)} priority />
+      <img
+        src={mark.src}
+        alt="CoreValley"
+        width={Math.round(markW)}
+        height={Math.round(markH)}
+        decoding="async"
+        fetchPriority="high"
+        style={{ marginRight: gap - markPadR - wordPadL }}
+      />
+      <img
+        src={word.src}
+        alt=""
+        aria-hidden="true"
+        width={Math.round(wordW)}
+        height={Math.round(wordH)}
+        decoding="async"
+        fetchPriority="high"
+      />
     </span>
   );
 }

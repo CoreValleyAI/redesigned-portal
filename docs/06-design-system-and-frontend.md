@@ -362,17 +362,123 @@ Patterns applied consistently across the codebase:
 <br>
 
 `components/marketing/dot-terrain.tsx`. The brand's dot-matrix ridgeline as a
-live scene: a 360 × 200 grid of Hydro points displaced in a vertex shader —
-fractal-noise dunes in the foreground, ridged-noise peaks rising with depth, a
-valley carved along a sinusoidal river whose dots glow, exponential fog toward
-the horizon, and a per-dot flicker. Two additive passes (a wide faint halo under
-a crisp core) turn overlapping dots into glow. The pointer is cast onto the
-ground plane and lifts and lights the dots around it.
+live scene. Four ranges of pyramidal peaks at increasing depth (a folded-noise
+skyline with a low-frequency swell so each range has a dominant summit, a concave
+cross-section for the slopes), fractal-noise dunes in the foreground, a river of
+light threading through gaps in the ranges, aerial fog, and a per-dot flicker.
+
+The terrain is drawn twice: first as an opaque mesh that writes depth, whose
+fragment shader paints a world-space dot grid onto every face (crest bright,
+base dim), then as depth-tested additive point sprites for the crest lines, the
+river and the pointer light. Near ridges hide the dots of the ridges behind them,
+so crests cut real silhouettes. The pointer lifts and lights the ground under it.
 
 Raw WebGL with no dependency: react-three-fiber would add the three.js runtime
 to the LCP-critical homepage for one effect. Sleeps out of view and when the tab
 is hidden; DPR capped at 2; `prefers-reduced-motion` renders one frame and
 stops; no WebGL renders nothing over the Carbon ground.
+</details>
+
+<details>
+<summary><b>Reactive dot matrix — the mark and the ridgeline as live fields</b></summary>
+
+<br>
+
+`components/marketing/dot-matrix.tsx`. Any image becomes a field of Hydro dots:
+the source is rasterised at grid resolution (progressive halving, so every source
+pixel is averaged into its cell), coverage is normalised to the brightest cell
+and shaped by an optional gamma, and each cell above the threshold becomes a dot
+blitted from one pre-rendered glow sprite. The dots assemble out of a scatter the
+first time they scroll into view, part around the pointer and light where it
+passes, and flicker on their own phase. Used for the combined mark in the footer.
+Canvas 2D; sleeps out of view; static
+under `prefers-reduced-motion` and on coarse pointers.
+</details>
+
+<details>
+<summary><b>Aurora — the moving ground</b></summary>
+
+<br>
+
+`components/fx/aurora.tsx`. A fixed, full-viewport WebGL fragment shader at half
+resolution: two domain-warped noise fields shape slow bodies of Hydro and the
+teal `--info` accent over Carbon at low alpha, advancing with scroll and leaning
+with the pointer. Mounted once in the marketing layout at z −10; the body is
+transparent so it shows through. Static under `prefers-reduced-motion`.
+</details>
+
+<details>
+<summary><b>Stagger wipe, GPU chip graph, rack graphic, beam</b></summary>
+
+<br>
+
+- `components/fx/wipe-text.tsx` + `.wipe` in glass.css: each word rises out of
+  its own clipped line when the enclosing Reveal shows, staggered by `--i`.
+- `components/marketing/chip-graph.tsx`: an H200 die at the centre of dotted
+  traces that bend once and end at labelled nodes; packets flow outward, the
+  pointer lights the nearest trace and tilts the die. Canvas 2D.
+- `components/marketing/rack-graphic.tsx` + `.rack` CSS: a rack elevation whose
+  GPU cells rise and fall like utilisation and whose LEDs blink, all CSS.
+- `components/marketing/rack-row-3d.tsx` + `.rack3d` CSS: three glass racks in
+  CSS perspective with top and side faces, node trays with LEDs and live
+  utilisation, a stage that leans toward the pointer, a rack that pulls out with its
+  trays fanning open like drawers on hover, and a wave of load that follows
+  the cursor across all cells. Takes `lit` to hold one rack pulled out and
+  lit from outside (the pinned story drives it).
+- `components/marketing/pinned-story.tsx`: the Platform section's pinned
+  story. The rack row sits in a `position: sticky` column while three copy
+  steps (slice, card, rack) scroll past; an IntersectionObserver with a band
+  across the middle of the viewport picks the active step, which sets the
+  row's yaw (`data-lit` in `.rack3d` CSS) and pulls that rack out. No
+  scroll-jacking.
+- `.beam` (glass.css): an arc of Hydro travelling a pane's border, driven by a
+  registered `--beam` angle property. Used on the home CTA.
+</details>
+
+<details>
+<summary><b>Scroll choreography</b></summary>
+
+<br>
+
+Four scroll-linked behaviours, all plain CSS driven by one custom property
+or one data attribute, all resting at their static values without JS and
+under `prefers-reduced-motion`. No animation library.
+
+- `components/fx/scroll-scrub.tsx` — writes `--sp` (0 → 1) on its parent:
+  `mode="exit"` is how far the parent has scrolled away (hero), `mode="view"`
+  is its passage through the viewport (anything mid-page). One passive scroll
+  listener, one rAF, only while the parent is on screen.
+  - Hero parallax: `.hero-copy`, `.hero-term`, `.hero-stats` (glass.css)
+    translate at different rates against `--sp`, and `DotTerrain` reads
+    `scrollY / canvas height` each frame to pitch the camera down and pull it
+    back, so the range moves against the copy. Scrubbed and reversible.
+  - Architecture spine: `.trace::before` fills to `--sp` as the section passes.
+- Entrance choreography: `Reveal kind="tilt"` lies a pane back 5° and brings
+  it flat on entry (card grids use it); `.rack__fill` boots from empty the
+  first time its `[data-reveal]` ancestor is shown (`cv-boot`, paused until
+  then); the latency map draws its links outward from Kathmandu over about
+  1.6 s on its first frame and holds packets until their link reaches them.
+- `components/fx/scroll-rail.tsx` — a fixed hairline rail on the left with a
+  Hydro fill tracking page progress and one dot per `[data-rail="label"]`
+  section; the active one lights, clicking scrolls to it. Rendered from `xl`;
+  labels appear on hover/focus and always from 1720px, where the page column
+  leaves room for them. It is a nav of in-page links for assistive tech.
+- Latency map overlays are docked: the node detail card sits fixed in the
+  frame's top-right corner (a hint when nothing is active) rather than
+  floating beside the node, so nothing moves over the centre of the map.
+</details>
+
+<details>
+<summary><b>Decode text — the terminal applied to a headline</b></summary>
+
+<br>
+
+`components/fx/decode-text.tsx`. A line resolves left to right with a block
+cursor on the frontier and the next few characters cycling through mono glyphs
+before they lock. Every character is rendered from the first paint (resolved,
+scrambled, or invisible-but-sized) so layout never shifts, and the server
+renders the finished string. The hero headline is three chained segments; the
+last, "online.", keeps a blinking cursor and a slow Hydro glow (`online-glow`).
 </details>
 
 <details>

@@ -63,8 +63,7 @@ export function Card({
            Hydro glow, full height. */
         <span
           aria-hidden="true"
-          className="absolute inset-y-0 left-0 w-0.5 bg-hydro"
-          style={{ boxShadow: "0 0 12px rgba(74,222,128,0.5)" }}
+          className="absolute inset-y-0 left-0 w-0.5 bg-hydro shadow-[0_0_12px_rgba(74,222,128,0.5)]"
         />
       ) : null}
       {children}
