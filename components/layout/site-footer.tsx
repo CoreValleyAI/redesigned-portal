@@ -1,7 +1,8 @@
 import Link from "next/link";
 import { Icon } from "@/components/ui";
-import { RidgelineBand } from "@/components/marketing/ridgeline-band";
-import { Logo } from "./logo";
+import { DotMatrix } from "@/components/marketing/dot-matrix";
+
+const BASE = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
 
 /* Four columns of links is a link farm. Three groups, each capped at five
    entries, plus a legal row — every path here resolves to a real page. */
@@ -52,33 +53,31 @@ const linkClass =
 export function SiteFooter() {
   return (
     <footer className="relative mt-24 overflow-hidden border-t border-line-subtle bg-carbon-900">
-      {/* The dot-matrix ridgeline: the brand's signature graphic, in the place
-          the design system prescribes for it — the footer band. Texture, not
-          navigation: aria-hidden and inert to the pointer. */}
-      <RidgelineBand height={220} opacity={0.28} />
-
       <div className="relative mx-auto max-w-page-xl px-5 pt-16 pb-10 md:px-10">
         <div className="grid gap-12 md:grid-cols-[1.4fr_repeat(3,1fr)]">
           <div>
-            <Logo mark="combinedmark" height={74} />
-            <p className="mt-5 max-w-[30ch] text-[13.5px] leading-relaxed text-ink-400">
-              Sovereign AI compute for Nepal. Train, fine-tune and serve on
-              NVIDIA GPUs hosted in Kathmandu — billed in NPR, supported in
-              Nepal time.
-            </p>
-
-            {/* A named region and its state beats a badge claiming "99.9%
-                uptime". Deliberately NOT a link: there is no status page yet,
-                and a chip that looks clickable and goes nowhere is worse than
-                one that plainly does not. It becomes a link the day
-                status.corevalley.ai exists. */}
-            <p className="mt-6 inline-flex items-center gap-2.5 rounded-pill border border-line px-3 py-1.5 font-mono text-[11px] tracking-wide text-ink-300">
-              <span className="relative flex size-1.5">
-                <span className="absolute inline-flex size-full animate-ping rounded-pill bg-hydro opacity-60" />
-                <span className="relative inline-flex size-1.5 rounded-pill bg-hydro" />
-              </span>
-              np-ktm-1 · operational
-            </p>
+            {/* The mark, as the brand's dot matrix, in place of the flat
+                lockup. It assembles out of scattered dots the first time it
+                scrolls into view and afterwards parts around the pointer and
+                lights where it passes. The official combined lockup is the
+                sampling source, so the proportions are the brandbook's.
+                aria-hidden and inert to the pointer; the accessible name is
+                the copy beside it. */}
+            <div
+              aria-hidden="true"
+              className="pointer-events-none relative -ml-4 h-[260px] w-[260px] md:h-[300px] md:w-[300px]"
+            >
+              <DotMatrix
+                src={`${BASE}/brand/cv-combinedmark-green.svg`}
+                cell={4}
+                threshold={0.08}
+                gamma={0.6}
+                intensity={1}
+                radius={90}
+                push={18}
+              />
+            </div>
+            <p className="sr-only">CoreValley</p>
           </div>
 
           {GROUPS.map((group) => (

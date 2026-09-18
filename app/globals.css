@@ -249,6 +249,23 @@
   animation: cv-blink var(--cursor-blink) steps(1) infinite;
 }
 
+/* "online." — the status word in the hero. A slow Hydro breath in the text
+   glow, the one glow the system allows, held low enough to read as a status
+   light rather than neon. Static under reduced motion. */
+@keyframes cv-online {
+  0%,
+  100% {
+    text-shadow: 0 0 18px rgb(74 222 128 / 0.28);
+  }
+  50% {
+    text-shadow: 0 0 34px rgb(74 222 128 / 0.55);
+  }
+}
+@utility online-glow {
+  text-shadow: 0 0 24px rgb(74 222 128 / 0.4);
+  animation: cv-online 3.2s var(--ease-standard) infinite;
+}
+
 /* ── Grid overlays ─────────────────────────────────────────────────────────
    Subdued backdrop texture for feature graphics. Ink at very low alpha so it
    reads as a technical substrate rather than decoration. */
@@ -307,12 +324,28 @@
     z-index: -1;
   }
 
-  /* The bloom. Hydro at low alpha — the only glow the system allows. */
+  /* The bloom, and under it the brand's dot matrix: a fine Hydro dot grid
+     revealed only inside a pool around the pointer, so the card surface
+     reads as the same material as the hero terrain wherever the cursor
+     touches it. Both layers share the one mask. */
   &::before {
-    background: radial-gradient(
-      16rem circle at var(--mx, 50%) var(--my, 50%),
-      rgb(74 222 128 / 0.08),
-      transparent 65%
+    background:
+      radial-gradient(
+        16rem circle at var(--mx, 50%) var(--my, 50%),
+        rgb(74 222 128 / 0.1),
+        transparent 65%
+      ),
+      radial-gradient(circle at center, rgb(74 222 128 / 0.45) 1px, transparent 1.6px)
+        0 0 / 12px 12px;
+    -webkit-mask-image: radial-gradient(
+      13rem circle at var(--mx, 50%) var(--my, 50%),
+      #000,
+      transparent 72%
+    );
+    mask-image: radial-gradient(
+      13rem circle at var(--mx, 50%) var(--my, 50%),
+      #000,
+      transparent 72%
     );
   }
 
@@ -383,8 +416,13 @@
     overflow-x: clip;
   }
 
-  /* Body ground, selection colour and the focus ring all come from
-     design_system/tokens/base.css: Carbon, Hydro, Hydro. Nothing to patch. */
+  /* Selection colour and the focus ring come from design_system/tokens/
+     base.css: Hydro, Hydro. The Carbon ground is painted by <html> above;
+     the body itself is transparent so the fixed aurora canvas (z −10) shows
+     through — a body with its own background would paint over it. */
+  body {
+    background: transparent;
+  }
 
   /* Scrollbar. The default dark scrollbar on Carbon is a light grey slab
      down the right edge; this makes it a hairline. */

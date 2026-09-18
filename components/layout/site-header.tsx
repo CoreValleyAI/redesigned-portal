@@ -13,24 +13,23 @@
  *     shared element that slides between items, so navigation reads as one
  *     indicator moving rather than six independent states.
  *  3. ONE FILLED BUTTON. The old bar had Contact Sales, Sign In and Sign Up
- *     competing at the same weight, two of them filled green. Now: one white
+ *     competing at the same weight, two of them filled green. Now: one Hydro
  *     primary, everything else quiet.
  *
- * Client component because it owns the scroll state, the drawer and the auth
- * dialogs.
+ * Client component because it owns the scroll state and the drawer. Sign-in
+ * is not offered from the marketing site for now; the console is reached
+ * directly at /portal.
  */
 import * as React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Button, Icon } from "@/components/ui";
 import { cn } from "@/lib/cn";
-import { AuthModal, type AuthMode } from "./auth-modal";
 import { LogoLockup } from "./logo";
 
 const NAV = [
   { href: "/products", label: "Products" },
   { href: "/use-cases", label: "Use cases" },
-  { href: "/pricing", label: "Pricing" },
   { href: "/docs", label: "Docs" },
   { href: "/company", label: "Company" },
 ] as const;
@@ -38,13 +37,7 @@ const NAV = [
 export function SiteHeader() {
   const pathname = usePathname();
   const [drawerOpen, setDrawerOpen] = React.useState(false);
-  const [authMode, setAuthMode] = React.useState<AuthMode | null>(null);
-<<<<<<< Updated upstream
-=======
   const [lifted, setLifted] = React.useState(false);
-  const { status } = useSession();
-  const signedIn = status === "authenticated";
->>>>>>> Stashed changes
 
   const navRef = React.useRef<HTMLElement>(null);
   const [rail, setRail] = React.useState<{ x: number; w: number } | null>(null);
@@ -53,16 +46,6 @@ export function SiteHeader() {
   React.useEffect(() => {
     setDrawerOpen(false);
   }, [pathname]);
-
-<<<<<<< Updated upstream
-=======
-  /* middleware.ts redirects an unauthenticated /portal request to /?signin=1;
-     open the dialog for them rather than dropping them on the home page with
-     no explanation. `?error=` from a failed Auth.js callback lands here too. */
-  React.useEffect(() => {
-    const q = new URLSearchParams(window.location.search);
-    if (q.has("signin") || q.has("error")) setAuthMode("signin");
-  }, []);
 
   /* Materialise the bar on scroll. Read from a rAF rather than on every
      scroll event, and only write state when the boolean actually flips —
@@ -104,7 +87,6 @@ export function SiteHeader() {
     return () => window.removeEventListener("resize", measure);
   }, [pathname]);
 
->>>>>>> Stashed changes
   return (
     <>
       <header
@@ -125,12 +107,11 @@ export function SiteHeader() {
                 measured offsets — not a border on each item. */}
             <span
               aria-hidden="true"
-              className="pointer-events-none absolute -bottom-px h-px bg-hydro transition-[transform,width,opacity] duration-slow ease-out"
+              className="pointer-events-none absolute -bottom-px h-px bg-hydro shadow-glow-sm transition-[transform,width,opacity] duration-slow ease-out"
               style={{
                 width: rail?.w ?? 0,
                 opacity: rail ? 1 : 0,
                 transform: `translate3d(${rail?.x ?? 0}px,0,0)`,
-                boxShadow: "var(--glow-hydro-sm)",
               }}
             />
             {NAV.map((item) => {
@@ -152,59 +133,13 @@ export function SiteHeader() {
             })}
           </nav>
 
-<<<<<<< Updated upstream
-          <div className="ml-auto flex items-center gap-2">
+          <div className="ml-auto flex items-center gap-1.5">
             <Link href="/contact" className="hidden md:block">
-              <Button variant="ghost" size="sm">
-                Contact Sales
+              <Button variant="primary" size="sm">
+                Talk to sales
               </Button>
             </Link>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setAuthMode("signin")}
-              className="hidden sm:inline-flex"
-            >
-              Sign In
-            </Button>
-            <Button
-              variant="primary"
-              size="sm"
-              onClick={() => setAuthMode("signup")}
-            >
-              Sign Up
-            </Button>
-=======
-          <div className="ml-auto flex items-center gap-1.5">
-            {signedIn ? (
-              <Link href="/portal">
-                <Button
-                  variant="primary"
-                  size="sm"
-                  iconRight={<Icon name="arrow-right" size={14} />}
-                >
-                  Console
-                </Button>
-              </Link>
-            ) : (
-              <>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setAuthMode("signin")}
-                  className="hidden sm:inline-flex"
-                >
-                  Sign in
-                </Button>
-                <Link href="/contact" className="hidden md:block">
-                  <Button variant="primary" size="sm">
-                    Talk to sales
-                  </Button>
-                </Link>
-              </>
-            )}
 
->>>>>>> Stashed changes
             <button
               type="button"
               aria-label={drawerOpen ? "Close menu" : "Open menu"}
@@ -245,28 +180,10 @@ export function SiteHeader() {
                   Talk to sales
                 </Button>
               </Link>
-              {!signedIn ? (
-                <Button
-                  variant="secondary"
-                  size="md"
-                  fullWidth
-                  className="mt-2"
-                  onClick={() => setAuthMode("signin")}
-                >
-                  Sign in
-                </Button>
-              ) : null}
             </nav>
           </div>
         </div>
       </header>
-
-      <AuthModal
-        mode={authMode ?? "signin"}
-        open={authMode !== null}
-        onClose={() => setAuthMode(null)}
-        onSwitchMode={setAuthMode}
-      />
     </>
   );
 }

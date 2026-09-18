@@ -80,11 +80,7 @@ export function Section({
            the middle and dissolves at the edges. */
         <div
           aria-hidden="true"
-          className="pointer-events-none absolute inset-0 -z-10"
-          style={{
-            background:
-              "radial-gradient(85% 60% at 50% 50%, rgb(232 236 239 / 0.02), transparent 72%)",
-          }}
+          className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(85%_60%_at_50%_50%,rgb(232_236_239_/_0.02),transparent_72%)]"
         />
       ) : null}
 

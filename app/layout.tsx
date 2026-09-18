@@ -1,16 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { JetBrains_Mono, Manrope } from "next/font/google";
-<<<<<<< Updated upstream
-=======
-import { AuthProvider } from "@/components/layout/auth-provider";
 import { LiquidFilters } from "@/components/fx/liquid-filter";
-import {
-  AUTH_PROVIDER_ID,
-  AUTH_REGISTER_PROVIDER_ID,
-  MOCK_SESSION,
-  isKeycloakEnabled,
-} from "@/lib/auth";
->>>>>>> Stashed changes
 import "./globals.css";
 
 /* Both faces are variable fonts: omitting `weight` ships one woff2 per family
@@ -83,12 +73,9 @@ export default function RootLayout({
       className={`${manrope.variable} ${jetbrainsMono.variable}`}
       suppressHydrationWarning
     >
-<<<<<<< Updated upstream
       {/* No bg/text utilities needed: design_system/tokens/base.css (imported
           into layer(base)) already sets --bg-base, --text-primary and the
           Manrope 300 / 1.6 body defaults. */}
-      <body className="min-h-dvh antialiased">{children}</body>
-=======
       <body className="min-h-dvh antialiased">
         {/* Keyboard users land here first. Visually hidden until focused, at
             which point it becomes a real, fully styled control — a skip link
@@ -111,17 +98,8 @@ export default function RootLayout({
         {/* Definitions-only SVG for the glass refraction pass. */}
         <LiquidFilters />
 
-        <AuthProvider
-          keycloak={isKeycloakEnabled}
-          staticDemo={process.env.NEXT_PUBLIC_STATIC_DEMO === "true"}
-          providerId={AUTH_PROVIDER_ID}
-          registerProviderId={AUTH_REGISTER_PROVIDER_ID}
-          demoSession={MOCK_SESSION}
-        >
-          {children}
-        </AuthProvider>
+        {children}
       </body>
->>>>>>> Stashed changes
     </html>
   );
 }

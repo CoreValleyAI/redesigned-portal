@@ -37,6 +37,14 @@
   --edge-top-strong: inset 0 1px 0 rgb(232 236 239 / 0.14);
 }
 
+/* Registered so `.beam` can animate its start angle. Top level: @property is
+   not permitted inside a cascade layer. */
+@property --beam {
+  syntax: "<angle>";
+  inherits: false;
+  initial-value: 0deg;
+}
+
 @layer components {
   /* ── Glass ────────────────────────────────────────────────────────────── */
 
@@ -218,6 +226,13 @@
     --reveal-y: 0px;
     transform: scale(0.985);
   }
+  /* Tilt: a pane lying back a few degrees that comes flat as it crosses the
+     fold. Perspective is on the element itself, so no wrapper is needed. */
+  html.cv-js [data-reveal="tilt"]:not([data-shown]) {
+    --reveal-y: 0px;
+    transform: perspective(1200px) rotateX(5deg) translateY(22px);
+    transform-origin: 50% 100%;
+  }
 
   @media (prefers-reduced-motion: reduce) {
     html.cv-js [data-reveal] {
@@ -350,5 +365,291 @@
   .nums {
     font-variant-numeric: tabular-nums;
     font-feature-settings: "tnum" 1;
+  }
+
+  /* ══ STAGGER WIPE ════════════════════════════════════════════════════════
+     Each word rises out of its own clipped line, one after the other, when
+     the enclosing [data-reveal] is shown. The --i index staggers them. Under
+     reduced motion, and without the JS gate, words simply sit in place. */
+  .wipe__w {
+    display: inline-block;
+    overflow: hidden;
+    vertical-align: bottom;
+    padding-bottom: 0.12em;
+    margin-bottom: -0.12em;
+  }
+  .wipe__t {
+    display: inline-block;
+  }
+  html.cv-js [data-reveal] .wipe__t {
+    transform: translateY(112%);
+    transition: transform var(--duration-slow) var(--ease-out)
+      calc(var(--d, 0ms) + var(--i, 0) * 55ms);
+  }
+  html.cv-js [data-reveal][data-shown] .wipe__t {
+    transform: none;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    html.cv-js [data-reveal] .wipe__t {
+      transform: none;
+    }
+  }
+
+  /* ══ BEAM ════════════════════════════════════════════════════════════════
+     A short arc of Hydro light travelling around a pane's border. The conic
+     gradient is masked to the 1px border box, and its start angle is a
+     registered custom property so it can be animated. */
+  .beam::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    padding: 1px;
+    border-radius: inherit;
+    pointer-events: none;
+    background: conic-gradient(
+      from var(--beam),
+      transparent 0deg,
+      transparent 296deg,
+      rgb(74 222 128 / 0.95) 338deg,
+      transparent 360deg
+    );
+    -webkit-mask:
+      linear-gradient(#000 0 0) content-box,
+      linear-gradient(#000 0 0);
+    mask:
+      linear-gradient(#000 0 0) content-box,
+      linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    animation: cv-beam 7s linear infinite;
+  }
+  @keyframes cv-beam {
+    to {
+      --beam: 360deg;
+    }
+  }
+
+  /* ══ RACK ROW, IN PERSPECTIVE ════════════════════════════════════════════
+     Three glass racks on a stage turned so their top and left faces show.
+     --rx/--ry are written by the component from the pointer; the defaults
+     are the resting pose. Every transition is the standard mechanical curve. */
+  .rack3d {
+    perspective: 1400px;
+    perspective-origin: 50% 40%;
+  }
+  .rack3d__stage {
+    display: flex;
+    gap: 18px;
+    align-items: flex-end;
+    padding: 40px 0 8px 32px;
+    transform-style: preserve-3d;
+    transform: rotateX(var(--rx, -8deg)) rotateY(var(--ry, 16deg));
+    transition: transform var(--duration-slow) var(--ease-standard);
+  }
+  .rack3d__rack {
+    position: relative;
+    flex: 1 1 0;
+    min-width: 0;
+    transform-style: preserve-3d;
+    transform: translateZ(var(--z, 0px));
+    transition:
+      transform var(--duration-slow) var(--ease-standard),
+      border-color var(--duration-normal) var(--ease-standard),
+      box-shadow var(--duration-normal) var(--ease-standard);
+  }
+  .rack3d__rack:hover {
+    transform: translateZ(calc(var(--z, 0px) + 64px));
+    border-color: var(--border-hydro);
+    box-shadow: var(--edge-top-strong), var(--shadow-lg), var(--glow-hydro-md);
+  }
+  /* The trays fan open like drawers when their rack is pulled out: a depth
+     step that grows from the top tray to the bottom one. The list keeps a 3D
+     context so the steps compose with the rack's own transform. */
+  .rack3d__trays {
+    transform-style: preserve-3d;
+  }
+  .rack3d__tray {
+    transform: translateZ(0);
+    transition: transform var(--duration-slow) var(--ease-standard);
+  }
+  .rack3d__rack:hover .rack3d__tray {
+    transform: translateZ(calc(var(--t, 0) * 4px)) translateX(calc(var(--t, 0) * 0.5px));
+  }
+  /* Left and top faces: thin slabs folded back at right angles, so each
+     rack reads as a box with depth rather than a card. They deepen as the
+     rack pulls out. */
+  .rack3d__side,
+  .rack3d__top {
+    position: absolute;
+    pointer-events: none;
+    border: 1px solid var(--border-subtle);
+    transition:
+      width var(--duration-slow) var(--ease-standard),
+      height var(--duration-slow) var(--ease-standard);
+  }
+  .rack3d__rack:hover .rack3d__side {
+    width: 40px;
+  }
+  .rack3d__rack:hover .rack3d__top {
+    height: 40px;
+  }
+  /* Load following the cursor: a full-height Hydro overlay per cell whose
+     opacity is the cell's --hot, written by the component. */
+  .rack__hot {
+    position: absolute;
+    inset: 0;
+    background: rgb(74 222 128 / 0.95);
+    box-shadow: 0 0 8px rgb(74 222 128 / 0.8);
+    opacity: var(--hot, 0);
+    transition: opacity var(--duration-fast) linear;
+  }
+  .rack3d__side {
+    top: 0;
+    bottom: 0;
+    right: 100%;
+    width: 22px;
+    background: var(--carbon-800);
+    transform-origin: right center;
+    transform: rotateY(90deg);
+    border-radius: 4px 0 0 4px;
+  }
+  .rack3d__top {
+    left: 0;
+    right: 0;
+    bottom: 100%;
+    height: 22px;
+    background: var(--carbon-600);
+    transform-origin: center bottom;
+    transform: rotateX(-90deg);
+    border-radius: 4px 4px 0 0;
+  }
+
+  /* A rack held pulled-out and lit by the pinned story (data-lit on .rack3d):
+     the same pose as hover, plus its cells at least half hot, and the row
+     turned a little further toward the viewer for each step. */
+  .rack3d[data-lit="0"] {
+    --ry: 22deg;
+  }
+  .rack3d[data-lit="1"] {
+    --ry: 14deg;
+  }
+  .rack3d[data-lit="2"] {
+    --ry: 6deg;
+  }
+  .rack3d[data-lit="0"] .rack3d__rack:nth-child(1),
+  .rack3d[data-lit="1"] .rack3d__rack:nth-child(2),
+  .rack3d[data-lit="2"] .rack3d__rack:nth-child(3) {
+    transform: translateZ(calc(var(--z, 0px) + 64px));
+    border-color: var(--border-hydro);
+    box-shadow: var(--edge-top-strong), var(--shadow-lg), var(--glow-hydro-md);
+  }
+  .rack3d[data-lit="0"] .rack3d__rack:nth-child(1) .rack3d__tray,
+  .rack3d[data-lit="1"] .rack3d__rack:nth-child(2) .rack3d__tray,
+  .rack3d[data-lit="2"] .rack3d__rack:nth-child(3) .rack3d__tray {
+    transform: translateZ(calc(var(--t, 0) * 4px)) translateX(calc(var(--t, 0) * 0.5px));
+  }
+  .rack3d[data-lit="0"] .rack3d__rack:nth-child(1) .rack3d__side,
+  .rack3d[data-lit="1"] .rack3d__rack:nth-child(2) .rack3d__side,
+  .rack3d[data-lit="2"] .rack3d__rack:nth-child(3) .rack3d__side {
+    width: 40px;
+  }
+  .rack3d[data-lit="0"] .rack3d__rack:nth-child(1) .rack3d__top,
+  .rack3d[data-lit="1"] .rack3d__rack:nth-child(2) .rack3d__top,
+  .rack3d[data-lit="2"] .rack3d__rack:nth-child(3) .rack3d__top {
+    height: 40px;
+  }
+  .rack3d[data-lit="0"] .rack3d__rack:nth-child(1) .rack__hot,
+  .rack3d[data-lit="1"] .rack3d__rack:nth-child(2) .rack__hot,
+  .rack3d[data-lit="2"] .rack3d__rack:nth-child(3) .rack__hot {
+    opacity: max(var(--hot, 0), 0.55);
+  }
+
+  /* ══ SCROLL SCRUB ════════════════════════════════════════════════════════
+     --sp (0 → 1) is written on a host by <ScrollScrub>. The hero's layers
+     drift apart at different rates as it scrolls away; the architecture
+     spine fills as the section passes through the viewport. All of these
+     rest at their --sp: 0 values without JS or under reduced motion. */
+  .hero-copy {
+    transform: translate3d(0, calc(var(--sp, 0) * -48px), 0);
+    opacity: calc(1 - var(--sp, 0) * 0.7);
+  }
+  .hero-term {
+    transform: translate3d(0, calc(var(--sp, 0) * 72px), 0);
+    opacity: calc(1 - var(--sp, 0) * 0.5);
+  }
+  .hero-stats {
+    transform: translate3d(0, calc(var(--sp, 0) * -64px), 0);
+  }
+  .trace::before {
+    content: "";
+    position: absolute;
+    inset-inline: 0;
+    top: 0;
+    height: calc(var(--sp, 0) * 130%);
+    background: linear-gradient(180deg, var(--hydro), rgb(74 222 128 / 0.15));
+    box-shadow: 0 0 10px rgb(74 222 128 / 0.5);
+  }
+
+  /* ══ RACK ════════════════════════════════════════════════════════════════
+     GPU cells whose fill rises and falls like utilisation, and a status LED
+     that blinks once in a while, all staggered by --i. The fill also boots —
+     scales up from empty — the first time its section is revealed; until
+     then both animations wait. */
+  .rack__fill {
+    position: absolute;
+    inset-inline: 0;
+    bottom: 0;
+    height: 35%;
+    transform-origin: 50% 100%;
+    background: linear-gradient(
+      180deg,
+      rgb(74 222 128 / 0.95),
+      rgb(74 222 128 / 0.35)
+    );
+    animation:
+      cv-util 4.2s var(--ease-standard) calc(var(--i, 0) * -0.37s) infinite alternate,
+      cv-boot 900ms var(--ease-out) calc(var(--i, 0) * 12ms) both;
+  }
+  html.cv-js [data-reveal]:not([data-shown]) .rack__fill {
+    animation-play-state: paused;
+  }
+  @keyframes cv-boot {
+    from {
+      transform: scaleY(0);
+    }
+    to {
+      transform: scaleY(1);
+    }
+  }
+  @keyframes cv-util {
+    0% {
+      height: 22%;
+      opacity: 0.7;
+    }
+    50% {
+      height: 80%;
+      opacity: 1;
+    }
+    100% {
+      height: 42%;
+      opacity: 0.85;
+    }
+  }
+  .rack__led {
+    box-shadow: 0 0 6px var(--hydro);
+    animation: cv-led 2.6s steps(1) calc(var(--i, 0) * -0.5s) infinite;
+  }
+  @keyframes cv-led {
+    0%,
+    88% {
+      opacity: 1;
+    }
+    92% {
+      opacity: 0.25;
+    }
+    96% {
+      opacity: 1;
+    }
   }
 }
