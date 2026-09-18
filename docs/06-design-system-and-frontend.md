@@ -463,6 +463,30 @@ under `prefers-reduced-motion`. No animation library.
   section; the active one lights, clicking scrolls to it. Rendered from `xl`;
   labels appear on hover/focus and always from 1720px, where the page column
   leaves room for them. It is a nav of in-page links for assistive tech.
+- Hero pointer. The cursor is ray-marched against a CPU port of the
+  terrain height field (kept in step with the vertex shader, minus the
+  pointer lift and dune breathing) from the scroll-adjusted camera, refined
+  by bisection, so the light lands on the surface actually under the cursor
+  — a far peak included — and a cursor over the sky lights nothing. It used
+  to drop onto a flat ground plane, which put the light behind the far
+  ranges and refused rays that pointed slightly upward.
+- Touch. Every reactive graphic used to gate on `(pointer: fine)` and so
+  sat still on phones. Each now answers a tap: the hero terrain lights the
+  ground under the finger for a second; the chip graph lights the nearest
+  trace; the policy grid sends a burst and lights the pods around the tap;
+  the 3D racks pull out the tapped rack (`data-tap` carries the hover pose)
+  and light the cells around the finger; the footer mark pushes its dots
+  aside at the tap and springs back; the floor lays its pool of light where
+  the finger landed. Continuous pointer-follow stays mouse-only, so page
+  scrolling is never fought. The quote dials already turn by drag.
+- Small screens. The pinned story keeps its pin: under `lg` the rack row
+  rides above the steps, scaled to the column (`.rack3d-fit`) and stuck
+  under the header, and the steps drop their viewport-height spacing. The
+  console's three dials become a two-column grid under 40rem (GPU on its
+  own row), and the screen stacks beneath them.
+- The Fabric (latency map) section is currently switched off by the
+  `SHOW_FABRIC` flag at the top of the home page; the code stays in place and
+  the horizon section numbers renumber automatically.
 - Latency map overlays are docked: the node detail card sits fixed in the
   frame's top-right corner (a hint when nothing is active) rather than
   floating beside the node, so nothing moves over the centre of the map.
@@ -503,9 +527,13 @@ under `prefers-reduced-motion`. No animation library.
   arrive and light their pod, packets that try to cross are stopped at the
   line with a red flash; the pointer lights the nearest pod and sends packets
   as it moves, a click sends a burst; allowed/denied counters tick in the DOM.
-- `components/fx/grid-floor.tsx` — the floor behind every marketing page,
-  mounted in the marketing layout: a perspective grid in
-  Hydro receding to a lit horizon at 44% of the viewport. Rows flow toward
+- `components/fx/grid-floor.tsx` — the ground behind every marketing page,
+  mounted in the marketing layout: a perspective grid in Hydro receding to a
+  horizon at 44% of the viewport, mirrored above it as a fainter ceiling so
+  the grid and the pointer's pool of light cover the whole viewport. It
+  starts at the Platform section: fully out (and not drawn) under the hero,
+  fading in as that section's top rises through the lower half of the
+  viewport. Rows flow toward
   the viewer with scroll and drift slowly when the page is still; the pointer
   parallaxes the vanishing point and lays a pool of light on the floor; the
   brand's dots sit at the intersections. Canvas 2D, pauses when hidden. (A

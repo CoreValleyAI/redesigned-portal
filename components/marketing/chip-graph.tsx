@@ -315,12 +315,24 @@ export function ChipGraph({
     io.observe(canvas);
     const onVisibility = () => (document.hidden ? stop() : start());
     document.addEventListener("visibilitychange", onVisibility);
+    // Touch: a tap lights the nearest trace and tilts the die toward the
+    // finger for a moment.
+    let tapTimer = 0;
+    const onTap = (e: PointerEvent) => {
+      if (fine) return;
+      onPointer(e);
+      window.clearTimeout(tapTimer);
+      tapTimer = window.setTimeout(onLeave, 1100);
+    };
+    canvas.addEventListener("pointerdown", onTap, { passive: true });
     if (fine) {
       canvas.addEventListener("pointermove", onPointer, { passive: true });
       canvas.addEventListener("pointerleave", onLeave, { passive: true });
     }
 
     return () => {
+      canvas.removeEventListener("pointerdown", onTap);
+      window.clearTimeout(tapTimer);
       stop();
       ro.disconnect();
       io.disconnect();
