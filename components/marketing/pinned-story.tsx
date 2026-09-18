@@ -50,6 +50,17 @@ export function PinnedStory({ steps, className }: { steps: Step[]; className?: s
       data-step={active}
       className={cn("grid gap-10 lg:grid-cols-[0.85fr_1.15fr] lg:gap-16", className)}
     >
+      {/* Phones and tablets: the rack row rides above the steps, scaled to
+          the column and stuck under the header, so the story still pins. */}
+      <div className="sticky top-16 z-10 -mx-5 bg-carbon px-5 pt-3 pb-2 lg:hidden">
+        <p className="mb-2 text-center font-mono text-[10px] tracking-label text-ink-600 uppercase">
+          {steps[active]?.title ?? ""} · same control plane
+        </p>
+        <div className="rack3d-fit">
+          <RackRow3D lit={active} />
+        </div>
+      </div>
+
       <ol className="flex flex-col">
         {steps.map((s, i) => (
           <li
@@ -58,7 +69,7 @@ export function PinnedStory({ steps, className }: { steps: Step[]; className?: s
               refs.current[i] = el;
             }}
             className={cn(
-              "flex min-h-[52vh] flex-col justify-center border-t border-line-subtle py-10 transition-opacity duration-slow ease-standard first:border-t-0",
+              "flex flex-col justify-center border-t border-line-subtle py-8 transition-opacity duration-slow ease-standard first:border-t-0 lg:min-h-[52vh] lg:py-10",
               i === active ? "opacity-100" : "opacity-40",
             )}
           >

@@ -515,9 +515,21 @@ export function DotMatrix({
     const onVisibility = () => (document.hidden ? stop() : start());
     document.addEventListener("visibilitychange", onVisibility);
 
-    if (fine && !reduced) {
-      window.addEventListener("pointermove", onPointer, { passive: true });
-      document.addEventListener("pointerleave", onLeave, { passive: true });
+    // Touch: a tap on the mark pushes the dots aside there, and they spring
+    // back once the finger is gone.
+    let tapTimer = 0;
+    const onTap = (e: PointerEvent) => {
+      if (fine) return;
+      onPointer(e);
+      window.clearTimeout(tapTimer);
+      tapTimer = window.setTimeout(onLeave, 700);
+    };
+    if (!reduced) {
+      canvas.addEventListener("pointerdown", onTap, { passive: true });
+      if (fine) {
+        window.addEventListener("pointermove", onPointer, { passive: true });
+        document.addEventListener("pointerleave", onLeave, { passive: true });
+      }
     }
 
     return () => {
@@ -525,6 +537,8 @@ export function DotMatrix({
       ro.disconnect();
       io.disconnect();
       document.removeEventListener("visibilitychange", onVisibility);
+      canvas.removeEventListener("pointerdown", onTap);
+      window.clearTimeout(tapTimer);
       window.removeEventListener("pointermove", onPointer);
       document.removeEventListener("pointerleave", onLeave);
       img = null;

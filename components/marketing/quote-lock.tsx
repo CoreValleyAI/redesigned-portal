@@ -412,7 +412,7 @@ export function QuoteLock({ className }: { className?: string }) {
             items={GPUS.map((x) => ({ key: x.id, text: x.label, sub: x.sub }))}
             index={g}
             onChange={setG}
-            className="w-[196px]"
+            className="drum--gpu"
             phase={phase}
             spin={-720}
             delay={0}
@@ -426,7 +426,7 @@ export function QuoteLock({ className }: { className?: string }) {
             }))}
             index={c}
             onChange={setC}
-            className="w-[132px]"
+            className="drum--count"
             phase={phase}
             spin={1080}
             delay={SPIN_STAGGER}
@@ -436,7 +436,7 @@ export function QuoteLock({ className }: { className?: string }) {
             items={HOURS.map((x) => ({ key: String(x.v), text: x.label, sub: x.sub }))}
             index={h}
             onChange={setH}
-            className="w-[132px]"
+            className="drum--hours"
             phase={phase}
             spin={-1440}
             delay={2 * SPIN_STAGGER}

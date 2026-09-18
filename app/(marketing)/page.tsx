@@ -30,6 +30,14 @@ export const metadata = {
    "next-generation". If a line could appear on any other cloud's homepage, it
    has been cut. */
 
+/* The Fabric (latency map) section is switched off for now. Everything it
+   needs stays in the tree; flip this to bring it back. The section numbers
+   on the horizon rules follow. */
+const SHOW_FABRIC = false;
+const SEC = SHOW_FABRIC
+  ? { fabric: "04", hardware: "05", architecture: "06", contact: "07" }
+  : { fabric: "04", hardware: "04", architecture: "05", contact: "06" };
+
 const STEPS: Step[] = [
   {
     n: "01 / slice",
@@ -497,9 +505,10 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ══ LATENCY ═══════════════════════════════════════════════════════ */}
+      {/* ══ LATENCY (the fabric) — disabled via SHOW_FABRIC ═══════════════ */}
+      {SHOW_FABRIC ? (
       <section id="latency" data-rail="latency" className="relative py-20 md:py-28">
-        <Horizon index="04" label="the fabric" />
+        <Horizon index={SEC.fabric} label="the fabric" />
         <div className="mx-auto max-w-page-xl px-5 md:px-10">
           <div className="max-w-[60ch]">
             <Reveal>
@@ -525,12 +534,13 @@ export default function HomePage() {
           </Reveal>
         </div>
       </section>
+      ) : null}
 
       {/* ══ FLEET ═════════════════════════════════════════════════════════
           The rack on the left is the thing itself; the cards on the right
           are its spec sheet. */}
       <section id="hardware" data-rail="hardware" className="relative isolate py-20 md:py-28">
-        <Horizon index="05" label="hardware" />
+        <Horizon index={SEC.hardware} label="hardware" />
         <div
           aria-hidden="true"
           className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(80%_55%_at_50%_50%,rgb(232_236_239_/_0.02),transparent_72%)]"
@@ -643,7 +653,7 @@ export default function HomePage() {
       <section id="architecture" data-rail="architecture" className="relative py-20 md:py-28">
         {/* --sp fills the trace spine as the section passes through view. */}
         <ScrollScrub />
-        <Horizon index="06" label="architecture" />
+        <Horizon index={SEC.architecture} label="architecture" />
         <div className="mx-auto max-w-page-xl px-5 md:px-10">
           <div className="grid gap-10 lg:grid-cols-[0.9fr_1.1fr] lg:items-center lg:gap-16">
           <div className="max-w-[58ch]">
@@ -723,7 +733,7 @@ export default function HomePage() {
           moving through the pane, and a capacity line that decodes as the
           slab arrives — the page ends on something that is visibly alive. */}
       <section id="contact" data-rail="contact" className="relative overflow-hidden py-20 md:py-28">
-        <Horizon index="07" label="contact" />
+        <Horizon index={SEC.contact} label="contact" />
         <div className="mx-auto max-w-page-xl px-5 md:px-10">
           <Reveal kind="scale">
             {/* No slab: the copy and the console sit straight on the floor. */}

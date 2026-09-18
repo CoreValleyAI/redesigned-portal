@@ -319,11 +319,49 @@
       padding: 28px 32px;
     }
   }
+  /* ── Small screens ────────────────────────────────────────────────────
+     Under 40rem the three dials cannot sit in a row: the GPU dial takes a
+     full row and count and hours share the next. From 40rem they are a row
+     with fixed widths. */
   .console__drums {
-    display: flex;
-    gap: 14px;
-    justify-content: center;
-    align-items: center;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+  .drum--gpu {
+    grid-column: 1 / -1;
+  }
+  @media (min-width: 40rem) {
+    .console__drums {
+      display: flex;
+      gap: 14px;
+      justify-content: center;
+      align-items: center;
+    }
+    .drum--gpu {
+      width: 196px;
+    }
+    .drum--count,
+    .drum--hours {
+      width: 132px;
+    }
+  }
+  /* The rack row, fitted to a narrow column: laid out at ~1.9× the column
+     and scaled down, with the box sized to the scaled result. */
+  .rack3d-fit {
+    position: relative;
+    height: 206px;
+    overflow: hidden;
+    -webkit-mask-image: linear-gradient(180deg, #000 80%, transparent);
+    mask-image: linear-gradient(180deg, #000 80%, transparent);
+  }
+  .rack3d-fit > .rack3d {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 192%;
+    transform: scale(0.52);
+    transform-origin: 0 0;
   }
 
   /* ── Circuit-trace substrate ──────────────────────────────────────────
@@ -994,7 +1032,8 @@
       border-color var(--duration-normal) var(--ease-standard),
       box-shadow var(--duration-normal) var(--ease-standard);
   }
-  .rack3d__rack:hover {
+  .rack3d__rack:hover,
+  .rack3d__rack[data-tap] {
     transform: translateZ(calc(var(--z, 0px) + 64px));
     border-color: var(--border-hydro);
     box-shadow: var(--edge-top-strong), var(--shadow-lg), var(--glow-hydro-md);
@@ -1009,7 +1048,8 @@
     transform: translateZ(0);
     transition: transform var(--duration-slow) var(--ease-standard);
   }
-  .rack3d__rack:hover .rack3d__tray {
+  .rack3d__rack:hover .rack3d__tray,
+  .rack3d__rack[data-tap] .rack3d__tray {
     transform: translateZ(calc(var(--t, 0) * 4px)) translateX(calc(var(--t, 0) * 0.5px));
   }
   /* Left and top faces: thin slabs folded back at right angles, so each
@@ -1024,10 +1064,12 @@
       width var(--duration-slow) var(--ease-standard),
       height var(--duration-slow) var(--ease-standard);
   }
-  .rack3d__rack:hover .rack3d__side {
+  .rack3d__rack:hover .rack3d__side,
+  .rack3d__rack[data-tap] .rack3d__side {
     width: 40px;
   }
-  .rack3d__rack:hover .rack3d__top {
+  .rack3d__rack:hover .rack3d__top,
+  .rack3d__rack[data-tap] .rack3d__top {
     height: 40px;
   }
   /* Load following the cursor: a full-height Hydro overlay per cell whose

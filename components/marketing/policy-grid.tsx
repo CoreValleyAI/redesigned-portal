@@ -316,10 +316,25 @@ export function PolicyGrid({ className }: { className?: string }) {
       const from = nearest(e.clientX - r.left, e.clientY - r.top);
       for (let i = 0; i < 6; i++) send(from, i % 3 === 0, true);
     };
-    if (fine && !reduced) {
-      wrap.addEventListener("pointermove", onMove, { passive: true });
-      wrap.addEventListener("pointerleave", onLeave, { passive: true });
-      wrap.addEventListener("pointerdown", onClick, { passive: true });
+    // A tap on a touch screen sends the burst and lights the pods around
+    // it for a moment; the pointer-follow parts stay mouse-only.
+    let tapTimer = 0;
+    const onTap = (e: PointerEvent) => {
+      onClick(e);
+      if (fine) return;
+      const r = wrap.getBoundingClientRect();
+      pointer = { x: e.clientX - r.left, y: e.clientY - r.top };
+      window.clearTimeout(tapTimer);
+      tapTimer = window.setTimeout(() => {
+        pointer = null;
+      }, 900);
+    };
+    if (!reduced) {
+      wrap.addEventListener("pointerdown", onTap, { passive: true });
+      if (fine) {
+        wrap.addEventListener("pointermove", onMove, { passive: true });
+        wrap.addEventListener("pointerleave", onLeave, { passive: true });
+      }
     }
     return () => {
       stop();
@@ -327,7 +342,8 @@ export function PolicyGrid({ className }: { className?: string }) {
       io.disconnect();
       wrap.removeEventListener("pointermove", onMove);
       wrap.removeEventListener("pointerleave", onLeave);
-      wrap.removeEventListener("pointerdown", onClick);
+      wrap.removeEventListener("pointerdown", onTap);
+      window.clearTimeout(tapTimer);
     };
   }, []);
 

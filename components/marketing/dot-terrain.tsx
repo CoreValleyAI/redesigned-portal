@@ -354,6 +354,112 @@ function multiply(a: Float32Array, b: Float32Array) {
   return out;
 }
 
+/* ── The height field, on the CPU ─────────────────────────────────────────
+   A line-for-line port of the vertex shader's terrain (minus the pointer
+   lift and the dune breathing), so the pointer can be ray-marched against
+   the actual surface — the mountain under the cursor — rather than dropped
+   onto a flat plane far behind it. Keep in step with VERT above. */
+
+function fract(v: number) {
+  return v - Math.floor(v);
+}
+function smoothstep(e0: number, e1: number, x: number) {
+  const t = Math.min(1, Math.max(0, (x - e0) / (e1 - e0)));
+  return t * t * (3 - 2 * t);
+}
+function hash2(x: number, y: number) {
+  let px = fract(x * 123.34);
+  let py = fract(y * 456.21);
+  const d = px * (px + 45.32) + py * (py + 45.32);
+  px += d;
+  py += d;
+  return fract(px * py);
+}
+function vnoise(x: number, y: number) {
+  const ix = Math.floor(x);
+  const iy = Math.floor(y);
+  let fx = x - ix;
+  let fy = y - iy;
+  fx = fx * fx * (3 - 2 * fx);
+  fy = fy * fy * (3 - 2 * fy);
+  const a = hash2(ix, iy);
+  const b = hash2(ix + 1, iy);
+  const c = hash2(ix, iy + 1);
+  const d = hash2(ix + 1, iy + 1);
+  const ab = a + (b - a) * fx;
+  const cd = c + (d - c) * fx;
+  return ab + (cd - ab) * fy;
+}
+function fbm(x: number, y: number) {
+  let s = 0;
+  let a = 0.5;
+  for (let i = 0; i < 4; i++) {
+    s += a * vnoise(x, y);
+    x = x * 2.03 + 17.1;
+    y = y * 2.03 + 9.7;
+    a *= 0.5;
+  }
+  return s;
+}
+function skyline(x: number, n: number, W: number, baseW: number, seed: number) {
+  let s = 0.07;
+  for (let i = 0; i < 4; i++) {
+    if (i >= n) break;
+    const px = ((i + 0.5 + (hash2(i, seed) - 0.5) * 0.7) / n) * W - W * 0.5;
+    let ph = 0.5 + 0.5 * hash2(i + 3, seed);
+    ph *= 0.75 + 0.45 * Math.exp(-((px - 24) * (px - 24)) / 900);
+    const pw = baseW * (0.7 + 0.6 * hash2(i + 7, seed));
+    const d = Math.abs(x - px) / pw;
+    const summit = ph * Math.exp(-Math.pow(d, 1.5));
+    const skirt = 0.5 * ph * Math.exp(-Math.pow(d / 2.8, 1.8));
+    s = Math.max(s, summit, skirt);
+  }
+  s += 0.03 * vnoise(x * 0.35 + seed * 9, seed);
+  return s;
+}
+function riverX(z: number) {
+  return Math.sin(z * 0.075 + 1.4) * 7 + Math.sin(z * 0.23 + 0.6) * 2.4;
+}
+function rangeAt(
+  x: number,
+  z: number,
+  zc: number,
+  w: number,
+  amp: number,
+  n: number,
+  W: number,
+  baseW: number,
+  seed: number,
+  gap: number,
+): [number, number] {
+  const bend = (vnoise(x * 0.04 + seed * 11, seed) - 0.5) * w * 0.6;
+  const dz = Math.abs(z - zc - bend);
+  const t = Math.max(0, 1 - dz / w);
+  const sec = Math.pow(t, 1.3);
+  const prof = skyline(x, n, W, baseW, seed);
+  const open =
+    gap > 0 ? 0.25 + 0.75 * smoothstep(0, gap, Math.abs(x - riverX(zc))) : 1;
+  return [prof * amp * sec * open, sec];
+}
+/** World height at (x, z) at a given animation time. */
+function terrainHeight(x: number, z: number, time: number) {
+  const drift = time * 0.05;
+  let dunes = fbm(x * 0.05 + drift * 0.4, z * 0.05 + drift * 0.2) * 3;
+  const dr = Math.abs(x - riverX(z));
+  dunes *= 0.1 + 0.9 * smoothstep(0, 10, dr);
+  let h = dunes;
+  let sec = 0;
+  let r: [number, number];
+  r = rangeAt(x, z, 34, 15, 10, 3, 76, 7, 1, 12);
+  if (r[0] > h) [h, sec] = r;
+  r = rangeAt(x, z, 66, 21, 24, 4, 130, 11, 2, 0);
+  if (r[0] > h) [h, sec] = r;
+  r = rangeAt(x, z, 104, 27, 42, 4, 200, 17, 3, 0);
+  if (r[0] > h) [h, sec] = r;
+  h += fbm(x * 0.16 + 3.7, z * 0.16 + 3.7) * 1.2 * sec;
+  return h;
+}
+
 function compile(gl: WebGLRenderingContext, type: number, src: string) {
   const sh = gl.createShader(type);
   if (!sh) return null;
@@ -469,9 +575,6 @@ export function DotTerrain({ className }: { className?: string }) {
 
     // ── Camera ──────────────────────────────────────────────────────────────
     const worldUp: Vec3 = [0, 1, 0];
-    const forward = normalize(sub(TARGET, EYE));
-    const right = normalize(cross(forward, worldUp));
-    const up = cross(right, forward);
     const tanHalf = Math.tan((FOV_DEG * Math.PI) / 180 / 2);
 
     let aspect = 1;
@@ -481,13 +584,18 @@ export function DotTerrain({ className }: { className?: string }) {
 
     // Scroll scrub: as the hero scrolls away the camera pitches down and
     // pulls back a little, so the range parallaxes against the copy.
-    const viewNow = () => {
+    const cameraNow = (): { eye: Vec3; target: Vec3 } => {
       const sp = reduced
         ? 0
         : Math.min(1, Math.max(0, window.scrollY / Math.max(1, window.innerHeight * 0.55)));
-      const eye: Vec3 = [EYE[0], EYE[1] + sp * 3, EYE[2] - sp * 8];
-      const target: Vec3 = [TARGET[0], TARGET[1] - sp * 10, TARGET[2]];
-      return lookAt(eye, target, worldUp);
+      return {
+        eye: [EYE[0], EYE[1] + sp * 3, EYE[2] - sp * 8],
+        target: [TARGET[0], TARGET[1] - sp * 10, TARGET[2]],
+      };
+    };
+    const viewNow = () => {
+      const c = cameraNow();
+      return lookAt(c.eye, c.target, worldUp);
     };
 
     const resize = () => {
@@ -505,31 +613,60 @@ export function DotTerrain({ className }: { className?: string }) {
       if (!running) draw(performance.now());
     };
 
-    // ── Pointer → a point on the ground plane ───────────────────────────────
+    // ── Pointer → the point on the SURFACE under it ─────────────────────────
+    // The ray from the eye through the cursor is marched against the CPU
+    // copy of the height field until it enters the terrain, then refined by
+    // bisection. So the light lands on the face of the far mountain the
+    // cursor is over, not on the ground plane somewhere behind it — and a
+    // cursor over the sky lights nothing.
     let mx = 0;
     let mz = 0;
     let tx = 0;
     let tz = 0;
     let gain = 0;
     let targetGain = 0;
+    let simTime = 0;
 
     const onPointer = (e: PointerEvent) => {
       const rect = canvas.getBoundingClientRect();
       const nx = ((e.clientX - rect.left) / rect.width) * 2 - 1;
       const ny = -(((e.clientY - rect.top) / rect.height) * 2 - 1);
+      const { eye, target } = cameraNow();
+      const fwd = normalize(sub(target, eye));
+      const rgt = normalize(cross(fwd, worldUp));
+      const upv = cross(rgt, fwd);
       const dir: Vec3 = normalize([
-        forward[0] + right[0] * nx * tanHalf * aspect + up[0] * ny * tanHalf,
-        forward[1] + right[1] * nx * tanHalf * aspect + up[1] * ny * tanHalf,
-        forward[2] + right[2] * nx * tanHalf * aspect + up[2] * ny * tanHalf,
+        fwd[0] + rgt[0] * nx * tanHalf * aspect + upv[0] * ny * tanHalf,
+        fwd[1] + rgt[1] * nx * tanHalf * aspect + upv[1] * ny * tanHalf,
+        fwd[2] + rgt[2] * nx * tanHalf * aspect + upv[2] * ny * tanHalf,
       ]);
-      const planeY = 3;
-      if (dir[1] >= -1e-4) {
+      const under = (t: number) =>
+        eye[1] + dir[1] * t < terrainHeight(eye[0] + dir[0] * t, eye[2] + dir[2] * t, simTime);
+      let hit = -1;
+      let prev = 0.5;
+      for (let t = 1; t < 280; t += t < 60 ? 0.75 : 1.5) {
+        const z = eye[2] + dir[2] * t;
+        if (z > EXTENT_Z) break;
+        if (z >= 0 && Math.abs(eye[0] + dir[0] * t) <= EXTENT_X / 2 && under(t)) {
+          let a = prev;
+          let b = t;
+          for (let i = 0; i < 7; i++) {
+            const m = (a + b) / 2;
+            if (under(m)) b = m;
+            else a = m;
+          }
+          hit = b;
+          break;
+        }
+        prev = t;
+      }
+      if (hit < 0) {
         targetGain = 0;
+        wake();
         return;
       }
-      const t = (planeY - EYE[1]) / dir[1];
-      tx = EYE[0] + dir[0] * t;
-      tz = EYE[2] + dir[2] * t;
+      tx = eye[0] + dir[0] * hit;
+      tz = eye[2] + dir[2] * hit;
       targetGain = 1;
       wake();
     };
@@ -549,7 +686,8 @@ export function DotTerrain({ className }: { className?: string }) {
 
       gl.uniformMatrix4fv(u.viewProj, false, multiply(proj, viewNow()));
       gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-      gl.uniform1f(u.time, reduced ? 0 : (now - t0) / 1000);
+      simTime = reduced ? 0 : (now - t0) / 1000;
+      gl.uniform1f(u.time, simTime);
       gl.uniform2f(u.mouse, mx, mz);
       gl.uniform1f(u.mouseGain, gain);
 
@@ -622,6 +760,16 @@ export function DotTerrain({ className }: { className?: string }) {
     const onVisibility = () => (document.hidden ? stop() : start());
     document.addEventListener("visibilitychange", onVisibility);
 
+    // Touch: a tap lights the ground under the finger for a moment, then
+    // the light lets go. The continuous coupling stays mouse-only.
+    let tapTimer = 0;
+    const onTap = (e: PointerEvent) => {
+      if (fine) return;
+      onPointer(e);
+      window.clearTimeout(tapTimer);
+      tapTimer = window.setTimeout(onLeave, 1100);
+    };
+    canvas.addEventListener("pointerdown", onTap, { passive: true });
     if (fine) {
       window.addEventListener("pointermove", onPointer, { passive: true });
       document.addEventListener("pointerleave", onLeave, { passive: true });
@@ -629,6 +777,8 @@ export function DotTerrain({ className }: { className?: string }) {
 
     return () => {
       stop();
+      canvas.removeEventListener("pointerdown", onTap);
+      window.clearTimeout(tapTimer);
       ro.disconnect();
       io.disconnect();
       document.removeEventListener("visibilitychange", onVisibility);

@@ -46,8 +46,8 @@ export function RackRow3D({
   React.useEffect(() => {
     const el = ref.current;
     if (!el) return;
-    if (!window.matchMedia("(pointer: fine)").matches) return;
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    const fine = window.matchMedia("(pointer: fine)").matches;
 
     const cells = Array.from(el.querySelectorAll<HTMLElement>("[data-cell]"));
     let frame = 0;
@@ -93,9 +93,29 @@ export function RackRow3D({
         c.style.removeProperty("--hot");
       }
     };
-    el.addEventListener("pointermove", onMove, { passive: true });
-    el.addEventListener("pointerleave", onLeave, { passive: true });
+    // Touch: a tap pulls that rack out (data-tap carries the hover pose)
+    // and lights the cells around the finger; it all settles a moment later.
+    let tapTimer = 0;
+    const onTap = (e: PointerEvent) => {
+      if (fine) return;
+      const rack = (e.target as HTMLElement).closest<HTMLElement>(".rack3d__rack");
+      for (const r of el.querySelectorAll<HTMLElement>(".rack3d__rack")) delete r.dataset.tap;
+      if (rack) rack.dataset.tap = "";
+      onMove(e);
+      window.clearTimeout(tapTimer);
+      tapTimer = window.setTimeout(() => {
+        if (rack) delete rack.dataset.tap;
+        onLeave();
+      }, 1600);
+    };
+    el.addEventListener("pointerdown", onTap, { passive: true });
+    if (fine) {
+      el.addEventListener("pointermove", onMove, { passive: true });
+      el.addEventListener("pointerleave", onLeave, { passive: true });
+    }
     return () => {
+      el.removeEventListener("pointerdown", onTap);
+      window.clearTimeout(tapTimer);
       el.removeEventListener("pointermove", onMove);
       el.removeEventListener("pointerleave", onLeave);
       if (frame) cancelAnimationFrame(frame);
