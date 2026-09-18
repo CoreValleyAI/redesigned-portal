@@ -6,6 +6,16 @@
 deploys the static target to GitHub Pages. ❌ There is no CI for the server
 target, and no hosted server deployment.
 
+> **On the `Revamped-FE` branch (front-end only, no Keycloak) there is one
+> target, not two.** `next.config.ts` is always `output: "export"` with
+> `trailingSlash: true`; there is no `NEXT_STATIC_EXPORT` switch, no auth
+> route handler and no middleware. `.github/workflows/deploy.yml` runs on
+> push to `main` and on manual dispatch: it reads the Pages base path with
+> `actions/configure-pages` (so `/client-portal` for the project site, `""`
+> for a custom domain), typechecks, lints, builds, and uploads `out/`. The
+> repository's Pages source must be set to *GitHub Actions*. The table below
+> describes the Keycloak branch.
+
 ---
 
 ## 1. Two build targets

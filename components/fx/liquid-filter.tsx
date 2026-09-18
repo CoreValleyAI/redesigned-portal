@@ -192,9 +192,9 @@ export function LiquidFilters() {
         {/* Nav: a thin pane. A hard bend on a 64px bar smears the logo. */}
         <Lens id="cv-lg-sm" scale={7} plateau={0.2} />
         {/* Cards, chips, panels — the everyday weight. */}
-        <Lens id="cv-lg-md" scale={13} plateau={0.13} />
+        <Lens id="cv-lg-md" scale={22} plateau={0.16} />
         {/* Dialogs. One on screen at a time, so it can afford the fringe. */}
-        <Lens id="cv-lg-lg" scale={22} plateau={0.1} chroma />
+        <Lens id="cv-lg-lg" scale={30} plateau={0.1} chroma />
       </defs>
     </svg>
   );

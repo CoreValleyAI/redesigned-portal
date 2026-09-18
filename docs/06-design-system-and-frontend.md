@@ -396,15 +396,15 @@ under `prefers-reduced-motion` and on coarse pointers.
 </details>
 
 <details>
-<summary><b>Aurora — the moving ground</b></summary>
+<summary><b>The ground — grid floor (aurora removed)</b></summary>
 
 <br>
 
-`components/fx/aurora.tsx`. A fixed, full-viewport WebGL fragment shader at half
-resolution: two domain-warped noise fields shape slow bodies of Hydro and the
-teal `--info` accent over Carbon at low alpha, advancing with scroll and leaning
-with the pointer. Mounted once in the marketing layout at z −10; the body is
-transparent so it shows through. Static under `prefers-reduced-motion`.
+There is one fixed canvas behind the marketing pages: `components/fx/grid-floor.tsx`
+(described below). The earlier aurora shader gradient was removed on request —
+the moving green haze was not wanted — and with it the last full-screen fragment
+shader on the page. The body is transparent so the floor shows through; the
+html element paints Carbon.
 </details>
 
 <details>
@@ -458,7 +458,7 @@ under `prefers-reduced-motion`. No animation library.
   first time its `[data-reveal]` ancestor is shown (`cv-boot`, paused until
   then); the latency map draws its links outward from Kathmandu over about
   1.6 s on its first frame and holds packets until their link reaches them.
-- `components/fx/scroll-rail.tsx` — a fixed hairline rail on the left with a
+- `components/fx/scroll-rail.tsx` — a fixed hairline rail on the right with a
   Hydro fill tracking page progress and one dot per `[data-rail="label"]`
   section; the active one lights, clicking scrolls to it. Rendered from `xl`;
   labels appear on hover/focus and always from 1720px, where the page column
@@ -466,6 +466,97 @@ under `prefers-reduced-motion`. No animation library.
 - Latency map overlays are docked: the node detail card sits fixed in the
   frame's top-right corner (a hint when nothing is active) rather than
   floating beside the node, so nothing moves over the centre of the map.
+- `components/fx/horizon.tsx` + `.horizon*` CSS — every section's opening
+  rule. On reveal a head of Hydro light sweeps the rule left to right,
+  drawing it, and the section's index and name clip in at the right end.
+  Replaces the plain `.rule-fade` at section tops on the home page.
+- Rail packet: the progress rail's fill ends in a glowing packet
+  (`.rail__packet`); the active section's dot pulses (`.rail__land`, keyed on
+  the active index so it restarts) when the packet lands on it.
+- `components/marketing/quote-lock.tsx` + `.console*` / `.drum*` / `.odo*`
+  CSS — the CTA's quote console, replacing the buttons. Three dials (GPU with ten
+  options, weakest family first with size variants grouped, count, hours), each a machined metal block (solid Carbon-600, brushed grain, top-lit bevel, four corner screws) around a recessed window with a
+  CSS-3D cylinder of options, knurled grips and chevrons, turned by wheel,
+  drag, click or arrow keys (each is a spinbutton). Beside them a recessed
+  screen: NPR per hour with digits rolling on 0–9 strips, then rows for the
+  total, an illustrative US-cloud figure and the capacity state, and a
+  "Request this plan" button carrying gpu/count/hours/npr as query params
+  to the contact page. Rates are the catalogue's on-demand list prices;
+  eight full cards bill as a node. The GPU list's middle rung (the h100 2g slice) is the default the
+  intro settles on;
+  every card is offered as available (the `soon` flag on a GPU still
+  switches the capacity row to "quoted on request" if needed). The drum
+  cylinder has 12 slots at 100px radius so ten options never share an angle. Intro: the dials sit two to four turns off
+  until the console is 40% in view, then spin home in alternating
+  directions on a long ease-out, staggered 160 ms apart, while the price
+  rolls up from zeros; then the user has them. Static under reduced motion.
+  Odometer columns are keyed by distance from the right, so a price that
+  gains a digit keeps rolling its existing digits and grows the new leading
+  column in from zero width. The console plate is a board: a raised Carbon
+  surface with a seamless 96px PCB-trace tile in Hydro at 9%, a soft Hydro
+  ambient glow around it, and a pulse of current (the same tile, brighter,
+  under a travelling band mask) running toward the screen continuously: the band mask repeats every
+  140% of the pane, so the next band enters as the last one leaves. Hidden under reduced motion. (A cost meter and a decoding CLI line
+  were tried and removed at the user's request.)
+- `components/marketing/policy-grid.tsx` — the Architecture graphic. A canvas
+  dot grid of pods split by the Cilium boundary; packets inside a tenant
+  arrive and light their pod, packets that try to cross are stopped at the
+  line with a red flash; the pointer lights the nearest pod and sends packets
+  as it moves, a click sends a burst; allowed/denied counters tick in the DOM.
+- `components/fx/grid-floor.tsx` — the floor behind every marketing page,
+  mounted in the marketing layout: a perspective grid in
+  Hydro receding to a lit horizon at 44% of the viewport. Rows flow toward
+  the viewer with scroll and drift slowly when the page is still; the pointer
+  parallaxes the vanishing point and lays a pool of light on the floor; the
+  brand's dots sit at the intersections. Canvas 2D, pauses when hidden. (A
+  full-page reactive dot field was tried first and rejected as ugly.)
+- Liquid glass (`.lg-liquid`, and every `.glass-card`): a lit rim (inset top
+  and left glints), an inner haze that follows `--mx/--my`, and a fixed
+  diagonal band of light. Cards are blur-only (14px); the SVG refraction map
+  (`cv-lg-md`, scale 22) applies only to panes carrying `.lg-refract` — nav,
+  CTA, footer. The footer is one such slab, floated off the page edge.
+
+<details>
+<summary><b>Rendering budget — what was cut, and why</b></summary>
+
+<br>
+
+One fixed canvas (the floor) moves behind every glass pane, and a
+backdrop-filter pane has to re-filter on every frame its backdrop changes.
+So the budget is: keep the ground cheap and slow, keep per-pane filters
+cheap, and never animate layout. Concretely:
+
+- The floor renders at 30 fps at ≤1.5 DPR with its gradients built once per resize, not per frame. The
+  hero terrain caps at 1.5 DPR.
+- Cards: blur only. The SVG displacement pass (`url(#cv-lg-md)`) is limited
+  to `.lg-refract` panes, of which at most three are ever on screen.
+- Nothing animates per card continuously. The liquid "caustic" drift (an
+  animated custom property on every card) was removed for that reason.
+- Rack cells: utilisation animates `transform: scaleY`, never `height`;
+  the boot animation lives on the cell so the two never fight over
+  `transform`. The 3D racks are solid Carbon-800, not glass — a
+  backdrop-filter inside a preserve-3d stage re-reads its backdrop per
+  rack per frame.
+- The scroll rail writes its fill height straight to the DOM; no React
+  render per scroll frame.
+- A DOM cell field (330 animated elements over the CTA's backdrop-filter)
+  and a full-page reactive dot canvas were both tried and removed as too
+  slow or too busy.
+- The floor runs to the very end of the page. (A switch that turned it off
+  from the CTA down was tried and removed once the footer mark moved to
+  WebGL and no longer needed protecting.)
+- The dot-matrix mark (`components/marketing/dot-matrix.tsx`) renders as
+  WebGL point sprites: one interleaved buffer (position, size, alpha per
+  dot), one `bufferSubData` and one `drawArrays(POINTS)` per frame, glow in
+  the fragment shader, additive blend. The spring physics stays on the CPU.
+  It sleeps once settled with the pointer away. Without WebGL the finished
+  mark is drawn once in 2D. (The Canvas 2D version — a sprite blit per dot
+  with `lighter` — was the footer's lag.)
+- The CTA has no slab: its copy and the quote console sit straight on the
+  floor. The footer is `.lg-clear` — the most transparent glass weight: a 3%
+  white tint over a 3px blur (more would erase the 1px floor lines) with the liquid rim and sheen, no refraction
+  — so the floor reads straight through it.
+</details>
 </details>
 
 <details>

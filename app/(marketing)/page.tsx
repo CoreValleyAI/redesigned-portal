@@ -9,6 +9,9 @@ import { RackGraphic } from "@/components/marketing/rack-graphic";
 import { PinnedStory, type Step } from "@/components/marketing/pinned-story";
 import { ScrollScrub } from "@/components/fx/scroll-scrub";
 import { ScrollRail } from "@/components/fx/scroll-rail";
+import { Horizon } from "@/components/fx/horizon";
+import { PolicyGrid } from "@/components/marketing/policy-grid";
+import { QuoteLock } from "@/components/marketing/quote-lock";
 import { CountUp } from "@/components/fx/count-up";
 import { Reveal, RevealGroup } from "@/components/fx/reveal";
 import { DecodeText } from "@/components/fx/decode-text";
@@ -322,7 +325,7 @@ export default function HomePage() {
           cells, the two supporting ones get half-width. The asymmetry is the
           information — it says which products most customers start with. */}
       <section id="platform" data-rail="platform" className="relative py-20 md:py-28">
-        <hr className="rule-fade absolute inset-x-0 top-0 mx-auto max-w-page-xl" />
+        <Horizon index="02" label="platform" />
         <div className="mx-auto max-w-page-xl px-5 md:px-10">
             <div className="max-w-[54ch]">
               <Reveal>
@@ -418,7 +421,7 @@ export default function HomePage() {
           heading, a mono lead, a "+" list — and beside it the die with its
           traces fanning out to the systems the list names. */}
       <section id="sovereign" data-rail="sovereign" className="relative py-20 md:py-28">
-        <hr className="rule-fade absolute inset-x-0 top-0 mx-auto max-w-page-xl" />
+        <Horizon index="03" label="why sovereign" />
         <div className="mx-auto grid max-w-page-xl gap-14 px-5 md:px-10 lg:grid-cols-[1.05fr_0.95fr] lg:gap-16">
           <div>
             <Reveal>
@@ -496,7 +499,7 @@ export default function HomePage() {
 
       {/* ══ LATENCY ═══════════════════════════════════════════════════════ */}
       <section id="latency" data-rail="latency" className="relative py-20 md:py-28">
-        <hr className="rule-fade absolute inset-x-0 top-0 mx-auto max-w-page-xl" />
+        <Horizon index="04" label="the fabric" />
         <div className="mx-auto max-w-page-xl px-5 md:px-10">
           <div className="max-w-[60ch]">
             <Reveal>
@@ -527,7 +530,7 @@ export default function HomePage() {
           The rack on the left is the thing itself; the cards on the right
           are its spec sheet. */}
       <section id="hardware" data-rail="hardware" className="relative isolate py-20 md:py-28">
-        <hr className="rule-fade absolute inset-x-0 top-0 mx-auto max-w-page-xl" />
+        <Horizon index="05" label="hardware" />
         <div
           aria-hidden="true"
           className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(80%_55%_at_50%_50%,rgb(232_236_239_/_0.02),transparent_72%)]"
@@ -640,8 +643,9 @@ export default function HomePage() {
       <section id="architecture" data-rail="architecture" className="relative py-20 md:py-28">
         {/* --sp fills the trace spine as the section passes through view. */}
         <ScrollScrub />
-        <hr className="rule-fade absolute inset-x-0 top-0 mx-auto max-w-page-xl" />
+        <Horizon index="06" label="architecture" />
         <div className="mx-auto max-w-page-xl px-5 md:px-10">
+          <div className="grid gap-10 lg:grid-cols-[0.9fr_1.1fr] lg:items-center lg:gap-16">
           <div className="max-w-[58ch]">
             <Reveal>
               <p className="cv-label">Architecture</p>
@@ -660,6 +664,14 @@ export default function HomePage() {
                 log — and all three are inspectable from the portal.
               </p>
             </Reveal>
+          </div>
+
+          {/* The tenant boundary, drawn: pods on both sides of the Cilium
+              line, packets that arrive inside a tenant and packets that are
+              stopped at the line. The pointer sends its own. */}
+          <Reveal kind="right" delay={160}>
+            <PolicyGrid />
+          </Reveal>
           </div>
 
           <div className="mt-14 grid gap-x-10 gap-y-0 md:grid-cols-[auto_1fr]">
@@ -707,24 +719,15 @@ export default function HomePage() {
       </section>
 
       {/* ══ CTA ═══════════════════════════════════════════════════════════
-          One glass slab, a beam of Hydro running its border, the aurora
+          One glass slab, a beam of Hydro running its border, the floor
           moving through the pane, and a capacity line that decodes as the
           slab arrives — the page ends on something that is visibly alive. */}
       <section id="contact" data-rail="contact" className="relative overflow-hidden py-20 md:py-28">
-        <hr className="rule-fade absolute inset-x-0 top-0 mx-auto max-w-page-xl" />
+        <Horizon index="07" label="contact" />
         <div className="mx-auto max-w-page-xl px-5 md:px-10">
           <Reveal kind="scale">
-            <div className="lg lg-refract beam relative overflow-hidden rounded-lg px-6 py-20 text-center md:px-16 md:py-24">
-              <span
-                aria-hidden="true"
-                className="pointer-events-none absolute inset-x-0 -top-1/3 h-[130%] bg-[radial-gradient(45%_60%_at_50%_40%,rgb(74_222_128_/_0.09),transparent_70%)]"
-              />
-              {/* A fine dot grid, revealed only near the cursor: the slab is
-                  made of the same material as the hero. */}
-              <span
-                aria-hidden="true"
-                className="pointer-events-none absolute inset-0 bg-dot-grid opacity-40"
-              />
+            {/* No slab: the copy and the console sit straight on the floor. */}
+            <div className="relative text-center">
 
               <p className="relative font-mono text-[11.5px] tracking-label text-hydro uppercase">
                 <DecodeText text="capacity check · np-ktm-1 · h200 · available now" speed={22} />
@@ -737,25 +740,11 @@ export default function HomePage() {
                 You get a capacity plan and a rupee price back — not a
                 discovery call.
               </p>
-              <div className="relative mt-10 flex flex-wrap justify-center gap-3">
-                <Link href="/contact">
-                  <Button
-                    variant="primary"
-                    size="lg"
-                    iconRight={<Icon name="arrow-right" size={17} />}
-                  >
-                    Talk to sales
-                  </Button>
-                </Link>
-                <Link href="/pricing">
-                  <Button variant="secondary" size="lg">
-                    See pricing
-                  </Button>
-                </Link>
-              </div>
-              <p className="relative mt-8 font-mono text-[11.5px] tracking-wide text-ink-600">
-                typical reply within one business day · NPT 09:00–18:00
-              </p>
+              {/* The quote lock: set GPU, count and hours on three tumblers
+                  and the rupee price is already there. */}
+              <Reveal delay={120} className="relative mt-10">
+                <QuoteLock />
+              </Reveal>
             </div>
           </Reveal>
         </div>

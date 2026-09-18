@@ -14,11 +14,18 @@
  *   · REACT. The pointer pushes nearby dots aside and lights them; they
  *     spring back on the standard curve when it leaves. Coarse pointers and
  *     reduced motion get the finished, static image.
- *   · BREATHE. Each dot flickers on its own phase, like the ridgeline asset.
  *
- * Canvas 2D, not WebGL: a few thousand sprites blitted from one pre-rendered
- * glow is well inside a 2D context's budget, and it composes over any ground.
- * Sleeps out of view and when the tab is hidden.
+ * RENDERING. WebGL point sprites: every dot is one vertex carrying its
+ * position, size and brightness, the whole field is one buffer upload and
+ * one draw call per frame, and the glow is computed in the fragment shader
+ * with additive blending. The physics stays on the CPU — a few thousand
+ * springs is nothing — and writes straight into the vertex array. This
+ * replaced a Canvas 2D version that blitted a sprite per dot with `lighter`
+ * compositing; at a few thousand dots that was the footer's lag.
+ *
+ * The loop sleeps once the field has settled and the pointer is away, and
+ * out of view or with the tab hidden. Without WebGL the finished mark is
+ * drawn once in 2D and left static.
  */
 
 import * as React from "react";
@@ -30,14 +37,43 @@ interface Dot {
   y: number;
   /** 0–1 coverage of the cell, drives base size and brightness. */
   w: number;
-  phase: number;
   /** Assemble start offset, 0–1 across the sweep. */
   order: number;
   sx: number;
   sy: number;
 }
 
-const HYDRO = "74,222,128";
+/* Hydro #4ADE80 as 0–1 RGB. */
+const HYDRO: [number, number, number] = [74 / 255, 222 / 255, 128 / 255];
+
+const VERT = /* glsl */ `
+attribute vec2  aPos;    // CSS px
+attribute float aSize;   // diameter, CSS px
+attribute float aAlpha;
+uniform vec2  uRes;
+uniform float uDpr;
+varying float vAlpha;
+void main() {
+  vec2 clip = (aPos / uRes) * 2.0 - 1.0;
+  gl_Position = vec4(clip.x, -clip.y, 0.0, 1.0);
+  gl_PointSize = aSize * uDpr;
+  vAlpha = aAlpha;
+}`;
+
+/* The same profile the old 2D sprite had: a solid core to 28% of the
+   radius, a shoulder to 50%, then a halo falling to nothing at the edge. */
+const FRAG = /* glsl */ `
+precision mediump float;
+uniform vec3 uColor;
+varying float vAlpha;
+void main() {
+  float d = length(gl_PointCoord - 0.5) * 2.0;
+  float i = d < 0.28 ? 1.0
+          : d < 0.5 ? mix(0.9, 0.28, (d - 0.28) / 0.22)
+          : mix(0.28, 0.0, min(1.0, (d - 0.5) / 0.5));
+  i *= vAlpha;
+  gl_FragColor = vec4(uColor * i, i);
+}`;
 
 /** Small deterministic PRNG, so a generated field is identical on every load. */
 function mulberry32(seed: number) {
@@ -73,9 +109,6 @@ function ridgelineCoverage(cols: number, rows: number, seed: number) {
   hero.h = 0.96;
   hero.w = 0.07;
 
-  // Each mountain is a narrow, steep summit standing on a broad skirt: the
-  // summit gives the sharp profile, the skirt joins it to its neighbours so
-  // the skyline reads as a range rather than a row of spikes.
   const sky = (x: number) => {
     let s = 0.2 + 0.05 * Math.sin(x * 23.0 + seed);
     for (const p of peaks) {
@@ -102,6 +135,18 @@ function ridgelineCoverage(cols: number, rows: number, seed: number) {
   return cov;
 }
 
+function compile(gl: WebGLRenderingContext, type: number, src: string) {
+  const s = gl.createShader(type)!;
+  gl.shaderSource(s, src);
+  gl.compileShader(s);
+  if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) {
+    console.error("[DotMatrix]", gl.getShaderInfoLog(s));
+    gl.deleteShader(s);
+    return null;
+  }
+  return s;
+}
+
 export function DotMatrix({
   src,
   generate,
@@ -118,14 +163,12 @@ export function DotMatrix({
   intensity = 0.9,
   /**
    * Exponent applied to normalised coverage. 1 is linear; below 1 lifts the
-   * faint cells, which is what a source like the ridgeline needs — its
-   * silhouette is drawn in dots that fade toward the summits.
+   * faint cells, which is what a source like the ridgeline needs.
    */
   gamma = 1,
   /**
    * Amplitude of a slow wave of brightness travelling down the field in
-   * horizontal bands — for a source with rows, like rack trays, it reads as
-   * load moving through the hardware. 0 disables it.
+   * horizontal bands. 0 disables it. Only drawn while the loop is awake.
    */
   pulse = 0,
   assemble = true,
@@ -154,8 +197,6 @@ export function DotMatrix({
   React.useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
-    const ctx = canvas.getContext("2d", { alpha: true });
-    if (!ctx) return;
 
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     const fine = window.matchMedia("(pointer: fine)").matches;
@@ -165,7 +206,6 @@ export function DotMatrix({
     let height = 0;
     let dpr = 1;
     let img: HTMLImageElement | null = null;
-    let sprite: HTMLCanvasElement | null = null;
     let running = false;
     let inView = false;
     let frame = 0;
@@ -176,29 +216,60 @@ export function DotMatrix({
     let px = -1e4;
     let py = -1e4;
 
-    // One glow sprite, drawn once, blitted per dot. A radial gradient per dot
-    // per frame would be the whole frame budget.
-    const buildSprite = () => {
-      const s = document.createElement("canvas");
-      const r = 16 * dpr;
-      s.width = s.height = r * 2;
-      const g = s.getContext("2d")!;
-      const grad = g.createRadialGradient(r, r, 0, r, r, r);
-      grad.addColorStop(0, `rgba(${HYDRO},1)`);
-      grad.addColorStop(0.28, `rgba(${HYDRO},0.9)`);
-      grad.addColorStop(0.5, `rgba(${HYDRO},0.28)`);
-      grad.addColorStop(1, `rgba(${HYDRO},0)`);
-      g.fillStyle = grad;
-      g.fillRect(0, 0, r * 2, r * 2);
-      sprite = s;
-    };
+    /* ── GL setup: one program, one interleaved buffer ────────────────── */
+    const gl = canvas.getContext("webgl", {
+      alpha: true,
+      premultipliedAlpha: true,
+      antialias: false,
+      depth: false,
+      stencil: false,
+      powerPreference: "low-power",
+    });
+    let program: WebGLProgram | null = null;
+    let buf: WebGLBuffer | null = null;
+    let uRes: WebGLUniformLocation | null = null;
+    let uDpr: WebGLUniformLocation | null = null;
+    /** [x, y, size, alpha] per dot. */
+    let verts = new Float32Array(0);
 
-    // Coverage per cell from an image: supersample, then box-average. A
-    // drawImage straight to grid size samples a 2×2 neighbourhood per cell,
-    // which turns a sparse source into aliased stripes; drawing at 4× with
-    // high-quality resampling and averaging each 4×4 block gives every source
-    // pixel a share of its cell. Alpha weighted by luminance so a faint
-    // stroke counts less.
+    if (gl) {
+      const vs = compile(gl, gl.VERTEX_SHADER, VERT);
+      const fs = compile(gl, gl.FRAGMENT_SHADER, FRAG);
+      if (vs && fs) {
+        program = gl.createProgram()!;
+        gl.attachShader(program, vs);
+        gl.attachShader(program, fs);
+        gl.linkProgram(program);
+        if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
+          console.error("[DotMatrix]", gl.getProgramInfoLog(program));
+          program = null;
+        } else {
+          gl.useProgram(program);
+          buf = gl.createBuffer();
+          gl.bindBuffer(gl.ARRAY_BUFFER, buf);
+          const stride = 16;
+          const aPos = gl.getAttribLocation(program, "aPos");
+          const aSize = gl.getAttribLocation(program, "aSize");
+          const aAlpha = gl.getAttribLocation(program, "aAlpha");
+          gl.enableVertexAttribArray(aPos);
+          gl.vertexAttribPointer(aPos, 2, gl.FLOAT, false, stride, 0);
+          gl.enableVertexAttribArray(aSize);
+          gl.vertexAttribPointer(aSize, 1, gl.FLOAT, false, stride, 8);
+          gl.enableVertexAttribArray(aAlpha);
+          gl.vertexAttribPointer(aAlpha, 1, gl.FLOAT, false, stride, 12);
+          uRes = gl.getUniformLocation(program, "uRes");
+          uDpr = gl.getUniformLocation(program, "uDpr");
+          gl.uniform3f(gl.getUniformLocation(program, "uColor"), ...HYDRO);
+          // Additive, like the old `lighter` compositing.
+          gl.enable(gl.BLEND);
+          gl.blendFunc(gl.ONE, gl.ONE);
+          gl.clearColor(0, 0, 0, 0);
+        }
+      }
+    }
+
+    // Coverage per cell from an image: supersample, then box-average, so
+    // every source pixel gets a share of its cell instead of a 2×2 sample.
     const sampleImage = (cols: number, rows: number) => {
       if (!img) return null;
       const ir = img.naturalWidth / img.naturalHeight;
@@ -254,8 +325,6 @@ export function DotMatrix({
           : sampleImage(cols, rows);
       if (!cov) return;
 
-      // Normalise to the brightest cell so a sparse source still yields a
-      // full-strength field.
       let peak = 0;
       for (let i = 0; i < cov.length; i++) if (cov[i]! > peak) peak = cov[i]!;
       if (peak <= 0) return;
@@ -268,7 +337,6 @@ export function DotMatrix({
           const w = Math.pow(raw, gamma);
           const hx = (c + 0.5) * cell;
           const hy = (r + 0.5) * cell;
-          // Scatter start: anywhere on the canvas, biased outward.
           const ang = Math.random() * Math.PI * 2;
           const dist = 60 + Math.random() * Math.max(width, height) * 0.5;
           next.push({
@@ -277,7 +345,6 @@ export function DotMatrix({
             x: assembled ? hx : hx + Math.cos(ang) * dist,
             y: assembled ? hy : hy + Math.sin(ang) * dist,
             w,
-            phase: Math.random() * Math.PI * 2,
             order: (c / cols) * 0.75 + Math.random() * 0.25,
             sx: hx + Math.cos(ang) * dist,
             sy: hy + Math.sin(ang) * dist,
@@ -285,6 +352,11 @@ export function DotMatrix({
         }
       }
       dots = next;
+      verts = new Float32Array(dots.length * 4);
+      if (gl && buf) {
+        gl.bindBuffer(gl.ARRAY_BUFFER, buf);
+        gl.bufferData(gl.ARRAY_BUFFER, verts.byteLength, gl.DYNAMIC_DRAW);
+      }
     };
 
     const resize = () => {
@@ -295,8 +367,11 @@ export function DotMatrix({
       height = rect.height;
       canvas.width = Math.round(width * dpr);
       canvas.height = Math.round(height * dpr);
-      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-      buildSprite();
+      if (gl && program) {
+        gl.viewport(0, 0, canvas.width, canvas.height);
+        gl.uniform2f(uRes, width, height);
+        gl.uniform1f(uDpr, dpr);
+      }
       build();
       if (!running) draw(performance.now());
     };
@@ -304,16 +379,13 @@ export function DotMatrix({
     // Design-system ease-out (0.16, 1, 0.3, 1), approximated for a scalar.
     const easeOut = (t: number) => 1 - Math.pow(1 - t, 3.2);
 
-    const draw = (now: number) => {
-      ctx.clearRect(0, 0, width, height);
-      if (!sprite) return;
+    /** Advance the field one step and write it into the vertex array. */
+    const step = (now: number) => {
       const t = (now - t0) / 1000;
-      const sr = sprite.width / dpr;
-      ctx.globalCompositeOperation = "lighter";
-
       let settled = true;
-      for (const d of dots) {
-        // Assemble: each dot travels home on its own delayed ease.
+      let moving = false;
+      for (let i = 0; i < dots.length; i++) {
+        const d = dots[i]!;
         let hx = d.hx;
         let hy = d.hy;
         if (!assembled) {
@@ -324,11 +396,10 @@ export function DotMatrix({
           if (p < 1) settled = false;
         }
 
-        // Pointer: push aside within the radius, light up.
         let lit = 0;
         const dx = d.x - px;
         const dy = d.y - py;
-        const dist = Math.hypot(dx, dy);
+        const dist = Math.sqrt(dx * dx + dy * dy);
         if (dist < radius) {
           const f = 1 - dist / radius;
           lit = f;
@@ -337,30 +408,64 @@ export function DotMatrix({
           hy += dy * k;
         }
 
-        // Spring toward the target on the standard curve — no overshoot.
         d.x += (hx - d.x) * 0.16;
         d.y += (hy - d.y) * 0.16;
+        if (Math.abs(hx - d.x) > 0.05 || Math.abs(hy - d.y) > 0.05) moving = true;
 
-        const flick = reduced ? 1 : 0.78 + 0.22 * Math.sin(t * 1.7 + d.phase);
         const band =
           pulse > 0 && !reduced ? 1 + pulse * Math.sin(t * 1.1 - d.hy * 0.045) : 1;
-        const a = Math.min(1, d.w * intensity * flick * band + lit * 0.7);
-        const size = cell * (0.55 + 0.45 * d.w) * (1 + lit * 0.9);
-        ctx.globalAlpha = a;
-        ctx.drawImage(sprite, d.x - size, d.y - size, size * 2, size * 2);
-        void sr;
+        const o = i * 4;
+        verts[o] = d.x;
+        verts[o + 1] = d.y;
+        verts[o + 2] = cell * (0.55 + 0.45 * d.w) * (1 + lit * 0.9) * 2;
+        verts[o + 3] = Math.min(1, d.w * intensity * band + lit * 0.7);
       }
-      ctx.globalAlpha = 1;
-      ctx.globalCompositeOperation = "source-over";
       if (settled && !assembled) assembled = true;
+      return moving;
     };
 
+    /** Static fallback without WebGL: the finished mark, drawn once. */
+    const draw2D = () => {
+      const ctx = canvas.getContext("2d");
+      if (!ctx) return;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, width, height);
+      ctx.fillStyle = "rgb(74 222 128)";
+      for (const d of dots) {
+        ctx.globalAlpha = Math.min(1, d.w * intensity);
+        ctx.beginPath();
+        ctx.arc(d.hx, d.hy, cell * (0.55 + 0.45 * d.w) * 0.42, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      ctx.globalAlpha = 1;
+    };
+
+    const draw = (now: number) => {
+      if (!gl || !program || !buf) {
+        draw2D();
+        return false;
+      }
+      const moving = step(now);
+      gl.bindBuffer(gl.ARRAY_BUFFER, buf);
+      gl.bufferSubData(gl.ARRAY_BUFFER, 0, verts);
+      gl.clear(gl.COLOR_BUFFER_BIT);
+      gl.drawArrays(gl.POINTS, 0, dots.length);
+      return moving;
+    };
+
+    // Runs while there is something to move — the assembly, or dots
+    // springing around the pointer. Settled with the pointer away, one last
+    // frame and it sleeps; pointer motion wakes it.
+    let idle = 0;
     const loop = (now: number) => {
-      draw(now);
       frame = requestAnimationFrame(loop);
+      const moving = draw(now);
+      const near = px > -radius && py > -radius && px < width + radius && py < height + radius;
+      idle = !moving && assembled && !near ? idle + 1 : 0;
+      if (idle > 12) stop();
     };
     const start = () => {
-      if (running || reduced || !inView || document.hidden) return;
+      if (running || reduced || !inView || document.hidden || !gl) return;
       running = true;
       if (!t0) t0 = performance.now();
       frame = requestAnimationFrame(loop);
@@ -375,10 +480,12 @@ export function DotMatrix({
       const rect = canvas.getBoundingClientRect();
       px = e.clientX - rect.left;
       py = e.clientY - rect.top;
+      if (px > -radius && py > -radius && px < width + radius && py < height + radius) start();
     };
     const onLeave = () => {
       px = -1e4;
       py = -1e4;
+      start(); // one more pass so displaced dots spring home, then sleep
     };
 
     if (!generate && src) {
@@ -388,7 +495,6 @@ export function DotMatrix({
         resize();
         if (inView) start();
       };
-      // A missing asset leaves the canvas empty; the ground behind it is Carbon.
       img.src = src;
     }
 
@@ -422,6 +528,10 @@ export function DotMatrix({
       window.removeEventListener("pointermove", onPointer);
       document.removeEventListener("pointerleave", onLeave);
       img = null;
+      if (gl) {
+        if (buf) gl.deleteBuffer(buf);
+        if (program) gl.deleteProgram(program);
+      }
     };
   }, [src, generate, seed, cell, threshold, align, radius, push, intensity, gamma, pulse, assemble]);
 

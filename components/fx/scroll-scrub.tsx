@@ -35,7 +35,10 @@ export function ScrollScrub({ mode = "view" }: { mode?: "exit" | "view" }) {
       const vh = window.innerHeight;
       let p: number;
       if (mode === "exit") {
-        p = -r.top / Math.max(1, r.height);
+        // Over the first ~60% of a viewport, not the host's full height: a
+        // tall hero would otherwise take a whole screen of scrolling before
+        // anything visibly moved.
+        p = -r.top / Math.max(1, Math.min(r.height, vh * 0.6));
       } else {
         p = (vh - r.top) / Math.max(1, r.height + vh);
       }

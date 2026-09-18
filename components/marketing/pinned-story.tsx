@@ -79,10 +79,10 @@ export function PinnedStory({ steps, className }: { steps: Step[]; className?: s
 
       <div className="hidden lg:block">
         <div className="sticky top-28">
-          <RackRow3D lit={active} />
-          <p className="mt-4 text-center font-mono text-[10.5px] tracking-label text-ink-600 uppercase">
+          <p className="mb-4 text-center font-mono text-[10.5px] tracking-label text-ink-600 uppercase">
             {steps[active]?.title ?? ""} · same control plane
           </p>
+          <RackRow3D lit={active} />
         </div>
       </div>
     </div>

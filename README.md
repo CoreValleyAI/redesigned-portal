@@ -106,8 +106,21 @@ Billing · Audit log · Security · Settings
 - **CVA** for component variants, **Phosphor Icons** for glyphs
 - No CSS-in-JS, no animation library — canvas and CSS only
 
-Deploys anywhere Next.js runs. `output` is unset, so `npm run build && npm start`
-works as-is behind any reverse proxy.
+Deploys to GitHub Pages as a static export. `next.config.ts` sets
+`output: "export"` and `trailingSlash: true`; `.github/workflows/deploy.yml`
+builds on every push to `main` (or on demand from any branch via
+*Run workflow*), reads the base path from the repository's Pages settings,
+and uploads `out/`. Pages must be set to deploy from **GitHub Actions**.
+
+To check the export locally under the project subpath:
+
+```
+NEXT_PUBLIC_BASE_PATH=/client-portal npm run build
+# then serve out/ under /client-portal/ with any static server
+```
+
+(In Git Bash, prefix with `MSYS_NO_PATHCONV=1` so `/client-portal` is not
+rewritten as a Windows path.)
 
 ---
 
