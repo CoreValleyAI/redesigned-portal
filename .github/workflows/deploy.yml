@@ -21,21 +21,25 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
           node-version: 20
           cache: npm
 
       # Reads the site's Pages settings and exposes the base path the site
       # will be served from: "/<repo>" for a project site, "" for a user site
-      # or a custom domain. next.config.ts reads it as NEXT_PUBLIC_BASE_PATH,
-      # so switching to a custom domain later needs no code change.
+      # or a custom domain. `enablement` turns Pages on (source: GitHub
+      # Actions) the first time, so the repo needs no manual setup. If the
+      # settings still cannot be read, the build step falls back to the repo
+      # name, which is right for a project site.
       - name: Configure Pages
         id: pages
         uses: actions/configure-pages@v5
+        with:
+          enablement: true
 
       - name: Install dependencies
         run: npm ci
@@ -48,11 +52,11 @@ jobs:
       - name: Build static export
         run: npm run build
         env:
-          NEXT_PUBLIC_BASE_PATH: ${{ steps.pages.outputs.base_path }}
+          NEXT_PUBLIC_BASE_PATH: ${{ steps.pages.outputs.base_path || format('/{0}', github.event.repository.name) }}
           NEXT_TELEMETRY_DISABLED: "1"
 
       - name: Upload artifact
-        uses: actions/upload-pages-artifact@v3
+        uses: actions/upload-pages-artifact@v4
         with:
           path: ./out
 
