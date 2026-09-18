@@ -22,7 +22,7 @@
 
 import * as React from "react";
 
-type RevealKind = "up" | "left" | "right" | "scale" | "tilt";
+type RevealKind = "up" | "left" | "right" | "scale" | "tilt" | "horizon";
 
 /* ── A single observer, shared by every Reveal on the page ────────────────
    Created lazily so it is never constructed during SSR, and never torn down:

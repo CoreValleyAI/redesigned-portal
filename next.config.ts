@@ -10,9 +10,22 @@ const nextConfig: NextConfig = {
     unoptimized: true,
   },
 
-  // Set basePath when deploying to a subpath (e.g. username.github.io/repo).
-  // Defaults to "" for custom domains or root deployments.
+  // GitHub Pages serves a project site from /<repo>; the deploy workflow
+  // reads the exact base path from the Pages configuration (so a custom
+  // domain or a user site gets "") and passes it in. Components that build
+  // asset URLs by hand read the same variable.
   basePath: process.env.NEXT_PUBLIC_BASE_PATH || "",
+
+  // Every route exports as <route>/index.html, which any static host —
+  // Pages included — serves for /<route>/ without needing an extensionless
+  // .html fallback.
+  trailingSlash: true,
+
+  // A separate build directory when asked for, so a production build can
+  // run beside a live `next dev` without corrupting its cache. Note that
+  // with a custom distDir the static export lands INSIDE it (not in /out);
+  // the deploy workflow leaves it unset and uploads /out.
+  distDir: process.env.NEXT_DIST_DIR || ".next",
 
   // Keep the design-system skill folder and the archived static site out of
   // the serverless bundle and the build's file trace.
@@ -20,19 +33,6 @@ const nextConfig: NextConfig = {
     "*": ["./design_system/**", "./reference/**"],
   },
 
-  async headers() {
-    return [
-      {
-        // Brand asset filenames are version-suffixed, so immutable is safe.
-        // Without this, public/ is served max-age=0 and the ridgeline
-        // revalidates on every navigation.
-        source: "/brand/:path*",
-        headers: [
-          { key: "Cache-Control", value: "public, max-age=31536000, immutable" },
-        ],
-      },
-    ];
-  },
 };
 
 export default nextConfig;

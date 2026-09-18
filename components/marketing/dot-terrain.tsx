@@ -49,7 +49,7 @@ const ROWS = 200;
 /** World-unit footprint: width across, depth away from the camera. */
 const EXTENT_X = 130;
 const EXTENT_Z = 130;
-const MAX_DPR = 2;
+const MAX_DPR = 1.5;
 /** Camera. Eye sits low and looks slightly down the valley. */
 const EYE: [number, number, number] = [0, 9, -8];
 const TARGET: [number, number, number] = [0, 2, 60];
@@ -484,7 +484,7 @@ export function DotTerrain({ className }: { className?: string }) {
     const viewNow = () => {
       const sp = reduced
         ? 0
-        : Math.min(1, Math.max(0, window.scrollY / Math.max(1, canvas.clientHeight)));
+        : Math.min(1, Math.max(0, window.scrollY / Math.max(1, window.innerHeight * 0.55)));
       const eye: Vec3 = [EYE[0], EYE[1] + sp * 3, EYE[2] - sp * 8];
       const target: Vec3 = [TARGET[0], TARGET[1] - sp * 10, TARGET[2]];
       return lookAt(eye, target, worldUp);

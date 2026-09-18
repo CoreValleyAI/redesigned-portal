@@ -418,7 +418,7 @@
 
   /* Selection colour and the focus ring come from design_system/tokens/
      base.css: Hydro, Hydro. The Carbon ground is painted by <html> above;
-     the body itself is transparent so the fixed aurora canvas (z −10) shows
+     the body itself is transparent so the fixed floor canvas (z −10) shows
      through — a body with its own background would paint over it. */
   body {
     background: transparent;

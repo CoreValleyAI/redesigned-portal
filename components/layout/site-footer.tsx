@@ -52,8 +52,10 @@ const linkClass =
 
 export function SiteFooter() {
   return (
-    <footer className="relative mt-24 overflow-hidden border-t border-line-subtle bg-carbon-900">
-      <div className="relative mx-auto max-w-page-xl px-5 pt-16 pb-10 md:px-10">
+    <footer className="relative mt-24 px-4 pb-6 md:px-8">
+      {/* The whole footer is one liquid-glass slab, floated off the page
+          edge, clear enough that the floor reads through it. */}
+      <div className="lg lg-liquid lg-clear relative mx-auto max-w-page-xl overflow-hidden rounded-xl px-6 pt-14 pb-10 md:px-12">
         <div className="grid gap-12 md:grid-cols-[1.4fr_repeat(3,1fr)]">
           <div>
             {/* The mark, as the brand's dot matrix, in place of the flat
