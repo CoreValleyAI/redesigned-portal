@@ -11,7 +11,7 @@ target, and no hosted server deployment.
 > `trailingSlash: true`; there is no `NEXT_STATIC_EXPORT` switch, no auth
 > route handler and no middleware. `.github/workflows/deploy.yml` runs on
 > push to `main` and on manual dispatch: it reads the Pages base path with
-> `actions/configure-pages` (so `/client-portal` for the project site, `""`
+> `actions/configure-pages` (so `/redesigned-portal` for the project site, `""`
 > for a custom domain), typechecks, lints, builds, and uploads `out/`. The
 > repository's Pages source must be set to *GitHub Actions*. The table below
 > describes the Keycloak branch.

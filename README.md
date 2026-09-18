@@ -115,11 +115,11 @@ and uploads `out/`. Pages must be set to deploy from **GitHub Actions**.
 To check the export locally under the project subpath:
 
 ```
-NEXT_PUBLIC_BASE_PATH=/client-portal npm run build
-# then serve out/ under /client-portal/ with any static server
+NEXT_PUBLIC_BASE_PATH=/redesigned-portal npm run build
+# then serve out/ under /redesigned-portal/ with any static server
 ```
 
-(In Git Bash, prefix with `MSYS_NO_PATHCONV=1` so `/client-portal` is not
+(In Git Bash, prefix with `MSYS_NO_PATHCONV=1` so `/redesigned-portal` is not
 rewritten as a Windows path.)
 
 ---
