@@ -17,6 +17,7 @@ import { Reveal, RevealGroup } from "@/components/fx/reveal";
 import { DecodeText } from "@/components/fx/decode-text";
 import { WipeText } from "@/components/fx/wipe-text";
 import { GPU_SKUS } from "@/lib/catalog";
+import { docsUrl } from "@/lib/docs";
 
 export const metadata = {
   title: "CoreValley — sovereign AI compute, hosted in Kathmandu",
@@ -211,7 +212,7 @@ export default function HomePage() {
                       Talk to sales
                     </Button>
                   </Link>
-                  <Link href="/docs/quickstart">
+                  <a href={docsUrl("guides/quickstart")}>
                     <Button
                       variant="secondary"
                       size="lg"
@@ -220,7 +221,7 @@ export default function HomePage() {
                     >
                       read the quickstart
                     </Button>
-                  </Link>
+                  </a>
                 </div>
               </Reveal>
 

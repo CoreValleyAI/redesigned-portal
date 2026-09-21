@@ -51,17 +51,22 @@ in `meta.reviewedAt`.
 
 ## Quick start
 
-Requires **Node 20.9+**.
+Requires **Node 20.9+** and, for the documentation site, **Python 3.10+**.
 
 ```bash
 npm install
+pip install -r corevalley-docs/requirements.txt   # MkDocs + Material
 npm run dev          # http://localhost:3000
+npm run docs:dev     # http://127.0.0.1:8001  (docs, live reload)
 ```
 
 | Script | Does |
 |---|---|
 | `npm run dev` | Development server |
-| `npm run build` | Production build |
+| `npm run docs:dev` | MkDocs dev server for `corevalley-docs/` (the `/docs` links point here in dev) |
+| `npm run build` | Production build: MkDocs into `public/docs/`, then the Next.js static export |
+| `npm run build:web` | Next.js build only (reuses whatever is in `public/docs/`) |
+| `npm run docs:build` | MkDocs build only, into `public/docs/` |
 | `npm start` | Serve the production build |
 | `npm run typecheck` | `tsc --noEmit` |
 | `npm run lint` | ESLint |
@@ -88,7 +93,7 @@ npm run dev          # http://localhost:3000
 | `/use-cases` | Nepali-language LLMs, banking, healthcare, government, research, startups |
 | `/company` | Mission, principles, audiences, contact |
 | `/pricing` | Live NPR/USD and hourly/monthly toggles, comparison table, FAQ |
-| `/docs` · `/docs/[...slug]` | Quickstart, CLI reference, API reference |
+| `/docs/…` | Documentation — a MkDocs site, see below |
 | `/contact` | Sales enquiry form (posts to FormSubmit — no backend needed) |
 
 ### Portal
@@ -96,6 +101,31 @@ npm run dev          # http://localhost:3000
 Overview · Pods (list, launch wizard, live detail) · JupyterHub · Model
 endpoints · API keys · Dedicated nodes · vClusters · Network policy · Usage ·
 Billing · Audit log · Security · Settings
+
+### Documentation (`/docs`)
+
+The docs are **not** Next.js pages. They are a [MkDocs](https://www.mkdocs.org/)
+site with the Material theme, whose source lives in `corevalley-docs/`
+(`mkdocs.yml`, `docs/*.md`, `docs/assets/brand.css` for the brand tokens).
+`npm run docs:build` renders it into `public/docs/`, which is git-ignored and
+gets copied into `out/docs/` by the static export, so the docs ship at
+`/docs/` on the same GitHub Pages site. Every generated link is relative, so
+the same build works under the `/redesigned-portal` base path or a root
+domain.
+
+- Edit content in `corevalley-docs/docs/`, nav in `corevalley-docs/mkdocs.yml`.
+- `npm run docs:dev` serves it with live reload on port 8001; `.env.development`
+  points the site's docs links there because `next dev` does not serve
+  `public/docs/index.html` at `/docs/`.
+- App code links into the docs with `docsUrl()` from `lib/docs.ts` and a
+  plain `<a>`, never `<Link>` (it is not a Next route).
+- The deploy workflow installs `corevalley-docs/requirements.txt` and sets
+  `DOCS_SITE_URL` / `DOCS_HOMEPAGE` so canonical URLs and the header logo
+  link match the Pages URL.
+
+The previous in-app docs (`/docs`, `/docs/quickstart`, `/docs/cli`,
+`/docs/api`, built from a TypeScript content map) are archived, unbuilt, in
+`reference/legacy-next-docs/` with restore notes.
 
 ---
 
