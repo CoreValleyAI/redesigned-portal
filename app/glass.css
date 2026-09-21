@@ -1,0 +1,1359 @@
+/* ══════════════════════════════════════════════════════════════════════════
+   CoreValley — glass surfaces and the shared motion helpers.
+
+   Glassmorphism is the ONE sanctioned deviation from design_system/ (explicit
+   client direction; recorded in the README). Everything in this file is
+   otherwise built from design-system tokens: Carbon surfaces, Ink hairlines,
+   Hydro as the only glow, and the mechanical easing curves and durations
+   declared in design_system/tokens/spacing.css. No value is restated.
+
+   REFRACTION
+   The optics are native. An SVG <feDisplacementMap> (components/fx/
+   liquid-filter.tsx) is applied through `backdrop-filter: url(#…)`, so the
+   compositor bends the backdrop texture it already holds — no capture, no
+   WebGL context, no JavaScript per frame. Chromium runs the displacement
+   pass; Safari and Firefox get blur + saturation and read as ordinary frosted
+   glass. Engines with no backdrop-filter at all fall back to the solid Carbon
+   surface token — never a transparent, unreadable box.
+   ══════════════════════════════════════════════════════════════════════════ */
+
+:root {
+  /* Elevation helpers for glass. A translucent pane on Carbon needs a faint
+     top-lit wash and a 1px inner highlight to read as a surface rather than
+     a hole. Ink-tinted, at the design system's hairline alphas. */
+  --grad-card: linear-gradient(
+    177deg,
+    rgb(232 236 239 / 0.045) 0%,
+    rgb(232 236 239 / 0.012) 40%,
+    rgb(232 236 239 / 0) 80%
+  );
+  --grad-raised: linear-gradient(
+    177deg,
+    rgb(232 236 239 / 0.07) 0%,
+    rgb(232 236 239 / 0.02) 46%,
+    rgb(232 236 239 / 0) 88%
+  );
+  --edge-top: inset 0 1px 0 rgb(232 236 239 / 0.08);
+  --edge-top-strong: inset 0 1px 0 rgb(232 236 239 / 0.14);
+}
+
+/* Registered so `.beam` can animate its start angle. Top level: @property is
+   not permitted inside a cascade layer. */
+@property --beam {
+  syntax: "<angle>";
+  inherits: false;
+  initial-value: 0deg;
+}
+
+@layer components {
+  /* ── Glass ────────────────────────────────────────────────────────────── */
+
+  /* The four `glass-*` names are the recipe's public API — the portal shell,
+     the auth dialog and the Card primitive all reference them. They are
+     aliased by SELECTOR rather than by `@apply`: Tailwind v4's @apply resolves
+     only Tailwind utilities, so applying a plain component class is a build
+     error, not a no-op. */
+  .lg,
+  .glass-card,
+  .glass-nav,
+  .glass-modal,
+  .glass-panel {
+    position: relative;
+    isolation: isolate;
+    background-color: color-mix(in srgb, var(--carbon-700) 55%, transparent);
+    background-image: var(--grad-card);
+    border: 1px solid var(--border-default);
+    -webkit-backdrop-filter: blur(var(--lg-blur, 16px)) saturate(var(--lg-sat, 120%));
+    backdrop-filter: blur(var(--lg-blur, 16px)) saturate(var(--lg-sat, 120%));
+    box-shadow: var(--edge-top), var(--shadow-md);
+  }
+
+  /* ── Weights ──────────────────────────────────────────────────────────── */
+
+  /* Sticky navigation: thin and fast, so the page reads through it. */
+  .lg--nav,
+  .glass-nav {
+    --lg-blur: 18px;
+    --lg-sat: 120%;
+    background-color: color-mix(in srgb, var(--carbon-900) 60%, transparent);
+    background-image: none;
+    border: 0;
+    border-bottom: 1px solid var(--border-subtle);
+    box-shadow: none;
+  }
+
+  /* Dialogs sit over a scrim, so they can afford to be heavier and more
+     opaque — a modal you can read the page through is a modal nobody reads. */
+  .lg--modal,
+  .glass-modal {
+    --lg-blur: 28px;
+    --lg-sat: 115%;
+    background-color: color-mix(in srgb, var(--carbon-700) 72%, transparent);
+    background-image: var(--grad-raised);
+    border-color: var(--border-strong);
+    box-shadow: var(--edge-top-strong), var(--shadow-xl);
+  }
+
+  /* Data surfaces. Tables and logs are read for minutes at a time, so the
+     blur comes down and the floor comes up: legibility beats optics here. */
+  .lg--panel,
+  .glass-panel {
+    --lg-blur: 12px;
+    --lg-sat: 110%;
+    background-color: color-mix(in srgb, var(--carbon-800) 78%, transparent);
+    box-shadow: var(--edge-top);
+  }
+
+  /* Small controls: chips and pills. */
+  .lg--chip {
+    --lg-blur: 10px;
+    --lg-sat: 120%;
+    box-shadow: var(--edge-top);
+  }
+
+  /* ── Refraction pass (Chromium) ───────────────────────────────────────── */
+
+  /* `url()` inside backdrop-filter is the exact capability being tested: every
+     engine parses a filter list, but only Chromium resolves an SVG reference
+     filter against a backdrop, so this query is the feature gate rather than a
+     proxy for one.
+
+     DOUBLE-GUARDED. Each rule restates the plain blur first and the refracting
+     version second. If an engine passes the @supports test but then rejects
+     the url() declaration at parse time, the invalid declaration is dropped
+     and the plain blur on the line above it survives. */
+  @supports (backdrop-filter: url(#cv-lg-md)) {
+    /* Only panes that opt in with .lg-refract — nav, CTA, footer. Cards used
+       to be here too, and eight SVG displacement passes re-run for every
+       frame the floor moves behind them was the page's biggest
+       single cost. */
+    .lg-refract {
+      -webkit-backdrop-filter: blur(var(--lg-blur, 16px)) saturate(var(--lg-sat, 120%));
+      backdrop-filter: blur(var(--lg-blur, 16px)) saturate(var(--lg-sat, 120%));
+      -webkit-backdrop-filter: url(#cv-lg-md) blur(var(--lg-blur, 16px))
+        saturate(var(--lg-sat, 120%));
+      backdrop-filter: url(#cv-lg-md) blur(var(--lg-blur, 16px))
+        saturate(var(--lg-sat, 120%));
+    }
+    .lg-refract.lg--nav,
+    .glass-nav {
+      -webkit-backdrop-filter: blur(var(--lg-blur)) saturate(var(--lg-sat));
+      backdrop-filter: blur(var(--lg-blur)) saturate(var(--lg-sat));
+      -webkit-backdrop-filter: url(#cv-lg-sm) blur(var(--lg-blur)) saturate(var(--lg-sat));
+      backdrop-filter: url(#cv-lg-sm) blur(var(--lg-blur)) saturate(var(--lg-sat));
+    }
+    .lg-refract.lg--modal,
+    .glass-modal {
+      -webkit-backdrop-filter: blur(var(--lg-blur)) saturate(var(--lg-sat));
+      backdrop-filter: blur(var(--lg-blur)) saturate(var(--lg-sat));
+      -webkit-backdrop-filter: url(#cv-lg-lg) blur(var(--lg-blur)) saturate(var(--lg-sat));
+      backdrop-filter: url(#cv-lg-lg) blur(var(--lg-blur)) saturate(var(--lg-sat));
+    }
+  }
+
+  /* No backdrop-filter at all → the solid Carbon surface tokens. Mandatory:
+     without this the panes render as transparent boxes with unreadable text. */
+  @supports not (
+    (backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))
+  ) {
+    .lg,
+    .glass-card {
+      background-color: var(--carbon-700);
+    }
+    .lg--nav,
+    .glass-nav {
+      background-color: var(--carbon-900);
+    }
+    .lg--modal,
+    .glass-modal {
+      background-color: var(--carbon-600);
+    }
+    .lg--panel,
+    .glass-panel {
+      background-color: var(--carbon-800);
+    }
+  }
+
+  /* ── Hover behaviour for glass that is also a target ──────────────────── */
+
+  /* Matches the design system's Card: a 1px lift, a stronger hairline and
+     the deep shadow, on the standard mechanical curve. No overshoot. */
+  .lg-hover {
+    transition:
+      border-color var(--duration-normal) var(--ease-standard),
+      transform var(--duration-normal) var(--ease-standard),
+      box-shadow var(--duration-normal) var(--ease-standard);
+  }
+  .lg-hover:hover {
+    border-color: var(--border-strong);
+    transform: translateY(-1px);
+    box-shadow: var(--edge-top-strong), var(--shadow-lg);
+  }
+
+  /* ── Clear glass ──────────────────────────────────────────────────────
+     The most transparent weight: a thin tint over a deep blur, so what is
+     behind — the floor, the page — reads through it. The rim and sheen of
+     .lg-liquid still sit on top. For the footer. */
+  .lg.lg-clear,
+  .lg.lg-clear.lg-liquid {
+    /* Barely any blur: the floor behind is 1px lines on black, and a soft
+       blur would erase them; 3px softens without hiding. */
+    --lg-blur: 3px;
+    --lg-sat: 130%;
+    /* Almost no tint: the pane is the rim and a breath of white. */
+    background-color: rgb(232 236 239 / 0.03);
+    background-image:
+      radial-gradient(18rem 12rem at 22% 0%, rgb(255 255 255 / 0.06), transparent 70%),
+      linear-gradient(165deg, rgb(255 255 255 / 0.05), transparent 40%, transparent 70%, rgb(74 222 128 / 0.03));
+    background-size: 100% 100%, 100% 100%;
+    background-position: 0 0, 0 0;
+    border-color: rgb(232 236 239 / 0.22);
+  }
+
+  /* ── Liquid glass ─────────────────────────────────────────────────────
+     What makes a pane read as a thick slab of glass rather than a blurred
+     rectangle, on top of the refraction pass above:
+       · a lit rim — a bright glint along the top and left edges, a faint one
+         along the bottom and right, all inset so the hairline stays 1px;
+       · an inner haze — light scattering inside the slab, brightest where
+         the pointer is (--mx/--my from <SpotlightGroup>, or top-left);
+       · a fixed diagonal band of light, like a reflection on a glass table.
+         (It used to drift. Animating a background across every card meant a
+         repaint of every card on every frame; it stays still now.)
+     No pseudo-elements: cards already spend theirs on the spotlight, so this
+     is all background layers and shadows on the element itself. Every card
+     is liquid by default; `.lg-liquid` opts any other pane in. */
+  .lg-liquid,
+  .glass-card {
+    /* 14px, not 22: blur cost grows with radius, and a page can show eight
+       cards over a moving ground at once. */
+    --lg-blur: 14px;
+    --lg-sat: 125%;
+    --lg-rim: rgb(255 255 255 / 0.16);
+    background-image:
+      radial-gradient(
+        18rem 12rem at var(--mx, 22%) var(--my, 0%),
+        rgb(255 255 255 / 0.075),
+        transparent 70%
+      ),
+      linear-gradient(
+        115deg,
+        transparent 30%,
+        rgb(255 255 255 / 0.05) 45%,
+        rgb(167 243 203 / 0.05) 52%,
+        transparent 64%
+      ),
+      linear-gradient(
+        165deg,
+        rgb(255 255 255 / 0.06),
+        transparent 34%,
+        transparent 70%,
+        rgb(74 222 128 / 0.045)
+      ),
+      var(--grad-card);
+    background-size:
+      100% 100%,
+      260% 100%,
+      100% 100%,
+      100% 100%;
+    background-position:
+      0 0,
+      38% 0,
+      0 0,
+      0 0;
+    box-shadow:
+      inset 0 1px 0 var(--lg-rim),
+      inset 1px 0 0 rgb(255 255 255 / 0.07),
+      inset 0 -1px 0 rgb(255 255 255 / 0.03),
+      inset -1px 0 0 rgb(74 222 128 / 0.07),
+      inset 0 0 36px rgb(255 255 255 / 0.025),
+      var(--shadow-md);
+  }
+  .lg-hover.glass-card:hover,
+  .lg-liquid.lg-hover:hover {
+    --lg-rim: rgb(255 255 255 / 0.28);
+    box-shadow:
+      inset 0 1px 0 var(--lg-rim),
+      inset 1px 0 0 rgb(255 255 255 / 0.1),
+      inset 0 -1px 0 rgb(255 255 255 / 0.04),
+      inset -1px 0 0 rgb(74 222 128 / 0.14),
+      inset 0 0 48px rgb(255 255 255 / 0.035),
+      var(--shadow-lg);
+  }
+
+  /* ── Quote console ────────────────────────────────────────────────────
+     Three dials and a recessed price screen. A dial is a cylinder of
+     options rotating about the x axis behind a window: items are placed
+     with rotateX(-a) translateZ(r), the cylinder turns by rotateX(index·step),
+     which brings item `index` to the front. Transforms only. */
+  .console {
+    text-align: left;
+    border: 1px solid var(--border-default);
+    border-radius: var(--radius-md, 6px);
+    background: color-mix(in srgb, var(--carbon-900) 82%, transparent);
+    box-shadow: var(--edge-top), inset 0 0 0 1px rgb(0 0 0 / 0.3);
+    overflow: hidden;
+  }
+  .console__bar {
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 10px 16px;
+    border-bottom: 1px solid var(--border-subtle);
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    letter-spacing: var(--tracking-label);
+    text-transform: uppercase;
+    color: var(--ink-400);
+  }
+  .console__body {
+    display: grid;
+    gap: 24px;
+    padding: 24px 20px;
+  }
+  @media (min-width: 64rem) {
+    .console__body {
+      grid-template-columns: auto minmax(0, 1fr);
+      align-items: center;
+      gap: 32px;
+      padding: 28px 32px;
+    }
+  }
+  /* ── Small screens ────────────────────────────────────────────────────
+     Under 40rem the three dials cannot sit in a row: the GPU dial takes a
+     full row and count and hours share the next. From 40rem they are a row
+     with fixed widths. */
+  .console__drums {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+  .drum--gpu {
+    grid-column: 1 / -1;
+  }
+  @media (min-width: 40rem) {
+    .console__drums {
+      display: flex;
+      gap: 14px;
+      justify-content: center;
+      align-items: center;
+    }
+    .drum--gpu {
+      width: 196px;
+    }
+    .drum--count,
+    .drum--hours {
+      width: 132px;
+    }
+  }
+  /* The rack row, fitted to a narrow column: laid out at ~1.9× the column
+     and scaled down, with the box sized to the scaled result. */
+  .rack3d-fit {
+    position: relative;
+    height: 206px;
+    overflow: hidden;
+    -webkit-mask-image: linear-gradient(180deg, #000 80%, transparent);
+    mask-image: linear-gradient(180deg, #000 80%, transparent);
+  }
+  .rack3d-fit > .rack3d {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 192%;
+    transform: scale(0.52);
+    transform-origin: 0 0;
+  }
+
+  /* ── Circuit-trace substrate ──────────────────────────────────────────
+     The console is a board: a raised Carbon plate with a faint PCB trace
+     pattern in Hydro across it, and a pulse of current that runs along the
+     traces toward the screen every three seconds or so. The pattern is one 96px
+     seamless SVG tile; the pulse is the same tile, brighter, revealed by a
+     travelling band mask. Two static-content layers, one animated mask. */
+  .console {
+    background:
+      linear-gradient(
+        180deg,
+        color-mix(in srgb, var(--carbon-700) 94%, transparent),
+        color-mix(in srgb, var(--carbon-800) 96%, transparent)
+      );
+    box-shadow:
+      var(--edge-top-strong),
+      inset 0 0 0 1px rgb(0 0 0 / 0.35),
+      var(--shadow-lg),
+      0 0 80px rgb(74 222 128 / 0.06);
+  }
+  .console__bar,
+  .console__body {
+    position: relative;
+    z-index: 1;
+  }
+  .console__traces,
+  .console__pulse {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='96' height='96' viewBox='0 0 96 96' fill='none' stroke='%234ADE80' stroke-width='1'%3E%3Cpath d='M0 16H40V40H96M0 40H20V72H60V96M60 0V12H84V56H96M0 56H8V88H32V96M32 0V8H48M72 16H96'/%3E%3Cg fill='%2305080D'%3E%3Ccircle cx='48' cy='8' r='2'/%3E%3Ccircle cx='72' cy='16' r='2'/%3E%3Ccircle cx='20' cy='72' r='2'/%3E%3Ccircle cx='84' cy='56' r='2'/%3E%3Ccircle cx='8' cy='88' r='2'/%3E%3Ccircle cx='40' cy='40' r='2'/%3E%3C/g%3E%3Crect x='58' y='10' width='4' height='4' fill='%234ADE80' stroke='none'/%3E%3Crect x='18' y='38' width='4' height='4' fill='%234ADE80' stroke='none'/%3E%3C/svg%3E");
+    background-size: 96px 96px;
+  }
+  .console__traces {
+    opacity: 0.09;
+    /* Full under the dials, fading toward the far edges so the board has
+       no hard end. */
+    -webkit-mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+    mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+  }
+  .console__pulse {
+    opacity: 0.55;
+    /* The band mask repeats every 140% of the pane — the pane plus the
+       band's own 40% — so the next band enters at the left the moment the
+       previous one clears the right; there is never a dead stretch. One
+       cycle moves exactly one tile, so the loop is seamless, and 4.4 s per
+       tile is the same on-screen speed as the original single band. */
+    -webkit-mask-image: linear-gradient(
+      100deg,
+      transparent 36%,
+      rgb(0 0 0 / 0.5) 48%,
+      #000 50%,
+      rgb(0 0 0 / 0.5) 52%,
+      transparent 64%
+    );
+    mask-image: linear-gradient(
+      100deg,
+      transparent 36%,
+      rgb(0 0 0 / 0.5) 48%,
+      #000 50%,
+      rgb(0 0 0 / 0.5) 52%,
+      transparent 64%
+    );
+    -webkit-mask-size: 140% 100%;
+    mask-size: 140% 100%;
+    -webkit-mask-repeat: repeat-x;
+    mask-repeat: repeat-x;
+    animation: cv-current 4.4s linear infinite;
+  }
+  @keyframes cv-current {
+    from {
+      -webkit-mask-position: 350% 0;
+      mask-position: 350% 0;
+    }
+    to {
+      -webkit-mask-position: 0% 0;
+      mask-position: 0% 0;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .console__pulse {
+      display: none;
+    }
+  }
+
+  /* ── Dial ─────────────────────────────────────────────────────────────
+     A housing — bordered, lit along its top edge, a shade lighter than the
+     console — around a recessed window. */
+  .drum {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    padding: 10px 8px 6px;
+    border: 1px solid rgb(232 236 239 / 0.18);
+    border-radius: var(--radius-md, 6px);
+    /* A machined block, solid and a step lighter than the board: four
+       corner screws, a fine brushed grain, and a top-lit face. */
+    background:
+      radial-gradient(circle at 9px 9px, rgb(232 236 239 / 0.4) 0 1.6px, rgb(0 0 0 / 0.7) 2.1px, transparent 3px),
+      radial-gradient(circle at calc(100% - 9px) 9px, rgb(232 236 239 / 0.4) 0 1.6px, rgb(0 0 0 / 0.7) 2.1px, transparent 3px),
+      radial-gradient(circle at 9px calc(100% - 9px), rgb(232 236 239 / 0.4) 0 1.6px, rgb(0 0 0 / 0.7) 2.1px, transparent 3px),
+      radial-gradient(circle at calc(100% - 9px) calc(100% - 9px), rgb(232 236 239 / 0.4) 0 1.6px, rgb(0 0 0 / 0.7) 2.1px, transparent 3px),
+      repeating-linear-gradient(90deg, rgb(255 255 255 / 0.035) 0 1px, transparent 1px 3px),
+      linear-gradient(180deg, var(--carbon-500, #171d27) 0%, var(--carbon-600) 45%, #0d121a 100%);
+    box-shadow:
+      inset 0 1px 0 rgb(232 236 239 / 0.24),
+      inset 1px 0 0 rgb(232 236 239 / 0.08),
+      inset -1px 0 0 rgb(0 0 0 / 0.45),
+      inset 0 -1px 0 rgb(0 0 0 / 0.75),
+      0 8px 22px rgb(0 0 0 / 0.6),
+      0 1px 0 rgb(0 0 0 / 0.8);
+    user-select: none;
+    touch-action: none;
+    transition: border-color var(--duration-normal) var(--ease-standard);
+  }
+  .drum:hover,
+  .drum:focus-within {
+    border-color: var(--border-hydro);
+  }
+  .drum__label {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding: 0 4px;
+    margin-bottom: 6px;
+    font-family: var(--font-mono);
+    font-size: 11.5px;
+    letter-spacing: var(--tracking-label);
+    text-transform: uppercase;
+    color: var(--ink-100);
+  }
+  .drum__hint {
+    font-size: 9px;
+    color: var(--ink-600);
+    transition: color var(--duration-normal) var(--ease-standard);
+  }
+  .drum:hover .drum__hint,
+  .drum:focus-within .drum__hint {
+    color: var(--hydro);
+  }
+  .drum__chev {
+    display: flex;
+    justify-content: center;
+    padding: 3px 0;
+    border: 0;
+    background: none;
+    color: var(--ink-500);
+    cursor: pointer;
+    transition: color var(--duration-fast) var(--ease-standard);
+  }
+  .drum__chev:hover:not(:disabled) {
+    color: var(--hydro);
+  }
+  .drum__chev:disabled {
+    color: var(--ink-700);
+    cursor: default;
+  }
+  /* The window: recessed into the housing. Border and shadow sit on this
+     box; the fade mask sits on the view inside it, so the frame stays crisp. */
+  .drum__win {
+    position: relative;
+    height: 156px;
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-sm, 4px);
+    background: var(--carbon-900);
+    box-shadow: inset 0 2px 12px rgb(0 0 0 / 0.65);
+    cursor: ns-resize;
+    overflow: hidden;
+  }
+  .drum__view {
+    position: absolute;
+    inset: 0;
+    perspective: 760px;
+    -webkit-mask-image: linear-gradient(180deg, transparent, #000 24%, #000 76%, transparent);
+    mask-image: linear-gradient(180deg, transparent, #000 24%, #000 76%, transparent);
+  }
+  /* Knurled grips: ridged metal strips down both sides. */
+  .drum__grip {
+    position: absolute;
+    top: 6px;
+    bottom: 6px;
+    width: 9px;
+    z-index: 1;
+    border-radius: 2px;
+    background:
+      repeating-linear-gradient(180deg, rgb(232 236 239 / 0.26) 0 1px, transparent 1px 4px),
+      linear-gradient(180deg, rgb(232 236 239 / 0.08), rgb(232 236 239 / 0.02));
+    box-shadow: inset 0 0 0 1px rgb(0 0 0 / 0.4);
+  }
+  .drum__grip--l {
+    left: 4px;
+  }
+  .drum__grip--r {
+    right: 4px;
+  }
+  .drum__cyl {
+    position: absolute;
+    inset: 0 18px;
+    transform-style: preserve-3d;
+    transform: rotateX(var(--rot, 0deg));
+    transition: transform var(--duration-slow) var(--ease-standard);
+  }
+  /* The intro. Held: parked a few turns off, no transition, so the first
+     frame is already there. Spinning: a long ease-out with a slow tail, so
+     each dial whirs and settles like a lock; --spin-delay staggers them. */
+  .drum__cyl[data-phase="hold"] {
+    transition: none;
+  }
+  .drum__cyl[data-phase="spin"] {
+    transition: transform 1700ms cubic-bezier(0.16, 1, 0.3, 1) var(--spin-delay, 0ms);
+  }
+  .drum__item {
+    position: absolute;
+    inset-inline: 0;
+    top: 50%;
+    height: 46px;
+    margin-top: -23px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: center;
+    gap: 4px;
+    padding-inline: 14px;
+    font-family: var(--font-mono);
+    font-size: 14px;
+    line-height: 1;
+    color: var(--ink-300);
+    background: none;
+    border: 0;
+    cursor: pointer;
+    white-space: nowrap;
+    backface-visibility: hidden;
+    /* r = 100px: at 30° a step, neighbours sit 50px apart, clear of the
+       46px rows. */
+    transform: rotateX(calc(var(--a, 0deg) * -1)) translateZ(100px);
+    transition:
+      color var(--duration-normal) var(--ease-standard),
+      font-size var(--duration-normal) var(--ease-standard);
+  }
+  .drum__item:hover {
+    color: var(--ink-100);
+  }
+  .drum__item[data-on] {
+    font-size: 16px;
+    font-weight: 500;
+    color: var(--ink-100);
+    text-shadow: 0 0 14px rgb(74 222 128 / 0.5);
+  }
+  .drum__sub {
+    font-size: 9.5px;
+    letter-spacing: 0.06em;
+    color: var(--ink-500);
+  }
+  .drum__item[data-on] .drum__sub {
+    color: var(--hydro);
+  }
+  /* The selected row: hairlines, a Hydro tick, a faint Hydro fill. */
+  .drum__edge {
+    position: absolute;
+    inset-inline: 18px;
+    top: 50%;
+    height: 46px;
+    margin-top: -23px;
+    pointer-events: none;
+    border-top: 1px solid var(--border-hydro);
+    border-bottom: 1px solid var(--border-hydro);
+    background: linear-gradient(90deg, rgb(74 222 128 / 0.14), rgb(74 222 128 / 0.03));
+  }
+  .drum__edge::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 50%;
+    width: 3px;
+    height: 16px;
+    margin-top: -8px;
+    background: var(--hydro);
+    box-shadow: 0 0 8px var(--hydro);
+  }
+
+  /* ── Screen ───────────────────────────────────────────────────────── */
+  .console__screen {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    min-width: 0;
+    padding: 22px 24px;
+    border-radius: var(--radius-md, 6px);
+    border: 1px solid var(--border-strong);
+    background: var(--carbon-900);
+    box-shadow: inset 0 2px 14px rgb(0 0 0 / 0.6), var(--edge-top);
+  }
+  .console__eyebrow,
+  .console__note,
+  .console__key {
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    letter-spacing: var(--tracking-label);
+    text-transform: uppercase;
+    color: var(--ink-500);
+  }
+  .console__price {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    margin-top: 8px;
+    font-family: var(--font-mono);
+    font-size: clamp(2.2rem, 4vw, 3.2rem);
+    font-weight: 500;
+    line-height: 1;
+    letter-spacing: -0.02em;
+    color: var(--hydro);
+    /* A filter, not a text-shadow: the rolling digits are clipped columns,
+       and a text-shadow would clip into rectangles with them. */
+    filter: drop-shadow(0 0 14px rgb(74 222 128 / 0.35));
+  }
+  .console__unit {
+    font-size: 0.48em;
+    color: var(--ink-400);
+  }
+  .console__per {
+    font-size: 0.4em;
+    color: var(--ink-500);
+  }
+  .console__rows {
+    margin-top: 18px;
+    border-top: 1px solid var(--border-subtle);
+  }
+  .console__row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 16px;
+    padding: 9px 0;
+    border-bottom: 1px solid var(--border-subtle);
+  }
+  .console__val {
+    font-family: var(--font-mono);
+    font-size: 13.5px;
+    color: var(--ink-100);
+    white-space: nowrap;
+  }
+  .console__val--dim {
+    color: var(--ink-400);
+  }
+  .console__actions {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+    margin-top: 20px;
+    text-align: center;
+  }
+  /* While the price readout is commented out the screen holds only the
+     configuration line and the button: fill the row so the panel matches
+     the dials' height, and centre both ways. */
+  .console__screen--cta {
+    align-self: stretch;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+  }
+  .console__screen--cta .console__actions {
+    margin-top: 16px;
+  }
+
+  /* Odometer: each digit is a strip of 0–9 that slides to the digit. */
+  .odo {
+    display: inline-flex;
+    align-items: baseline;
+    font-variant-numeric: tabular-nums;
+  }
+  /* Mono glyphs are 0.6em wide; a new column grows from 0 to that. */
+  .odo__col,
+  .odo__sep {
+    display: inline-block;
+    width: 0.6em;
+    height: 1em;
+    overflow: hidden;
+    line-height: 1;
+    text-align: center;
+    transition: width var(--duration-slow) var(--ease-standard);
+  }
+  .odo__col[data-new],
+  .odo__sep[data-new] {
+    width: 0;
+  }
+  .odo__strip {
+    display: flex;
+    flex-direction: column;
+    line-height: 1;
+    transform: translateY(calc(var(--d, 0) * -1em));
+    transition: transform var(--duration-slow) var(--ease-standard);
+  }
+  .odo__strip > span {
+    display: block;
+    height: 1em;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .drum__cyl,
+    .odo__strip {
+      transition: none;
+    }
+  }
+
+  /* ══ MOTION ══════════════════════════════════════════════════════════════
+     Scroll reveals. <Reveal> sets data-reveal and, once intersecting,
+     data-shown — so the resting state is declarative CSS and the observer
+     only ever flips one attribute. The --d custom property staggers a group.
+
+     Durations and curves are the design system's: --duration-slow (360ms) on
+     --ease-out. Opacity and a short translate only — no blur, no scale
+     overshoot; motion is mechanical. */
+
+  /* The hidden state is scoped to `prefers-reduced-motion: no-preference`
+     AND to .cv-js on <html>. Two failure modes are closed by that pair:
+     someone who asked for no motion never sees content animate in, and if
+     the reveal script never runs at all (JS off, hydration error) the hidden
+     rule was never applied in the first place — the page just renders. */
+  html.cv-js [data-reveal] {
+    opacity: 0;
+    transform: translate3d(0, var(--reveal-y, 14px), 0);
+    transition:
+      opacity var(--duration-slow) var(--ease-out) var(--d, 0ms),
+      transform var(--duration-slow) var(--ease-out) var(--d, 0ms);
+  }
+  html.cv-js [data-reveal][data-shown] {
+    opacity: 1;
+    transform: none;
+  }
+
+  /* Horizontal variants, for split sections that enter from the sides. */
+  html.cv-js [data-reveal="left"]:not([data-shown]) {
+    --reveal-y: 0px;
+    transform: translate3d(-20px, 0, 0);
+  }
+  html.cv-js [data-reveal="right"]:not([data-shown]) {
+    --reveal-y: 0px;
+    transform: translate3d(20px, 0, 0);
+  }
+  html.cv-js [data-reveal="scale"]:not([data-shown]) {
+    --reveal-y: 0px;
+    transform: scale(0.985);
+  }
+  /* Tilt: a pane lying back a few degrees that comes flat as it crosses the
+     fold. Perspective is on the element itself, so no wrapper is needed. */
+  html.cv-js [data-reveal="tilt"]:not([data-shown]) {
+    --reveal-y: 0px;
+    transform: perspective(1200px) rotateX(5deg) translateY(22px);
+    transform-origin: 50% 100%;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html.cv-js [data-reveal] {
+      opacity: 1;
+      transform: none;
+    }
+  }
+
+  /* Marquee. Duplicated content plus a -50% translate is the only version
+     that loops without a visible seam at any width. */
+  .marquee {
+    display: flex;
+    width: max-content;
+    animation: cv-marquee var(--marquee-duration, 48s) linear infinite;
+  }
+  .marquee:hover {
+    animation-play-state: paused;
+  }
+  @keyframes cv-marquee {
+    to {
+      transform: translate3d(-50%, 0, 0);
+    }
+  }
+
+  /* Edge fade for any horizontally-scrolling strip. */
+  .edge-fade {
+    -webkit-mask-image: linear-gradient(
+      90deg,
+      transparent,
+      #000 9%,
+      #000 91%,
+      transparent
+    );
+    mask-image: linear-gradient(
+      90deg,
+      transparent,
+      #000 9%,
+      #000 91%,
+      transparent
+    );
+  }
+
+  /* A hairline that fades out at both ends — used instead of full-bleed
+     section rules, which chop a dark page into visible stripes. */
+  .rule-fade {
+    height: 1px;
+    border: 0;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      var(--border-default) 18%,
+      var(--border-default) 82%,
+      transparent
+    );
+  }
+
+  /* Vertical trace: the thin animated line that runs down a section spine.
+     Hydro — the one glow the system allows. */
+  .trace {
+    position: relative;
+    overflow: hidden;
+    background: var(--border-subtle);
+  }
+  .trace::after {
+    content: "";
+    position: absolute;
+    inset-inline: 0;
+    height: 28%;
+    background: linear-gradient(
+      180deg,
+      transparent,
+      var(--hydro) 50%,
+      transparent
+    );
+    animation: cv-trace 4.5s var(--ease-standard) infinite;
+  }
+  @keyframes cv-trace {
+    0% {
+      transform: translateY(-120%);
+      opacity: 0;
+    }
+    18%,
+    72% {
+      opacity: 0.9;
+    }
+    100% {
+      transform: translateY(420%);
+      opacity: 0;
+    }
+  }
+
+  /* Skeleton shimmer — used by the portal's loading states in place of a
+     spinner, so the page reserves the shape it is about to fill. */
+  .skeleton {
+    background:
+      linear-gradient(
+        90deg,
+        transparent,
+        rgb(232 236 239 / 0.06) 50%,
+        transparent
+      )
+      var(--carbon-700);
+    background-size: 220% 100%;
+    animation: cv-shimmer 1.6s linear infinite;
+  }
+  @keyframes cv-shimmer {
+    to {
+      background-position: -220% 0;
+    }
+  }
+
+  /* ══ TYPE ════════════════════════════════════════════════════════════════ */
+
+  /* Display type: the design system's headline role — Manrope, bold, tight
+     tracking, tight leading — plus balanced wrapping. */
+  .display {
+    font-family: var(--type-heading-family);
+    font-weight: var(--type-heading-weight);
+    letter-spacing: var(--type-heading-tracking);
+    line-height: var(--leading-tight);
+    text-wrap: balance;
+    color: var(--text-primary);
+  }
+  .display-sub {
+    color: var(--text-secondary);
+  }
+
+  /* Tabular figures everywhere a number can change: metrics, prices,
+     counters. Without this a live value visibly jitters as digits swap. */
+  .nums {
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: "tnum" 1;
+  }
+
+  /* ══ STAGGER WIPE ════════════════════════════════════════════════════════
+     Each word rises out of its own clipped line, one after the other, when
+     the enclosing [data-reveal] is shown. The --i index staggers them. Under
+     reduced motion, and without the JS gate, words simply sit in place. */
+  .wipe__w {
+    display: inline-block;
+    overflow: hidden;
+    vertical-align: bottom;
+    padding-bottom: 0.12em;
+    margin-bottom: -0.12em;
+  }
+  .wipe__t {
+    display: inline-block;
+  }
+  html.cv-js [data-reveal] .wipe__t {
+    transform: translateY(112%);
+    transition: transform var(--duration-slow) var(--ease-out)
+      calc(var(--d, 0ms) + var(--i, 0) * 55ms);
+  }
+  html.cv-js [data-reveal][data-shown] .wipe__t {
+    transform: none;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    html.cv-js [data-reveal] .wipe__t {
+      transform: none;
+    }
+  }
+
+  /* ══ BEAM ════════════════════════════════════════════════════════════════
+     A short arc of Hydro light travelling around a pane's border. The conic
+     gradient is masked to the 1px border box, and its start angle is a
+     registered custom property so it can be animated. */
+  .beam::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    padding: 1px;
+    border-radius: inherit;
+    pointer-events: none;
+    background: conic-gradient(
+      from var(--beam),
+      transparent 0deg,
+      transparent 296deg,
+      rgb(74 222 128 / 0.95) 338deg,
+      transparent 360deg
+    );
+    -webkit-mask:
+      linear-gradient(#000 0 0) content-box,
+      linear-gradient(#000 0 0);
+    mask:
+      linear-gradient(#000 0 0) content-box,
+      linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    animation: cv-beam 7s linear infinite;
+  }
+  @keyframes cv-beam {
+    to {
+      --beam: 360deg;
+    }
+  }
+
+  /* ══ RACK ROW, IN PERSPECTIVE ════════════════════════════════════════════
+     Three glass racks on a stage turned so their top and left faces show.
+     --rx/--ry are written by the component from the pointer; the defaults
+     are the resting pose. Every transition is the standard mechanical curve. */
+  .rack3d {
+    perspective: 1400px;
+    perspective-origin: 50% 40%;
+  }
+  .rack3d__stage {
+    display: flex;
+    gap: 18px;
+    align-items: flex-end;
+    padding: 40px 0 8px 32px;
+    transform-style: preserve-3d;
+    transform: rotateX(var(--rx, -8deg)) rotateY(var(--ry, 16deg));
+    transition: transform var(--duration-slow) var(--ease-standard);
+  }
+  .rack3d__rack {
+    position: relative;
+    flex: 1 1 0;
+    min-width: 0;
+    transform-style: preserve-3d;
+    transform: translateZ(var(--z, 0px));
+    /* A solid surface: a backdrop-filter inside a preserve-3d stage forces a
+       fresh backdrop read for every rack on every frame the floor moves. */
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+    background-color: var(--carbon-800);
+    transition:
+      transform var(--duration-slow) var(--ease-standard),
+      border-color var(--duration-normal) var(--ease-standard),
+      box-shadow var(--duration-normal) var(--ease-standard);
+  }
+  .rack3d__rack:hover,
+  .rack3d__rack[data-tap] {
+    transform: translateZ(calc(var(--z, 0px) + 64px));
+    border-color: var(--border-hydro);
+    box-shadow: var(--edge-top-strong), var(--shadow-lg), var(--glow-hydro-md);
+  }
+  /* The trays fan open like drawers when their rack is pulled out: a depth
+     step that grows from the top tray to the bottom one. The list keeps a 3D
+     context so the steps compose with the rack's own transform. */
+  .rack3d__trays {
+    transform-style: preserve-3d;
+  }
+  .rack3d__tray {
+    transform: translateZ(0);
+    transition: transform var(--duration-slow) var(--ease-standard);
+  }
+  .rack3d__rack:hover .rack3d__tray,
+  .rack3d__rack[data-tap] .rack3d__tray {
+    transform: translateZ(calc(var(--t, 0) * 4px)) translateX(calc(var(--t, 0) * 0.5px));
+  }
+  /* Left and top faces: thin slabs folded back at right angles, so each
+     rack reads as a box with depth rather than a card. They deepen as the
+     rack pulls out. */
+  .rack3d__side,
+  .rack3d__top {
+    position: absolute;
+    pointer-events: none;
+    border: 1px solid var(--border-subtle);
+    transition:
+      width var(--duration-slow) var(--ease-standard),
+      height var(--duration-slow) var(--ease-standard);
+  }
+  .rack3d__rack:hover .rack3d__side,
+  .rack3d__rack[data-tap] .rack3d__side {
+    width: 40px;
+  }
+  .rack3d__rack:hover .rack3d__top,
+  .rack3d__rack[data-tap] .rack3d__top {
+    height: 40px;
+  }
+  /* Load following the cursor: a full-height Hydro overlay per cell whose
+     opacity is the cell's --hot, written by the component. */
+  .rack__hot {
+    position: absolute;
+    inset: 0;
+    background: rgb(74 222 128 / 0.95);
+    box-shadow: 0 0 8px rgb(74 222 128 / 0.8);
+    opacity: var(--hot, 0);
+    transition: opacity var(--duration-fast) linear;
+  }
+  .rack3d__side {
+    top: 0;
+    bottom: 0;
+    right: 100%;
+    width: 22px;
+    background: var(--carbon-800);
+    transform-origin: right center;
+    transform: rotateY(90deg);
+    border-radius: 4px 0 0 4px;
+  }
+  .rack3d__top {
+    left: 0;
+    right: 0;
+    bottom: 100%;
+    height: 22px;
+    background: var(--carbon-600);
+    transform-origin: center bottom;
+    transform: rotateX(-90deg);
+    border-radius: 4px 4px 0 0;
+  }
+
+  /* A rack held pulled-out and lit by the pinned story (data-lit on .rack3d):
+     the same pose as hover, plus its cells at least half hot, and the row
+     turned a little further toward the viewer for each step. */
+  .rack3d[data-lit="0"] {
+    --ry: 22deg;
+  }
+  .rack3d[data-lit="1"] {
+    --ry: 14deg;
+  }
+  .rack3d[data-lit="2"] {
+    --ry: 6deg;
+  }
+  .rack3d[data-lit="0"] .rack3d__rack:nth-child(1),
+  .rack3d[data-lit="1"] .rack3d__rack:nth-child(2),
+  .rack3d[data-lit="2"] .rack3d__rack:nth-child(3) {
+    transform: translateZ(calc(var(--z, 0px) + 64px));
+    border-color: var(--border-hydro);
+    box-shadow: var(--edge-top-strong), var(--shadow-lg), var(--glow-hydro-md);
+  }
+  .rack3d[data-lit="0"] .rack3d__rack:nth-child(1) .rack3d__tray,
+  .rack3d[data-lit="1"] .rack3d__rack:nth-child(2) .rack3d__tray,
+  .rack3d[data-lit="2"] .rack3d__rack:nth-child(3) .rack3d__tray {
+    transform: translateZ(calc(var(--t, 0) * 4px)) translateX(calc(var(--t, 0) * 0.5px));
+  }
+  .rack3d[data-lit="0"] .rack3d__rack:nth-child(1) .rack3d__side,
+  .rack3d[data-lit="1"] .rack3d__rack:nth-child(2) .rack3d__side,
+  .rack3d[data-lit="2"] .rack3d__rack:nth-child(3) .rack3d__side {
+    width: 40px;
+  }
+  .rack3d[data-lit="0"] .rack3d__rack:nth-child(1) .rack3d__top,
+  .rack3d[data-lit="1"] .rack3d__rack:nth-child(2) .rack3d__top,
+  .rack3d[data-lit="2"] .rack3d__rack:nth-child(3) .rack3d__top {
+    height: 40px;
+  }
+  .rack3d[data-lit="0"] .rack3d__rack:nth-child(1) .rack__hot,
+  .rack3d[data-lit="1"] .rack3d__rack:nth-child(2) .rack__hot,
+  .rack3d[data-lit="2"] .rack3d__rack:nth-child(3) .rack__hot {
+    opacity: max(var(--hot, 0), 0.55);
+  }
+
+  /* ══ HORIZON ═════════════════════════════════════════════════════════════
+     A section's opening line. The Reveal wrapper itself stays visible (the
+     base reveal rule would fade it); its children carry the motion once
+     data-shown lands: the rule draws left to right under a head of Hydro
+     light, then the index and name clip in at the right. */
+  html.cv-js [data-reveal="horizon"]:not([data-shown]) {
+    --reveal-y: 0px;
+    opacity: 1;
+  }
+  .horizon__line {
+    position: relative;
+    display: block;
+    height: 1px;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      var(--border-default) 18%,
+      var(--border-default) 82%,
+      transparent
+    );
+    transform: scaleX(0);
+    transform-origin: 0 50%;
+  }
+  .horizon__head {
+    position: absolute;
+    top: -1px;
+    left: 0;
+    width: 160px;
+    height: 3px;
+    margin-left: -160px;
+    opacity: 0;
+    background: linear-gradient(90deg, transparent, var(--hydro));
+    box-shadow: 0 0 14px 1px rgb(74 222 128 / 0.55);
+  }
+  .horizon__label {
+    position: absolute;
+    right: var(--spacing-10, 40px);
+    top: 8px;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: var(--tracking-label, 0.12em);
+    text-transform: uppercase;
+    color: var(--ink-600);
+    clip-path: inset(0 0 0 100%);
+  }
+  html.cv-js [data-reveal="horizon"][data-shown] .horizon__line {
+    animation: cv-horizon-draw 1000ms var(--ease-out) forwards;
+  }
+  html.cv-js [data-reveal="horizon"][data-shown] .horizon__head {
+    animation: cv-horizon-sweep 1000ms var(--ease-out) forwards;
+  }
+  html.cv-js [data-reveal="horizon"][data-shown] .horizon__label {
+    transition: clip-path var(--duration-slow) var(--ease-out) 420ms;
+    clip-path: inset(0 0 0 0);
+  }
+  html:not(.cv-js) .horizon__line {
+    transform: none;
+  }
+  html:not(.cv-js) .horizon__label {
+    clip-path: none;
+  }
+  @keyframes cv-horizon-draw {
+    to {
+      transform: scaleX(1);
+    }
+  }
+  @keyframes cv-horizon-sweep {
+    0% {
+      left: 0;
+      opacity: 1;
+    }
+    85% {
+      opacity: 1;
+    }
+    100% {
+      left: calc(100% + 160px);
+      opacity: 0;
+    }
+  }
+
+  /* ══ RAIL ════════════════════════════════════════════════════════════════
+     The packet at the end of the progress fill, and the pulse a section's
+     dot gives when the packet lands on it. */
+  .rail__packet {
+    animation: cv-packet 1.6s var(--ease-standard) infinite alternate;
+  }
+  .rail__land {
+    animation: cv-land 700ms var(--ease-out) both;
+  }
+  @keyframes cv-packet {
+    from {
+      box-shadow: 0 0 6px 1px rgb(74 222 128 / 0.55);
+    }
+    to {
+      box-shadow: 0 0 12px 3px rgb(74 222 128 / 0.85);
+    }
+  }
+  @keyframes cv-land {
+    0% {
+      transform: scale(3);
+      box-shadow: 0 0 0 0 rgb(74 222 128 / 0.7);
+    }
+    100% {
+      transform: scale(1);
+      box-shadow: 0 0 10px 6px rgb(74 222 128 / 0);
+    }
+  }
+
+  /* ══ SCROLL SCRUB ════════════════════════════════════════════════════════
+     --sp (0 → 1) is written on a host by <ScrollScrub>. The hero's layers
+     drift apart at different rates as it scrolls away; the architecture
+     spine fills as the section passes through the viewport. All of these
+     rest at their --sp: 0 values without JS or under reduced motion. */
+  .hero-copy {
+    transform: translate3d(0, calc(var(--sp, 0) * -48px), 0);
+    opacity: calc(1 - var(--sp, 0) * 0.7);
+  }
+  .hero-term {
+    transform: translate3d(0, calc(var(--sp, 0) * 72px), 0);
+    opacity: calc(1 - var(--sp, 0) * 0.5);
+  }
+  .hero-stats {
+    transform: translate3d(0, calc(var(--sp, 0) * -64px), 0);
+  }
+  .trace::before {
+    content: "";
+    position: absolute;
+    inset-inline: 0;
+    top: 0;
+    height: calc(var(--sp, 0) * 130%);
+    background: linear-gradient(180deg, var(--hydro), rgb(74 222 128 / 0.15));
+    box-shadow: 0 0 10px rgb(74 222 128 / 0.5);
+  }
+
+  /* ══ RACK ════════════════════════════════════════════════════════════════
+     GPU cells whose fill rises and falls like utilisation, and a status LED
+     that blinks once in a while, all staggered by --i. The fill also boots —
+     scales up from empty — the first time its section is revealed; until
+     then both animations wait. */
+  .rack__cell {
+    transform-origin: 50% 100%;
+    animation: cv-boot 900ms var(--ease-out) calc(var(--i, 0) * 12ms) both;
+  }
+  .rack__fill {
+    position: absolute;
+    inset-inline: 0;
+    bottom: 0;
+    height: 100%;
+    /* Scaled, never resized: a height animation lays out every cell on
+       every frame; a transform stays on the compositor. */
+    transform: scaleY(0.35);
+    transform-origin: 50% 100%;
+    background: linear-gradient(
+      180deg,
+      rgb(74 222 128 / 0.95),
+      rgb(74 222 128 / 0.35)
+    );
+    animation: cv-util 4.2s var(--ease-standard) calc(var(--i, 0) * -0.37s) infinite alternate;
+  }
+  html.cv-js [data-reveal]:not([data-shown]) .rack__fill,
+  html.cv-js [data-reveal]:not([data-shown]) .rack__cell {
+    animation-play-state: paused;
+  }
+  @keyframes cv-boot {
+    from {
+      transform: scaleY(0);
+    }
+    to {
+      transform: scaleY(1);
+    }
+  }
+  @keyframes cv-util {
+    0% {
+      transform: scaleY(0.22);
+      opacity: 0.7;
+    }
+    50% {
+      transform: scaleY(0.8);
+      opacity: 1;
+    }
+    100% {
+      transform: scaleY(0.42);
+      opacity: 0.85;
+    }
+  }
+  .rack__led {
+    box-shadow: 0 0 6px var(--hydro);
+    animation: cv-led 2.6s steps(1) calc(var(--i, 0) * -0.5s) infinite;
+  }
+  @keyframes cv-led {
+    0%,
+    88% {
+      opacity: 1;
+    }
+    92% {
+      opacity: 0.25;
+    }
+    96% {
+      opacity: 1;
+    }
+  }
+}

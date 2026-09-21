@@ -5,12 +5,17 @@
 
 # next
 /.next/
+/.next-build/
 /out/
 /build
 next-env.d.ts
 
 # production
 .vercel
+
+# docs site: built from corevalley-docs/ by `npm run docs:build`
+/public/docs/
+/corevalley-docs/site/
 
 # typescript
 *.tsbuildinfo

@@ -51,17 +51,22 @@ in `meta.reviewedAt`.
 
 ## Quick start
 
-Requires **Node 20.9+**.
+Requires **Node 20.9+** and, for the documentation site, **Python 3.10+**.
 
 ```bash
 npm install
+pip install -r corevalley-docs/requirements.txt   # MkDocs + Material
 npm run dev          # http://localhost:3000
+npm run docs:dev     # http://127.0.0.1:8001  (docs, live reload)
 ```
 
 | Script | Does |
 |---|---|
 | `npm run dev` | Development server |
-| `npm run build` | Production build |
+| `npm run docs:dev` | MkDocs dev server for `corevalley-docs/` (the `/docs` links point here in dev) |
+| `npm run build` | Production build: MkDocs into `public/docs/`, then the Next.js static export |
+| `npm run build:web` | Next.js build only (reuses whatever is in `public/docs/`) |
+| `npm run docs:build` | MkDocs build only, into `public/docs/` |
 | `npm start` | Serve the production build |
 | `npm run typecheck` | `tsc --noEmit` |
 | `npm run lint` | ESLint |
@@ -88,7 +93,7 @@ npm run dev          # http://localhost:3000
 | `/use-cases` | Nepali-language LLMs, banking, healthcare, government, research, startups |
 | `/company` | Mission, principles, audiences, contact |
 | `/pricing` | Live NPR/USD and hourly/monthly toggles, comparison table, FAQ |
-| `/docs` · `/docs/[...slug]` | Quickstart, CLI reference, API reference |
+| `/docs/…` | Documentation — a MkDocs site, see below |
 | `/contact` | Sales enquiry form (posts to FormSubmit — no backend needed) |
 
 ### Portal
@@ -96,6 +101,31 @@ npm run dev          # http://localhost:3000
 Overview · Pods (list, launch wizard, live detail) · JupyterHub · Model
 endpoints · API keys · Dedicated nodes · vClusters · Network policy · Usage ·
 Billing · Audit log · Security · Settings
+
+### Documentation (`/docs`)
+
+The docs are **not** Next.js pages. They are a [MkDocs](https://www.mkdocs.org/)
+site with the Material theme, whose source lives in `corevalley-docs/`
+(`mkdocs.yml`, `docs/*.md`, `docs/assets/brand.css` for the brand tokens).
+`npm run docs:build` renders it into `public/docs/`, which is git-ignored and
+gets copied into `out/docs/` by the static export, so the docs ship at
+`/docs/` on the same GitHub Pages site. Every generated link is relative, so
+the same build works under the `/redesigned-portal` base path or a root
+domain.
+
+- Edit content in `corevalley-docs/docs/`, nav in `corevalley-docs/mkdocs.yml`.
+- `npm run docs:dev` serves it with live reload on port 8001; `.env.development`
+  points the site's docs links there because `next dev` does not serve
+  `public/docs/index.html` at `/docs/`.
+- App code links into the docs with `docsUrl()` from `lib/docs.ts` and a
+  plain `<a>`, never `<Link>` (it is not a Next route).
+- The deploy workflow installs `corevalley-docs/requirements.txt` and sets
+  `DOCS_SITE_URL` / `DOCS_HOMEPAGE` so canonical URLs and the header logo
+  link match the Pages URL.
+
+The previous in-app docs (`/docs`, `/docs/quickstart`, `/docs/cli`,
+`/docs/api`, built from a TypeScript content map) are archived, unbuilt, in
+`reference/legacy-next-docs/` with restore notes.
 
 ---
 
@@ -106,8 +136,21 @@ Billing · Audit log · Security · Settings
 - **CVA** for component variants, **Phosphor Icons** for glyphs
 - No CSS-in-JS, no animation library — canvas and CSS only
 
-Deploys anywhere Next.js runs. `output` is unset, so `npm run build && npm start`
-works as-is behind any reverse proxy.
+Deploys to GitHub Pages as a static export. `next.config.ts` sets
+`output: "export"` and `trailingSlash: true`; `.github/workflows/deploy.yml`
+builds on every push to `main` (or on demand from any branch via
+*Run workflow*), reads the base path from the repository's Pages settings,
+and uploads `out/`. Pages must be set to deploy from **GitHub Actions**.
+
+To check the export locally under the project subpath:
+
+```
+NEXT_PUBLIC_BASE_PATH=/redesigned-portal npm run build
+# then serve out/ under /redesigned-portal/ with any static server
+```
+
+(In Git Bash, prefix with `MSYS_NO_PATHCONV=1` so `/redesigned-portal` is not
+rewritten as a Windows path.)
 
 ---
 
@@ -174,7 +217,7 @@ for free.
 
 | Deviation | Why |
 |---|---|
-| **Glassmorphism** replaces "transparency and blur, sparingly" | Explicit client direction. Ground, accent, motion, corners and the no-emoji rule are unchanged. Four sanctioned recipes exist as `@utility` (`glass-card`, `glass-nav`, `glass-modal`, `glass-panel`), each with a solid fallback under `@supports not (backdrop-filter)`. |
+| **Glassmorphism** replaces "transparency and blur, sparingly" | Explicit client direction. Ground, accent, motion, corners and the no-emoji rule are unchanged. Four sanctioned recipes (`glass-card`, `glass-nav`, `glass-modal`, `glass-panel`) live in `app/glass.css` as selector aliases over one liquid-glass recipe (native SVG refraction on Chromium, plain blur elsewhere), each with a solid Carbon fallback under `@supports not (backdrop-filter)`. Buttons, inputs, tags and the terminal stay solid Carbon as the design system specifies. |
 | **Phosphor Icons** replaces the hand-rolled 30-glyph Lucide subset | The subset had no glyphs for API keys, invoices, certificates, clusters or charts. Wrapped behind a closed `IconName` union, so swapping libraries is a one-file change. |
 | **CVA + Tailwind** replaces the primitives' inline styles | The originals drove hover and press through `useState`, forcing `"use client"` on 7 of 11 components, dragging icon path data into the client bundle, and breaking hover for keyboard users while latching it on touch. Moving state to CSS inverts the ratio to **9 server, 2 client**. |
 
@@ -184,7 +227,7 @@ worth raising with the designer:
 
 - `Button` size `md` is `14px`; the type scale has 13 and 15, not 14.
 - `Terminal` body text is `13.5px`, also off-scale.
-- `Terminal` window dots are `#2A2F38`, which has no token.
+- `Terminal` window dots are `#2A2F38`, which has no token; rendered as `ink-700` (`#333944`), the nearest Ink step.
 - `Button` hover glow is `rgba(74,222,128,0.30)` while `--glow-hydro-md` is `0.40`.
 
 </details>

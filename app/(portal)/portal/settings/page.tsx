@@ -72,7 +72,7 @@ export default async function SettingsPage() {
                 <Icon name="folder" size={16} className="text-hydro" />
                 <h3 className="font-mono text-[13.5px] text-ink-100">{p.name}</h3>
               </div>
-              <p className="mt-2.5 font-body text-[12.5px] font-light leading-relaxed text-ink-400">
+              <p className="mt-2.5 text-[12.5px] leading-relaxed text-ink-400">
                 {p.description}
               </p>
               <p className="mt-3 border-t border-line-subtle pt-3 font-mono text-[11px] text-ink-600">
@@ -98,7 +98,7 @@ export default async function SettingsPage() {
             {users.map((u, i) => (
               <tr key={u.id} className={i > 0 ? "border-t border-line-subtle" : ""}>
                 <td className="px-4 py-3.5">
-                  <div className="font-body text-[13.5px] text-ink-100">{u.name}</div>
+                  <div className="text-[13.5px] text-ink-100">{u.name}</div>
                   <div className="mt-0.5 font-mono text-[11.5px] text-ink-600">
                     {u.email}
                   </div>

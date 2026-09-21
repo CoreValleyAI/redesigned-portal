@@ -61,7 +61,7 @@ export function Tabs({
               "focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-hydro",
               on
                 ? "border-b-hydro text-ink-100"
-                : "border-b-transparent text-fg-muted hover:text-ink-300",
+                : "border-b-transparent text-fg-muted hover:text-ink-200",
             )}
           >
             {t.label}
@@ -69,7 +69,7 @@ export function Tabs({
               <span
                 className={cn(
                   "rounded-pill px-1.75 py-px text-[10px] font-medium",
-                  on ? "bg-hydro/12 text-hydro" : "bg-carbon-500 text-ink-400",
+                  on ? "bg-hydro/12 text-hydro" : "bg-carbon-600 text-ink-400",
                 )}
               >
                 {t.badge}

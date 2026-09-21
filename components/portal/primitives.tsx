@@ -46,7 +46,7 @@ export function UtilBar({ value, width = 64 }: { value: number; width?: number }
           style={{ width: `${Math.min(100, Math.max(0, value))}%` }}
         />
       </div>
-      <span className="w-8 font-mono text-[11px] text-fg-muted">{value}%</span>
+      <span className="w-8 font-mono text-[11px] text-ink-500">{value}%</span>
     </div>
   );
 }
@@ -69,7 +69,7 @@ export function PortalPageHeader({
           {title}
         </h1>
         {description ? (
-          <p className="mt-1.5 max-w-2xl font-body text-[13.5px] font-light leading-relaxed text-ink-400">
+          <p className="mt-1.5 max-w-2xl text-[13.5px] leading-relaxed text-ink-400">
             {description}
           </p>
         ) : null}
@@ -102,7 +102,7 @@ export function MetricTile({
         {value}
       </p>
       {sub ? (
-        <p className="mt-2 font-body text-[12px] font-light text-ink-500">{sub}</p>
+        <p className="mt-2 text-[12px] text-ink-500">{sub}</p>
       ) : null}
     </Card>
   );
@@ -141,7 +141,7 @@ export function EmptyState({
       <div className="flex flex-col items-center gap-3 px-6 py-16 text-center">
         <Icon name={icon} size={28} className="text-ink-600" />
         <p className="font-mono text-sm text-ink-300">{title}</p>
-        <p className="max-w-sm font-body text-[13px] font-light text-ink-500">
+        <p className="max-w-sm text-[13px] text-ink-500">
           {body}
         </p>
         {action ? <div className="mt-2">{action}</div> : null}

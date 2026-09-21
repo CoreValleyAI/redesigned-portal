@@ -53,7 +53,7 @@ export default async function AuditPage() {
             weight="duotone"
             className={verification.verified ? "mt-0.5 shrink-0 text-hydro" : "mt-0.5 shrink-0 text-danger"}
           />
-          <p className="font-body text-[13px] font-light leading-relaxed text-ink-400">
+          <p className="text-[13px] leading-relaxed text-ink-400">
             {verification.verified
               ? `All ${verification.entriesChecked} entries verify against their predecessor hashes. Export the log as CSV for your own compliance evidence.`
               : `Chain verification failed at entry ${verification.brokenAtEntryId}. Contact support immediately.`}
@@ -80,7 +80,7 @@ export default async function AuditPage() {
                 <td className="px-4 py-3 font-mono text-[11.5px] whitespace-nowrap text-ink-500">
                   {formatDateTime(e.at)}
                 </td>
-                <td className="px-4 py-3 font-body text-[13px] text-ink-300">
+                <td className="px-4 py-3 text-[13px] text-ink-300">
                   {e.actorName}
                 </td>
                 <td className="px-4 py-3 font-mono text-[12px] text-hydro">

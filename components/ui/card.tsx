@@ -11,18 +11,18 @@ import * as React from "react";
 import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/cn";
 
+/* `rounded-lg` is the design system's --radius-lg (10px), which is what
+   Card.jsx uses. Corners stay tight; inner controls use md/sm. */
 const cardVariants = cva("relative overflow-hidden rounded-lg", {
   variants: {
     surface: {
       glass: "glass-card",
-      solid: "bg-surface-card border border-line shadow-sm",
+      solid: "border border-line bg-surface-card shadow-sm",
       panel: "glass-panel",
     },
     interactive: {
       true: [
-        "cursor-pointer text-left w-full",
-        "transition-[border-color,box-shadow,transform] duration-normal ease-standard",
-        "hover:border-line-strong hover:shadow-lg hover:-translate-y-px",
+        "cursor-pointer text-left w-full lg-hover",
         "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-hydro",
       ],
       false: "",
@@ -59,7 +59,12 @@ export function Card({
   const inner = (
     <>
       {accent ? (
-        <span className="absolute inset-y-0 left-0 w-0.5 bg-hydro shadow-[0_0_12px_rgba(74,222,128,0.5)]" />
+        /* The design system's accent edge: a 2px Hydro rail with the small
+           Hydro glow, full height. */
+        <span
+          aria-hidden="true"
+          className="absolute inset-y-0 left-0 w-0.5 bg-hydro shadow-[0_0_12px_rgba(74,222,128,0.5)]"
+        />
       ) : null}
       {children}
     </>

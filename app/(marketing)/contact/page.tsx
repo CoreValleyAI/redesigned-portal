@@ -14,7 +14,7 @@ const DETAILS: { icon: IconName; title: string; body: React.ReactNode }[] = [
     icon: "send",
     title: "Email",
     body: (
-      <a href="mailto:info@corevalley.ai" className="text-hydro hover:underline">
+      <a href="mailto:info@corevalley.ai" className="text-hydro underline decoration-hydro/40 underline-offset-4 transition-colors duration-normal hover:text-hydro-300">
         info@corevalley.ai
       </a>
     ),
@@ -67,10 +67,10 @@ export default function ContactPage() {
       <Section>
         <div className="grid gap-8 lg:grid-cols-[0.85fr_1fr] lg:items-start">
           <div>
-            <h2 className="font-body text-xl font-bold tracking-tight text-ink-100">
+            <h2 className="text-xl font-semibold tracking-tight text-ink-100">
               Reach us directly
             </h2>
-            <p className="mt-2 font-body text-[13.5px] font-light leading-relaxed text-ink-400">
+            <p className="mt-2 text-[13.5px] leading-relaxed text-ink-400">
               Prefer a conversation first? Email us. We respond during Nepal
               business hours and often beyond.
             </p>
@@ -80,13 +80,13 @@ export default function ContactPage() {
                 <Card key={d.title} surface="solid" padding={18}>
                   <div className="flex items-start gap-3.5">
                     <span className="mt-0.5 shrink-0">
-                      <Icon name={d.icon} size={18} className="text-hydro" />
+                      <Icon name={d.icon} size={18} className="text-ink-200" />
                     </span>
                     <div>
-                      <h3 className="font-body text-sm font-bold text-ink-100">
+                      <h3 className="text-sm font-semibold text-ink-100">
                         {d.title}
                       </h3>
-                      <div className="mt-1 font-body text-[13.5px] font-light leading-relaxed text-ink-400">
+                      <div className="mt-1 text-[13.5px] leading-relaxed text-ink-400">
                         {d.body}
                       </div>
                     </div>
@@ -104,10 +104,10 @@ export default function ContactPage() {
         <div className="grid gap-4 md:grid-cols-2">
           {FAQ.map((f) => (
             <Card key={f.q} surface="solid" padding={22} className="h-full">
-              <h3 className="font-body text-[15px] font-bold tracking-tight text-ink-100">
+              <h3 className="text-[15px] font-semibold tracking-tight text-ink-100">
                 {f.q}
               </h3>
-              <p className="mt-2 font-body text-[13.5px] font-light leading-relaxed text-ink-400">
+              <p className="mt-2 text-[13.5px] leading-relaxed text-ink-400">
                 {f.a}
               </p>
             </Card>

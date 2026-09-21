@@ -73,7 +73,7 @@ export default async function PodsPage() {
                     {pod.id}
                   </div>
                 </td>
-                <td className="px-4 py-3.5 font-body text-[13px] font-light text-ink-400">
+                <td className="px-4 py-3.5 text-[13px] text-ink-400">
                   {project?.name ?? "—"}
                 </td>
                 <td className="px-4 py-3.5">
@@ -92,7 +92,7 @@ export default async function PodsPage() {
                 <td className="px-4 py-3.5">
                   <PodStatusPill status={pod.status} />
                   {pod.statusDetail ? (
-                    <div className="mt-1 max-w-[16rem] font-body text-[11.5px] font-light text-ink-600">
+                    <div className="mt-1 max-w-[16rem] text-[11.5px] text-ink-600">
                       {pod.statusDetail}
                     </div>
                   ) : null}

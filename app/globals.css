@@ -23,7 +23,14 @@
        every utility — a silent and expensive failure. */
 @import "../design_system/tokens/base.css" layer(base);
 
-/* 4 — Explicit class sources. */
+/* 4 — Glass surfaces (the one sanctioned deviation) and the motion helpers.
+       Unlayered at the import site because the file declares its own
+       @layer components block; Tailwind has already established the layer
+       order above, so these land between base and utilities and any Tailwind
+       utility on the same element still wins. */
+@import "./glass.css";
+
+/* 5 — Explicit class sources. */
 @source "../app";
 @source "../components";
 @source "../lib";
@@ -183,6 +190,8 @@
 @utility ease-standard {
   transition-timing-function: var(--ease-standard);
 }
+/* `ease-out` and `ease-in` need no utility: Tailwind's own resolve to
+   --ease-out / --ease-in, which the design system redefines in layer(theme). */
 @utility duration-fast {
   transition-duration: var(--duration-fast);
 }
@@ -218,62 +227,17 @@
 }
 
 /* ══ GLASS ═════════════════════════════════════════════════════════════════
-   The sanctioned translucency recipes, encoded so nobody hand-rolls a blur.
-   Alphas derive from carbon tokens via color-mix — no raw rgba() surfaces.
-   Each has a solid fallback below for engines without backdrop-filter. */
+   The four sanctioned translucency recipes — glass-card, glass-nav,
+   glass-modal, glass-panel — live in app/glass.css, aliased onto the
+   liquid-glass weights there so the refraction pass and the
+   no-backdrop-filter fallback are each defined exactly once.
 
-@utility glass-card {
-  background-color: color-mix(in srgb, var(--carbon-700) 55%, transparent);
-  -webkit-backdrop-filter: blur(20px) saturate(115%);
-  backdrop-filter: blur(20px) saturate(115%);
-  border: 1px solid var(--border-default);
-  box-shadow:
-    inset 0 1px 0 rgb(255 255 255 / 0.08),
-    var(--shadow-md);
-}
-
-@utility glass-nav {
-  background-color: color-mix(in srgb, var(--carbon-900) 60%, transparent);
-  -webkit-backdrop-filter: blur(18px) saturate(120%);
-  backdrop-filter: blur(18px) saturate(120%);
-  border-bottom: 1px solid var(--border-subtle);
-}
-
-@utility glass-modal {
-  background-color: color-mix(in srgb, var(--carbon-700) 72%, transparent);
-  -webkit-backdrop-filter: blur(28px) saturate(115%);
-  backdrop-filter: blur(28px) saturate(115%);
-  border: 1px solid var(--border-strong);
-  box-shadow:
-    inset 0 1px 0 rgb(255 255 255 / 0.1),
-    var(--shadow-xl);
-}
-
-/* Portal data surfaces: denser, because tables and logs are read for hours. */
-@utility glass-panel {
-  background-color: color-mix(in srgb, var(--carbon-800) 78%, transparent);
-  -webkit-backdrop-filter: blur(16px) saturate(110%);
-  backdrop-filter: blur(16px) saturate(110%);
-  border: 1px solid var(--border-default);
-  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.05);
-}
-
-/* Mandatory guard: without backdrop-filter these panels would render as
-   unreadable transparent boxes. Fall every recipe back to its solid token. */
-@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
-  .glass-card {
-    background-color: var(--carbon-700);
-  }
-  .glass-nav {
-    background-color: var(--carbon-900);
-  }
-  .glass-modal {
-    background-color: var(--carbon-700);
-  }
-  .glass-panel {
-    background-color: var(--carbon-800);
-  }
-}
+   They are NOT `@utility` blocks. Tailwind v4's @apply resolves only
+   Tailwind utilities, so `@apply lg lg--nav` is a hard build error rather
+   than a silent miss — the alias has to be a selector list, which is what
+   glass.css does. The consequence is that these four names do not accept
+   variants (`hover:glass-card` will not compile); nothing uses them that way,
+   and a hover-swapped blur recipe would be a repaint per frame anyway. */
 
 /* The signature block cursor, lifted out of Terminal's inline style tag. */
 @keyframes cv-blink {
@@ -283,6 +247,23 @@
 }
 @utility animate-cursor {
   animation: cv-blink var(--cursor-blink) steps(1) infinite;
+}
+
+/* "online." — the status word in the hero. A slow Hydro breath in the text
+   glow, the one glow the system allows, held low enough to read as a status
+   light rather than neon. Static under reduced motion. */
+@keyframes cv-online {
+  0%,
+  100% {
+    text-shadow: 0 0 18px rgb(74 222 128 / 0.28);
+  }
+  50% {
+    text-shadow: 0 0 34px rgb(74 222 128 / 0.55);
+  }
+}
+@utility online-glow {
+  text-shadow: 0 0 24px rgb(74 222 128 / 0.4);
+  animation: cv-online 3.2s var(--ease-standard) infinite;
 }
 
 /* ── Grid overlays ─────────────────────────────────────────────────────────
@@ -343,12 +324,28 @@
     z-index: -1;
   }
 
-  /* The bloom. */
+  /* The bloom, and under it the brand's dot matrix: a fine Hydro dot grid
+     revealed only inside a pool around the pointer, so the card surface
+     reads as the same material as the hero terrain wherever the cursor
+     touches it. Both layers share the one mask. */
   &::before {
-    background: radial-gradient(
-      16rem circle at var(--mx, 50%) var(--my, 50%),
-      rgb(74 222 128 / 0.1),
-      transparent 65%
+    background:
+      radial-gradient(
+        16rem circle at var(--mx, 50%) var(--my, 50%),
+        rgb(74 222 128 / 0.1),
+        transparent 65%
+      ),
+      radial-gradient(circle at center, rgb(74 222 128 / 0.45) 1px, transparent 1.6px)
+        0 0 / 12px 12px;
+    -webkit-mask-image: radial-gradient(
+      13rem circle at var(--mx, 50%) var(--my, 50%),
+      #000,
+      transparent 72%
+    );
+    mask-image: radial-gradient(
+      13rem circle at var(--mx, 50%) var(--my, 50%),
+      #000,
+      transparent 72%
     );
   }
 
@@ -399,7 +396,71 @@
     border-color: var(--border-default);
   }
 
-  /* "Motion mechanical, no bounce" applied all the way down. */
+  html {
+    /* In-page anchors and the docs sidebar both jump; scroll-padding keeps
+       the target clear of the 64px sticky header instead of under it. */
+    scroll-behavior: smooth;
+    scroll-padding-top: 5.5rem;
+    /* Carbon on the root too, so the rubber-band area on iOS and the area
+       behind a short page continue the ground instead of showing a seam. */
+    background-color: var(--bg-base);
+
+    /* Structural guard against horizontal scroll. `clip` rather than
+       `hidden`: overflow:hidden on the root element makes the browser treat
+       the html box as the scroll container, which silently breaks every
+       position:sticky descendant — the site header included. overflow-x:clip
+       leaves vertical overflow visible and sticky working. */
+    overflow-x: clip;
+  }
+  body {
+    overflow-x: clip;
+  }
+
+  /* Selection colour and the focus ring come from design_system/tokens/
+     base.css: Hydro, Hydro. The Carbon ground is painted by <html> above;
+     the body itself is transparent so the fixed floor canvas (z −10) shows
+     through — a body with its own background would paint over it. */
+  body {
+    background: transparent;
+  }
+
+  /* Scrollbar. The default dark scrollbar on Carbon is a light grey slab
+     down the right edge; this makes it a hairline. */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: var(--ink-700) transparent;
+  }
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: var(--ink-700);
+    border: 3px solid transparent;
+    background-clip: content-box;
+    border-radius: 999px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--ink-600);
+    background-clip: content-box;
+  }
+
+  /* Links inherit by default. The design system's base.css colours every
+     bare <a>, which turns nav items and card wrappers green. */
+  a {
+    color: inherit;
+  }
+  a:hover {
+    color: inherit;
+  }
+
+  /* "Motion mechanical, no bounce" applied all the way down. Note this also
+     neutralises the reveal system: [data-reveal] transitions collapse to
+     0.01ms, so content appears immediately rather than never — the failure
+     mode a JS-gated reveal would have had. */
   @media (prefers-reduced-motion: reduce) {
     *,
     ::before,
@@ -408,6 +469,9 @@
       animation-iteration-count: 1 !important;
       transition-duration: 0.01ms !important;
       scroll-behavior: auto !important;
+    }
+    html {
+      scroll-behavior: auto;
     }
   }
 }
