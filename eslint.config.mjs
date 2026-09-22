@@ -15,9 +15,7 @@ const eslintConfig = [
       // It ships plain .jsx with its own conventions we are not free to fix.
       "design_system/**",
       "reference/**",
-      // Generated MkDocs site (corevalley-docs/ -> public/docs/): shipped
-      // vendored, minified JS, not ours to lint.
-      "public/docs/**",
+      // Optional standalone MkDocs build output: vendored, minified JS.
       "corevalley-docs/site/**",
       "next-env.d.ts",
     ],

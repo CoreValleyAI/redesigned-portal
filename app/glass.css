@@ -716,6 +716,18 @@
     margin-top: 20px;
     text-align: center;
   }
+  /* While the price readout is commented out the screen holds only the
+     configuration line and the button: fill the row so the panel matches
+     the dials' height, and centre both ways. */
+  .console__screen--cta {
+    align-self: stretch;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+  }
+  .console__screen--cta .console__actions {
+    margin-top: 16px;
+  }
 
   /* Odometer: each digit is a strip of 0–9 that slides to the digit. */
   .odo {

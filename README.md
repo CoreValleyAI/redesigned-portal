@@ -51,22 +51,19 @@ in `meta.reviewedAt`.
 
 ## Quick start
 
-Requires **Node 20.9+** and, for the documentation site, **Python 3.10+**.
+Requires **Node 20.9+**.
 
 ```bash
 npm install
-pip install -r corevalley-docs/requirements.txt   # MkDocs + Material
 npm run dev          # http://localhost:3000
-npm run docs:dev     # http://127.0.0.1:8001  (docs, live reload)
 ```
 
 | Script | Does |
 |---|---|
-| `npm run dev` | Development server |
-| `npm run docs:dev` | MkDocs dev server for `corevalley-docs/` (the `/docs` links point here in dev) |
-| `npm run build` | Production build: MkDocs into `public/docs/`, then the Next.js static export |
-| `npm run build:web` | Next.js build only (reuses whatever is in `public/docs/`) |
-| `npm run docs:build` | MkDocs build only, into `public/docs/` |
+| `npm run dev` | Development server (docs included — edit a `.md`, refresh) |
+| `npm run build` | Production build (static export to `out/`) |
+| `npm run docs:mkdocs` | Optional: standalone MkDocs build of the same docs into `corevalley-docs/site/` (needs Python + `pip install -r corevalley-docs/requirements.txt`) |
+| `npm run docs:mkdocs:serve` | Optional: MkDocs live preview on port 8001 |
 | `npm start` | Serve the production build |
 | `npm run typecheck` | `tsc --noEmit` |
 | `npm run lint` | ESLint |
@@ -93,7 +90,7 @@ npm run docs:dev     # http://127.0.0.1:8001  (docs, live reload)
 | `/use-cases` | Nepali-language LLMs, banking, healthcare, government, research, startups |
 | `/company` | Mission, principles, audiences, contact |
 | `/pricing` | Live NPR/USD and hourly/monthly toggles, comparison table, FAQ |
-| `/docs/…` | Documentation — a MkDocs site, see below |
+| `/docs` · `/docs/[...slug]` | Documentation, rendered from `corevalley-docs/docs/*.md` — see below |
 | `/contact` | Sales enquiry form (posts to FormSubmit — no backend needed) |
 
 ### Portal
@@ -104,28 +101,32 @@ Billing · Audit log · Security · Settings
 
 ### Documentation (`/docs`)
 
-The docs are **not** Next.js pages. They are a [MkDocs](https://www.mkdocs.org/)
-site with the Material theme, whose source lives in `corevalley-docs/`
-(`mkdocs.yml`, `docs/*.md`, `docs/assets/brand.css` for the brand tokens).
-`npm run docs:build` renders it into `public/docs/`, which is git-ignored and
-gets copied into `out/docs/` by the static export, so the docs ship at
-`/docs/` on the same GitHub Pages site. Every generated link is relative, so
-the same build works under the `/redesigned-portal` base path or a root
-domain.
+The docs are written as Markdown in `corevalley-docs/docs/` and rendered by
+the site itself, in the design system — the MkDocs Material theme is not
+shipped. `corevalley-docs/mkdocs.yml` stays the source of the sidebar (its
+`nav` gives the order, section names and labels), and the Markdown stays
+MkDocs-compatible, so `npm run docs:mkdocs` still produces a standalone
+Material site in `corevalley-docs/site/` if one is ever wanted.
 
-- Edit content in `corevalley-docs/docs/`, nav in `corevalley-docs/mkdocs.yml`.
-- `npm run docs:dev` serves it with live reload on port 8001; `.env.development`
-  points the site's docs links there because `next dev` does not serve
-  `public/docs/index.html` at `/docs/`.
-- App code links into the docs with `docsUrl()` from `lib/docs.ts` and a
-  plain `<a>`, never `<Link>` (it is not a Next route).
-- The deploy workflow installs `corevalley-docs/requirements.txt` and sets
-  `DOCS_SITE_URL` / `DOCS_HOMEPAGE` so canonical URLs and the header logo
-  link match the Pages URL.
+How it works:
 
-The previous in-app docs (`/docs`, `/docs/quickstart`, `/docs/cli`,
-`/docs/api`, built from a TypeScript content map) are archived, unbuilt, in
-`reference/legacy-next-docs/` with restore notes.
+- `lib/docs/content.ts` reads `mkdocs.yml` and the `.md` files at build time
+  (and per request in `next dev`), producing pages, headings and the search
+  index. `app/(marketing)/docs/[...slug]/page.tsx` enumerates the nav for the
+  static export; `index.md` is `/docs/`, `guides/quickstart.md` is
+  `/docs/guides/quickstart/`.
+- `components/docs/markdown.tsx` renders with `react-markdown`; the remark
+  plugins in `lib/docs/markdown.ts` understand the Material syntax the
+  content uses — `grid cards`, `:material-*:` icon shortcodes, admonitions
+  (`!!! note "Title"`, `??? tip`), content tabs (`=== "Tab"`), GFM tables and
+  task lists, fenced code (`title="…"`), and relative `.md` links. Heading
+  ids follow python-markdown's slugs so anchors match a MkDocs build.
+- Typography lives in `app/prose.css` (`.prose-docs`), tokens only.
+- Search is a ⌘K / Ctrl+K palette (`components/docs/docs-search.tsx`) over
+  every heading-delimited section, indexed client-side with MiniSearch.
+- Link to docs pages with `docsHref()` from `lib/docs/href.ts` and `<Link>`.
+
+The original hardcoded docs pages are archived in `reference/legacy-next-docs/`.
 
 ---
 

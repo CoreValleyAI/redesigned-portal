@@ -1,14 +1,10 @@
 site_name: CoreValley Documentation
 site_description: Nepal's Sovereign AI Cloud — documentation, guides, and API reference.
 
-# The docs are served by the main site at /docs/ (public/docs/ in the Next.js
-# static export). The deploy workflow overrides these with the real GitHub
-# Pages URLs; the defaults only matter for local `mkdocs serve`.
+# NOTE: the website renders these Markdown files itself (see the repo README,
+# "Documentation"). This config is for an optional standalone MkDocs build
+# (`npm run docs:mkdocs` → corevalley-docs/site/), which the site never ships.
 site_url: !ENV [DOCS_SITE_URL, "https://docs.corevalley.com.np"]
-
-# Build straight into the Next.js public folder so `next build` copies the
-# site into out/docs/. Path is relative to this file. Ignored by git.
-site_dir: ../public/docs
 
 repo_name: corevalley/docs
 repo_url: https://github.com/corevalley/docs

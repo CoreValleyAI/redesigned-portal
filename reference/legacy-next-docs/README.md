@@ -18,10 +18,11 @@ content and the design-system shell can be restored or mined later.
 | `app-docs/page.tsx` | `/docs` landing: three path cards, terminal demo, concepts |
 | `app-docs/[...slug]/page.tsx` | Quickstart, CLI reference and API reference content (in a TS map, no MDX) |
 
-## Restoring it
+## Status (2026-09-22)
 
-1. Move `app-docs/` back to `app/(marketing)/docs/`.
-2. Drop `docs:build` from the `build` script in `package.json` and delete
-   `public/docs/` so the static export has no conflicting `/docs` output.
-3. Point the header, footer, homepage and 404 links back at `/docs/...`
-   `Link`s instead of the `docsUrl()` helper in `lib/docs.ts`.
+`/docs` is a Next.js route again (`app/(marketing)/docs/`), now rendered from
+the Markdown in `corevalley-docs/docs/` instead of a TypeScript content map,
+and the MkDocs build no longer ships. The design-system shell below (sidebar,
+article header, tables, `Terminal` blocks, closing card) was the model for the
+new one, so this archive is for mining content only — there is nothing left
+to restore.

@@ -20,6 +20,10 @@
  * Rates are the catalogue's on-demand hourly list prices (NPR). Eight full
  * cards is billed as a whole node, which is why that step is cheaper than
  * eight singles. The US-cloud figure is an illustrative multiple.
+ *
+ * FOR NOW the price readout is commented out — the dials, the housing and
+ * the intro spin stay, and the screen holds only the configuration line and
+ * the request button, centred. Search "commented out" to find the seams.
  */
 
 import * as React from "react";
@@ -70,8 +74,9 @@ const HOURS: { v: number; label: string; sub: string }[] = [
   { v: 720, label: "1 mo", sub: "720 h" },
 ];
 
-/** What the same run costs on a US cloud, as a multiple. Illustrative. */
-const US_CLOUD = 1.42;
+/** What the same run costs on a US cloud, as a multiple. Illustrative.
+    Unused while the price readout is commented out. */
+// const US_CLOUD = 1.42;
 
 /** Positions on the drum: at least as many as the longest list, and a few
     more, so the cylinder is round and no two options share an angle. */
@@ -269,6 +274,10 @@ function Drum({
 
 /* ── Rolling digits ──────────────────────────────────────────────────────── */
 
+/* Unused while the price readout is commented out (see QuoteLock below).
+   Kept intact so the readout can come back exactly as it was. */
+/* eslint-disable @typescript-eslint/no-unused-vars */
+
 /**
  * Columns are keyed by their distance from the RIGHT, so when the value
  * gains or loses a digit the existing digits keep their identity and keep
@@ -340,6 +349,8 @@ function Sep({ ch, late }: { ch: string; late: boolean }) {
   );
 }
 
+/* eslint-enable @typescript-eslint/no-unused-vars */
+
 /* ── The console ─────────────────────────────────────────────────────────── */
 
 export function QuoteLock({ className }: { className?: string }) {
@@ -379,6 +390,13 @@ export function QuoteLock({ className }: { className?: string }) {
   const gpu = GPUS[g]!;
   const count = COUNTS[c]!;
   const hours = HOURS[h]!;
+
+  /* ── Price deduction — commented out for now ──────────────────────────
+     Rate per hour, total for the window, the US-cloud comparison and the
+     capacity line are parked until commercial pricing is approved. The
+     dials still drive the configuration that the button carries to the
+     form; only the price (`&npr=${total}` on the href) is dropped.
+
   const perHour = count === 8 && gpu.node ? gpu.node : gpu.rate * count;
   const total = perHour * hours.v;
   const usTotal = Math.round(total * US_CLOUD);
@@ -388,7 +406,9 @@ export function QuoteLock({ className }: { className?: string }) {
     : reserve
       ? { tone: "warn", text: "reserved · plan in 1 day" }
       : { tone: "ok", text: "available now" };
-  const href = `/contact?gpu=${encodeURIComponent(gpu.id)}&count=${count}&hours=${hours.v}&npr=${total}`;
+  ───────────────────────────────────────────────────────────────────── */
+
+  const href = `/contact?gpu=${encodeURIComponent(gpu.id)}&count=${count}&hours=${hours.v}`;
 
   return (
     <div ref={rootRef} className={cn("console", className)}>
@@ -443,11 +463,14 @@ export function QuoteLock({ className }: { className?: string }) {
           />
         </div>
 
-        {/* Screen. */}
-        <div className="console__screen">
+        {/* Screen. Holds the configuration line and the button while the
+            price readout is commented out; --cta centres them. */}
+        <div className="console__screen console__screen--cta">
           <p className="console__eyebrow">
             {count}× {gpu.label} · {hours.label} · np-ktm-1
           </p>
+
+          {/* ── Price readout — commented out for now ───────────────────
           <p className="console__price">
             <span className="console__unit">NPR</span>
             <Odometer value={perHour} live={phase === "ready"} />
@@ -485,6 +508,8 @@ export function QuoteLock({ className }: { className?: string }) {
               </span>
             </p>
           </div>
+          ──────────────────────────────────────────────────────────── */}
+
           <div className="console__actions">
             <Link href={href}>
               <Button variant="primary" size="lg" iconRight={<Icon name="arrow-right" size={17} />}>

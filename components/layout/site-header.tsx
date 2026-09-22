@@ -25,15 +25,13 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Button, Icon } from "@/components/ui";
 import { cn } from "@/lib/cn";
-import { docsUrl } from "@/lib/docs";
+import { docsHref } from "@/lib/docs/href";
 import { LogoLockup } from "./logo";
 
-/* Docs is the MkDocs site under public/docs/, not a Next route: it needs a
-   plain anchor and a full navigation, so it is flagged `plain`. */
 const NAV = [
   { href: "/products", label: "Products" },
   { href: "/use-cases", label: "Use cases" },
-  { href: docsUrl(), label: "Docs", plain: true },
+  { href: docsHref(), label: "Docs" },
   { href: "/company", label: "Company" },
 ] as const;
 
@@ -118,23 +116,17 @@ export function SiteHeader() {
               }}
             />
             {NAV.map((item) => {
-              const plain = "plain" in item && item.plain;
-              const active = !plain && pathname.startsWith(item.href);
-              const className = cn(
-                "px-3.5 py-2 text-[13.5px] font-medium transition-colors duration-normal",
-                active ? "text-ink-100" : "text-ink-400 hover:text-ink-100",
-              );
-              return plain ? (
-                <a key={item.href} href={item.href} className={className}>
-                  {item.label}
-                </a>
-              ) : (
+              const active = pathname.startsWith(item.href.replace(/\/$/, ""));
+              return (
                 <Link
                   key={item.href}
                   href={item.href}
                   data-active={active}
                   aria-current={active ? "page" : undefined}
-                  className={className}
+                  className={cn(
+                    "px-3.5 py-2 text-[13.5px] font-medium transition-colors duration-normal",
+                    active ? "text-ink-100" : "text-ink-400 hover:text-ink-100",
+                  )}
                 >
                   {item.label}
                 </Link>
@@ -174,25 +166,16 @@ export function SiteHeader() {
         >
           <div className="min-h-0">
             <nav className="mx-auto flex max-w-page-xl flex-col gap-0.5 border-t border-line-subtle px-5 py-4 md:px-10">
-              {NAV.map((item) => {
-                const className =
-                  "flex items-center justify-between rounded-md px-2 py-3 text-[15px] text-ink-300 transition-colors duration-fast hover:bg-carbon-600 hover:text-ink-100";
-                const inner = (
-                  <>
-                    {item.label}
-                    <Icon name="arrow-right" size={14} className="text-ink-600" />
-                  </>
-                );
-                return "plain" in item && item.plain ? (
-                  <a key={item.href} href={item.href} className={className}>
-                    {inner}
-                  </a>
-                ) : (
-                  <Link key={item.href} href={item.href} className={className}>
-                    {inner}
-                  </Link>
-                );
-              })}
+              {NAV.map((item) => (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className="flex items-center justify-between rounded-md px-2 py-3 text-[15px] text-ink-300 transition-colors duration-fast hover:bg-carbon-600 hover:text-ink-100"
+                >
+                  {item.label}
+                  <Icon name="arrow-right" size={14} className="text-ink-600" />
+                </Link>
+              ))}
               <Link href="/contact" className="mt-3">
                 <Button variant="primary" size="md" fullWidth>
                   Talk to sales

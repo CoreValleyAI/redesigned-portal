@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { Button, Icon } from "@/components/ui";
 import { LogoLockup } from "@/components/layout/logo";
-import { docsUrl } from "@/lib/docs";
+import { docsHref } from "@/lib/docs/href";
 
 export const metadata = {
   title: "Page not found",
@@ -13,13 +13,7 @@ export const metadata = {
 const EXITS = [
   { href: "/products", label: "Products", meta: "pods · notebooks · endpoints" },
   { href: "/pricing", label: "Pricing", meta: "npr rates, per second" },
-  /* Docs is the MkDocs site, not a Next route: plain anchor, full load. */
-  {
-    href: docsUrl(),
-    label: "Documentation",
-    meta: "quickstart · platform · billing",
-    plain: true,
-  },
+  { href: docsHref(), label: "Documentation", meta: "quickstart · platform · billing" },
 ] as const;
 
 export default function NotFound() {
@@ -41,10 +35,9 @@ export default function NotFound() {
 
       <ul className="mt-10 flex flex-col">
         {EXITS.map((e) => {
-          const Anchor = "plain" in e && e.plain ? "a" : Link;
           return (
             <li key={e.href}>
-              <Anchor
+              <Link
                 href={e.href}
                 className="group flex items-center justify-between gap-4 border-t border-line-subtle py-4 transition-colors duration-normal hover:border-line-strong"
               >
@@ -61,7 +54,7 @@ export default function NotFound() {
                 size={15}
                 className="text-ink-600 transition-transform duration-normal ease-out group-hover:translate-x-1 group-hover:text-ink-200"
               />
-              </Anchor>
+              </Link>
             </li>
           );
         })}
