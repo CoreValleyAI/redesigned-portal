@@ -17,7 +17,7 @@ import { Reveal, RevealGroup } from "@/components/fx/reveal";
 import { DecodeText } from "@/components/fx/decode-text";
 import { WipeText } from "@/components/fx/wipe-text";
 import { GPU_SKUS } from "@/lib/catalog";
-import { docsUrl } from "@/lib/docs";
+import { docsHref } from "@/lib/docs/href";
 
 export const metadata = {
   title: "CoreValley — sovereign AI compute, hosted in Kathmandu",
@@ -212,7 +212,7 @@ export default function HomePage() {
                       Talk to sales
                     </Button>
                   </Link>
-                  <a href={docsUrl("guides/quickstart")}>
+                  <Link href={docsHref("guides/quickstart")}>
                     <Button
                       variant="secondary"
                       size="lg"
@@ -221,7 +221,7 @@ export default function HomePage() {
                     >
                       read the quickstart
                     </Button>
-                  </a>
+                  </Link>
                 </div>
               </Reveal>
 
@@ -262,7 +262,7 @@ export default function HomePage() {
                   { out: "→ matched np-ktm-1 · kathmandu · hydro grid" },
                   { out: "→ h200 mig 2g.35gb · 35 GB · vcluster cv-himal" },
                   { out: "→ data residency: nepal · egress: default-deny" },
-                  { comment: "pod cv-9f3a21 running in 11s · NPR 132/hr" },
+                  { comment: "pod cv-9f3a21 running in 11s · NPR 69/hr" },
                   { prompt: "$", text: "" },
                 ]}
               />
@@ -312,7 +312,7 @@ export default function HomePage() {
                 <div
                   className={`nums font-mono text-[clamp(1.75rem,3.4vw,2.35rem)] leading-none font-medium tracking-tight ${
                     s.accent
-                      ? "text-hydro [text-shadow:0_0_30px_rgba(74,222,128,0.28)]"
+                      ? "text-hydro [text-shadow:0_0_30px_rgb(var(--hydro-rgb)/0.28)]"
                       : "text-ink-100"
                   }`}
                 >
@@ -544,7 +544,7 @@ export default function HomePage() {
         <Horizon index={SEC.hardware} label="hardware" />
         <div
           aria-hidden="true"
-          className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(80%_55%_at_50%_50%,rgb(232_236_239_/_0.02),transparent_72%)]"
+          className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(80%_55%_at_50%_50%,rgb(var(--ink-rgb)/0.02),transparent_72%)]"
         />
         <div className="mx-auto max-w-page-xl px-5 md:px-10">
           <div className="max-w-[54ch]">

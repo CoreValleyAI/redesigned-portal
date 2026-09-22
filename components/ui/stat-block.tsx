@@ -47,7 +47,7 @@ export function StatBlock({
           "nums font-mono font-medium leading-none tracking-tight",
           VALUE_SIZE[size],
           accent
-            ? "text-hydro [text-shadow:0_0_30px_rgba(74,222,128,0.28)]"
+            ? "text-hydro [text-shadow:0_0_30px_rgb(var(--hydro-rgb)/0.28)]"
             : "text-ink-100",
         )}
       >

@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { Icon } from "@/components/ui";
 import { DotMatrix } from "@/components/marketing/dot-matrix";
-import { docsUrl } from "@/lib/docs";
+import { docsHref } from "@/lib/docs/href";
 
 const BASE = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
 
@@ -19,14 +19,12 @@ const GROUPS = [
     ],
   },
   {
-    /* The docs are the MkDocs site under /docs/ — not Next routes, so they
-       are `plain` anchors (full navigation, base path already applied). */
     heading: "developers",
     links: [
-      { href: docsUrl(), label: "Documentation", plain: true },
-      { href: docsUrl("guides/quickstart"), label: "Quickstart", plain: true },
-      { href: docsUrl("platform/inference"), label: "API reference", plain: true },
-      { href: docsUrl("hardware/specs"), label: "GPU & instance specs", plain: true },
+      { href: docsHref(), label: "Documentation" },
+      { href: docsHref("guides/quickstart"), label: "Quickstart" },
+      { href: docsHref("platform/inference"), label: "API reference" },
+      { href: docsHref("hardware/specs"), label: "GPU & instance specs" },
       { href: "/use-cases", label: "Use cases" },
     ],
   },
@@ -91,11 +89,7 @@ export function SiteFooter() {
               <ul className="flex flex-col gap-3">
                 {group.links.map((link) => (
                   <li key={link.href}>
-                    {"plain" in link && link.plain ? (
-                      <a href={link.href} className={linkClass}>
-                        {link.label}
-                      </a>
-                    ) : "external" in link && link.external ? (
+                    {"external" in link && link.external ? (
                       <a
                         href={link.href}
                         target="_blank"

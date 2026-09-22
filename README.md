@@ -51,22 +51,20 @@ in `meta.reviewedAt`.
 
 ## Quick start
 
-Requires **Node 20.9+** and, for the documentation site, **Python 3.10+**.
+Requires **Node 20.9+**.
 
 ```bash
 npm install
-pip install -r corevalley-docs/requirements.txt   # MkDocs + Material
 npm run dev          # http://localhost:3000
-npm run docs:dev     # http://127.0.0.1:8001  (docs, live reload)
 ```
 
 | Script | Does |
 |---|---|
-| `npm run dev` | Development server |
-| `npm run docs:dev` | MkDocs dev server for `corevalley-docs/` (the `/docs` links point here in dev) |
-| `npm run build` | Production build: MkDocs into `public/docs/`, then the Next.js static export |
-| `npm run build:web` | Next.js build only (reuses whatever is in `public/docs/`) |
-| `npm run docs:build` | MkDocs build only, into `public/docs/` |
+| `npm run dev` | Development server (docs included — edit a `.md`, refresh) |
+| `npm run build` | Production build (static export to `out/`) |
+| `npm run docs:check` | After `npm run build`: checks every docs page in the `mkdocs.yml` nav exported to `out/docs/` under the right base path (CI runs it before deploying) |
+| `npm run docs:mkdocs` | Optional: standalone MkDocs build of the same docs into `corevalley-docs/site/` (needs Python + `pip install -r corevalley-docs/requirements.txt`) |
+| `npm run docs:mkdocs:serve` | Optional: MkDocs live preview on port 8001 |
 | `npm start` | Serve the production build |
 | `npm run typecheck` | `tsc --noEmit` |
 | `npm run lint` | ESLint |
@@ -93,7 +91,7 @@ npm run docs:dev     # http://127.0.0.1:8001  (docs, live reload)
 | `/use-cases` | Nepali-language LLMs, banking, healthcare, government, research, startups |
 | `/company` | Mission, principles, audiences, contact |
 | `/pricing` | Live NPR/USD and hourly/monthly toggles, comparison table, FAQ |
-| `/docs/…` | Documentation — a MkDocs site, see below |
+| `/docs` · `/docs/[...slug]` | Documentation, rendered from `corevalley-docs/docs/*.md` — see below |
 | `/contact` | Sales enquiry form (posts to FormSubmit — no backend needed) |
 
 ### Portal
@@ -104,28 +102,32 @@ Billing · Audit log · Security · Settings
 
 ### Documentation (`/docs`)
 
-The docs are **not** Next.js pages. They are a [MkDocs](https://www.mkdocs.org/)
-site with the Material theme, whose source lives in `corevalley-docs/`
-(`mkdocs.yml`, `docs/*.md`, `docs/assets/brand.css` for the brand tokens).
-`npm run docs:build` renders it into `public/docs/`, which is git-ignored and
-gets copied into `out/docs/` by the static export, so the docs ship at
-`/docs/` on the same GitHub Pages site. Every generated link is relative, so
-the same build works under the `/redesigned-portal` base path or a root
-domain.
+The docs are written as Markdown in `corevalley-docs/docs/` and rendered by
+the site itself, in the design system — the MkDocs Material theme is not
+shipped. `corevalley-docs/mkdocs.yml` stays the source of the sidebar (its
+`nav` gives the order, section names and labels), and the Markdown stays
+MkDocs-compatible, so `npm run docs:mkdocs` still produces a standalone
+Material site in `corevalley-docs/site/` if one is ever wanted.
 
-- Edit content in `corevalley-docs/docs/`, nav in `corevalley-docs/mkdocs.yml`.
-- `npm run docs:dev` serves it with live reload on port 8001; `.env.development`
-  points the site's docs links there because `next dev` does not serve
-  `public/docs/index.html` at `/docs/`.
-- App code links into the docs with `docsUrl()` from `lib/docs.ts` and a
-  plain `<a>`, never `<Link>` (it is not a Next route).
-- The deploy workflow installs `corevalley-docs/requirements.txt` and sets
-  `DOCS_SITE_URL` / `DOCS_HOMEPAGE` so canonical URLs and the header logo
-  link match the Pages URL.
+How it works:
 
-The previous in-app docs (`/docs`, `/docs/quickstart`, `/docs/cli`,
-`/docs/api`, built from a TypeScript content map) are archived, unbuilt, in
-`reference/legacy-next-docs/` with restore notes.
+- `lib/docs/content.ts` reads `mkdocs.yml` and the `.md` files at build time
+  (and per request in `next dev`), producing pages, headings and the search
+  index. `app/(marketing)/docs/[...slug]/page.tsx` enumerates the nav for the
+  static export; `index.md` is `/docs/`, `guides/quickstart.md` is
+  `/docs/guides/quickstart/`.
+- `components/docs/markdown.tsx` renders with `react-markdown`; the remark
+  plugins in `lib/docs/markdown.ts` understand the Material syntax the
+  content uses — `grid cards`, `:material-*:` icon shortcodes, admonitions
+  (`!!! note "Title"`, `??? tip`), content tabs (`=== "Tab"`), GFM tables and
+  task lists, fenced code (`title="…"`), and relative `.md` links. Heading
+  ids follow python-markdown's slugs so anchors match a MkDocs build.
+- Typography lives in `app/prose.css` (`.prose-docs`), tokens only.
+- Search is a ⌘K / Ctrl+K palette (`components/docs/docs-search.tsx`) over
+  every heading-delimited section, indexed client-side with MiniSearch.
+- Link to docs pages with `docsHref()` from `lib/docs/href.ts` and `<Link>`.
+
+The original hardcoded docs pages are archived in `reference/legacy-next-docs/`.
 
 ---
 
@@ -137,10 +139,21 @@ The previous in-app docs (`/docs`, `/docs/quickstart`, `/docs/cli`,
 - No CSS-in-JS, no animation library — canvas and CSS only
 
 Deploys to GitHub Pages as a static export. `next.config.ts` sets
-`output: "export"` and `trailingSlash: true`; `.github/workflows/deploy.yml`
-builds on every push to `main` (or on demand from any branch via
-*Run workflow*), reads the base path from the repository's Pages settings,
-and uploads `out/`. Pages must be set to deploy from **GitHub Actions**.
+`output: "export"` and `trailingSlash: true`. Two workflows:
+
+- `.github/workflows/deploy.yml` builds on every push to `main` that touches
+  the site (or on demand from any branch via *Run workflow*), reads the base
+  path from the repository's Pages settings, typechecks, lints, builds, runs
+  `npm run docs:check` and uploads `out/`. Pages must be set to deploy from
+  **GitHub Actions**.
+- `.github/workflows/verify.yml` runs the same typecheck / lint / build /
+  docs check on every other branch and on pull requests to `main` without
+  deploying, and keeps the export as a downloadable artifact for 7 days.
+
+`npm run docs:check` verifies that every page in the `corevalley-docs/mkdocs.yml`
+nav exported to `out/docs/` and that the HTML links under
+`NEXT_PUBLIC_BASE_PATH`; CI runs it before uploading, and you can run it after
+a local build.
 
 To check the export locally under the project subpath:
 
@@ -207,6 +220,46 @@ for free.
    `text-*`, which would yield `text-text-muted`) and `line-*` for hairlines.
 5. **`tokens/fonts.css` is not imported.** `next/font` self-hosts both faces;
    importing the CDN copy too would double-download and reintroduce layout shift.
+
+</details>
+
+<details>
+<summary><b>Light theme</b></summary>
+
+<br>
+
+The site ships dark-first with a light theme behind the sun/moon toggle in the
+header (marketing) and the console toolbar. `lib/theme.ts` owns the state: a
+`data-theme` attribute on `<html>`, stamped before first paint by an inline
+bootstrap in `app/layout.tsx` (saved choice → OS preference → dark), persisted
+in `localStorage`, and exposed to components as `useTheme()` and to the
+painted graphics as `canvasPalette()`.
+
+`app/theme.css` is the whole light theme. It is unlayered (it has to beat
+`glass.css`'s unlayered `:root` helpers) and overrides the *same* token names
+`design_system/tokens/colors.css` declares, keyed on `[data-theme="light"]`:
+
+- **The ramps invert, not just the aliases.** `carbon-900…400` still reads
+  ground → most raised, `ink-100…700` loudest → faintest, `hydro-100…900`
+  strongest → palest, so `text-ink-100` on `bg-carbon-700` stays "loudest text
+  on a card" and no component needs a `light:` variant. Hydro itself becomes
+  `#15803D` (4.6:1 on paper) so accent text passes AA; primary buttons go
+  white-on-green through `--text-on-hydro`.
+- **Alpha literals are triplet tokens.** `rgb(74 222 128 / a)` and friends in
+  the CSS and in Tailwind arbitrary values became `rgb(var(--hydro-rgb) / a)`,
+  `--ink-rgb`, `--hi-rgb`, `--lo-rgb` (shadows also carry `--lo-k`, a light-mode
+  alpha multiplier).
+- **Terminals on paper.** The Terminal primitive and docs code blocks
+  (`cv-terminal`) remap their Carbon steps to a pale teal ramp in light mode;
+  the quote console follows the page. A `cv-dark` island (dark tokens restated
+  for a subtree) exists for anything that must stay Carbon, unused today.
+- **Canvases follow the theme.** The seven painted graphics read
+  `canvasPalette()` per frame and repaint on `subscribeTheme()`. On paper the
+  WebGL terrain *subtracts* from its opaque ground (`uSign`, flipped blend);
+  the transparent footer dot matrix composites dark-green dots source-over.
+
+`light:` exists as a custom variant for the rare one-off (the wordmark swaps
+to `cv-wordmark-carbon.svg`); reach for a token first.
 
 </details>
 

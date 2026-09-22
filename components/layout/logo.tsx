@@ -58,6 +58,12 @@ const MARKS = {
     h: 180,
     ink: { x: 96, y: 32, w: 808, h: 117 },
   },
+  "wordmark-carbon": {
+    src: `${BASE}/brand/cv-wordmark-carbon.svg`,
+    w: 1000,
+    h: 180,
+    ink: { x: 96, y: 32, w: 808, h: 117 },
+  },
   "combinedmark-white": {
     src: `${BASE}/brand/cv-combinedmark-white.svg`,
     w: 1000,
@@ -141,6 +147,8 @@ export function LogoLockup({
         fetchPriority="high"
         style={{ marginRight: gap - markPadR - wordPadL }}
       />
+      {/* Hydro type on Carbon; the ink-dark mono variant on paper. Both are
+          in the markup so the swap is CSS and needs no theme in React. */}
       <img
         src={word.src}
         alt=""
@@ -149,6 +157,16 @@ export function LogoLockup({
         height={Math.round(wordH)}
         decoding="async"
         fetchPriority="high"
+        className="light:hidden"
+      />
+      <img
+        src={MARKS["wordmark-carbon"].src}
+        alt=""
+        aria-hidden="true"
+        width={Math.round(wordW)}
+        height={Math.round(wordH)}
+        decoding="async"
+        className="hidden light:block"
       />
     </span>
   );

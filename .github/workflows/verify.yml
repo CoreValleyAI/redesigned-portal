@@ -1,0 +1,60 @@
+name: Verify
+
+# Builds every branch and pull request exactly as the Pages deploy does
+# (typecheck, lint, static export under the project base path, docs export
+# check) without deploying, so documentation and site changes are validated
+# before they reach main. The export is kept as a downloadable artifact.
+on:
+  push:
+    branches-ignore: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: verify-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  NEXT_TELEMETRY_DISABLED: "1"
+  # Same value the deploy resolves for this project site.
+  NEXT_PUBLIC_BASE_PATH: /${{ github.event.repository.name }}
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Build static export
+        run: npm run build
+
+      - name: Check docs export
+        run: npm run docs:check
+
+      - name: Upload export for preview
+        uses: actions/upload-artifact@v4
+        with:
+          name: static-export-${{ github.sha }}
+          path: ./out
+          retention-days: 7
+          if-no-files-found: error

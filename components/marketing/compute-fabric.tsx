@@ -36,6 +36,7 @@
  */
 
 import * as React from "react";
+import { canvasPalette } from "@/lib/theme";
 
 /* ── Tunables ────────────────────────────────────────────────────────────── */
 const SPACING = 118; // px between lattice points before jitter
@@ -47,10 +48,8 @@ const MAX_DPR = 2;
 const POINTER_RADIUS = 260; // px of pointer influence
 const SWEEP_PERIOD = 7600; // ms for one scheduler pass
 
-/* Ink for the resting mesh, Hydro for whatever is lit — both straight from
-   the brand palette. */
-const INK = "232,236,239";
-const HYDRO = "74,222,128";
+/* Ink for the resting mesh, Hydro for whatever is lit — both read from
+   lib/theme.ts at the top of every frame, so the mesh follows the theme. */
 
 /** Deterministic hash in [0,1). Same layout on every load, and on the server. */
 function hash(i: number, salt: number): number {
@@ -191,6 +190,7 @@ export function ComputeFabric({ className }: { className?: string }) {
 
     // ── Frame ───────────────────────────────────────────────────────────────
     const draw = (now: number) => {
+      const { hydro: HYDRO, ink: INK } = canvasPalette();
       ctx.clearRect(0, 0, w, h);
 
       px += (pxTarget - px) * 0.12;

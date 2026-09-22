@@ -17,6 +17,7 @@
  */
 
 import * as React from "react";
+import { canvasPalette, subscribeTheme } from "@/lib/theme";
 
 /** Horizon height as a fraction of the viewport. */
 const HORIZON = 0.44;
@@ -24,8 +25,7 @@ const HORIZON = 0.44;
 const ROWS = 26;
 /** Vertical lines either side of the vanishing point. */
 const COLS = 18;
-const HYDRO = "74, 222, 128";
-const HOT = "167, 243, 203";
+/* Colours come from lib/theme.ts per pass, so the floor follows the theme. */
 
 export function GridFloor() {
   const ref = React.useRef<HTMLCanvasElement>(null);
@@ -59,6 +59,7 @@ export function GridFloor() {
     let colGradsTop: CanvasGradient[] = [];
 
     const resize = () => {
+      const pal = canvasPalette();
       w = window.innerWidth;
       h = window.innerHeight;
       // 1.5 is enough for hairlines this faint, and a third fewer pixels.
@@ -78,10 +79,10 @@ export function GridFloor() {
         const a = 0.34 * Math.sin(Math.PI * Math.min(1, t * 1.15)) ** 1.4 * fade * fade;
         rowAlpha.push(a);
         const g = ctx.createLinearGradient(0, 0, w, 0);
-        g.addColorStop(0, `rgba(${HYDRO}, 0)`);
-        g.addColorStop(0.25, `rgba(${HYDRO}, ${a})`);
-        g.addColorStop(0.75, `rgba(${HYDRO}, ${a})`);
-        g.addColorStop(1, `rgba(${HYDRO}, 0)`);
+        g.addColorStop(0, `rgba(${pal.hydro}, 0)`);
+        g.addColorStop(0.25, `rgba(${pal.hydro}, ${a})`);
+        g.addColorStop(0.75, `rgba(${pal.hydro}, ${a})`);
+        g.addColorStop(1, `rgba(${pal.hydro}, 0)`);
         rowGrads.push(g);
       }
       colGrads = [];
@@ -95,10 +96,10 @@ export function GridFloor() {
           [colGradsTop, 0],
         ] as const) {
           const g = ctx.createLinearGradient(0, hy, 0, end);
-          g.addColorStop(0, `rgba(${HYDRO}, 0)`);
-          g.addColorStop(0.3, `rgba(${HYDRO}, 0)`);
-          g.addColorStop(0.55, `rgba(${HYDRO}, ${a})`);
-          g.addColorStop(1, `rgba(${HYDRO}, ${a * 0.35})`);
+          g.addColorStop(0, `rgba(${pal.hydro}, 0)`);
+          g.addColorStop(0.3, `rgba(${pal.hydro}, 0)`);
+          g.addColorStop(0.55, `rgba(${pal.hydro}, ${a})`);
+          g.addColorStop(1, `rgba(${pal.hydro}, ${a * 0.35})`);
           list.push(g);
         }
       }
@@ -151,7 +152,8 @@ export function GridFloor() {
       }
 
       // Intersection dots: the brand's dot matrix, laid on the grid.
-      ctx.fillStyle = `rgba(${HOT}, 1)`;
+      const pal = canvasPalette();
+      ctx.fillStyle = `rgba(${pal.hot}, 1)`;
       for (const r of rows) {
         if (r.a < 0.01) continue;
         const k = Math.abs(r.y - hy) / depth; // 0 at horizon → 1 at the edge
@@ -179,9 +181,10 @@ export function GridFloor() {
 
       // Pointer: a pool of light wherever the pointer is.
       if (px >= 0) {
+        const pal = canvasPalette();
         const g = ctx.createRadialGradient(px, py, 0, px, py, 240);
-        g.addColorStop(0, `rgba(${HYDRO}, 0.12)`);
-        g.addColorStop(1, `rgba(${HYDRO}, 0)`);
+        g.addColorStop(0, `rgba(${pal.hydro}, 0.12)`);
+        g.addColorStop(1, `rgba(${pal.hydro}, 0)`);
         ctx.fillStyle = g;
         ctx.fillRect(px - 240, py - 240, 480, 480);
       }
@@ -244,6 +247,8 @@ export function GridFloor() {
       draw();
     };
     const onVis = () => (document.hidden ? stop() : start());
+    // A theme change re-inks the cached gradients and repaints at once.
+    const offTheme = subscribeTheme(onResize);
     const onMove = (e: PointerEvent) => {
       px = e.clientX;
       py = e.clientY;
@@ -272,6 +277,7 @@ export function GridFloor() {
     }
     return () => {
       stop();
+      offTheme();
       window.removeEventListener("resize", onResize);
       document.removeEventListener("visibilitychange", onVis);
       window.removeEventListener("pointerdown", onTap);

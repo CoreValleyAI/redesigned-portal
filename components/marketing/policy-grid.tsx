@@ -18,13 +18,12 @@
  */
 
 import * as React from "react";
+import { canvasPalette } from "@/lib/theme";
 import { cn } from "@/lib/cn";
 
 const COLS = 16;
 const ROWS = 9;
-const HYDRO = "74, 222, 128";
-const HOT = "167, 243, 203";
-const DANGER = "248, 113, 113";
+/* Colours are read from lib/theme.ts at the top of every frame. */
 /** px/s along the grid. */
 const SPEED = 260;
 const SPAWN_MS = 420;
@@ -139,6 +138,7 @@ export function PolicyGrid({ className }: { className?: string }) {
     };
 
     const draw = (dt: number, now: number) => {
+      const { hydro: HYDRO, hot: HOT, danger: DANGER } = canvasPalette();
       ctx.clearRect(0, 0, w, h);
 
       // Spawn ambient traffic.

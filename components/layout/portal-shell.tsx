@@ -12,6 +12,7 @@ import { Icon, IconButton, Input } from "@/components/ui";
 import type { IconName } from "@/components/ui";
 import { cn } from "@/lib/cn";
 import { LogoLockup } from "./logo";
+import { ThemeToggle } from "./theme-toggle";
 
 const NAV: { heading: string; items: { href: string; label: string; icon: IconName }[] }[] = [
   {
@@ -163,6 +164,8 @@ export function PortalShell({ children }: { children: React.ReactNode }) {
               prefix={<Icon name="search" size={14} />}
             />
           </div>
+
+          <ThemeToggle />
 
           <IconButton
             size="sm"

@@ -13,8 +13,8 @@ next-env.d.ts
 # production
 .vercel
 
-# docs site: built from corevalley-docs/ by `npm run docs:build`
-/public/docs/
+# optional standalone MkDocs build (`npm run docs:mkdocs`); the site does
+# not use it — /docs is rendered from corevalley-docs/docs/*.md by Next.js
 /corevalley-docs/site/
 
 # typescript

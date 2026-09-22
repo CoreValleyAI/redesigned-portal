@@ -26,6 +26,7 @@
 import * as React from "react";
 import { Heartbeat, Warning } from "@phosphor-icons/react/dist/ssr";
 import { cn } from "@/lib/cn";
+import { canvasPalette } from "@/lib/theme";
 import { BASEMAP_ASPECT, BASEMAP_PATHS, projectToUnit } from "@/lib/mesh-basemap";
 import {
   CORE_ENDPOINTS,
@@ -45,12 +46,31 @@ import {
    Resolved from design-system tokens so the graphic cannot drift from the
    brand. --info is exactly the requested cyan (#38BDF8); --hydro (#4ADE80) and
    --danger (#F87171) are the brand's emerald and red. */
+type Rgb = readonly number[];
+const rgbCache = new Map<string, Rgb>();
+const rgbOf = (triplet: string): Rgb => {
+  let v = rgbCache.get(triplet);
+  if (!v) {
+    v = triplet.split(",").map(Number);
+    rgbCache.set(triplet, v);
+  }
+  return v;
+};
+/* Read through lib/theme.ts on every access, so the map follows the theme. */
 const RGB = {
-  core: [74, 222, 128],
-  regional: [56, 189, 248],
-  hyperscaler: [248, 113, 113],
-  land: [232, 236, 239],
-} as const;
+  get core(): Rgb {
+    return rgbOf(canvasPalette().hydro);
+  },
+  get regional(): Rgb {
+    return rgbOf(canvasPalette().info);
+  },
+  get hyperscaler(): Rgb {
+    return rgbOf(canvasPalette().danger);
+  },
+  get land(): Rgb {
+    return rgbOf(canvasPalette().ink);
+  },
+};
 
 function rgba(c: readonly number[], a: number) {
   return `rgba(${c[0]},${c[1]},${c[2]},${a})`;

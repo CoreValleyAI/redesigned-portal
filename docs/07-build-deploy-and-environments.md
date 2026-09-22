@@ -12,9 +12,12 @@ target, and no hosted server deployment.
 > route handler and no middleware. `.github/workflows/deploy.yml` runs on
 > push to `main` and on manual dispatch: it reads the Pages base path with
 > `actions/configure-pages` (so `/redesigned-portal` for the project site, `""`
-> for a custom domain), typechecks, lints, builds, and uploads `out/`. The
-> repository's Pages source must be set to *GitHub Actions*. The table below
-> describes the Keycloak branch.
+> for a custom domain on this repository), typechecks, lints, builds, checks
+> the docs export (`npm run docs:check`) and uploads `out/`.
+> `.github/workflows/verify.yml` runs the same steps without deploying on
+> every other branch and on pull requests. The repository's Pages source must
+> be set to *GitHub Actions*. Section 5 describes these workflows; the other
+> tables describe the Keycloak branch.
 
 ---
 
@@ -258,12 +261,20 @@ This is intentional for local development and is a production hazard — see
 
 ## 5. CI/CD
 
-`.github/workflows/deploy.yml` — the only pipeline.
+Two workflows, both Node-only: the documentation is rendered from
+`corevalley-docs/docs/*.md` by Next.js at build time, so MkDocs and Python
+are not installed in CI.
+
+### 5.1 `deploy.yml` — GitHub Pages
+
+Runs on push to `main` (ignoring paths the site does not ship from: the
+internal `docs/`, `reference/`, `design_system/`, `files/`, the agent
+folders, `README.md` and root notes) and on manual dispatch from any branch.
 
 ```yaml
 name: Deploy to GitHub Pages
 on:
-  push: { branches: [main] }
+  push: { branches: [main], paths-ignore: ["docs/**", "reference/**", "design_system/**", "files/**", "..."] }
   workflow_dispatch:
 
 permissions: { contents: read, pages: write, id-token: write }
@@ -273,17 +284,23 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with: { node-version: 20, cache: npm }
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with: { node-version: 24, cache: npm }
+      - id: pages                        # base path from the Pages settings
+        uses: actions/configure-pages@v5
+        continue-on-error: true
+        with: { enablement: true }
+      - id: basepath                     # falls back to /<repo> ONLY if the
+        run: ...                         # step above failed ("" is valid)
       - run: npm ci
+      - run: npm run typecheck
+      - run: npm run lint
       - run: npm run build
-        env:
-          NEXT_PUBLIC_BASE_PATH: /${{ github.event.repository.name }}
-          # Pages has no server: emit ./out, drop the NextAuth route handler
-          # and run the console on the baked-in demo session.
-          NEXT_STATIC_EXPORT: "true"
-      - uses: actions/upload-pages-artifact@v3
+        env: { NEXT_PUBLIC_BASE_PATH: "${{ steps.basepath.outputs.value }}" }
+      - run: npm run docs:check          # every nav page exported, links prefixed
+        env: { NEXT_PUBLIC_BASE_PATH: "${{ steps.basepath.outputs.value }}" }
+      - uses: actions/upload-pages-artifact@v4
         with: { path: ./out }
 
   deploy:
@@ -295,32 +312,42 @@ jobs:
         uses: actions/deploy-pages@v4
 ```
 
-### ❌ CI gaps
+**Base path.** `actions/configure-pages` derives it from the Pages URL:
+`/redesigned-portal` for this project site (the organisation site owns the
+`corevalley.ai` domain, so the project is served at
+`corevalley.ai/redesigned-portal/`), and `""` if a custom domain is ever
+attached to this repository. The fallback to the repository name applies only
+when that step *fails*. An expression such as `base_path || '/<repo>'` would
+treat the valid empty value as missing and break every link on a
+custom-domain site, which is why the workflow tests the step outcome instead.
+
+### 5.2 `verify.yml` — branches and pull requests
+
+Runs on push to every branch except `main` and on pull requests targeting
+`main`: `npm ci`, typecheck, lint, `npm run build` with
+`NEXT_PUBLIC_BASE_PATH=/redesigned-portal`, `npm run docs:check`, then uploads
+`out/` as a workflow artifact (`static-export-<sha>`, kept 7 days) for
+preview. Nothing is deployed.
+
+### 5.3 `npm run docs:check` (`scripts/check-docs-export.mjs`)
+
+Reads the `nav` in `corevalley-docs/mkdocs.yml`, asserts each entry exported
+to `out/docs/<slug>/index.html`, and asserts the docs landing page links
+under `NEXT_PUBLIC_BASE_PATH`. Exits 1 on a missing page, a missing export or
+a base-path mismatch. Locally:
+
+```bash
+MSYS_NO_PATHCONV=1 NEXT_PUBLIC_BASE_PATH=/redesigned-portal npm run build
+MSYS_NO_PATHCONV=1 NEXT_PUBLIC_BASE_PATH=/redesigned-portal npm run docs:check
+```
+
+### ❌ Remaining CI gaps
 
 | Missing | Consequence |
 |---|---|
-| No `npm run lint` step | Lint regressions reach `main` |
-| No `npm run typecheck` step | Type regressions reach `main` (the build does typecheck, so this is partly covered) |
-| No server-target build | The dual-target split could break without CI noticing |
-| No `NEXT_PUBLIC_API_MODE=http` build | Interface drift between `mock.ts` and `http.ts` is caught only locally |
 | No tests | There is no test suite to run |
-| No preview deployments | Branches are unverified until merge |
-
-**Recommended CI job** (❌ PROPOSED — not implemented):
-
-```yaml
-verify:
-  runs-on: ubuntu-latest
-  steps:
-    - uses: actions/checkout@v4
-    - uses: actions/setup-node@v4
-      with: { node-version: 20, cache: npm }
-    - run: npm ci
-    - run: npm run lint
-    - run: npm run typecheck
-    - run: npm run build                       # server target
-    - run: NEXT_PUBLIC_API_MODE=http npx next build   # interface-swap check
-```
+| No preview deployments | Branch builds are downloadable artifacts, not URLs |
+| No `NEXT_PUBLIC_API_MODE=http` build | Interface drift between `mock.ts` and `http.ts` is caught only locally |
 
 ---
 
@@ -342,6 +369,7 @@ npm run dev                  # http://localhost:3000
 | `start` | `next start` |
 | `lint` | `eslint .` |
 | `typecheck` | `tsc --noEmit` |
+| `docs:check` | `node scripts/check-docs-export.mjs` |
 | `generate:basemap` | `node scripts/generate-basemap.mjs` |
 | `keycloak:up` | `docker compose up -d` |
 | `keycloak:down` | `docker compose down` |
