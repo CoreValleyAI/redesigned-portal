@@ -262,7 +262,7 @@ export default function HomePage() {
                   { out: "→ matched np-ktm-1 · kathmandu · hydro grid" },
                   { out: "→ h200 mig 2g.35gb · 35 GB · vcluster cv-himal" },
                   { out: "→ data residency: nepal · egress: default-deny" },
-                  { comment: "pod cv-9f3a21 running in 11s · NPR 132/hr" },
+                  { comment: "pod cv-9f3a21 running in 11s · NPR 69/hr" },
                   { prompt: "$", text: "" },
                 ]}
               />
