@@ -8,6 +8,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
+    "docs:check": "node scripts/check-docs-export.mjs",
     "docs:mkdocs": "mkdocs build -f corevalley-docs/mkdocs.yml --clean",
     "docs:mkdocs:serve": "mkdocs serve -f corevalley-docs/mkdocs.yml -a 127.0.0.1:8001",
     "start": "next start",

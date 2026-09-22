@@ -3,6 +3,20 @@ name: Deploy to GitHub Pages
 on:
   push:
     branches: [main]
+    # Pushes that touch nothing the site ships from do not redeploy. The
+    # site's documentation lives in corevalley-docs/ (rendered at /docs by
+    # Next.js); the root docs/ folder is internal engineering notes.
+    paths-ignore:
+      - "docs/**"
+      - "reference/**"
+      - "design_system/**"
+      - "files/**"
+      - ".agents/**"
+      - ".claude/**"
+      - ".github/workflows/verify.yml"
+      - "README.md"
+      - "report_0903.txt"
+      - "skills-lock.json"
   workflow_dispatch:
 
 # Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
@@ -16,6 +30,9 @@ concurrency:
   group: pages
   cancel-in-progress: true
 
+env:
+  NEXT_TELEMETRY_DISABLED: "1"
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -26,36 +43,65 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v5
         with:
-          node-version: 20
+          node-version: 24
           cache: npm
 
       # Reads the site's Pages settings and exposes the base path the site
-      # will be served from: "/<repo>" for a project site, "" for a user site
-      # or a custom domain. `enablement` turns Pages on (source: GitHub
-      # Actions) the first time, so the repo needs no manual setup. If the
-      # settings still cannot be read, the build step falls back to the repo
-      # name, which is right for a project site.
+      # will be served from: "/<repo>" for a project site (also when the
+      # organisation site has a custom domain, e.g. corevalley.ai/<repo>/),
+      # "" for a user site or a custom domain on this repository.
+      # `enablement` turns Pages on (source: GitHub Actions) the first time,
+      # so the repo needs no manual setup.
       - name: Configure Pages
         id: pages
         uses: actions/configure-pages@v5
+        continue-on-error: true
         with:
           enablement: true
+
+      # Fall back to the repo name only when the settings could not be read.
+      # An empty base path is a valid answer ("" = served from the domain
+      # root), so this must test the step's outcome, not the value — in
+      # workflow expressions `'' || x` would silently pick x and every link
+      # on a custom-domain site would break.
+      - name: Resolve base path
+        id: basepath
+        env:
+          PAGES_OUTCOME: ${{ steps.pages.outcome }}
+          PAGES_BASE_PATH: ${{ steps.pages.outputs.base_path }}
+          REPO_NAME: ${{ github.event.repository.name }}
+        run: |
+          if [ "$PAGES_OUTCOME" = "success" ]; then
+            base="$PAGES_BASE_PATH"
+          else
+            echo "::warning::Could not read the Pages settings; assuming a project site at /$REPO_NAME"
+            base="/$REPO_NAME"
+          fi
+          echo "Base path: '${base}'"
+          echo "value=${base}" >> "$GITHUB_OUTPUT"
 
       - name: Install dependencies
         run: npm ci
 
-      - name: Typecheck and lint
-        run: |
-          npm run typecheck
-          npm run lint
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Lint
+        run: npm run lint
 
       # The docs under /docs/ are Next.js routes rendered from
       # corevalley-docs/docs/*.md at build time — no Python needed.
       - name: Build static export
         run: npm run build
         env:
-          NEXT_PUBLIC_BASE_PATH: ${{ steps.pages.outputs.base_path || format('/{0}', github.event.repository.name) }}
-          NEXT_TELEMETRY_DISABLED: "1"
+          NEXT_PUBLIC_BASE_PATH: ${{ steps.basepath.outputs.value }}
+
+      # Every page in the corevalley-docs nav must have exported, with links
+      # under the resolved base path, before anything is uploaded.
+      - name: Check docs export
+        run: npm run docs:check
+        env:
+          NEXT_PUBLIC_BASE_PATH: ${{ steps.basepath.outputs.value }}
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v4

@@ -62,6 +62,7 @@ npm run dev          # http://localhost:3000
 |---|---|
 | `npm run dev` | Development server (docs included — edit a `.md`, refresh) |
 | `npm run build` | Production build (static export to `out/`) |
+| `npm run docs:check` | After `npm run build`: checks every docs page in the `mkdocs.yml` nav exported to `out/docs/` under the right base path (CI runs it before deploying) |
 | `npm run docs:mkdocs` | Optional: standalone MkDocs build of the same docs into `corevalley-docs/site/` (needs Python + `pip install -r corevalley-docs/requirements.txt`) |
 | `npm run docs:mkdocs:serve` | Optional: MkDocs live preview on port 8001 |
 | `npm start` | Serve the production build |
@@ -138,10 +139,21 @@ The original hardcoded docs pages are archived in `reference/legacy-next-docs/`.
 - No CSS-in-JS, no animation library — canvas and CSS only
 
 Deploys to GitHub Pages as a static export. `next.config.ts` sets
-`output: "export"` and `trailingSlash: true`; `.github/workflows/deploy.yml`
-builds on every push to `main` (or on demand from any branch via
-*Run workflow*), reads the base path from the repository's Pages settings,
-and uploads `out/`. Pages must be set to deploy from **GitHub Actions**.
+`output: "export"` and `trailingSlash: true`. Two workflows:
+
+- `.github/workflows/deploy.yml` builds on every push to `main` that touches
+  the site (or on demand from any branch via *Run workflow*), reads the base
+  path from the repository's Pages settings, typechecks, lints, builds, runs
+  `npm run docs:check` and uploads `out/`. Pages must be set to deploy from
+  **GitHub Actions**.
+- `.github/workflows/verify.yml` runs the same typecheck / lint / build /
+  docs check on every other branch and on pull requests to `main` without
+  deploying, and keeps the export as a downloadable artifact for 7 days.
+
+`npm run docs:check` verifies that every page in the `corevalley-docs/mkdocs.yml`
+nav exported to `out/docs/` and that the HTML links under
+`NEXT_PUBLIC_BASE_PATH`; CI runs it before uploading, and you can run it after
+a local build.
 
 To check the export locally under the project subpath:
 
