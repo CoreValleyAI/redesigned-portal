@@ -54,7 +54,7 @@ export function Switch({
         "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-hydro",
         s.track,
         checked
-          ? "border-transparent bg-hydro shadow-[0_0_16px_rgba(74,222,128,0.32)]"
+          ? "border-transparent bg-hydro shadow-[0_0_16px_rgb(var(--hydro-rgb)/0.32)]"
           : "border-line-strong bg-carbon-500",
         disabled ? "cursor-not-allowed opacity-50" : "cursor-pointer",
         className,

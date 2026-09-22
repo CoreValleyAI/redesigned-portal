@@ -16,11 +16,9 @@
  */
 
 import * as React from "react";
+import { canvasPalette } from "@/lib/theme";
 
-const HYDRO = "74,222,128";
-const TEAL = "56,189,248";
-const HOT = "167,243,203";
-const INK = "232,236,239";
+/* Colours are read from lib/theme.ts at the top of every frame. */
 
 interface Pt {
   x: number;
@@ -152,6 +150,7 @@ export function ChipGraph({
     };
 
     const draw = (now: number) => {
+      const { hydro: HYDRO, info: TEAL, hot: HOT, ink: INK, surface: SURFACE } = canvasPalette();
       const t = reduced ? 0 : (now - t0) / 1000;
       ctx.clearRect(0, 0, w, h);
 
@@ -239,7 +238,7 @@ export function ChipGraph({
       }
       // Body.
       const glow = over ? 0.55 : 0.28;
-      ctx.fillStyle = "rgba(17,22,31,0.92)";
+      ctx.fillStyle = `rgba(${SURFACE},0.92)`;
       ctx.strokeStyle = `rgba(${HYDRO},${glow})`;
       ctx.lineWidth = 1;
       roundRect(ctx, cx - s / 2, cy - s / 2, s, s, 6);

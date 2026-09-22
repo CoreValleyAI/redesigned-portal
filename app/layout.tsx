@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { JetBrains_Mono, Manrope } from "next/font/google";
 import { LiquidFilters } from "@/components/fx/liquid-filter";
+import { THEME_BOOTSTRAP, THEME_COLOR } from "@/lib/theme";
 import "./globals.css";
 
 /* Both faces are variable fonts: omitting `weight` ships one woff2 per family
@@ -57,11 +58,12 @@ export const metadata: Metadata = {
   robots: { index: true, follow: true },
 };
 
-/* Tells the UA to render scrollbars and form controls dark, and paints the
-   mobile browser chrome Carbon so the status bar continues the ground. */
+/* The mobile browser chrome starts Carbon; the theme bootstrap below and
+   lib/theme.ts rewrite this meta when the theme is light. `color-scheme`
+   (scrollbars, form controls) is set per theme in app/theme.css rather than
+   here, so it follows the toggle and not only the OS. */
 export const viewport: Viewport = {
-  colorScheme: "dark",
-  themeColor: "#05080D",
+  themeColor: THEME_COLOR.dark,
 };
 
 export default function RootLayout({
@@ -77,12 +79,18 @@ export default function RootLayout({
           into layer(base)) already sets --bg-base, --text-primary and the
           Manrope 300 / 1.6 body defaults. */}
       <body className="min-h-dvh antialiased">
+        {/* Theme bootstrap: stamps <html data-theme> from the saved choice or
+            the OS preference before anything below paints, so the first frame
+            is already the right theme. First in <body> rather than in <head>
+            so it runs after <html> exists and before any content. */}
+        <script dangerouslySetInnerHTML={{ __html: THEME_BOOTSTRAP }} />
+
         {/* Keyboard users land here first. Visually hidden until focused, at
             which point it becomes a real, fully styled control — a skip link
             that stays invisible when focused is worse than none. */}
         <a
           href="#main"
-          className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[9999] focus:rounded-md focus:bg-hydro focus:px-4 focus:py-2.5 focus:font-mono focus:text-xs focus:tracking-label focus:text-carbon-900 focus:uppercase"
+          className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[9999] focus:rounded-md focus:bg-hydro focus:px-4 focus:py-2.5 focus:font-mono focus:text-xs focus:tracking-label focus:text-on-hydro focus:uppercase"
         >
           Skip to content
         </a>

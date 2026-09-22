@@ -40,6 +40,7 @@
  */
 
 import * as React from "react";
+import { canvasPalette, subscribeTheme } from "@/lib/theme";
 
 /* ── Tunables ────────────────────────────────────────────────────────────── */
 
@@ -55,10 +56,8 @@ const EYE: [number, number, number] = [0, 9, -8];
 const TARGET: [number, number, number] = [0, 2, 60];
 const FOV_DEG = 58;
 
-/* Carbon #05080D, Hydro #4ADE80 and hydro-200 #A7F3CB, as 0–1 RGB. */
-const CARBON = [5 / 255, 8 / 255, 13 / 255] as const;
-const HYDRO = [74 / 255, 222 / 255, 128 / 255] as const;
-const HYDRO_HOT = [167 / 255, 243 / 255, 203 / 255] as const;
+/* Ground and mark colours are uniforms fed from lib/theme.ts (applyPalette
+   below), so the range follows the theme. */
 
 /* ── Shaders ─────────────────────────────────────────────────────────────── */
 
@@ -226,6 +225,8 @@ precision mediump float;
 
 uniform vec3 uCarbon;
 uniform vec3 uColor;
+uniform float uSign; // +1: marks add light to the ground (Carbon). -1: they subtract (paper).
+uniform float uGain; // lifts dot contrast on paper (1.0 on Carbon), clamped so bright dots saturate at the target green
 uniform vec3 uHot;
 // highp to match the vertex shader: a uniform shared by both stages must
 // agree on precision or the program fails to link.
@@ -274,9 +275,10 @@ void main() {
     dotv = mix(dotv, 0.4, smoothstep(0.62, 1.0, vFar));
 
     light *= fog;
-    vec3 fill = uCarbon + uColor * 0.07 * vSec * fog;
+    vec3 fill = uCarbon + uSign * uColor * 0.07 * vSec * fog * uGain;
     vec3 glow = mix(uColor, uHot, clamp(light - 0.9, 0.0, 1.0));
-    gl_FragColor = vec4(fill + glow * light * dotv, 1.0);
+    float lit = min(1.0, light * uGain);
+    gl_FragColor = vec4(fill + uSign * glow * lit * dotv, 1.0);
     return;
   }
 
@@ -287,7 +289,7 @@ void main() {
   float r = length(gl_PointCoord - 0.5) * 2.0;
   float soft = max(0.0, 1.0 - r);
   float a = mix(smoothstep(1.0, 0.35, r), soft * soft, halo);
-  float b = vBright;
+  float b = min(1.0, vBright * uGain);
   vec3 c = mix(uColor, uHot, clamp(b - 0.8, 0.0, 1.0));
   gl_FragColor = vec4(c * b * a, b * a);
 }
@@ -561,11 +563,23 @@ export function DotTerrain({ className }: { className?: string }) {
       carbon: gl.getUniformLocation(program, "uCarbon"),
       color: gl.getUniformLocation(program, "uColor"),
       hot: gl.getUniformLocation(program, "uHot"),
+      sign: gl.getUniformLocation(program, "uSign"),
+      gain: gl.getUniformLocation(program, "uGain"),
     };
     gl.uniform2f(u.extent, EXTENT_X, EXTENT_Z);
-    gl.uniform3f(u.carbon, CARBON[0], CARBON[1], CARBON[2]);
-    gl.uniform3f(u.color, HYDRO[0], HYDRO[1], HYDRO[2]);
-    gl.uniform3f(u.hot, HYDRO_HOT[0], HYDRO_HOT[1], HYDRO_HOT[2]);
+    // Ground and mark colours follow the theme. On paper the marks SUBTRACT
+    // from the ground (uSign = -1) and the sprite blend flips to match, so
+    // one shader serves both themes.
+    const applyPalette = () => {
+      const pal = canvasPalette();
+      gl.uniform3f(u.carbon, ...pal.ground);
+      gl.uniform3f(u.color, ...pal.hydroVec);
+      gl.uniform3f(u.hot, ...pal.hotVec);
+      gl.uniform1f(u.sign, pal.subtractive ? -1 : 1);
+      gl.uniform1f(u.gain, pal.gain);
+      return pal.subtractive;
+    };
+    let subtractive = applyPalette();
 
     gl.clearColor(0, 0, 0, 0);
     gl.depthFunc(gl.LEQUAL);
@@ -680,6 +694,7 @@ export function DotTerrain({ className }: { className?: string }) {
     // An arrow, not a function declaration: a declaration is hoisted above the
     // `if (!gl) return` guard and loses its narrowing.
     const draw = (now: number) => {
+      subtractive = applyPalette();
       mx += (tx - mx) * 0.1;
       mz += (tz - mz) * 0.1;
       gain += (targetGain - gain) * 0.08;
@@ -703,7 +718,8 @@ export function DotTerrain({ className }: { className?: string }) {
       // Passes 1–2 — the glow sprites, depth-tested, additive.
       gl.depthMask(false);
       gl.enable(gl.BLEND);
-      gl.blendFunc(gl.ONE, gl.ONE);
+      if (subtractive) gl.blendFunc(gl.ZERO, gl.ONE_MINUS_SRC_COLOR);
+      else gl.blendFunc(gl.ONE, gl.ONE);
       gl.uniform1f(u.pass, 1);
       gl.drawArrays(gl.POINTS, 0, COLS * ROWS);
       gl.uniform1f(u.pass, 2);
@@ -775,7 +791,11 @@ export function DotTerrain({ className }: { className?: string }) {
       document.addEventListener("pointerleave", onLeave, { passive: true });
     }
 
+    // A theme change repaints once even while the loop is parked.
+    const offTheme = subscribeTheme(() => draw(performance.now()));
+
     return () => {
+      offTheme();
       stop();
       canvas.removeEventListener("pointerdown", onTap);
       window.clearTimeout(tapTimer);

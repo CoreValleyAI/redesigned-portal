@@ -32,11 +32,11 @@ const buttonVariants = cva(
            Hydro Dark, press to hydro-700, exactly as the design system's
            palette table specifies. */
         primary: [
-          "bg-hydro text-carbon-900 border-transparent",
+          "bg-hydro text-on-hydro border-transparent",
           "hover:bg-hydro-dark active:bg-hydro-700",
           // 0.30 alpha here; --glow-hydro-md is 0.40. Not the same token —
           // kept literal to match the design system exactly.
-          "hover:shadow-[0_0_20px_rgba(74,222,128,0.30)]",
+          "hover:shadow-[0_0_20px_rgb(var(--hydro-rgb)/0.30)]",
         ],
         secondary:
           "bg-carbon-600 text-ink-200 border-line hover:bg-carbon-500 active:bg-carbon-400",

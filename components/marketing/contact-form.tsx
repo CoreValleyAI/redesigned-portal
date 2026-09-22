@@ -144,7 +144,7 @@ export function ContactForm() {
               id="interest"
               name="interest"
               defaultValue="gpu-pods"
-              className="h-10 w-full rounded-md border border-line bg-surface-input px-3 text-[14px] text-ink-100 outline-none transition-[border-color,box-shadow] duration-fast hover:border-line-strong focus:border-hydro focus:shadow-[0_0_0_3px_rgba(74,222,128,0.12)]"
+              className="h-10 w-full rounded-md border border-line bg-surface-input px-3 text-[14px] text-ink-100 outline-none transition-[border-color,box-shadow] duration-fast hover:border-line-strong focus:border-hydro focus:shadow-[0_0_0_3px_rgb(var(--hydro-rgb)/0.12)]"
             >
               {INTERESTS.map((i) => (
                 <option key={i.value} value={i.value}>
@@ -177,7 +177,7 @@ export function ContactForm() {
             required
             rows={5}
             placeholder="Models, dataset size, timeline, data-residency requirements..."
-            className="w-full resize-y rounded-md border border-line bg-surface-input px-3 py-2.5 text-[14px] leading-relaxed text-ink-100 outline-none transition-[border-color,box-shadow] duration-fast placeholder:text-ink-600 focus:border-hydro focus:shadow-[0_0_0_3px_rgba(74,222,128,0.12)]"
+            className="w-full resize-y rounded-md border border-line bg-surface-input px-3 py-2.5 text-[14px] leading-relaxed text-ink-100 outline-none transition-[border-color,box-shadow] duration-fast placeholder:text-ink-600 focus:border-hydro focus:shadow-[0_0_0_3px_rgb(var(--hydro-rgb)/0.12)]"
           />
         </div>
 

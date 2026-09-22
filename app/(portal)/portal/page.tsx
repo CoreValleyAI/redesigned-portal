@@ -92,7 +92,7 @@ export default async function OverviewPage() {
             const over = pct >= 100;
             const near = pct >= 75;
             const barTone = over
-              ? "bg-danger shadow-[0_0_10px_rgba(248,113,113,0.45)]"
+              ? "bg-danger shadow-[0_0_10px_rgb(var(--danger-rgb)/0.45)]"
               : near
                 ? "bg-warning"
                 : "bg-hydro";

@@ -34,6 +34,17 @@
        components/docs/markdown.tsx). Same unlayered-import pattern. */
 @import "./prose.css";
 
+/* 4c — The light theme and the dark islands inside it (app/theme.css).
+       Unlayered: it overrides glass.css's unlayered :root helpers, which a
+       layered rule never could. Every value there is keyed on
+       <html data-theme>, stamped before paint by lib/theme.ts. */
+@import "./theme.css";
+
+/* The `light:` variant, for the rare one-off a token cannot express. The
+   tokens themselves flip in theme.css; reach for this only when a rule must
+   differ in KIND between themes, not in colour. */
+@custom-variant light (&:where([data-theme="light"], [data-theme="light"] *));
+
 /* 5 — Explicit class sources. */
 @source "../app";
 @source "../components";
@@ -259,14 +270,14 @@
 @keyframes cv-online {
   0%,
   100% {
-    text-shadow: 0 0 18px rgb(74 222 128 / 0.28);
+    text-shadow: 0 0 18px rgb(var(--hydro-rgb) / 0.28);
   }
   50% {
-    text-shadow: 0 0 34px rgb(74 222 128 / 0.55);
+    text-shadow: 0 0 34px rgb(var(--hydro-rgb) / 0.55);
   }
 }
 @utility online-glow {
-  text-shadow: 0 0 24px rgb(74 222 128 / 0.4);
+  text-shadow: 0 0 24px rgb(var(--hydro-rgb) / 0.4);
   animation: cv-online 3.2s var(--ease-standard) infinite;
 }
 
@@ -276,7 +287,7 @@
 @utility bg-dot-grid {
   background-image: radial-gradient(
     circle at center,
-    rgb(232 236 239 / 0.09) 1px,
+    rgb(var(--ink-rgb) / 0.09) 1px,
     transparent 1px
   );
   background-size: 22px 22px;
@@ -284,8 +295,8 @@
 
 @utility bg-wire-grid {
   background-image:
-    linear-gradient(to right, rgb(232 236 239 / 0.035) 1px, transparent 1px),
-    linear-gradient(to bottom, rgb(232 236 239 / 0.035) 1px, transparent 1px);
+    linear-gradient(to right, rgb(var(--ink-rgb) / 0.035) 1px, transparent 1px),
+    linear-gradient(to bottom, rgb(var(--ink-rgb) / 0.035) 1px, transparent 1px);
   background-size: 44px 44px;
 }
 
@@ -336,10 +347,10 @@
     background:
       radial-gradient(
         16rem circle at var(--mx, 50%) var(--my, 50%),
-        rgb(74 222 128 / 0.1),
+        rgb(var(--hydro-rgb) / 0.1),
         transparent 65%
       ),
-      radial-gradient(circle at center, rgb(74 222 128 / 0.45) 1px, transparent 1.6px)
+      radial-gradient(circle at center, rgb(var(--hydro-rgb) / 0.45) 1px, transparent 1.6px)
         0 0 / 12px 12px;
     -webkit-mask-image: radial-gradient(
       13rem circle at var(--mx, 50%) var(--my, 50%),
@@ -359,7 +370,7 @@
     padding: 1px;
     background: radial-gradient(
       13rem circle at var(--mx, 50%) var(--my, 50%),
-      rgb(74 222 128 / 0.45),
+      rgb(var(--hydro-rgb) / 0.45),
       transparent 60%
     );
     -webkit-mask:

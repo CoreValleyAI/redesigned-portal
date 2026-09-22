@@ -41,7 +41,7 @@ export function UtilBar({ value, width = 64 }: { value: number; width?: number }
           className={cn(
             "h-full rounded-pill",
             value > 0 ? "bg-hydro" : "bg-transparent",
-            value > 60 && "shadow-[0_0_8px_rgba(74,222,128,0.5)]",
+            value > 60 && "shadow-[0_0_8px_rgb(var(--hydro-rgb)/0.5)]",
           )}
           style={{ width: `${Math.min(100, Math.max(0, value))}%` }}
         />

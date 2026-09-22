@@ -224,6 +224,46 @@ for free.
 </details>
 
 <details>
+<summary><b>Light theme</b></summary>
+
+<br>
+
+The site ships dark-first with a light theme behind the sun/moon toggle in the
+header (marketing) and the console toolbar. `lib/theme.ts` owns the state: a
+`data-theme` attribute on `<html>`, stamped before first paint by an inline
+bootstrap in `app/layout.tsx` (saved choice → OS preference → dark), persisted
+in `localStorage`, and exposed to components as `useTheme()` and to the
+painted graphics as `canvasPalette()`.
+
+`app/theme.css` is the whole light theme. It is unlayered (it has to beat
+`glass.css`'s unlayered `:root` helpers) and overrides the *same* token names
+`design_system/tokens/colors.css` declares, keyed on `[data-theme="light"]`:
+
+- **The ramps invert, not just the aliases.** `carbon-900…400` still reads
+  ground → most raised, `ink-100…700` loudest → faintest, `hydro-100…900`
+  strongest → palest, so `text-ink-100` on `bg-carbon-700` stays "loudest text
+  on a card" and no component needs a `light:` variant. Hydro itself becomes
+  `#15803D` (4.6:1 on paper) so accent text passes AA; primary buttons go
+  white-on-green through `--text-on-hydro`.
+- **Alpha literals are triplet tokens.** `rgb(74 222 128 / a)` and friends in
+  the CSS and in Tailwind arbitrary values became `rgb(var(--hydro-rgb) / a)`,
+  `--ink-rgb`, `--hi-rgb`, `--lo-rgb` (shadows also carry `--lo-k`, a light-mode
+  alpha multiplier).
+- **Terminals on paper.** The Terminal primitive and docs code blocks
+  (`cv-terminal`) remap their Carbon steps to a pale teal ramp in light mode;
+  the quote console follows the page. A `cv-dark` island (dark tokens restated
+  for a subtree) exists for anything that must stay Carbon, unused today.
+- **Canvases follow the theme.** The seven painted graphics read
+  `canvasPalette()` per frame and repaint on `subscribeTheme()`. On paper the
+  WebGL terrain *subtracts* from its opaque ground (`uSign`, flipped blend);
+  the transparent footer dot matrix composites dark-green dots source-over.
+
+`light:` exists as a custom variant for the rare one-off (the wordmark swaps
+to `cv-wordmark-carbon.svg`); reach for a token first.
+
+</details>
+
+<details>
 <summary><b>Deliberate deviations from the design system</b></summary>
 
 <br>

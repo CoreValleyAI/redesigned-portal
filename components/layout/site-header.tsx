@@ -27,6 +27,7 @@ import { Button, Icon } from "@/components/ui";
 import { cn } from "@/lib/cn";
 import { docsHref } from "@/lib/docs/href";
 import { LogoLockup } from "./logo";
+import { ThemeToggle } from "./theme-toggle";
 
 const NAV = [
   { href: "/products", label: "Products" },
@@ -140,6 +141,8 @@ export function SiteHeader() {
                 Talk to sales
               </Button>
             </Link>
+
+            <ThemeToggle className="ml-1" />
 
             <button
               type="button"

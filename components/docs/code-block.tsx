@@ -18,7 +18,7 @@ export function CodeBlock({
   const label = title ?? (lang && lang !== "text" ? lang : null);
   return (
     <figure
-      className="md-code relative overflow-hidden rounded-lg border border-line bg-carbon-800 shadow-lg"
+      className="md-code cv-terminal relative overflow-hidden rounded-lg border border-line bg-carbon-800 shadow-lg"
       data-lang={lang}
     >
       <div className="flex items-center justify-between gap-3 border-b border-line-subtle bg-carbon-700 px-3.5 py-1.5">

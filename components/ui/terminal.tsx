@@ -30,7 +30,7 @@ export function Terminal({
   return (
     <div
       className={cn(
-        "relative overflow-hidden rounded-lg border border-line bg-carbon-800 font-mono shadow-lg",
+        "cv-terminal relative overflow-hidden rounded-lg border border-line bg-carbon-800 font-mono shadow-lg",
         className,
       )}
       {...rest}
@@ -73,7 +73,7 @@ export function Terminal({
               <span className="mr-2 text-hydro">{l.prompt || "$"}</span>
               {l.text}
               {last && cursor ? (
-                <span className="animate-cursor ml-1 inline-block h-4 w-2 -translate-y-px bg-hydro align-[-3px] shadow-[0_0_8px_rgba(74,222,128,0.5)]" />
+                <span className="animate-cursor ml-1 inline-block h-4 w-2 -translate-y-px bg-hydro align-[-3px] shadow-[0_0_8px_rgb(var(--hydro-rgb)/0.5)]" />
               ) : null}
             </div>
           );

@@ -29,6 +29,7 @@
  */
 
 import * as React from "react";
+import { canvasPalette, subscribeTheme } from "@/lib/theme";
 
 interface Dot {
   hx: number;
@@ -43,8 +44,7 @@ interface Dot {
   sy: number;
 }
 
-/* Hydro #4ADE80 as 0–1 RGB. */
-const HYDRO: [number, number, number] = [74 / 255, 222 / 255, 128 / 255];
+/* Dot colour and blend come from lib/theme.ts per frame (see draw). */
 
 const VERT = /* glsl */ `
 attribute vec2  aPos;    // CSS px
@@ -229,6 +229,7 @@ export function DotMatrix({
     let buf: WebGLBuffer | null = null;
     let uRes: WebGLUniformLocation | null = null;
     let uDpr: WebGLUniformLocation | null = null;
+    let uColor: WebGLUniformLocation | null = null;
     /** [x, y, size, alpha] per dot. */
     let verts = new Float32Array(0);
 
@@ -259,10 +260,8 @@ export function DotMatrix({
           gl.vertexAttribPointer(aAlpha, 1, gl.FLOAT, false, stride, 12);
           uRes = gl.getUniformLocation(program, "uRes");
           uDpr = gl.getUniformLocation(program, "uDpr");
-          gl.uniform3f(gl.getUniformLocation(program, "uColor"), ...HYDRO);
-          // Additive, like the old `lighter` compositing.
-          gl.enable(gl.BLEND);
-          gl.blendFunc(gl.ONE, gl.ONE);
+          uColor = gl.getUniformLocation(program, "uColor");
+          gl.enable(gl.BLEND); // the blend function is chosen per frame
           gl.clearColor(0, 0, 0, 0);
         }
       }
@@ -430,7 +429,7 @@ export function DotMatrix({
       if (!ctx) return;
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
       ctx.clearRect(0, 0, width, height);
-      ctx.fillStyle = "rgb(74 222 128)";
+      ctx.fillStyle = `rgb(${canvasPalette().hydro})`;
       for (const d of dots) {
         ctx.globalAlpha = Math.min(1, d.w * intensity);
         ctx.beginPath();
@@ -447,6 +446,19 @@ export function DotMatrix({
       }
       const moving = step(now);
       gl.bindBuffer(gl.ARRAY_BUFFER, buf);
+      // Colour and blend per frame, so a theme change takes on the next
+      // paint. On Carbon: additive Hydro (the old `lighter` compositing). On
+      // paper: the canvas is transparent, so there is no ground to subtract
+      // from; the shader's output is already premultiplied (rgb * i, i), so
+      // source-over blending lays dark-green dots on whatever is beneath.
+      const pal = canvasPalette();
+      if (pal.subtractive) {
+        gl.uniform3f(uColor, ...pal.hydroPlain);
+        gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
+      } else {
+        gl.uniform3f(uColor, ...pal.hydroVec);
+        gl.blendFunc(gl.ONE, gl.ONE);
+      }
       gl.bufferSubData(gl.ARRAY_BUFFER, 0, verts);
       gl.clear(gl.COLOR_BUFFER_BIT);
       gl.drawArrays(gl.POINTS, 0, dots.length);
@@ -532,7 +544,15 @@ export function DotMatrix({
       }
     }
 
+    // Repaint on a theme change: wake the loop (it sleeps once settled), or
+    // redraw the static fallback.
+    const offTheme = subscribeTheme(() => {
+      if (gl) start();
+      else draw2D();
+    });
+
     return () => {
+      offTheme();
       stop();
       ro.disconnect();
       io.disconnect();

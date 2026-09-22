@@ -80,7 +80,7 @@ export function Section({
            the middle and dissolves at the edges. */
         <div
           aria-hidden="true"
-          className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(85%_60%_at_50%_50%,rgb(232_236_239_/_0.02),transparent_72%)]"
+          className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(85%_60%_at_50%_50%,rgb(var(--ink-rgb)/0.02),transparent_72%)]"
         />
       ) : null}
 

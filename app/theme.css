@@ -1,0 +1,272 @@
+/* ══════════════════════════════════════════════════════════════════════════
+   CoreValley — light theme, and the dark islands inside it.
+
+   design_system/tokens/colors.css is dark-first and read-only. This file
+   layers a second, light value set over the SAME token names, keyed on
+   <html data-theme="light"> (stamped before paint by lib/theme.ts). Nothing
+   else in the app knows the theme: every surface, hairline, text role and
+   glow is a token, so flipping the tokens flips the site.
+
+   THE RAMPS INVERT, not just the aliases. Components reach past the aliases
+   for `bg-carbon-700`, `text-ink-100`, `bg-hydro-900` and so on, and those
+   names encode elevation and emphasis rather than lightness:
+
+     carbon-900 … carbon-400   ground → most raised      (paper → grey)
+     ink-100    … ink-700      loudest → faintest text   (near-black → grey)
+     hydro-100  … hydro-900    strongest → faintest tint (deep → mint)
+
+   So `text-ink-100` on a `bg-carbon-700` card stays "loudest text on a
+   card" in both themes, and no component needs a `light:` variant.
+
+   Hydro itself moves from #4ADE80 to #15803D (4.6:1 on paper) so accent
+   text and links pass AA; buttons keep dark-on-green in dark mode and go
+   white-on-green in light mode through --text-on-hydro.
+
+   Unlayered on purpose: glass.css declares its elevation helpers on an
+   unlayered :root, and an unlayered rule beats a layered one whatever the
+   specificity — so this file must be unlayered to override them.
+   ══════════════════════════════════════════════════════════════════════════ */
+
+/* ── RGB triplets ──────────────────────────────────────────────────────────
+   For the `rgb(R G B / a)` literals in globals.css, glass.css, prose.css and
+   the Tailwind arbitrary values: hairlines, highlights, glows and shadows
+   that need an alpha. Dark values here; light overrides below. */
+:root {
+  color-scheme: dark;
+
+  --ink-rgb: 232 236 239; /*  --ink                          */
+  --hydro-rgb: 74 222 128; /* --hydro                        */
+  --hydro-hot-rgb: 167 243 203; /* --hydro-200, the "hot" tip */
+  --danger-rgb: 248 113 113;
+  --hi-rgb: 255 255 255; /*   specular highlight              */
+  --lo-rgb: 0 0 0; /*         cast shadow                     */
+  --lo-k: 1; /*               shadow alpha multiplier         */
+}
+
+/* ── Light ─────────────────────────────────────────────────────────────── */
+:root[data-theme="light"] {
+  color-scheme: light;
+
+  /* Brand base */
+  --hydro: #15803d;
+  --hydro-dark: #166534;
+  --carbon: #f3f5f7;
+  --ink: #161c26;
+  --mute: #5b6472;
+
+  /* Hydro scale — inverted: 100 is the deepest green, 900 the palest tint */
+  --hydro-100: #0b2e1a;
+  --hydro-200: #14532d;
+  --hydro-300: #15803d;
+  --hydro-400: #16a34a;
+  --hydro-500: #22c55e;
+  --hydro-600: #4ade80;
+  --hydro-700: #6ee7a8;
+  --hydro-800: #a7f3cb;
+  --hydro-900: #d6fbe5;
+  --hydro-glow: rgba(21, 128, 61, 0.3);
+
+  /* Carbon scale — paper elevations: ground is a cool grey, cards are white,
+     the pressed/hover steps go slightly darker than the card */
+  --carbon-900: #f3f5f7;
+  --carbon-800: #eaeef2;
+  --carbon-700: #fbfcfd;
+  --carbon-600: #ffffff;
+  --carbon-500: #e6eaef;
+  --carbon-400: #d9dee5;
+
+  /* Ink scale — inverted: 100 is the darkest text, 700 the faintest */
+  --ink-100: #0b0f17;
+  --ink-200: #161c26;
+  --ink-300: #2b3340;
+  --ink-400: #4b5563;
+  --ink-500: #5b6472;
+  --ink-600: #8b95a3;
+  --ink-700: #c5cbd3;
+
+  /* Hairlines — ink on paper */
+  --border-subtle: rgba(11, 15, 23, 0.08);
+  --border-default: rgba(11, 15, 23, 0.13);
+  --border-strong: rgba(11, 15, 23, 0.22);
+  --border-hydro: rgba(21, 128, 61, 0.4);
+
+  /* Status — each darkened until it reads as text on paper */
+  --success: #15803d;
+  --warning: #b45309;
+  --danger: #dc2626;
+  --info: #0369a1;
+
+  /* Aliases that must not follow the inversion */
+  --text-on-hydro: #ffffff;
+  --action: #15803d;
+  --action-hover: #166534;
+  --action-press: #14532d;
+  --link: #15803d;
+  --link-hover: #14532d;
+  --focus-ring: #15803d;
+
+  /* Shadows on paper: soft and cool instead of deep and black */
+  --shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.08);
+  --shadow-md: 0 4px 16px rgba(15, 23, 42, 0.1);
+  --shadow-lg: 0 12px 40px rgba(15, 23, 42, 0.14);
+  --shadow-xl: 0 24px 70px rgba(15, 23, 42, 0.18);
+
+  /* Hydro glow, held lower: a bloom on white spreads further than on black */
+  --glow-hydro-sm: 0 0 8px rgba(21, 128, 61, 0.25);
+  --glow-hydro-md: 0 0 20px rgba(21, 128, 61, 0.28);
+  --glow-hydro-lg: 0 0 48px rgba(21, 128, 61, 0.22);
+
+  /* RGB triplets */
+  --ink-rgb: 11 15 23;
+  --hydro-rgb: 21 128 61;
+  --hydro-hot-rgb: 20 83 45;
+  --danger-rgb: 220 38 38;
+  --hi-rgb: 255 255 255;
+  --lo-rgb: 15 23 42;
+  --lo-k: 0.35;
+
+  /* Glass elevation helpers (declared for dark in glass.css). On paper a
+     pane is lit from the top with white, not with ink. */
+  --grad-card: linear-gradient(
+    177deg,
+    rgb(255 255 255 / 0.75) 0%,
+    rgb(255 255 255 / 0.35) 40%,
+    rgb(255 255 255 / 0) 80%
+  );
+  --grad-raised: linear-gradient(
+    177deg,
+    rgb(255 255 255 / 0.9) 0%,
+    rgb(255 255 255 / 0.5) 46%,
+    rgb(255 255 255 / 0) 88%
+  );
+  --edge-top: inset 0 1px 0 rgb(255 255 255 / 0.9);
+  --edge-top-strong: inset 0 1px 0 rgb(255 255 255 / 1);
+}
+
+/* ── Dark islands ──────────────────────────────────────────────────────────
+   A subtree that stays Carbon whatever the page theme. Opt in with
+   `cv-dark`. Nothing ships with it today: terminals have their own light
+   surface (`cv-terminal`, below) and the quote console follows the page.
+
+   This restates design_system/tokens/colors.css + spacing.css for the
+   subtree. Keep it in sync with those files when they change. */
+:root[data-theme="light"] .cv-dark {
+  color-scheme: dark;
+
+  --hydro: #4ade80;
+  --hydro-dark: #16a34a;
+  --carbon: #05080d;
+  --ink: #e8ecef;
+  --mute: #6b7280;
+
+  --hydro-100: #d6fbe5;
+  --hydro-200: #a7f3cb;
+  --hydro-300: #6ee7a8;
+  --hydro-400: #4ade80;
+  --hydro-500: #22c55e;
+  --hydro-600: #16a34a;
+  --hydro-700: #15803d;
+  --hydro-800: #14532d;
+  --hydro-900: #0b2e1a;
+  --hydro-glow: rgba(74, 222, 128, 0.45);
+
+  --carbon-900: #05080d;
+  --carbon-800: #080c13;
+  --carbon-700: #0b0f17;
+  --carbon-600: #11161f;
+  --carbon-500: #181e29;
+  --carbon-400: #232b38;
+
+  --ink-100: #f7f9fa;
+  --ink-200: #e8ecef;
+  --ink-300: #c2c8cf;
+  --ink-400: #9aa2ad;
+  --ink-500: #6b7280;
+  --ink-600: #4b515c;
+  --ink-700: #333944;
+
+  --border-subtle: rgba(232, 236, 239, 0.07);
+  --border-default: rgba(232, 236, 239, 0.12);
+  --border-strong: rgba(232, 236, 239, 0.2);
+  --border-hydro: rgba(74, 222, 128, 0.35);
+
+  --success: #4ade80;
+  --warning: #fbbf24;
+  --danger: #f87171;
+  --info: #38bdf8;
+
+  --text-on-hydro: var(--carbon-900);
+  --action: var(--hydro);
+  --action-hover: var(--hydro-dark);
+  --action-press: var(--hydro-700);
+  --link: var(--hydro);
+  --link-hover: var(--hydro-300);
+  --focus-ring: var(--hydro);
+
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.6);
+  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.55);
+  --shadow-lg: 0 12px 40px rgba(0, 0, 0, 0.6);
+  --shadow-xl: 0 24px 70px rgba(0, 0, 0, 0.7);
+
+  --glow-hydro-sm: 0 0 8px rgba(74, 222, 128, 0.35);
+  --glow-hydro-md: 0 0 20px rgba(74, 222, 128, 0.4);
+  --glow-hydro-lg: 0 0 48px rgba(74, 222, 128, 0.35);
+
+  --ink-rgb: 232 236 239;
+  --hydro-rgb: 74 222 128;
+  --hydro-hot-rgb: 167 243 203;
+  --danger-rgb: 248 113 113;
+  --hi-rgb: 255 255 255;
+  --lo-rgb: 0 0 0;
+  --lo-k: 1;
+
+  --grad-card: linear-gradient(
+    177deg,
+    rgb(232 236 239 / 0.045) 0%,
+    rgb(232 236 239 / 0.012) 40%,
+    rgb(232 236 239 / 0) 80%
+  );
+  --grad-raised: linear-gradient(
+    177deg,
+    rgb(232 236 239 / 0.07) 0%,
+    rgb(232 236 239 / 0.02) 46%,
+    rgb(232 236 239 / 0) 88%
+  );
+  --edge-top: inset 0 1px 0 rgb(232 236 239 / 0.08);
+  --edge-top-strong: inset 0 1px 0 rgb(232 236 239 / 0.14);
+}
+
+/* The island's own text and selection: the tokens above re-colour every
+   child, but the element itself inherits `color` from the light page. */
+:root[data-theme="light"] .cv-dark {
+  color: var(--text-primary);
+}
+
+/* ── Terminals on paper ────────────────────────────────────────────────────
+   The Terminal primitive and the docs code blocks (`cv-terminal`). A dark
+   pane on a light page reads as a screenshot; a pale teal one reads as part
+   of the page and still says "console". The Carbon elevation steps the
+   component uses are remapped to a teal-tinted ramp for this subtree; text
+   roles keep ink, the prompt and cursor keep Hydro. */
+:root[data-theme="light"] .cv-terminal {
+  --carbon-900: #d3ebe6; /* recessed */
+  --carbon-800: #e4f3f0; /* body      */
+  --carbon-700: #d8ede8; /* title bar */
+  --carbon-600: #cfe7e1;
+  --carbon-500: #c3ded7;
+  --carbon-400: #b4d3cb;
+
+  --ink-200: #143c36; /* command text   */
+  --ink-400: #3f6d66; /* output         */
+  --ink-500: #5b7f79; /* title, muted   */
+  --ink-600: #7a9a95; /* comments       */
+  --ink-700: #9dbbb5; /* window dots    */
+  --text-muted: #5b7f79;
+
+  --border-subtle: rgba(15, 118, 110, 0.12);
+  --border-default: rgba(15, 118, 110, 0.22);
+  --border-strong: rgba(15, 118, 110, 0.34);
+
+  --shadow-lg: 0 12px 40px rgba(15, 118, 110, 0.12);
+  --edge-top: inset 0 1px 0 rgb(255 255 255 / 0.9);
+}

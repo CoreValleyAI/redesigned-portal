@@ -20,7 +20,7 @@ const iconButtonVariants = cva(
         surface:
           "bg-carbon-600 text-ink-200 border-line hover:bg-carbon-500 active:bg-carbon-400",
         primary:
-          "bg-hydro text-carbon-900 border-transparent hover:bg-hydro-dark active:bg-hydro-700",
+          "bg-hydro text-on-hydro border-transparent hover:bg-hydro-dark active:bg-hydro-700",
       },
       size: { sm: "size-7.5", md: "size-9.5", lg: "size-11.5" },
     },
