@@ -952,18 +952,31 @@
      Each word rises out of its own clipped line, one after the other, when
      the enclosing [data-reveal] is shown. The --i index staggers them. Under
      reduced motion, and without the JS gate, words simply sit in place. */
+  /* The word box is clipped only while its word is rising into it, and
+     with clip-path rather than overflow: the clip reaches generously above
+     and to the sides, and 0.28em below the baseline so descenders (the g in
+     "coming") are never cut. Once the word has landed the clip is dropped
+     entirely, so a text-shadow glow ("online.") spreads freely instead of
+     stopping at the edge of its box. */
   .wipe__w {
     display: inline-block;
-    overflow: hidden;
     vertical-align: bottom;
-    padding-bottom: 0.12em;
-    margin-bottom: -0.12em;
+    padding-bottom: 0.28em;
+    margin-bottom: -0.28em;
   }
   .wipe__t {
     display: inline-block;
   }
+  html.cv-js [data-reveal] .wipe__w {
+    clip-path: inset(-1em -1em 0 -1em);
+  }
+  html.cv-js [data-reveal][data-shown] .wipe__w {
+    clip-path: none;
+    transition: clip-path 0s linear
+      calc(var(--duration-slow) + var(--d, 0ms) + var(--i, 0) * 55ms + 60ms);
+  }
   html.cv-js [data-reveal] .wipe__t {
-    transform: translateY(112%);
+    transform: translateY(125%);
     transition: transform var(--duration-slow) var(--ease-out)
       calc(var(--d, 0ms) + var(--i, 0) * 55ms);
   }
@@ -971,6 +984,9 @@
     transform: none;
   }
   @media (prefers-reduced-motion: reduce) {
+    html.cv-js [data-reveal] .wipe__w {
+      clip-path: none;
+    }
     html.cv-js [data-reveal] .wipe__t {
       transform: none;
     }
@@ -1271,10 +1287,6 @@
   .hero-copy {
     transform: translate3d(0, calc(var(--sp, 0) * -48px), 0);
     opacity: calc(1 - var(--sp, 0) * 0.7);
-  }
-  .hero-term {
-    transform: translate3d(0, calc(var(--sp, 0) * 72px), 0);
-    opacity: calc(1 - var(--sp, 0) * 0.5);
   }
   .hero-stats {
     transform: translate3d(0, calc(var(--sp, 0) * -64px), 0);

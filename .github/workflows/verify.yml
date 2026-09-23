@@ -22,6 +22,7 @@ env:
   NEXT_TELEMETRY_DISABLED: "1"
   # Same value the deploy resolves for this project site.
   NEXT_PUBLIC_BASE_PATH: /${{ github.event.repository.name }}
+  NEXT_PUBLIC_SITE_URL: https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}
 
 jobs:
   verify:

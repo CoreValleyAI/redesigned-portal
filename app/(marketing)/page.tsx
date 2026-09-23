@@ -1,11 +1,11 @@
 import Link from "next/link";
-import { Badge, Button, Card, Icon, Terminal } from "@/components/ui";
+import { Badge, Button, Card, Icon } from "@/components/ui";
 import { DotTerrain } from "@/components/marketing/dot-terrain";
 import { SovereignMesh } from "@/components/marketing/sovereign-mesh";
 import { SpotlightGroup } from "@/components/marketing/spotlight";
 import { SpecTicker } from "@/components/marketing/spec-ticker";
 import { ChipGraph } from "@/components/marketing/chip-graph";
-import { RackGraphic } from "@/components/marketing/rack-graphic";
+import { GpuCompare } from "@/components/marketing/gpu-compare";
 import { PinnedStory, type Step } from "@/components/marketing/pinned-story";
 import { ScrollScrub } from "@/components/fx/scroll-scrub";
 import { ScrollRail } from "@/components/fx/scroll-rail";
@@ -17,13 +17,15 @@ import { Reveal, RevealGroup } from "@/components/fx/reveal";
 import { DecodeText } from "@/components/fx/decode-text";
 import { WipeText } from "@/components/fx/wipe-text";
 import { GPU_SKUS } from "@/lib/catalog";
-import { docsHref } from "@/lib/docs/href";
+import { pageMetadata } from "@/lib/seo";
 
-export const metadata = {
-  title: "CoreValley — sovereign AI compute, hosted in Kathmandu",
+export const metadata = pageMetadata({
+  title: "CoreValley — GPU cloud in Nepal, NVIDIA H100 and H200 in Kathmandu",
+  absoluteTitle: true,
   description:
-    "NVIDIA H100 and H200 capacity inside Nepal. Per-second GPU pods, JupyterHub for research teams, and OpenAI-compatible model endpoints — billed in NPR, with data that never crosses the border.",
-};
+    "Sovereign GPU cloud hosted in Kathmandu. Per-second H100 and H200 pods, managed JupyterHub for research teams and OpenAI-compatible model endpoints — billed in NPR, with data that never leaves Nepal.",
+  path: "/",
+});
 
 /* ── Content ───────────────────────────────────────────────────────────────
    Copy rule for this page: every claim is either a number, a component name,
@@ -147,7 +149,6 @@ const ARCHITECTURE: { title: string; body: string }[] = [
 ];
 
 export default function HomePage() {
-  const live = GPU_SKUS.filter((s) => s.status === "available");
   const soon = GPU_SKUS.filter((s) => s.status === "coming-soon");
 
   return (
@@ -165,109 +166,81 @@ export default function HomePage() {
         <ScrollScrub mode="exit" />
         <div className="absolute inset-0 -z-10">
           <DotTerrain />
+          {/* Mist: the range settles into the ground colour at the bottom of
+              the hero, so the stats strip sits on calm ground. */}
+          <div
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-x-0 bottom-0 h-[20%] bg-gradient-to-b from-transparent via-bg-base/40 to-bg-base"
+          />
         </div>
 
-        <div className="mx-auto max-w-page-xl px-5 pt-24 pb-16 md:px-10 md:pt-28 md:pb-20">
-          <div className="grid items-center gap-16 lg:grid-cols-[1.02fr_0.98fr]">
-            <div className="hero-copy">
-              <Reveal>
-                <Badge tone="hydro" dot>
-                  np-ktm-1 · live in kathmandu
-                </Badge>
-              </Reveal>
-
-              {/* The headline lands like a line in a terminal: decoded left to right
-                  with a block cursor on the frontier. "online." is the one Hydro
-                  figure in this cluster, and it glows once the status flips. */}
-              <Reveal delay={70}>
-                <h1 className="display mt-7 text-[clamp(2.35rem,5.2vw,4rem)]">
-                  <DecodeText text="The valley is" delay={350} />
-                  <br />
-                  <DecodeText text="coming " delay={350 + 14 * 34} />
-                  <span className="online-glow text-hydro">
-                    <DecodeText text="online." delay={350 + 21 * 34} cursor />
-                  </span>
-                </h1>
-              </Reveal>
-
-              <Reveal delay={140}>
-                <p className="mt-7 max-w-[54ch] text-md leading-relaxed text-ink-300">
-                  Green-energy GPU compute, launched on Himalayan hydropower.
-                </p>
-                <p className="mt-3 max-w-[54ch] text-[14px] leading-relaxed text-ink-500">
-                  NVIDIA H100 and H200 capacity by the second, inside Nepal.
-                  Train, fine-tune and serve — and never move the data, or the
-                  invoice, across a border.
-                </p>
-              </Reveal>
-
-              <Reveal delay={200}>
-                <div className="mt-10 flex flex-wrap items-center gap-3">
-                  <Link href="/contact">
-                    <Button
-                      variant="primary"
-                      size="lg"
-                      iconRight={<Icon name="arrow-right" size={17} />}
-                    >
-                      Talk to sales
-                    </Button>
-                  </Link>
-                  <Link href={docsHref("guides/quickstart")}>
-                    <Button
-                      variant="secondary"
-                      size="lg"
-                      mono
-                      iconLeft={<Icon name="terminal" size={15} />}
-                    >
-                      read the quickstart
-                    </Button>
-                  </Link>
-                </div>
-              </Reveal>
-
-              <Reveal delay={260}>
-                <ul className="mt-10 flex flex-wrap gap-x-7 gap-y-3">
-                  {[
-                    "Billed in NPR",
-                    "Data residency in Nepal",
-                    "Support in NPT",
-                    "H100 / H200",
-                  ].map((chip) => (
-                    <li
-                      key={chip}
-                      className="flex items-center gap-2 font-mono text-[11.5px] tracking-wide text-ink-500"
-                    >
-                      <Icon name="check" size={12} className="text-hydro" />
-                      {chip}
-                    </li>
-                  ))}
-                </ul>
-              </Reveal>
-            </div>
-
-            {/* The terminal is pulled down and right so it breaks the grid
-                and overlaps the stats strip below — depth from overlap rather
-                than from another shadow. */}
-            <div className="hero-term lg:translate-y-6">
-            <Reveal kind="scale" delay={180}>
-              <Terminal
-                title="np-ktm-1.corevalley.ai"
-                className="lg:justify-self-end"
-                lines={[
-                  {
-                    prompt: "$",
-                    text: "corevalley pods launch --gpu h200 --slice 2g.35gb \\",
-                  },
-                  { out: "        --image pytorch:2.5-cu124 --region np-ktm-1" },
-                  { out: "→ matched np-ktm-1 · kathmandu · hydro grid" },
-                  { out: "→ h200 mig 2g.35gb · 35 GB · vcluster cv-himal" },
-                  { out: "→ data residency: nepal · egress: default-deny" },
-                  { comment: "pod cv-9f3a21 running in 11s · NPR 69/hr" },
-                  { prompt: "$", text: "" },
-                ]}
-              />
+        <div className="mx-auto max-w-page-xl px-5 pt-28 pb-16 md:px-10 md:pt-36 md:pb-20">
+          {/* One centred column over the range. The copy is the whole hero:
+              no device beside it, so the headline gets the width and the
+              terrain gets the frame. Each line rises out of its own clipped
+              row (the stagger wipe every section heading below uses), so the
+              page opens with one motion language rather than two. */}
+          <div className="hero-copy mx-auto flex max-w-[56rem] flex-col items-center text-center">
+            <Reveal>
+              <Badge tone="hydro" dot>
+                np-ktm-1 · live in kathmandu
+              </Badge>
             </Reveal>
-            </div>
+
+            <Reveal delay={70}>
+              <h1 className="display mt-8 text-[clamp(3rem,8.4vw,6.5rem)] leading-[0.98] tracking-[-0.035em]">
+                <WipeText text="The valley is" />
+                <br />
+                <WipeText text="coming" start={3} />{" "}
+                <span className="online-glow text-hydro">
+                  <WipeText text="online." start={4} />
+                </span>
+              </h1>
+            </Reveal>
+
+            <Reveal delay={160}>
+              <p className="mt-9 max-w-[44ch] text-[clamp(1.125rem,1.7vw,1.375rem)] leading-relaxed text-ink-300">
+                Green-energy GPU compute, launched on Himalayan hydropower.
+              </p>
+              <p className="mx-auto mt-4 max-w-[52ch] text-[15px] leading-relaxed text-ink-400 md:text-base">
+                NVIDIA H100 and H200 capacity by the second, inside Nepal.
+                Train, fine-tune and serve — and never move the data, or the
+                invoice, across a border.
+              </p>
+            </Reveal>
+
+            <Reveal delay={230}>
+              <div className="mt-11">
+                <Link href="/contact">
+                  <Button
+                    variant="primary"
+                    size="lg"
+                    iconRight={<Icon name="arrow-right" size={17} />}
+                  >
+                    Get early access
+                  </Button>
+                </Link>
+              </div>
+            </Reveal>
+
+            <Reveal delay={300}>
+              <ul className="hero-chips mt-12 flex flex-wrap justify-center gap-x-8 gap-y-3">
+                {[
+                  "Billed in NPR",
+                  "Data residency in Nepal",
+                  "Support in NPT",
+                  "H100 / H200",
+                ].map((chip) => (
+                  <li
+                    key={chip}
+                    className="flex items-center gap-2 font-mono text-[12.5px] font-medium tracking-wide text-ink-300"
+                  >
+                    <Icon name="check" size={12} className="text-hydro" />
+                    {chip}
+                  </li>
+                ))}
+              </ul>
+            </Reveal>
           </div>
 
           {/* ── Stats ────────────────────────────────────────────────────
@@ -275,7 +248,7 @@ export default function HomePage() {
               but the server renders the final value, so this is still
               correct with JavaScript switched off. */}
           <Reveal delay={120}>
-            <hr className="rule-fade mt-20" />
+            <hr className="rule-fade mt-24 md:mt-32" />
           </Reveal>
 
           <RevealGroup
@@ -297,7 +270,7 @@ export default function HomePage() {
               },
               {
                 value: "NPR",
-                label: "billed locally",
+                label: "billed in Nepali rupees",
                 sub: "eSewa · Khalti · invoice",
                 accent: false,
               },
@@ -553,76 +526,27 @@ export default function HomePage() {
             </Reveal>
             <Reveal delay={60}>
               <h2 className="display mt-4 text-[clamp(1.9rem,3.6vw,2.9rem)]">
-                <WipeText text="The fleet, rack by rack." />
+                <WipeText text="Two Hoppers, side by side." />
               </h2>
             </Reveal>
             <Reveal delay={120}>
               <p className="mt-5 leading-relaxed text-ink-400">
-                Two accelerators today, two more on the roadmap. Every card
-                sits in a rack an engineer can walk to, on a feed that comes
-                off a river.
+                The same Hopper tensor cores, with very different memory.
+                The H200 carries 76% more HBM at 43% more bandwidth, which is
+                what long-context and large-model work runs out of first.
               </p>
             </Reveal>
           </div>
 
-          <div className="mt-14 grid gap-4 lg:grid-cols-[0.95fr_1.05fr]">
-            <Reveal kind="left" delay={100}>
-              <RackGraphic className="h-full" />
-            </Reveal>
-
-            <SpotlightGroup>
-              <RevealGroup kind="tilt" step={100} className="grid gap-4">
-                {live.map((sku) => (
-                  <Card
-                    key={sku.id}
-                    padding={28}
-                    accent
-                    className="cv-spotlight h-full"
-                  >
-                    <div className="flex items-baseline justify-between gap-4">
-                      <h3 className="text-[1.4rem] font-semibold tracking-tight text-ink-100">
-                        {sku.name}
-                      </h3>
-                      <p className="font-mono text-xs text-ink-500">
-                        {sku.architecture} · {sku.memoryGb} GB {sku.memoryType}
-                      </p>
-                    </div>
-
-                    <dl className="mt-6 grid grid-cols-3 gap-y-4 border-t border-line-subtle pt-5">
-                      <div>
-                        <dt className="cv-label text-[10px]">Bandwidth</dt>
-                        <dd className="nums mt-1.5 font-mono text-sm text-ink-200">
-                          {sku.bandwidth}
-                        </dd>
-                      </div>
-                      <div>
-                        <dt className="cv-label text-[10px]">FP8</dt>
-                        <dd className="nums mt-1.5 font-mono text-sm text-ink-200">
-                          {sku.fp8Tflops ? `${sku.fp8Tflops.toLocaleString("en-US")} TFLOPS` : "—"}
-                        </dd>
-                      </div>
-                      <div>
-                        <dt className="cv-label text-[10px]">Slicing</dt>
-                        <dd className="mt-1.5 font-mono text-sm text-ink-200">
-                          {sku.migCapable ? "mig + hami" : "whole card"}
-                        </dd>
-                      </div>
-                    </dl>
-
-                    <p className="mt-5 text-sm leading-relaxed text-ink-400">
-                      {sku.bestFor}.
-                    </p>
-                  </Card>
-                ))}
-              </RevealGroup>
-            </SpotlightGroup>
-          </div>
+          <SpotlightGroup className="mt-14">
+            <GpuCompare />
+          </SpotlightGroup>
 
           {soon.length ? (
             <RevealGroup
               step={60}
               start={120}
-              className="mt-4 grid gap-4 sm:grid-cols-3"
+              className="mt-10 grid gap-4 sm:grid-cols-3"
             >
               {soon.map((sku) => (
                 <div

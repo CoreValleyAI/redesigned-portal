@@ -3,12 +3,15 @@ import { Button, Card, Icon } from "@/components/ui";
 import { PageHero, Section } from "@/components/marketing/page-hero";
 import { Reveal, RevealGroup } from "@/components/fx/reveal";
 import { PricingTables } from "@/components/marketing/pricing-tables";
+import { pageMetadata } from "@/lib/seo";
+import { JsonLd, faqJsonLd } from "@/components/seo/json-ld";
 
-export const metadata = {
-  title: "Pricing",
+export const metadata = pageMetadata({
+  title: "GPU Pricing in NPR — Per-second H100 and H200 Rates",
   description:
-    "Transparent NPR pricing for GPU pods, MIG and HAMi slices, model endpoints, dedicated nodes and storage. No USD invoices, no FX risk.",
-};
+    "GPU cloud pricing in Nepali rupees: per-second H100 and H200 pods, MIG and HAMi slices, model endpoints per token, dedicated nodes and storage. No USD invoices, no FX risk.",
+  path: "/pricing",
+});
 
 const COMPARISON: [string, string, string][] = [
   ["Upfront cost", "Large capital purchase", "None"],
@@ -73,6 +76,7 @@ const FAQ = [
 export default function PricingPage() {
   return (
     <>
+      <JsonLd data={faqJsonLd(FAQ)} />
       <PageHero
         eyebrow="Pricing"
         title="Clear pricing, in rupees."

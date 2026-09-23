@@ -3,12 +3,15 @@ import { Badge, Button, Card, Icon, Terminal } from "@/components/ui";
 import { PageHero, Section } from "@/components/marketing/page-hero";
 import type { IconName } from "@/components/ui";
 import { Reveal, RevealGroup } from "@/components/fx/reveal";
+import { JsonLd, breadcrumbJsonLd, faqJsonLd } from "@/components/seo/json-ld";
+import { pageMetadata } from "@/lib/seo";
 
-export const metadata = {
-  title: "Use Cases",
+export const metadata = pageMetadata({
+  title: "AI Use Cases in Nepal — Language Models, Banking, Healthcare, Research",
   description:
-    "Nepali-language model fine-tuning, regulated banking workloads, healthcare, government, university research and startup inference — run inside Nepal.",
-};
+    "What teams run on CoreValley's GPU cloud in Kathmandu: Nepali and Maithili language models, regulated banking workloads, clinical imaging, government AI, university research and startup inference — with data that stays in Nepal.",
+  path: "/use-cases",
+});
 
 const CASES: {
   icon: IconName;
@@ -17,6 +20,7 @@ const CASES: {
   body: string;
   workloads: string[];
   why: string;
+  setup: string;
 }[] = [
   {
     icon: "docs",
@@ -30,6 +34,7 @@ const CASES: {
       "Tokenizer work",
     ],
     why: "Corpora often carry personal data from local sources. Training in-country keeps provenance defensible.",
+    setup: "H200 pods for training, a model endpoint to serve the result.",
   },
   {
     icon: "building",
@@ -43,6 +48,7 @@ const CASES: {
       "Churn models",
     ],
     why: "Customer data cannot cross a border. Dedicated nodes and default-deny networking make the security review answerable.",
+    setup: "Dedicated nodes on a private vCluster with egress default-denied.",
   },
   {
     icon: "health",
@@ -56,6 +62,7 @@ const CASES: {
       "Triage models",
     ],
     why: "Patient data is the least portable data there is. Physical location of compute is the whole argument.",
+    setup: "GPU pods with persistent volumes; dedicated capacity for production.",
   },
   {
     icon: "certificate",
@@ -69,6 +76,7 @@ const CASES: {
       "Chat assistants",
     ],
     why: "Sovereignty is a procurement requirement, not a preference. The infrastructure is inside the jurisdiction.",
+    setup: "Dedicated nodes, plus model endpoints for public-facing assistants.",
   },
   {
     icon: "university",
@@ -82,6 +90,7 @@ const CASES: {
       "Workshops",
     ],
     why: "JupyterHub with idle culling means a department can give forty students a GPU without forty invoices.",
+    setup: "AI Lab: managed JupyterHub with MIG slice profiles per cohort.",
   },
   {
     icon: "launch",
@@ -95,12 +104,80 @@ const CASES: {
       "Batch jobs",
     ],
     why: "Per-second billing and per-token endpoints mean the bill tracks traction rather than leading it.",
+    setup: "GPU pods for fine-tuning, per-token model endpoints in production.",
+  },
+];
+
+/* The workload families the platform is built for, as the public site lists
+   them, each pointed at the product that runs it. */
+const WORKLOADS: { icon: IconName; title: string; body: string; href: string }[] = [
+  {
+    icon: "slice",
+    title: "LLM fine-tuning",
+    body: "LoRA, QLoRA and full fine-tunes on H100 and H200 pods.",
+    href: "/products/gpu-pods",
+  },
+  {
+    icon: "node",
+    title: "Full training runs",
+    body: "Multi-GPU NVLink nodes and reserved dedicated capacity.",
+    href: "/products/dedicated",
+  },
+  {
+    icon: "broadcast",
+    title: "Production serving",
+    body: "OpenAI-compatible endpoints, shared or dedicated, autoscaled.",
+    href: "/products/model-endpoints",
+  },
+  {
+    icon: "eye",
+    title: "Computer vision and multimodal",
+    body: "Imaging, OCR and video models with local NVMe scratch.",
+    href: "/products/gpu-pods",
+  },
+  {
+    icon: "lab",
+    title: "Scientific research",
+    body: "Simulation, physics-informed networks and climate work.",
+    href: "/products/jupyterhub",
+  },
+  {
+    icon: "university",
+    title: "Courses and teaching",
+    body: "Cohort notebooks with per-user limits and idle culling.",
+    href: "/products/jupyterhub",
+  },
+];
+
+const FAQ = [
+  {
+    q: "Does my data ever leave Nepal?",
+    a: "No. Compute and storage are in Kathmandu, and egress can be default-denied per project. Nothing is replicated to a foreign region.",
+  },
+  {
+    q: "Can a university give a whole class GPU access?",
+    a: "Yes. AI Lab is managed JupyterHub with spawner profiles, per-user limits and idle culling, so a department can run a course on shared MIG slices with one invoice.",
+  },
+  {
+    q: "What does a regulated workload look like on CoreValley?",
+    a: "Dedicated nodes on a private vCluster, default-deny tenant networking, an append-only audit log and NPR invoicing — the pieces a bank or public body needs for a security review.",
+  },
+  {
+    q: "How do I move from experiment to production?",
+    a: "The same project moves from a shared notebook slice to whole cards to a model endpoint or a reserved node, without changing provider, currency or jurisdiction.",
   },
 ];
 
 export default function UseCasesPage() {
   return (
     <>
+      <JsonLd
+        data={[
+          faqJsonLd(FAQ),
+          breadcrumbJsonLd([{ name: "Use cases", path: "/use-cases" }]),
+        ]}
+      />
+
       <PageHero
         eyebrow="Use cases"
         title="What teams actually run here."
@@ -141,17 +218,59 @@ export default function UseCasesPage() {
                 ))}
               </div>
 
-              <div className="mt-5 flex items-start gap-2.5 border-t border-line-subtle pt-4">
-                <Icon
-                  name="lock"
-                  size={15}
-                  className="mt-0.5 shrink-0 text-ink-300"
-                />
-                <p className="text-[12.5px] leading-relaxed text-ink-400">
-                  {c.why}
-                </p>
-              </div>
+              <dl className="mt-5 border-t border-line-subtle pt-4">
+                <div className="flex items-start gap-2.5">
+                  <dt className="sr-only">Why here</dt>
+                  <Icon
+                    name="lock"
+                    size={15}
+                    className="mt-0.5 shrink-0 text-ink-300"
+                  />
+                  <dd className="text-[12.5px] leading-relaxed text-ink-400">
+                    {c.why}
+                  </dd>
+                </div>
+                <div className="mt-3 flex items-start gap-2.5">
+                  <dt className="sr-only">Typical setup</dt>
+                  <Icon
+                    name="cpu"
+                    size={15}
+                    className="mt-0.5 shrink-0 text-ink-300"
+                  />
+                  <dd className="text-[12.5px] leading-relaxed text-ink-400">
+                    <span className="font-mono text-[11px] tracking-wide text-ink-500">
+                      typical setup ·{" "}
+                    </span>
+                    {c.setup}
+                  </dd>
+                </div>
+              </dl>
             </Card>
+          ))}
+        </RevealGroup>
+      </Section>
+
+      <Section
+        eyebrow="Workloads"
+        title="Built for the work, not the demo."
+        lead="Six families of workload, each with a product that runs it. Every one is metered in rupees and stays in Kathmandu."
+        alt
+      >
+        <RevealGroup step={60} className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {WORKLOADS.map((w) => (
+            <Link key={w.title} href={w.href} className="group">
+              <Card
+                surface="solid"
+                padding={22}
+                className="h-full transition-[border-color,transform] duration-normal ease-standard group-hover:border-line-strong group-hover:-translate-y-px"
+              >
+                <Icon name={w.icon} size={19} weight="duotone" className="text-ink-100" />
+                <h3 className="mt-3 text-base font-semibold tracking-tight text-ink-100">
+                  {w.title}
+                </h3>
+                <p className="mt-1.5 text-[13.5px] leading-relaxed text-ink-400">{w.body}</p>
+              </Card>
+            </Link>
           ))}
         </RevealGroup>
       </Section>
@@ -160,7 +279,6 @@ export default function UseCasesPage() {
         eyebrow="From lab to production"
         title="One platform across the lifecycle."
         lead="The same project moves from a shared notebook to a dedicated node without changing provider, currency or jurisdiction."
-        alt
       >
         <div className="grid items-start gap-8 lg:grid-cols-[1fr_0.9fr]">
           <ol className="flex flex-col gap-4">
@@ -226,6 +344,29 @@ export default function UseCasesPage() {
             ]}
           />
         </div>
+      </Section>
+
+      <Section eyebrow="Questions" title="Before you ask." alt>
+        {/* Native <details>: keyboard and screen-reader accessible with no
+            script, and every answer stays in the HTML for search engines.
+            The open/close height animation is CSS (app/theme.css). */}
+        <RevealGroup step={60} className="mx-auto flex max-w-[52rem] flex-col gap-3">
+          {FAQ.map((f) => (
+            <details key={f.q} className="faq group rounded-xl border border-line bg-surface-card shadow-sm">
+              <summary className="flex cursor-pointer list-none items-center justify-between gap-6 px-6 py-5 md:px-7 md:py-6">
+                <h3 className="text-lg font-semibold tracking-tight text-ink-100 md:text-[1.2rem]">
+                  {f.q}
+                </h3>
+                <span className="faq__icon inline-flex size-8 shrink-0 items-center justify-center rounded-full border border-line text-ink-300">
+                  <Icon name="plus" size={15} />
+                </span>
+              </summary>
+              <p className="px-6 pb-6 text-[15.5px] leading-relaxed text-ink-400 md:px-7 md:pb-7 md:text-base">
+                {f.a}
+              </p>
+            </details>
+          ))}
+        </RevealGroup>
       </Section>
 
       <Section>

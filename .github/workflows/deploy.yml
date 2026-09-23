@@ -15,6 +15,9 @@ on:
       - ".claude/**"
       - ".github/workflows/verify.yml"
       - "README.md"
+      - "SEO_roadmap.txt"
+      - "doc_cname_readme.txt"
+      - "status/**"
       - "report_0903.txt"
       - "skills-lock.json"
   workflow_dispatch:
@@ -64,21 +67,30 @@ jobs:
       # root), so this must test the step's outcome, not the value — in
       # workflow expressions `'' || x` would silently pick x and every link
       # on a custom-domain site would break.
-      - name: Resolve base path
+      - name: Resolve base path and site URL
         id: basepath
         env:
           PAGES_OUTCOME: ${{ steps.pages.outcome }}
           PAGES_BASE_PATH: ${{ steps.pages.outputs.base_path }}
+          PAGES_ORIGIN: ${{ steps.pages.outputs.origin }}
           REPO_NAME: ${{ github.event.repository.name }}
+          REPO_OWNER: ${{ github.repository_owner }}
         run: |
           if [ "$PAGES_OUTCOME" = "success" ]; then
             base="$PAGES_BASE_PATH"
+            origin="$PAGES_ORIGIN"
           else
             echo "::warning::Could not read the Pages settings; assuming a project site at /$REPO_NAME"
             base="/$REPO_NAME"
+            origin="https://$(echo "$REPO_OWNER" | tr '[:upper:]' '[:lower:]').github.io"
           fi
-          echo "Base path: '${base}'"
+          # Canonical URLs, the sitemap and structured data all build on this:
+          # the address the site is actually served from, base path included.
+          # When Pages serves the site from https://corevalley.ai/ it becomes
+          # exactly that, with no code change.
+          echo "Base path: '${base}'  Site URL: '${origin}${base}'"
           echo "value=${base}" >> "$GITHUB_OUTPUT"
+          echo "site_url=${origin}${base}" >> "$GITHUB_OUTPUT"
 
       - name: Install dependencies
         run: npm ci
@@ -95,6 +107,13 @@ jobs:
         run: npm run build
         env:
           NEXT_PUBLIC_BASE_PATH: ${{ steps.basepath.outputs.value }}
+          NEXT_PUBLIC_SITE_URL: ${{ steps.basepath.outputs.site_url }}
+          # Optional, from repository variables (Settings → Secrets and
+          # variables → Actions → Variables). Empty when unset.
+          NEXT_PUBLIC_GSC_VERIFICATION: ${{ vars.GSC_VERIFICATION }}
+          NEXT_PUBLIC_BING_VERIFICATION: ${{ vars.BING_VERIFICATION }}
+          NEXT_PUBLIC_DOCS_URL: ${{ vars.DOCS_URL }}
+          NEXT_PUBLIC_STATUS_URL: ${{ vars.STATUS_URL }}
 
       # Every page in the corevalley-docs nav must have exported, with links
       # under the resolved base path, before anything is uploaded.

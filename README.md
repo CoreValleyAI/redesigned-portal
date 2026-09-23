@@ -2,443 +2,262 @@
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="public/brand/cv-combinedmark-green.svg">
-  <img src="public/brand/cv-combinedmark.svg" alt="CoreValley" width="220">
+  <img src="public/brand/cv-combinedmark.svg" alt="CoreValley" width="200">
 </picture>
 
-### Nepal's Sovereign AI Cloud
+### CoreValley web
 
-**Build, fine-tune and deploy AI without leaving Nepal.**
+**Marketing site, documentation and customer console for Nepal's sovereign AI cloud.**
 
-Marketing site and customer portal for CoreValley — NVIDIA H100 and H200
-infrastructure hosted in Kathmandu, billed in NPR, with full in-country data
-residency.
-
-<br>
-
-![Next.js](https://img.shields.io/badge/Next.js-15.5-000000?style=flat-square&logo=next.js&logoColor=white)
-![React](https://img.shields.io/badge/React-19.2-087EA4?style=flat-square&logo=react&logoColor=white)
-![TypeScript](https://img.shields.io/badge/TypeScript-5.9-3178C6?style=flat-square&logo=typescript&logoColor=white)
-![Tailwind CSS](https://img.shields.io/badge/Tailwind-4.1-38BDF8?style=flat-square&logo=tailwindcss&logoColor=white)
+Next.js 15 · React 19 · TypeScript · Tailwind CSS v4 · static export to GitHub Pages
 
 </div>
 
 ---
 
-## ⚠️ Not production-ready yet
+## Contents
 
-Three things must be resolved before this is published:
+1. [Status of the project](#status-of-the-project)
+2. [Quick start](#quick-start)
+3. [Repository layout](#repository-layout)
+4. [Editing content](#editing-content)
+5. [Design system and theming](#design-system-and-theming)
+6. [SEO](#seo)
+7. [Deployment](#deployment)
+8. [Status page and docs host](#status-page-and-docs-host)
+9. [Verification](#verification)
+10. [Further reading](#further-reading)
 
-| Blocker | Where | Detail |
+---
+
+## Status of the project
+
+The public pages are production-quality. Three things are placeholders and
+are labelled as such in the UI:
+
+| Placeholder | Where | To go live |
 |---|---|---|
-| **Placeholder pricing** | `lib/catalog.ts` | All 24 NPR rates were invented for UI development. None has commercial approval. |
-| **No authentication** | `components/layout/auth-modal.tsx` | The sign-in modal sets a cookie and redirects. There is no auth. |
-| **Mock data only** | `lib/api/mock.ts` | The portal runs on an in-memory mock. No backend is wired. |
+| **Pricing** — every NPR rate was invented for UI work | `lib/catalog.ts` | Replace the rates, set `meta.pricingIsPlaceholder` to `false`, fill `meta.reviewedAt`. The "indicative pricing" badge disappears. |
+| **Console data** — the portal runs on an in-memory mock | `lib/api/mock.ts` | Implement `lib/api/http.ts` against the control plane and build with `NEXT_PUBLIC_API_MODE=http`. |
+| **Sign-in** — the auth modal sets a cookie, nothing more | `components/layout/auth-modal.tsx` | Wire the Keycloak flow described in `docs/03-keycloak-identity.md`. |
 
-Placeholder pricing is enforced in three layers so it cannot ship by accident:
-every rate is wrapped in `p(paisa, why)`, every rate object carries
-`placeholder: true` into the rendered data, and `CATALOG.meta.pricingIsPlaceholder`
-drives a visible badge on `/pricing`, `/portal/billing`, `/portal/models` and the
-pod launch wizard.
-
-```bash
-grep -c "p(NPR" lib/catalog.ts   # rates still awaiting approval
-```
-
-To go live: replace the numbers, set `pricingIsPlaceholder` to `false`, and fill
-in `meta.reviewedAt`.
+`SEO_roadmap.txt` lists the launch tasks that need account access (search
+consoles, DNS, domain cut-over) and the copy claims to confirm.
 
 ---
 
 ## Quick start
 
-Requires **Node 20.9+**.
+Requires Node 20.9 or newer (CI uses Node 24).
 
 ```bash
 npm install
-npm run dev          # http://localhost:3000
+npm run dev            # http://localhost:3000
 ```
 
-| Script | Does |
+| Script | Purpose |
 |---|---|
-| `npm run dev` | Development server (docs included — edit a `.md`, refresh) |
-| `npm run build` | Production build (static export to `out/`) |
-| `npm run docs:check` | After `npm run build`: checks every docs page in the `mkdocs.yml` nav exported to `out/docs/` under the right base path (CI runs it before deploying) |
-| `npm run docs:mkdocs` | Optional: standalone MkDocs build of the same docs into `corevalley-docs/site/` (needs Python + `pip install -r corevalley-docs/requirements.txt`) |
-| `npm run docs:mkdocs:serve` | Optional: MkDocs live preview on port 8001 |
-| `npm start` | Serve the production build |
+| `npm run dev` | Development server. Docs Markdown is re-read on every refresh. |
+| `npm run build` | Production build: a static export in `out/`. |
 | `npm run typecheck` | `tsc --noEmit` |
 | `npm run lint` | ESLint |
-| `npm run generate:basemap` | Regenerate the map data in `lib/mesh-basemap.ts` |
+| `npm run docs:check` | After a build: every docs page in the MkDocs nav exported, links under the right base path. |
+| `npm run generate:brand` | Regenerate the Open Graph image and app icons from the SVG marks (needs a local Chrome). |
+| `npm run generate:basemap` | Regenerate the map data in `lib/mesh-basemap.ts`. |
+| `npm run docs:mkdocs` | Optional standalone MkDocs build of the same docs (Python). |
 
-> **Never run `npm run build` while a dev or production server is running.**
-> Both write to `.next`, and the result is a split-brain build that fails at
-> runtime with `Cannot find module './NNN.js'`. If you hit it:
-> `rm -rf .next && npm run build`.
-
----
-
-## What's in it
-
-**24 routes.** Public pages are statically prerendered; the portal is
-`force-dynamic` and never prerendered.
-
-### Marketing
-
-| Route | Page |
-|---|---|
-| `/` | Homepage — animated hero, latency mesh, platform, fleet, architecture |
-| `/products` · `/products/[slug]` | Overview plus GPU Pods, JupyterHub, Model Endpoints, Dedicated |
-| `/use-cases` | Nepali-language LLMs, banking, healthcare, government, research, startups |
-| `/company` | Mission, principles, audiences, contact |
-| `/pricing` | Live NPR/USD and hourly/monthly toggles, comparison table, FAQ |
-| `/docs` · `/docs/[...slug]` | Documentation, rendered from `corevalley-docs/docs/*.md` — see below |
-| `/contact` | Sales enquiry form (posts to FormSubmit — no backend needed) |
-
-### Portal
-
-Overview · Pods (list, launch wizard, live detail) · JupyterHub · Model
-endpoints · API keys · Dedicated nodes · vClusters · Network policy · Usage ·
-Billing · Audit log · Security · Settings
-
-### Documentation (`/docs`)
-
-The docs are written as Markdown in `corevalley-docs/docs/` and rendered by
-the site itself, in the design system — the MkDocs Material theme is not
-shipped. `corevalley-docs/mkdocs.yml` stays the source of the sidebar (its
-`nav` gives the order, section names and labels), and the Markdown stays
-MkDocs-compatible, so `npm run docs:mkdocs` still produces a standalone
-Material site in `corevalley-docs/site/` if one is ever wanted.
-
-How it works:
-
-- `lib/docs/content.ts` reads `mkdocs.yml` and the `.md` files at build time
-  (and per request in `next dev`), producing pages, headings and the search
-  index. `app/(marketing)/docs/[...slug]/page.tsx` enumerates the nav for the
-  static export; `index.md` is `/docs/`, `guides/quickstart.md` is
-  `/docs/guides/quickstart/`.
-- `components/docs/markdown.tsx` renders with `react-markdown`; the remark
-  plugins in `lib/docs/markdown.ts` understand the Material syntax the
-  content uses — `grid cards`, `:material-*:` icon shortcodes, admonitions
-  (`!!! note "Title"`, `??? tip`), content tabs (`=== "Tab"`), GFM tables and
-  task lists, fenced code (`title="…"`), and relative `.md` links. Heading
-  ids follow python-markdown's slugs so anchors match a MkDocs build.
-- Typography lives in `app/prose.css` (`.prose-docs`), tokens only.
-- Search is a ⌘K / Ctrl+K palette (`components/docs/docs-search.tsx`) over
-  every heading-delimited section, indexed client-side with MiniSearch.
-- Link to docs pages with `docsHref()` from `lib/docs/href.ts` and `<Link>`.
-
-The original hardcoded docs pages are archived in `reference/legacy-next-docs/`.
+Do not run `npm run build` while `next dev` is running against the same
+`.next` folder. Use `NEXT_DIST_DIR=.next-build npm run build` for a side
+build, or stop the dev server first.
 
 ---
 
-## Tech stack
-
-- **Next.js 15** (App Router) · **React 19** · **TypeScript 5.9** (strict, with `noUncheckedIndexedAccess`)
-- **Tailwind CSS v4** bridged onto the existing design-system CSS tokens
-- **CVA** for component variants, **Phosphor Icons** for glyphs
-- No CSS-in-JS, no animation library — canvas and CSS only
-
-Deploys to GitHub Pages as a static export. `next.config.ts` sets
-`output: "export"` and `trailingSlash: true`. Two workflows:
-
-- `.github/workflows/deploy.yml` builds on every push to `main` that touches
-  the site (or on demand from any branch via *Run workflow*), reads the base
-  path from the repository's Pages settings, typechecks, lints, builds, runs
-  `npm run docs:check` and uploads `out/`. Pages must be set to deploy from
-  **GitHub Actions**.
-- `.github/workflows/verify.yml` runs the same typecheck / lint / build /
-  docs check on every other branch and on pull requests to `main` without
-  deploying, and keeps the export as a downloadable artifact for 7 days.
-
-`npm run docs:check` verifies that every page in the `corevalley-docs/mkdocs.yml`
-nav exported to `out/docs/` and that the HTML links under
-`NEXT_PUBLIC_BASE_PATH`; CI runs it before uploading, and you can run it after
-a local build.
-
-To check the export locally under the project subpath:
-
-```
-NEXT_PUBLIC_BASE_PATH=/redesigned-portal npm run build
-# then serve out/ under /redesigned-portal/ with any static server
-```
-
-(In Git Bash, prefix with `MSYS_NO_PATHCONV=1` so `/redesigned-portal` is not
-rewritten as a Windows path.)
-
----
-
-## Project structure
+## Repository layout
 
 ```
 app/
-  (marketing)/      public pages — statically prerendered
-  (portal)/         authenticated console — force-dynamic
+  (marketing)/        public pages: home, products, pricing, use cases, company, contact, legal, docs
+  (portal)/           customer console (mock data, noindex)
+  layout.tsx          fonts, site-wide metadata, theme bootstrap, organisation JSON-LD
+  sitemap.ts · robots.ts · manifest.ts   generated /sitemap.xml, /robots.txt, /manifest.webmanifest
+  opengraph-image.png · apple-icon.png · icon.svg   link-preview image and icons
+  globals.css         Tailwind ↔ design-system bridge
+  theme.css           light theme (token overrides) and terminal surfaces
+  glass.css           glass surfaces and motion helpers
+  prose.css           documentation typography
 components/
-  ui/               11 design-system primitives (9 server, 2 client)
-  layout/           header, footer, portal shell, logo, auth modal
-  marketing/        hero canvas, latency mesh, pricing tables, spotlight
-  portal/           status pills, meters, launch wizard, charts
+  ui/                 design-system primitives (Button, Card, Terminal, Icon…)
+  layout/             header, footer, console shell, logo, theme toggle
+  marketing/          hero graphics, pricing tables, quote console, page hero
+  docs/               documentation shell, renderer, search
+  seo/                JSON-LD helpers
+  fx/                 reveal, scroll and canvas effects
 lib/
-  catalog.ts        ⚠ placeholder NPR rates — the single edit point
-  money.ts          integer-paisa arithmetic and NPR/USD formatting
-  api/              client interface, mock and HTTP implementations
-  mesh-basemap.ts   generated map data — do not edit by hand
-design_system/      read-only source of truth (also a Claude skill folder)
-reference/          the previous static site, archived
-scripts/            build-time generators
+  site.ts             canonical origin, organisation facts, URL helpers
+  seo.ts              per-page metadata helper
+  theme.ts            dark/light theme state and the canvas palette
+  products.ts         the four products (drives /products and nav)
+  catalog.ts          GPU SKUs, slice profiles and placeholder rates
+  docs/               reads corevalley-docs/ into pages, headings and search
+  api/                console data client (mock + HTTP stub)
+corevalley-docs/      documentation source: mkdocs.yml (nav) + docs/**/*.md
+status/               the standalone status page for status.corevalley.ai
+public/               brand SVGs, icons, security.txt, redirect stubs for the old site
+design_system/        read-only design tokens and reference components (do not import)
+docs/                 engineering notes (architecture, identity, billing, deploy…)
+scripts/              generators (brand images, basemap, docs export check)
 ```
 
-`design_system/` must stay where it is — it carries `SKILL.md` frontmatter and
-moving it breaks skill discovery. Nothing under `app/` or `components/` imports
-from it directly; an ESLint rule enforces that boundary.
+---
+
+## Editing content
+
+**Marketing copy** lives in the page files under `app/(marketing)/` and in
+`lib/products.ts` (products) and `lib/catalog.ts` (hardware and rates). Each
+page exports its metadata through `pageMetadata()` from `lib/seo.ts`, which
+sets the title, description, canonical URL and social card in one call:
+
+```ts
+export const metadata = pageMetadata({
+  title: "GPU Pricing in NPR — Per-second H100 and H200 Rates",
+  description: "…",
+  path: "/pricing",
+});
+```
+
+**Documentation** is Markdown in `corevalley-docs/docs/`. The sidebar order
+and labels come from the `nav` in `corevalley-docs/mkdocs.yml`. Add a page by
+creating the `.md` file and listing it in `nav`; the route, search index and
+sitemap entry follow. The Markdown is MkDocs Material compatible (admonitions,
+grid cards, tabs, icon shortcodes) and is rendered by the site itself. Pages
+are currently professional placeholders with an "in progress" notice; replace
+the body of each as the content is written.
+
+**Legal pages** are a content map in `app/(marketing)/legal/[slug]/page.tsx`.
+
+**Facts the whole site repeats** — organisation name, email, location, social
+links, canonical origin — are in `lib/site.ts`.
 
 ---
 
-## Design system integration
+## Design system and theming
 
-`app/globals.css` is the load-bearing file. The design-system token files remain
-the single source of truth — **no value is ever restated**. Tailwind is imported
-first, then the tokens are imported into `@layer theme` *after* it, so same-named
-tokens win by source order: `rounded-md` becomes 6px and `text-sm` becomes 13px
-for free.
+`design_system/tokens/*.css` is the single source of truth for colours,
+type, spacing and motion; `app/globals.css` bridges those tokens into
+Tailwind. Rules that break silently if changed are documented at the top of
+that file.
 
-<details>
-<summary><b>Five rules that break silently if changed</b></summary>
+The site ships both themes behind the sun/moon toggle; light is the default:
 
-<br>
+- `lib/theme.ts` owns the theme (a `data-theme` attribute on `<html>`,
+  stamped before first paint, saved in `localStorage`; light unless the
+  visitor chose dark).
+- `app/theme.css` overrides the same token names for light mode. The
+  carbon, ink and hydro ramps invert so components need no per-theme
+  variants; terminals get a pale teal surface (`cv-terminal`).
+- The canvas graphics read `canvasPalette()` per frame and repaint on
+  toggle.
 
-1. **`base.css` is imported into `layer(base)`, never unlayered.** Unlayered CSS
-   beats every cascade layer, so an unlayered `body { background }` would defeat
-   `bg-carbon-800` on the body.
-2. **`--container-*: initial` deletes Tailwind's container namespace.** The design
-   system's 640/960/1200/1400px would otherwise redefine `max-w-sm..xl` and make
-   the scale non-monotonic. Page widths are `max-w-page-*`.
-3. **Token files are never placed inside `@theme`.** `--text-primary` is a
-   *colour* sharing Tailwind's font-size namespace; registering it would generate
-   `.text-primary { font-size: <a colour> }`.
-4. **Semantic aliases are renamed on the bridge:** `fg-*` for text roles (not
-   `text-*`, which would yield `text-text-muted`) and `line-*` for hairlines.
-5. **`tokens/fonts.css` is not imported.** `next/font` self-hosts both faces;
-   importing the CDN copy too would double-download and reintroduce layout shift.
-
-</details>
-
-<details>
-<summary><b>Light theme</b></summary>
-
-<br>
-
-The site ships dark-first with a light theme behind the sun/moon toggle in the
-header (marketing) and the console toolbar. `lib/theme.ts` owns the state: a
-`data-theme` attribute on `<html>`, stamped before first paint by an inline
-bootstrap in `app/layout.tsx` (saved choice → OS preference → dark), persisted
-in `localStorage`, and exposed to components as `useTheme()` and to the
-painted graphics as `canvasPalette()`.
-
-`app/theme.css` is the whole light theme. It is unlayered (it has to beat
-`glass.css`'s unlayered `:root` helpers) and overrides the *same* token names
-`design_system/tokens/colors.css` declares, keyed on `[data-theme="light"]`:
-
-- **The ramps invert, not just the aliases.** `carbon-900…400` still reads
-  ground → most raised, `ink-100…700` loudest → faintest, `hydro-100…900`
-  strongest → palest, so `text-ink-100` on `bg-carbon-700` stays "loudest text
-  on a card" and no component needs a `light:` variant. Hydro itself becomes
-  `#15803D` (4.6:1 on paper) so accent text passes AA; primary buttons go
-  white-on-green through `--text-on-hydro`.
-- **Alpha literals are triplet tokens.** `rgb(74 222 128 / a)` and friends in
-  the CSS and in Tailwind arbitrary values became `rgb(var(--hydro-rgb) / a)`,
-  `--ink-rgb`, `--hi-rgb`, `--lo-rgb` (shadows also carry `--lo-k`, a light-mode
-  alpha multiplier).
-- **Terminals on paper.** The Terminal primitive and docs code blocks
-  (`cv-terminal`) remap their Carbon steps to a pale teal ramp in light mode;
-  the quote console follows the page. A `cv-dark` island (dark tokens restated
-  for a subtree) exists for anything that must stay Carbon, unused today.
-- **Canvases follow the theme.** The seven painted graphics read
-  `canvasPalette()` per frame and repaint on `subscribeTheme()`. On paper the
-  WebGL terrain *subtracts* from its opaque ground (`uSign`, flipped blend);
-  the transparent footer dot matrix composites dark-green dots source-over.
-
-`light:` exists as a custom variant for the rare one-off (the wordmark swaps
-to `cv-wordmark-carbon.svg`); reach for a token first.
-
-</details>
-
-<details>
-<summary><b>Deliberate deviations from the design system</b></summary>
-
-<br>
-
-| Deviation | Why |
-|---|---|
-| **Glassmorphism** replaces "transparency and blur, sparingly" | Explicit client direction. Ground, accent, motion, corners and the no-emoji rule are unchanged. Four sanctioned recipes (`glass-card`, `glass-nav`, `glass-modal`, `glass-panel`) live in `app/glass.css` as selector aliases over one liquid-glass recipe (native SVG refraction on Chromium, plain blur elsewhere), each with a solid Carbon fallback under `@supports not (backdrop-filter)`. Buttons, inputs, tags and the terminal stay solid Carbon as the design system specifies. |
-| **Phosphor Icons** replaces the hand-rolled 30-glyph Lucide subset | The subset had no glyphs for API keys, invoices, certificates, clusters or charts. Wrapped behind a closed `IconName` union, so swapping libraries is a one-file change. |
-| **CVA + Tailwind** replaces the primitives' inline styles | The originals drove hover and press through `useState`, forcing `"use client"` on 7 of 11 components, dragging icon path data into the client bundle, and breaking hover for keyboard users while latching it on touch. Moving state to CSS inverts the ratio to **9 server, 2 client**. |
-
-**Design-system values carried over verbatim.** These are off-scale in the design
-system itself and were preserved for fidelity rather than silently "fixed" —
-worth raising with the designer:
-
-- `Button` size `md` is `14px`; the type scale has 13 and 15, not 14.
-- `Terminal` body text is `13.5px`, also off-scale.
-- `Terminal` window dots are `#2A2F38`, which has no token; rendered as `ink-700` (`#333944`), the nearest Ink step.
-- `Button` hover glow is `rgba(74,222,128,0.30)` while `--glow-hydro-md` is `0.40`.
-
-</details>
+Details: `docs/06-design-system-and-frontend.md`.
 
 ---
 
-## Data layer
+## SEO
 
-`lib/api/client.ts` defines `CoreValleyClient` — 71 methods covering every portal
-screen. Two implementations satisfy it:
+Everything a static site can do for search is generated at build time:
 
-- **`mock.ts`** — in-memory, seeded by a deterministic PRNG so server and client
-  render identically. Pod launches run real status transitions
-  (`queued → provisioning → pulling-image → running`), and **invoices are computed
-  from usage events**, so billing always reconciles with the usage screens.
-- **`http.ts`** — every method throws `NotImplementedError`. Written *before* the
-  mock, to prove the interface is implementable over plain REST.
+- **Metadata** — site defaults in `app/layout.tsx`, per-page overrides via
+  `lib/seo.ts`. Canonical URLs are absolute and include the deploy base path.
+- **Sitemap and robots** — `app/sitemap.ts`, `app/robots.ts`. The console is
+  excluded and noindex.
+- **Structured data** — `components/seo/json-ld.tsx`: Organization and
+  WebSite on every page; Service and breadcrumbs on products; FAQ on pricing,
+  contact, company and use cases.
+- **Social cards and icons** — `app/opengraph-image.png`, `app/apple-icon.png`,
+  `public/icons/*`, generated by `npm run generate:brand`.
+- **Old URLs** — `public/{about,services,pricing,contact}.html` redirect the
+  previous site's pages to their replacements.
 
-Both assert `satisfies CoreValleyClient`, so signature drift is a compile error.
+The canonical origin comes from `NEXT_PUBLIC_SITE_URL`; the deploy workflow
+sets it from the GitHub Pages configuration, so it is correct both under a
+project path and at the root domain. Verification tokens for Google and
+Bing are read from the repository variables `GSC_VERIFICATION` and
+`BING_VERIFICATION`.
+
+Manual launch tasks are in `SEO_roadmap.txt`.
+
+---
+
+## Deployment
+
+The site is a static export (`output: "export"`, `trailingSlash: true`)
+deployed to GitHub Pages by two workflows:
+
+| Workflow | Runs on | Does |
+|---|---|---|
+| `deploy.yml` | push to `main` that touches the site; manual dispatch | reads the Pages base path and origin, typechecks, lints, builds, runs `docs:check`, uploads `out/`, deploys |
+| `verify.yml` | push to any other branch; pull requests to `main` | the same checks without deploying; keeps the export as an artifact for 7 days |
+
+Pages must be set to deploy from **GitHub Actions**. Environment variables
+the build understands:
+
+| Variable | Default | Purpose |
+|---|---|---|
+| `NEXT_PUBLIC_BASE_PATH` | `""` | Subpath for a project site (`/redesigned-portal`). Set by the workflow. |
+| `NEXT_PUBLIC_SITE_URL` | `https://corevalley.ai` | Canonical origin (+ base path) for metadata, sitemap and JSON-LD. Set by the workflow. |
+| `NEXT_PUBLIC_DOCS_URL` | unset | Set to `https://docs.corevalley.ai` once that host is live: all docs links point there, in-app docs redirect (path preserved), go noindex and leave the sitemap. Repository variable `DOCS_URL`. |
+| `NEXT_PUBLIC_STATUS_URL` | `https://status.corevalley.ai` | The status page link. Repository variable `STATUS_URL`. |
+| `NEXT_PUBLIC_GSC_VERIFICATION`, `NEXT_PUBLIC_BING_VERIFICATION` | unset | Search-console verification tags. Repository variables. |
+| `NEXT_PUBLIC_API_MODE` | `mock` | `http` selects the real-backend client. |
+
+To check the export locally the way CI builds it:
 
 ```bash
-NEXT_PUBLIC_API_MODE=http npm run build   # compiles against the real-backend stub
+NEXT_PUBLIC_BASE_PATH=/redesigned-portal npm run build && npm run docs:check
+# Git Bash: prefix with MSYS_NO_PATHCONV=1 so the path is not rewritten
 ```
-
-`subscribe*` methods return an `Unsubscribe` rather than exposing an
-`EventSource`: the mock uses `setInterval`, a real backend will use SSE, and no
-screen changes either way.
-
-**Money is integer paisa everywhere** (`lib/money.ts`). Per-second GPU metering
-aggregated over a month is millions of additions, and float drift there is
-measured in rupees. Formatting happens only at the render edge. USD is indicative
-display only, with a `rateAsOf` date and a disclaimer wherever shown.
-
-<details>
-<summary><b>MIG vs HAMi — modelled as different products</b></summary>
-
-<br>
-
-- **MIG** partitions the GPU in hardware. Tenants are fault-isolated.
-- **HAMi** slices in software by memory and compute share on a card you may be
-  sharing. Denser and cheaper — and priced *below* the comparable MIG tier
-  because there is no fault isolation.
-
-The UI labels the difference rather than hiding it. Conflating them is the most
-likely modelling error to introduce here.
-
-</details>
 
 ---
 
-## Notable implementation details
+## Status page and docs host
 
-<details>
-<summary><b>Hero canvas — layered snow-capped range</b></summary>
-
-<br>
-
-`components/marketing/hero-canvas.tsx`. Built the way a landscape painter would:
-a lit horizon band, then three layers in aerial perspective — hazy blue-grey at
-the back, near-black at the front — each a solid gradient-filled mass, lighter at
-the ridge and darker at the base. Snow is a bright wash clipped to each silhouette
-from the summits down to the snowline, so every cap takes the shape of its own
-peak.
-
-Skylines come from **placed peaks** (4 major at the back, 3 mid, 2 front, each
-with jittered width, height, sharpness and asymmetric skew) rather than octaves of
-noise. An earlier noise-based version produced a dense sawtooth that read as
-jagged lines; the fills were also the same colour as the sky, so only the strokes
-rendered. Both are documented in the file header.
-
-Pointer parallax by depth, particle repulsion, and a Hydro bloom that follows the
-cursor — all disabled for coarse pointers and `prefers-reduced-motion`, which
-renders one static frame and never starts the loop.
-
-</details>
-
-<details>
-<summary><b>Sovereign latency mesh — real regional basemap</b></summary>
-
-<br>
-
-`components/marketing/sovereign-mesh.tsx`. Country outlines come from Natural
-Earth via `world-atlas`, clipped to a South Asia window and projected into a 0–1
-unit box at build time:
-
-```bash
-npm run generate:basemap    # rewrites lib/mesh-basemap.ts
-```
-
-`lib/mesh-basemap.ts` is **generated and committed — do not edit it by hand**.
-`world-atlas` and `topojson-client` are devDependencies only; nothing geo ships to
-the browser, just 67 path strings (~8 KB gzipped) and the projection function.
-
-Cities are plotted at their **real coordinates** through the same `projectToUnit`
-the paths were generated with — that is what keeps a marker on the right piece of
-coastline. An earlier version placed nodes on a radial latency scale, which
-stacked four regional tiers between 22% and 38% of the radius while US-East sat
-alone at 100%. Radius now carries no meaning; the metric lives in the label, the
-particle speed and the curve opacity.
-
-Label collisions are handled by per-city anchors in `lib/mesh-nodes.ts` — Kolkata
-and Dhaka are only ~25 px apart at desktop size. If you add a city, check its
-spacing before trusting the default.
-
-</details>
-
-<details>
-<summary><b>Ridgeline asset — 5,439 circles</b></summary>
-
-<br>
-
-`public/brand/ridgeline.v1.svg` holds 5,439 `<circle>` elements. It is served as
-an `<img>` or a CSS background, **never inlined** — inlining would put all 5,439
-nodes in the main DOM and ~273 KB of uncompressed markup into the RSC payload on
-every render. It is 23 KB gzipped on the wire and carries an immutable cache
-header. Use `object-cover`, never `100% 100%`: the brandbook forbids stretching
-the aspect ratio.
-
-</details>
+- **Status page** — `status/` is a self-contained page (HTML, `status.json`,
+  brand SVGs) for `status.corevalley.ai`. Upload the folder to any static
+  host; a monitor updates it by rewriting `status.json`. See
+  `status/README.md`. The header and footer link to it.
+- **Docs on a subdomain** — `doc_cname_readme.txt` walks through publishing
+  `corevalley-docs/` as a MkDocs site at `docs.corevalley.ai` with a CNAME,
+  and switching the main site's links with `DOCS_URL`.
 
 ---
 
 ## Verification
 
 ```bash
-npm run typecheck && npm run lint && npm run build
-NEXT_PUBLIC_API_MODE=http npx next build   # proves the interface swap compiles
+npm run typecheck && npm run lint
+NEXT_PUBLIC_BASE_PATH=/redesigned-portal npm run build && npm run docs:check
 ```
 
-The build output is itself a check: every `(marketing)` route must be `○ (Static)`
-and every `/portal` route must be `ƒ (Dynamic)`. A portal route appearing as
-static means one account's data is being baked into the HTML.
-
-Additional checks worth running before a release:
-
-- No emoji anywhere (`app/`, `components/`, `lib/`) — a brandbook rule.
-- No raw hex outside `design_system/` and `lib/catalog.ts`.
-- Disable `backdrop-filter` in DevTools — every glass panel must fall back to
-  solid carbon and stay readable.
-- Enable OS reduce-motion — the hero must render a static frame and start no
-  animation loop.
+Every `(marketing)` route must build as static; `/portal` must be excluded
+from `out/sitemap.xml`. Before a release also check: no emoji in `app/`,
+`components/`, `lib/` (brand rule); glass panels stay readable with
+`backdrop-filter` disabled; the hero renders one static frame under
+reduce-motion; both themes on `/`, `/pricing/`, `/docs/`, `/portal/`.
 
 ---
 
-## Credits
+## Further reading
 
-| Asset | Source | Licence |
-|---|---|---|
-| Country outlines | [Natural Earth](https://www.naturalearthdata.com/) via [world-atlas](https://github.com/topojson/world-atlas) | Public domain |
-| Icons | [Phosphor Icons](https://phosphoricons.com/) | MIT |
-| Manrope · JetBrains Mono | Google Fonts, self-hosted via `next/font` | SIL Open Font License 1.1 |
-| Brand marks, ridgeline, design tokens | CoreValley Brand Guidelines v1.0 | Proprietary — see `design_system/` |
+| Document | Covers |
+|---|---|
+| `docs/README.md` | Index of the engineering notes below |
+| `docs/01-platform-architecture.md` | System context and rendering model |
+| `docs/06-design-system-and-frontend.md` | Tokens, cascade layers, components, theming |
+| `docs/07-build-deploy-and-environments.md` | Build targets, environment variables, CI |
+| `docs/11-seo-status-and-content.md` | How SEO, the status page and the docs host fit together |
+| `SEO_roadmap.txt` | Launch checklist for search, domains and claims to confirm |
+| `doc_cname_readme.txt` | Tutorial: docs.corevalley.ai on GitHub Pages |
 
-Brand assets in `assets/`, `public/brand/` and `design_system/` are proprietary to
-CoreValley and are not covered by any open-source licence.
-
----
-
-<div align="center">
-<sub><b>CoreValley AI</b> · Kathmandu, Nepal · <a href="mailto:info@corevalley.ai">info@corevalley.ai</a></sub>
-</div>
+Brand assets in `public/brand/` and `design_system/` are proprietary to
+CoreValley AI Pvt. Ltd. Country outlines are Natural Earth (public domain),
+icons are Phosphor (MIT), fonts are Manrope and JetBrains Mono (OFL).

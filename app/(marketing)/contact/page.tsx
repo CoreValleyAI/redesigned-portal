@@ -2,12 +2,15 @@ import { Card, Icon } from "@/components/ui";
 import { PageHero, Section } from "@/components/marketing/page-hero";
 import { ContactForm } from "@/components/marketing/contact-form";
 import type { IconName } from "@/components/ui";
+import { pageMetadata } from "@/lib/seo";
+import { JsonLd, faqJsonLd } from "@/components/seo/json-ld";
 
-export const metadata = {
-  title: "Contact Sales",
+export const metadata = pageMetadata({
+  title: "Contact Sales — GPU Capacity and NPR Pricing in Nepal",
   description:
-    "Talk to the CoreValley team in Kathmandu about GPU capacity, NPR pricing and data-residency requirements.",
-};
+    "Talk to the CoreValley team in Kathmandu about H100 and H200 capacity, NPR pricing, academic access and data-residency requirements. Replies in Nepal business hours.",
+  path: "/contact",
+});
 
 const DETAILS: { icon: IconName; title: string; body: React.ReactNode }[] = [
   {
@@ -58,6 +61,7 @@ const FAQ = [
 export default function ContactPage() {
   return (
     <>
+      <JsonLd data={faqJsonLd(FAQ)} />
       <PageHero
         eyebrow="Contact sales"
         title="Let's discuss your workloads."

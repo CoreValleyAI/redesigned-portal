@@ -242,6 +242,16 @@
   color: var(--text-primary);
 }
 
+/* ── No cursor light on paper ──────────────────────────────────────────────
+   The card spotlight is a Hydro bloom that follows the pointer. On Carbon it
+   reads as a light; on paper the same bloom reads as a shadow, so it is off
+   in light mode. The canvases make the same call in code (grid-floor pool,
+   terrain pointer light) via canvasPalette().subtractive. */
+:root[data-theme="light"] .cv-spotlight::before,
+:root[data-theme="light"] .cv-spotlight::after {
+  display: none;
+}
+
 /* ── Terminals on paper ────────────────────────────────────────────────────
    The Terminal primitive and the docs code blocks (`cv-terminal`). A dark
    pane on a light page reads as a screenshot; a pale teal one reads as part
@@ -269,4 +279,112 @@
 
   --shadow-lg: 0 12px 40px rgba(15, 118, 110, 0.12);
   --edge-top: inset 0 1px 0 rgb(255 255 255 / 0.9);
+}
+
+/* ── Hero copy over the range ───────────────────────────────────────────────
+   The headline column sits directly on the dot terrain. Two layers keep it
+   readable without moving the mountains: a broad soft glow of the ground
+   colour behind the column (white on paper, Carbon on Carbon), and a tight
+   halo around the glyphs themselves. */
+:root { --halo: 5 8 13; }
+:root[data-theme="light"] { --halo: 255 255 255; }
+
+.hero-copy {
+  position: relative;
+}
+.hero-copy::before {
+  content: "";
+  position: absolute;
+  inset: -12% -22% -26%;
+  z-index: -1;
+  pointer-events: none;
+  background: radial-gradient(
+    closest-side,
+    rgb(var(--halo) / 0.9),
+    rgb(var(--halo) / 0.72) 42%,
+    rgb(var(--halo) / 0.32) 70%,
+    rgb(var(--halo) / 0) 100%
+  );
+  filter: blur(6px);
+}
+.hero-copy h1,
+.hero-copy p,
+.hero-copy li {
+  text-shadow:
+    0 0 1px rgb(var(--halo) / 0.9),
+    0 0 12px rgb(var(--halo) / 0.85),
+    0 0 28px rgb(var(--halo) / 0.6);
+}
+
+/* The chip row under the hero button sits lowest on the range, where the
+   river runs. It gets its own wide, flat glow so each label reads cleanly. */
+.hero-chips {
+  position: relative;
+  isolation: isolate;
+}
+.hero-chips::before {
+  content: "";
+  position: absolute;
+  inset: -22px -48px;
+  z-index: -1;
+  pointer-events: none;
+  border-radius: 999px;
+  background: radial-gradient(
+    closest-side,
+    rgb(var(--halo) / 0.95),
+    rgb(var(--halo) / 0.85) 55%,
+    rgb(var(--halo) / 0) 100%
+  );
+  filter: blur(8px);
+}
+
+/* ── Click-to-open questions (use cases) ──────────────────────────────────
+   The panel animates open and shut where the browser supports animating to
+   an intrinsic height (interpolate-size / ::details-content, Chromium 131+);
+   elsewhere it opens instantly, which is the correct fallback. */
+.faq {
+  interpolate-size: allow-keywords;
+  transition: border-color var(--duration-normal) var(--ease-standard);
+}
+.faq:hover,
+.faq[open] {
+  border-color: var(--border-strong);
+}
+.faq::details-content {
+  block-size: 0;
+  overflow: hidden;
+  opacity: 0;
+  transition:
+    block-size 360ms var(--ease-out),
+    opacity 300ms var(--ease-out),
+    content-visibility 360ms allow-discrete;
+}
+.faq[open]::details-content {
+  block-size: auto;
+  opacity: 1;
+}
+.faq summary::-webkit-details-marker {
+  display: none;
+}
+.faq__icon {
+  transition:
+    transform 300ms var(--ease-out),
+    background-color var(--duration-normal) var(--ease-standard),
+    color var(--duration-normal) var(--ease-standard);
+}
+.faq[open] .faq__icon {
+  transform: rotate(45deg);
+  background: rgb(var(--hydro-rgb) / 0.1);
+  color: var(--hydro);
+}
+.faq summary:focus-visible {
+  outline: var(--ring-width) solid var(--focus-ring);
+  outline-offset: -2px;
+  border-radius: 12px;
+}
+@media (prefers-reduced-motion: reduce) {
+  .faq::details-content,
+  .faq__icon {
+    transition: none;
+  }
 }

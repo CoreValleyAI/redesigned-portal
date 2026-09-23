@@ -84,7 +84,7 @@ export function ContactForm() {
   return (
     <Card padding={32}>
       <h2 className="text-xl font-semibold tracking-tight text-ink-100">
-        Talk to sales
+        Request early access
       </h2>
       <p className="mt-2 text-[13.5px] leading-relaxed text-ink-400">
         Tell us the shape of the workload and we will come back with a tier and

@@ -4,6 +4,7 @@ import Link from "next/link";
 import { Icon } from "@/components/ui";
 import { PageHero } from "@/components/marketing/page-hero";
 import { Reveal } from "@/components/fx/reveal";
+import { pageMetadata } from "@/lib/seo";
 
 /**
  * The three legal pages the footer links to.
@@ -196,7 +197,7 @@ export async function generateMetadata({
   const { slug } = await params;
   const page = PAGES[slug];
   if (!page) return {};
-  return { title: page.title, description: page.lead };
+  return pageMetadata({ title: page.title, description: page.lead, path: `/legal/${slug}` });
 }
 
 export default async function LegalPage({

@@ -172,6 +172,8 @@ export function DotMatrix({
    */
   pulse = 0,
   assemble = true,
+  bleed = 0,
+  replay = false,
   className,
   style,
 }: {
@@ -189,6 +191,12 @@ export function DotMatrix({
   gamma?: number;
   pulse?: number;
   assemble?: boolean;
+  /** Extra canvas, in px, around the element on every side. The mark keeps
+      its size and place; the assembling dots get room to fly in from, so
+      they are never cut off at the element's edges. */
+  bleed?: number;
+  /** Re-run the assembly every time the field scrolls back into view. */
+  replay?: boolean;
   className?: string;
   style?: React.CSSProperties;
 }) {
@@ -208,6 +216,7 @@ export function DotMatrix({
     let img: HTMLImageElement | null = null;
     let running = false;
     let inView = false;
+    let seen = false;
     let frame = 0;
     let t0 = 0;
     let assembled = !assemble || reduced;
@@ -272,14 +281,18 @@ export function DotMatrix({
     const sampleImage = (cols: number, rows: number) => {
       if (!img) return null;
       const ir = img.naturalWidth / img.naturalHeight;
-      let gw = cols;
-      let gh = Math.round(cols / ir);
-      if (gh > rows) {
-        gh = rows;
-        gw = Math.round(rows * ir);
+      // The bleed is empty margin: fit the image inside it.
+      const bc = Math.round(bleed / cell);
+      const ic = Math.max(1, cols - bc * 2);
+      const irows = Math.max(1, rows - bc * 2);
+      let gw = ic;
+      let gh = Math.round(ic / ir);
+      if (gh > irows) {
+        gh = irows;
+        gw = Math.round(irows * ir);
       }
-      const ox = Math.floor((cols - gw) / 2);
-      const oy = align === "bottom" ? rows - gh : Math.floor((rows - gh) / 2);
+      const ox = bc + Math.floor((ic - gw) / 2);
+      const oy = bc + (align === "bottom" ? irows - gh : Math.floor((irows - gh) / 2));
 
       const S = 4;
       const off = document.createElement("canvas");
@@ -311,6 +324,36 @@ export function DotMatrix({
       return cov;
     };
 
+    /* A start point for a dot's fly-in: a random direction, a distance that
+       fits the available margin, clamped inside the canvas so no particle
+       ever starts (or travels) outside what is drawn. */
+    const scatterFrom = (hx: number, hy: number): [number, number] => {
+      const ang = Math.random() * Math.PI * 2;
+      const reach = bleed > 0 ? bleed * 0.9 + Math.min(width, height) * 0.15 : Math.max(width, height) * 0.5;
+      const dist = 30 + Math.random() * reach;
+      const m = 6;
+      // Left and top keep a larger margin: the footer mark sits near its
+      // card's top-left corner, and the card clips what lies beyond it.
+      const lt = bleed > 0 ? bleed * 0.72 : m;
+      return [
+        Math.min(width - m, Math.max(lt, hx + Math.cos(ang) * dist)),
+        Math.min(height - m, Math.max(lt, hy + Math.sin(ang) * dist)),
+      ];
+    };
+
+    /** Scatter every dot again and restart the fly-in (replay on re-entry). */
+    const rescatter = () => {
+      for (const d of dots) {
+        const [sx, sy] = scatterFrom(d.hx, d.hy);
+        d.sx = sx;
+        d.sy = sy;
+        d.x = sx;
+        d.y = sy;
+      }
+      assembled = false;
+      t0 = 0;
+    };
+
     // Place the dots from a coverage grid.
     const build = () => {
       if (width < 2 || height < 2) return;
@@ -336,17 +379,16 @@ export function DotMatrix({
           const w = Math.pow(raw, gamma);
           const hx = (c + 0.5) * cell;
           const hy = (r + 0.5) * cell;
-          const ang = Math.random() * Math.PI * 2;
-          const dist = 60 + Math.random() * Math.max(width, height) * 0.5;
+          const [sx, sy] = scatterFrom(hx, hy);
           next.push({
             hx,
             hy,
-            x: assembled ? hx : hx + Math.cos(ang) * dist,
-            y: assembled ? hy : hy + Math.sin(ang) * dist,
+            x: assembled ? hx : sx,
+            y: assembled ? hy : sy,
             w,
             order: (c / cols) * 0.75 + Math.random() * 0.25,
-            sx: hx + Math.cos(ang) * dist,
-            sy: hy + Math.sin(ang) * dist,
+            sx,
+            sy,
           });
         }
       }
@@ -516,9 +558,15 @@ export function DotMatrix({
     const io = new IntersectionObserver(
       ([entry]) => {
         if (!entry) return;
+        const was = inView;
         inView = entry.isIntersecting;
-        if (inView) start();
-        else stop();
+        if (inView) {
+          // Coming back into view: fly in again. The first entry already
+          // starts scattered, so only re-entries rescatter.
+          if (replay && !was && assemble && !reduced && seen) rescatter();
+          seen = true;
+          start();
+        } else stop();
       },
       { threshold: 0.05 },
     );
@@ -567,14 +615,26 @@ export function DotMatrix({
         if (program) gl.deleteProgram(program);
       }
     };
-  }, [src, generate, seed, cell, threshold, align, radius, push, intensity, gamma, pulse, assemble]);
+  }, [src, generate, seed, cell, threshold, align, radius, push, intensity, gamma, pulse, assemble, bleed, replay]);
 
   return (
     <canvas
       ref={canvasRef}
       aria-hidden="true"
       className={className}
-      style={{ display: "block", width: "100%", height: "100%", ...style }}
+      style={
+        bleed > 0
+          ? {
+              display: "block",
+              position: "absolute",
+              left: -bleed,
+              top: -bleed,
+              width: `calc(100% + ${bleed * 2}px)`,
+              height: `calc(100% + ${bleed * 2}px)`,
+              ...style,
+            }
+          : { display: "block", width: "100%", height: "100%", ...style }
+      }
     />
   );
 }

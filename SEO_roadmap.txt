@@ -1,0 +1,249 @@
+CoreValley — SEO roadmap
+========================
+
+What the site now does on its own, and what needs a person with account
+access. Work top to bottom; each item says who, where and how to verify.
+
+Legend:  [DONE] shipped in the code   [YOU] needs your action
+         [DECIDE] a decision before it can be done
+
+
+-------------------------------------------------------------------------------
+0. What is already in place
+-------------------------------------------------------------------------------
+
+[DONE] Canonical URLs on every public page, absolute, base path aware
+       (lib/seo.ts). The address comes from NEXT_PUBLIC_SITE_URL, which the
+       deploy workflow derives from the GitHub Pages configuration. Today
+       that is https://corevalley.ai/redesigned-portal; after the cut-over
+       in section 1 it becomes https://corevalley.ai with no code change.
+[DONE] Unique titles and descriptions per page, written around the terms
+       people search for (GPU cloud Nepal, H100 Kathmandu, NPR billing…).
+[DONE] Open Graph and Twitter cards with a generated 1200×630 image
+       (app/opengraph-image.png). Regenerate with `npm run generate:brand`.
+[DONE] /sitemap.xml (app/sitemap.ts) and /robots.txt (app/robots.ts); the
+       console under /portal is excluded and noindex.
+[DONE] Structured data (schema.org JSON-LD): Organization and WebSite on
+       every page; Service + BreadcrumbList on product pages; FAQPage on
+       pricing, contact, company and use cases; BreadcrumbList on docs.
+[DONE] Web app manifest with generated icons, Apple touch icon, favicon.
+[DONE] /.well-known/security.txt, a noindex 404 page, redirect stubs for
+       the old site's URLs (about.html, services.html, pricing.html,
+       contact.html → the new pages) so existing links and rankings carry
+       over at cut-over.
+[DONE] Verification meta tags for Google and Bing are read from repository
+       variables (section 2), so no token is committed.
+
+
+-------------------------------------------------------------------------------
+1. Cut over corevalley.ai to this site            [YOU]   ~1 hour + DNS wait
+-------------------------------------------------------------------------------
+
+The old five-page site is what https://corevalley.ai/ serves today; this
+site lives at /redesigned-portal/. Until the cut-over, search engines will
+keep indexing the old site. Everything SEO-related is built to "just work"
+once this repository becomes the organisation's root site.
+
+1.1  Decide which repository is the organisation site. GitHub serves the
+     repository named CoreValleyAI.github.io at the org domain. Either:
+       a) rename THIS repository to CoreValleyAI.github.io (Settings →
+          General → Repository name), or
+       b) move the contents of this repository into the existing
+          CoreValleyAI.github.io repository.
+     Option (a) is less work. Update the workflow's assumed base path: the
+     configure-pages step reads the real value, so nothing to edit; the
+     fallback in deploy.yml becomes "" automatically for a user/org site.
+1.2  Settings → Pages → Custom domain: corevalley.ai → Save → Enforce HTTPS
+     (DNS for the apex should already point at GitHub: A records
+     185.199.108.153 / .109.153 / .110.153 / .111.153 and AAAA
+     2606:50c0:8000::153 … :8003::153, plus CNAME www → corevalleyai.github.io).
+1.3  Push to main (or run the Deploy workflow). Check the deployed page
+     source: <link rel="canonical"> must read https://corevalley.ai/...
+     and /sitemap.xml must list https://corevalley.ai/… URLs.
+1.4  Verify the old URLs redirect: https://corevalley.ai/about.html →
+     /company/, /services.html → /products/, /pricing.html → /pricing/,
+     /contact.html → /contact/. (Client-side meta refresh; GitHub Pages
+     has no server redirects. Search engines treat it as a permanent move.)
+1.5  Archive the old static site's repository (do not delete: it holds the
+     history), and make sure nothing else is deployed to the org domain.
+
+
+-------------------------------------------------------------------------------
+2. Search Console and Bing Webmaster               [YOU]   30 minutes
+-------------------------------------------------------------------------------
+
+2.1  Google Search Console → Add property → Domain: corevalley.ai
+     (a domain property covers www, docs. and status. too). Verify with the
+     DNS TXT record Google shows. Alternatively use the HTML-tag method:
+     copy the content value of the meta tag into a repository variable
+     GSC_VERIFICATION (Settings → Secrets and variables → Actions →
+     Variables) and redeploy; the tag is rendered on every page.
+2.2  Bing Webmaster Tools → Add site → import from Search Console, or set
+     the repository variable BING_VERIFICATION with the msvalidate.01 value.
+2.3  Submit the sitemap in both: https://corevalley.ai/sitemap.xml.
+2.4  After a week: Search Console → Pages: confirm the marketing pages are
+     indexed and no /portal/ URL is. Fix anything under "Why pages aren't
+     indexed".
+2.5  Search Console → Enhancements: check FAQ, Breadcrumbs and
+     Organization report no errors. Validate one page at
+     https://validator.schema.org/ and https://search.google.com/test/rich-results.
+
+
+-------------------------------------------------------------------------------
+3. Confirm or remove the unverified claims         [DECIDE]  30 minutes
+-------------------------------------------------------------------------------
+
+Web research (September 2026) found these claims in the site copy that the
+public corevalley.ai site does not state. Search engines and prospects will
+read them as facts. Confirm each, or soften/remove it.
+
+3.1  "Green-energy GPU compute, launched on Himalayan hydropower"
+     (home hero, app/(marketing)/page.tsx) and "hydro-powered racks"
+     (components/marketing/spec-ticker.tsx). If the facility has a
+     documented hydropower supply, keep it and consider a one-line source
+     on the company page. If not, replace with a neutral line.
+3.2  Availability targets 99.5% / 99.9% and service credits (legal terms,
+     app/(marketing)/legal/[slug]/page.tsx). Must match the signed SLA.
+3.3  "SOC 2 Type I framework alignment" (home page architecture section and
+     lib/api/mock.ts). Remove unless an audit is under way.
+3.4  Region name np-ktm-1 and the "Kathmandu Valley" location versus the
+     LinkedIn address (Dhobighat, Lalitpur). Pick one public location.
+     Structured data currently says Kathmandu, Bagmati Province, NP.
+3.5  Pricing is marked indicative and every rate is a placeholder
+     (lib/catalog.ts). Do not remove the badge until rates are approved;
+     Google can show prices in results and a wrong price is worse than none.
+3.6  Product naming. The public site calls the lines AI Lab, GPU Workspace
+     and Inference & Endpoints; this site calls them JupyterHub, GPU pods,
+     Model endpoints and Dedicated. The company page now maps the two. Pick
+     one vocabulary for the long run and use it in titles, docs and ads.
+3.7  Legal pages are marked as not counsel-reviewed. Review before launch
+     (privacy policy is also a requirement for Google Ads and for most
+     enterprise procurement).
+
+
+-------------------------------------------------------------------------------
+4. Analytics without tracking baggage              [DECIDE]  1 hour
+-------------------------------------------------------------------------------
+
+The privacy page promises first-party, aggregate analytics and no third-party
+tracking scripts. Options that keep that promise:
+
+4.1  Plausible (hosted, EU) or Umami (self-hosted, free) — cookie-less,
+     one script tag, no consent banner needed. Add the script to
+     app/layout.tsx behind an environment variable so it is absent locally.
+4.2  Cloudflare Web Analytics — free, cookie-less, works if DNS is on
+     Cloudflare (see section 7).
+4.3  Search Console alone — zero scripts; you still see queries, clicks,
+     impressions and Core Web Vitals field data.
+Google Analytics 4 would contradict the privacy page unless it is rewritten
+and a consent banner added.
+
+
+-------------------------------------------------------------------------------
+5. Content that earns rankings                     [YOU]   ongoing
+-------------------------------------------------------------------------------
+
+The site has strong product and use-case pages. What is missing is content
+that answers questions people type before they know CoreValley exists.
+
+5.1  Publish the documentation. The placeholder pages are honest but empty;
+     "quickstart", "GPU pricing NPR", "H100 vs H200 for fine-tuning" are
+     the searches to own. Write the quickstart first.
+5.2  Add a Changelog or Blog route (one page, reverse chronological) and
+     post: capacity arrivals, new GPUs, pricing changes, incidents' post-
+     mortems. Fresh dated content is the strongest signal a small site can
+     send. Add it to app/sitemap.ts when it exists.
+5.3  Nepali-language landing page (/ne/) with hreflang. Worth it once the
+     English pages rank; the audience searching in Devanagari is real.
+5.4  Case studies once a customer can be named. Until then, keep the use
+     cases sector-level as they are now — no invented logos.
+5.5  Comparison page: "GPU cloud in Nepal vs AWS Mumbai / Lambda / RunPod"
+     on latency, currency, data residency and support hours. Factual,
+     table-based.
+5.6  Keep the home-page claims checkable (numbers, component names). The
+     copy rule in the file header is right; SEO does not need adjectives.
+
+
+-------------------------------------------------------------------------------
+6. Off-site signals                                [YOU]   2 hours
+-------------------------------------------------------------------------------
+
+6.1  Google Business Profile for CoreValley AI Pvt. Ltd. (category:
+     Cloud computing service / Internet service provider), with the same
+     address and email as the site. Local queries ("GPU cloud Kathmandu")
+     show a map pack.
+6.2  Complete the LinkedIn page: it currently says "Building in stealth"
+     and has no website link, founding year or description. Add the site
+     URL — it is the single most valuable backlink available for free.
+6.3  GitHub organisation profile README linking to the site and docs.
+6.4  Register on Nepali business directories and tech listings (TechSansar,
+     Clutch Nepal, ICT Nepal, NepalCloud-type blogs). Competitors YetiCloud
+     and AnK got press for "first GPU cloud in Nepal"; avoid making a
+     "first" claim, make a "sovereign + NPR + in Kathmandu" claim.
+6.5  Ask universities and partners you work with to link from their
+     research-computing pages.
+
+
+-------------------------------------------------------------------------------
+7. Hosting hardening (what GitHub Pages cannot do) [DECIDE]  1 hour
+-------------------------------------------------------------------------------
+
+GitHub Pages serves static files only: no server redirects, no custom
+headers, no HTTP/3, no image optimisation. Putting Cloudflare (free plan)
+in front of it gives:
+
+7.1  Real 301 redirects (Bulk Redirects) for the old URLs instead of the
+     meta-refresh stubs, and for http→https and www→apex.
+7.2  Security headers via Transform Rules: Content-Security-Policy,
+     Strict-Transport-Security (then submit to hstspreload.org),
+     X-Content-Type-Options, Referrer-Policy, Permissions-Policy.
+7.3  Brotli, HTTP/3, edge caching, and Cloudflare Web Analytics.
+If you stay on plain GitHub Pages, none of these is blocking; they are
+polish.
+
+
+-------------------------------------------------------------------------------
+8. Performance and Core Web Vitals                 [YOU]   30 minutes/check
+-------------------------------------------------------------------------------
+
+8.1  Run https://pagespeed.web.dev/ on /, /pricing/ and /products/gpu-pods/
+     in mobile mode after each deploy. Targets: LCP < 2.5 s, INP < 200 ms,
+     CLS < 0.1.
+8.2  The home hero is WebGL plus several canvases. If mobile LCP is poor,
+     gate the terrain to pointer:fine / wide viewports and render a static
+     poster on phones. The reduced-motion path already renders one frame.
+8.3  Fonts are self-hosted via next/font (no layout shift). Keep it that
+     way; do not add a Google Fonts <link> to the app.
+8.4  Images: the site ships only SVG brand marks and generated PNGs. If
+     photos are added, use next/image sizes and WebP/AVIF, and set explicit
+     width/height.
+
+
+-------------------------------------------------------------------------------
+9. Status and docs subdomains                      [YOU]   see the guides
+-------------------------------------------------------------------------------
+
+9.1  Status page: upload the /status folder to status.corevalley.ai
+     (status/README.md). Until a monitor writes status.json the page says
+     "monitoring not yet connected" rather than showing invented uptime.
+     Search engines index it; it links back to the main site.
+9.2  Docs: the decided host is docs.corevalley.ai. Follow
+     doc_cname_readme.txt to publish it, then set the DOCS_URL repository
+     variable to https://docs.corevalley.ai: every docs link on the main
+     site points there, the in-app /docs/ pages redirect (path preserved),
+     declare the new host canonical, go noindex and leave the sitemap.
+9.3  Add both hosts to Search Console (a domain property covers them).
+
+
+-------------------------------------------------------------------------------
+10. Ongoing hygiene                                [YOU]   monthly
+-------------------------------------------------------------------------------
+
+- Search Console: Pages, Core Web Vitals, Enhancements, Links. Fix anything
+  red.
+- Re-run `npm run generate:brand` after a brand change; commit the PNGs.
+- Keep sitemap priorities honest when routes are added (app/sitemap.ts).
+- When pricing goes live, revisit the pricing page description and add
+  Offer structured data for the SKUs (schema.org/Offer with priceCurrency
+  NPR) — deliberately not added while prices are placeholders.
+- Renew /.well-known/security.txt before its Expires date (annual).

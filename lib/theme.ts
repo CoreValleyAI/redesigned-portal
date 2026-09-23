@@ -9,8 +9,9 @@
  * flash of the wrong theme; the root element carries suppressHydrationWarning
  * for the same reason.
  *
- * Resolution order: the visitor's saved choice, else the OS preference, else
- * dark — the brand's native theme.
+ * Resolution order: the visitor's saved choice, else light. Light is the
+ * default by decision; the OS preference is not consulted, so first-time
+ * visitors on a dark OS still see the light site until they press the toggle.
  */
 import * as React from "react";
 
@@ -28,20 +29,20 @@ export const THEME_COLOR: Record<Theme, string> = {
    anywhere, and wrapped in try/catch because localStorage throws in some
    private modes. */
 export const THEME_BOOTSTRAP =
-  `(function(){var d=document.documentElement,t="dark";` +
+  `(function(){var d=document.documentElement,t="light";` +
   `try{var s=localStorage.getItem("${THEME_STORAGE_KEY}");` +
-  `t=s==="light"||s==="dark"?s:(window.matchMedia("(prefers-color-scheme: light)").matches?"light":"dark")}catch(e){}` +
+  `if(s==="light"||s==="dark")t=s}catch(e){}` +
   `d.setAttribute("data-theme",t);` +
   `var m=document.querySelector('meta[name="theme-color"]');` +
   `if(m)m.setAttribute("content",t==="light"?"${THEME_COLOR.light}":"${THEME_COLOR.dark}")})();`;
 
 const isTheme = (v: unknown): v is Theme => v === "dark" || v === "light";
 
-/** The theme currently on <html>. "dark" on the server and before bootstrap. */
+/** The theme currently on <html>. "light" on the server and before bootstrap. */
 export function readTheme(): Theme {
-  if (typeof document === "undefined") return "dark";
+  if (typeof document === "undefined") return "light";
   const t = document.documentElement.getAttribute("data-theme");
-  return isTheme(t) ? t : "dark";
+  return isTheme(t) ? t : "light";
 }
 
 export function applyTheme(theme: Theme, persist = true): void {
@@ -79,9 +80,9 @@ export function subscribeTheme(listener: (theme: Theme) => void): () => void {
   return () => observer.disconnect();
 }
 
-/** The live theme, for client components. Hydrates as "dark", like the server. */
+/** The live theme, for client components. Hydrates as "light", like the server. */
 export function useTheme(): Theme {
-  return React.useSyncExternalStore(subscribeTheme, readTheme, () => "dark");
+  return React.useSyncExternalStore(subscribeTheme, readTheme, () => "light");
 }
 
 /* ── Canvas palette ────────────────────────────────────────────────────────
@@ -117,6 +118,23 @@ export interface CanvasPalette {
       light subtracted from paper reads pale, so it is multiplied (and clamped
       in the shader) until the range stands out. */
   gain: number;
+  /** Extra weight on the terrain's river of light: 1 on Carbon; on paper the
+      river is the one feature that should read as strongly as it does in the
+      dark, so it gets more than the general gain. */
+  riverGain: number;
+  /** How strongly the pointer lights the terrain dots (the swell itself is
+      always on). Low on paper, where extra ink under the cursor reads as a
+      shadow. */
+  mouseLight: number;
+  /** Peak tint for the terrain's two-tone ridges, as a WebGL vector (same
+      convention as hydroVec: subtracted from the ground on paper). */
+  tealVec: Vec3;
+  /** The terrain river's own colour (water), same vector convention. */
+  riverVec: Vec3;
+  /** Terrain dot boldness: base disc radius in a grid cell (0.5 = touching). */
+  dot: number;
+  /** Solid tint across the terrain faces, giving the ranges mass. */
+  fill: number;
 }
 
 const v = (r: number, g: number, b: number): Vec3 => [r / 255, g / 255, b / 255];
@@ -140,8 +158,14 @@ export const CANVAS_PALETTES: Record<Theme, CanvasPalette> = {
     ground: v(5, 8, 13), //    --carbon-900
     hydroVec: v(74, 222, 128),
     hotVec: v(167, 243, 203),
+    riverVec: v(103, 232, 249), // cyan-300
+    dot: 0.15,
+    fill: 0.08,
     hydroPlain: v(74, 222, 128),
     gain: 1,
+    riverGain: 1.3,
+    mouseLight: 1,
+    tealVec: v(45, 212, 191), // teal-400
   },
   light: {
     subtractive: true,
@@ -152,10 +176,18 @@ export const CANVAS_PALETTES: Record<Theme, CanvasPalette> = {
     danger: "220, 38, 38", //  --danger (light)
     surface: "255, 255, 255", // --carbon-600 (light)
     ground: PAPER,
-    hydroVec: sub(PAPER, v(21, 128, 61)),
-    hotVec: sub(PAPER, v(20, 83, 45)),
+    // Terrain on paper: emerald faces, teal peaks, deep-emerald crests and a
+    // cyan river — richer than the UI green, which is tuned for text.
+    hydroVec: sub(PAPER, v(5, 150, 105)), // emerald-600
+    hotVec: sub(PAPER, v(6, 78, 59)), //     emerald-900
+    riverVec: sub(PAPER, v(8, 145, 178)), // cyan-600
+    dot: 0.2,
+    fill: 0.1,
     hydroPlain: v(21, 128, 61),
-    gain: 2.6,
+    gain: 3.4,
+    riverGain: 3,
+    mouseLight: 0.5,
+    tealVec: sub(PAPER, v(15, 118, 110)), // teal-700
   },
 };
 

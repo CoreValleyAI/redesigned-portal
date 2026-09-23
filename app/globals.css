@@ -40,6 +40,9 @@
        <html data-theme>, stamped before paint by lib/theme.ts. */
 @import "./theme.css";
 
+/* 4d — The home-page GPU comparison (components/marketing/gpu-compare.tsx). */
+@import "./gpu-compare.css";
+
 /* The `light:` variant, for the rare one-off a token cannot express. The
    tokens themselves flip in theme.css; reach for this only when a rule must
    differ in KIND between themes, not in colour. */

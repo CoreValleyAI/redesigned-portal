@@ -448,7 +448,7 @@ under `prefers-reduced-motion`. No animation library.
   `mode="exit"` is how far the parent has scrolled away (hero), `mode="view"`
   is its passage through the viewport (anything mid-page). One passive scroll
   listener, one rAF, only while the parent is on screen.
-  - Hero parallax: `.hero-copy`, `.hero-term`, `.hero-stats` (glass.css)
+  - Hero parallax: `.hero-copy`, `.hero-stats` (glass.css); the hero copy sits on a ground-colour wash (theme.css)
     translate at different rates against `--sp`, and `DotTerrain` reads
     `scrollY / canvas height` each frame to pitch the camera down and pull it
     back, so the range moves against the copy. Scrubbed and reversible.

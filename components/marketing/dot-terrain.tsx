@@ -48,7 +48,10 @@ import { canvasPalette, subscribeTheme } from "@/lib/theme";
 const COLS = 320;
 const ROWS = 200;
 /** World-unit footprint: width across, depth away from the camera. */
-const EXTENT_X = 130;
+/* Total width of the ground. The x grid is warped (dense in the middle,
+   coarser toward the sides), so the centre keeps its old detail while the
+   ranges run well past the edge of any viewport. */
+const EXTENT_X = 260;
 const EXTENT_Z = 130;
 const MAX_DPR = 1.5;
 /** Camera. Eye sits low and looks slightly down the valley. */
@@ -91,6 +94,9 @@ uniform vec2  uMouse;          // pointer on the ground plane, world xz
 uniform float uMouseGain;
 uniform float uDpr;
 uniform float uPass;           // 0 = body, 1 = halo sprites, 2 = core sprites
+uniform float uRiverGain;      // river weight: 1 on Carbon, higher on paper (also in FRAG)
+uniform float uMouseLight;     // how much the pointer lights the ground (also in FRAG); the swell is always on
+uniform float uDot;            // dot boldness: base disc radius in a grid cell (also in FRAG)
 
 varying vec3  vWorld;
 varying float vSec;            // 0 on flat ground → 1 on a crest
@@ -98,6 +104,7 @@ varying float vFar;            // grid depth 0..1
 varying float vRiver;          // river glow, 0..1
 varying float vMouse;          // pointer light, 0..1
 varying float vBright;         // sprite intensity
+varying float vEdge;           // 1 in the middle, 0 at the far left/right ends of the ground
 
 ${NOISE}
 
@@ -157,7 +164,10 @@ float range(vec2 p, float zc, float w, float amp, float n, float W, float baseW,
 }
 
 void main() {
-  float x = (aGrid.x - 0.5) * uExtent.x;
+  // Warped x: s in [-1, 1] maps to 0.55s + 0.45s^3, so grid spacing near the
+  // centre matches the old 130-unit mesh while the ends reach 260 units.
+  float gs = (aGrid.x - 0.5) * 2.0;
+  float x = (gs * 0.55 + gs * gs * gs * 0.45) * uExtent.x * 0.5;
   float z = aGrid.y * uExtent.y;
   vec2  p = vec2(x, z);
   float drift = uTime * 0.05;
@@ -183,10 +193,13 @@ void main() {
   // Surface detail on the rock faces.
   h += fbm(p * 0.16 + 3.7) * 1.2 * sec;
 
-  // Pointer: a soft lift in the ground where the cursor rests.
+  // Pointer: a soft lift in the ground where the cursor rests. Scaled with
+  // depth, so a far range answers the cursor as visibly on screen as the
+  // dunes at the viewer's feet (a 3-unit swell 100 units away is a pixel).
+  float mk = mix(1.0, 3.2, smoothstep(12.0, 100.0, uMouse.y));
   float md = distance(p, uMouse);
-  float mg = exp(-md * md / 90.0) * uMouseGain;
-  h += mg * 2.0;
+  float mg = exp(-md * md / (150.0 * mk * mk)) * uMouseGain;
+  h += mg * 3.4 * mk;
 
   // Breathing on the dunes only — slow, low, mechanical. Mountains hold.
   h += sin(uTime * 0.45 + z * 0.18 + x * 0.09) * 0.25 * (1.0 - sec);
@@ -194,8 +207,10 @@ void main() {
   gl_Position = uViewProj * vec4(x, h, z, 1.0);
 
   float far = aGrid.y;
-  float fog = exp(-far * 0.9);
-  float river = exp(-dr * dr / 3.0) * (1.0 - sec) * smoothstep(0.03, 0.16, far);
+  float fog = exp(-far * 0.55);
+  // Twice the old width, so the river reads as a body of water, not a seam.
+  float river = exp(-dr * dr / 6.0) * (1.0 - sec) * smoothstep(0.03, 0.16, far);
+  vEdge = smoothstep(uExtent.x * 0.5, uExtent.x * 0.5 - 40.0, abs(x));
 
   vWorld = vec3(x, h, z);
   vSec   = sec;
@@ -208,12 +223,12 @@ void main() {
   float flow  = 0.75 + 0.45 * sin(z * 0.5 - uTime * 2.2);
   float flick = 0.72 + 0.28 * sin(uTime * 1.6 + hash(aGrid) * 6.2832);
   float bright = crest * 1.5 * mix(0.5, 1.0, fog)
-               + river * flow * 1.7 * fog
-               + mg * 1.3;
+               + river * flow * 1.7 * fog * uRiverGain
+               + mg * 1.3 * uMouseLight;
   float halo = step(0.5, uPass) * (1.0 - step(1.5, uPass));
-  vBright = bright * flick * mix(1.0, 0.16, halo);
+  vBright = bright * flick * mix(1.0, 0.16, halo) * vEdge;
 
-  float size = (2.2 + crest * 2.2 + river * 1.8 + mg * 1.2) * uDpr;
+  float size = (2.4 + crest * 2.4 + river * 2.2 * uRiverGain + mg * 1.6) * uDpr;
   float px = max(size * 34.0 / max(gl_Position.w, 1.0), 1.2 * uDpr);
   // Vertices with nothing to emit get a zero-size sprite: no fill cost.
   gl_PointSize = mix(px, px * 3.2 + 2.0 * uDpr, halo) * step(0.03, bright);
@@ -227,6 +242,12 @@ uniform vec3 uCarbon;
 uniform vec3 uColor;
 uniform float uSign; // +1: marks add light to the ground (Carbon). -1: they subtract (paper).
 uniform float uGain; // lifts dot contrast on paper (1.0 on Carbon), clamped so bright dots saturate at the target green
+uniform highp float uRiverGain; // shared with VERT (highp there): stages must agree or the program fails to link
+uniform highp float uMouseLight;
+uniform vec3 uTeal; // peak tint: the ridges shade from hydro toward teal with height
+uniform vec3 uRiverTone; // the river's own colour (water: cyan), so it stands apart from the green
+uniform highp float uDot;
+uniform float uFill; // strength of the solid tint across the faces (mass), before uGain
 uniform vec3 uHot;
 // highp to match the vertex shader: a uniform shared by both stages must
 // agree on precision or the program fails to link.
@@ -239,13 +260,14 @@ varying float vFar;
 varying float vRiver;
 varying float vMouse;
 varying float vBright;
+varying float vEdge;
 
 ${NOISE}
 
 void main() {
   if (uPass < 0.5) {
     // ── The terrain body, painted as a dot matrix ─────────────────────────
-    float fog = exp(-vFar * 0.9);
+    float fog = exp(-vFar * 0.55);
 
     // A world-space dot grid projected onto the surface. Adding height to
     // the depth axis makes the rows climb the faces like contour lines, so a
@@ -262,22 +284,32 @@ void main() {
     float light = 0.12
                 + 0.7 * pow(vSec, 1.6)
                 + pow(vSec, 8.0) * 0.9
-                + vRiver * flow * 1.2
-                + vMouse * 0.9
+                + vRiver * flow * 1.6 * uRiverGain
                 + (1.0 - vSec) * clamp(vWorld.y / 3.0, 0.0, 1.0) * 0.25;
     light *= 0.82 + 0.18 * sin(uTime * 1.5 + hash(cell) * 6.2832);
 
     // Dot radius grows a little with light, so lit faces read denser.
-    float rad = 0.16 + 0.12 * clamp(light, 0.0, 1.0);
+    float rad = uDot + 0.12 * clamp(light, 0.0, 1.0);
     float dotv = smoothstep(rad, rad - 0.10, d);
     // Past the point where a cell is only a pixel or two wide the pattern
     // would alias, so the far ranges dissolve into an even haze.
-    dotv = mix(dotv, 0.4, smoothstep(0.62, 1.0, vFar));
+    dotv = mix(dotv, 0.45, smoothstep(0.78, 1.0, vFar));
 
     light *= fog;
-    vec3 fill = uCarbon + uSign * uColor * 0.07 * vSec * fog * uGain;
-    vec3 glow = mix(uColor, uHot, clamp(light - 0.9, 0.0, 1.0));
-    float lit = min(1.0, light * uGain);
+    // The pointer's light is added after the fog, so a far range lights up
+    // under the cursor as clearly as a near one.
+    light += vMouse * 0.9 * uMouseLight;
+    light *= vEdge;
+    vec3 fill = uCarbon + uSign * uColor * uFill * vSec * fog * uGain * vEdge;
+    // Two-tone: the high ground leans teal, the valley floor stays hydro.
+    float peak = smoothstep(9.0, 30.0, vWorld.y) * 0.55;
+    vec3 tone = mix(uColor, uTeal, peak);
+    vec3 glow = mix(tone, uHot, clamp(light - 0.9, 0.0, 1.0));
+    glow = mix(glow, uRiverTone, clamp(vRiver * 1.4, 0.0, 0.9));
+    // On Carbon light adds linearly. On paper a linear gain saturates every
+    // lit face at the same dark green and the range goes flat; a soft
+    // exponential keeps the gradation from haze to crest.
+    float lit = uSign > 0.0 ? min(1.0, light * uGain) : 1.0 - exp(-light * uGain);
     gl_FragColor = vec4(fill + uSign * glow * lit * dotv, 1.0);
     return;
   }
@@ -290,7 +322,8 @@ void main() {
   float soft = max(0.0, 1.0 - r);
   float a = mix(smoothstep(1.0, 0.35, r), soft * soft, halo);
   float b = min(1.0, vBright * uGain);
-  vec3 c = mix(uColor, uHot, clamp(b - 0.8, 0.0, 1.0));
+  vec3 c = mix(mix(uColor, uTeal, smoothstep(9.0, 30.0, vWorld.y) * 0.55), uHot, clamp(b - 0.8, 0.0, 1.0));
+  c = mix(c, uRiverTone, clamp(vRiver * 1.4, 0.0, 0.9));
   gl_FragColor = vec4(c * b * a, b * a);
 }
 `;
@@ -565,6 +598,12 @@ export function DotTerrain({ className }: { className?: string }) {
       hot: gl.getUniformLocation(program, "uHot"),
       sign: gl.getUniformLocation(program, "uSign"),
       gain: gl.getUniformLocation(program, "uGain"),
+      riverGain: gl.getUniformLocation(program, "uRiverGain"),
+      mouseLight: gl.getUniformLocation(program, "uMouseLight"),
+      teal: gl.getUniformLocation(program, "uTeal"),
+      riverTone: gl.getUniformLocation(program, "uRiverTone"),
+      dot: gl.getUniformLocation(program, "uDot"),
+      fill: gl.getUniformLocation(program, "uFill"),
     };
     gl.uniform2f(u.extent, EXTENT_X, EXTENT_Z);
     // Ground and mark colours follow the theme. On paper the marks SUBTRACT
@@ -577,6 +616,12 @@ export function DotTerrain({ className }: { className?: string }) {
       gl.uniform3f(u.hot, ...pal.hotVec);
       gl.uniform1f(u.sign, pal.subtractive ? -1 : 1);
       gl.uniform1f(u.gain, pal.gain);
+      gl.uniform1f(u.riverGain, pal.riverGain);
+      gl.uniform1f(u.mouseLight, pal.mouseLight);
+      gl.uniform3f(u.teal, ...pal.tealVec);
+      gl.uniform3f(u.riverTone, ...pal.riverVec);
+      gl.uniform1f(u.dot, pal.dot);
+      gl.uniform1f(u.fill, pal.fill);
       return pal.subtractive;
     };
     let subtractive = applyPalette();
@@ -675,7 +720,15 @@ export function DotTerrain({ className }: { className?: string }) {
         prev = t;
       }
       if (hit < 0) {
-        targetGain = 0;
+        // The ray missed the range (the pointer is above the ridgeline, in
+        // the sky, or beside the canvas). Still light the nearest point on
+        // the ground under that screen column, so the range keeps answering
+        // the cursor wherever it is on the page, instead of going dark the
+        // moment it leaves the slopes.
+        const t = 140;
+        tx = Math.max(-EXTENT_X / 2, Math.min(EXTENT_X / 2, eye[0] + dir[0] * t));
+        tz = Math.max(4, Math.min(EXTENT_Z - 4, eye[2] + dir[2] * t));
+        targetGain = 0.8;
         wake();
         return;
       }
@@ -691,13 +744,25 @@ export function DotTerrain({ className }: { className?: string }) {
 
     // ── Frame ───────────────────────────────────────────────────────────────
     const t0 = performance.now();
+    let lastNow = 0;
     // An arrow, not a function declaration: a declaration is hoisted above the
     // `if (!gl) return` guard and loses its narrowing.
     const draw = (now: number) => {
       subtractive = applyPalette();
-      mx += (tx - mx) * 0.1;
-      mz += (tz - mz) * 0.1;
-      gain += (targetGain - gain) * 0.08;
+      // Time-based easing, so the swell glides at the same speed on a 60 Hz
+      // and a 144 Hz screen and never jumps after a dropped frame. A low rate
+      // turns the raycast's discrete jumps (the pointer crossing from one
+      // ridge to the range behind it) into a smooth travel across the ground.
+      const dt = Math.min(0.05, lastNow ? (now - lastNow) / 1000 : 0.016);
+      lastNow = now;
+      const kPos = 1 - Math.exp(-dt * 6.5);
+      const kGain = 1 - Math.exp(-dt * 4);
+      mx += (tx - mx) * kPos;
+      mz += (tz - mz) * kPos;
+      // The range swells under the pointer in both themes. How much the
+      // swell also darkens/lights the dots is uMouseLight (palette), kept low
+      // on paper so it reads as relief rather than a shadow.
+      gain += (targetGain - gain) * kGain;
 
       gl.uniformMatrix4fv(u.viewProj, false, multiply(proj, viewNow()));
       gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
@@ -788,7 +853,9 @@ export function DotTerrain({ className }: { className?: string }) {
     canvas.addEventListener("pointerdown", onTap, { passive: true });
     if (fine) {
       window.addEventListener("pointermove", onPointer, { passive: true });
-      document.addEventListener("pointerleave", onLeave, { passive: true });
+      // Only when the pointer leaves the window itself does the light let
+      // go; leaving the canvas or the hero is not a reason to stop.
+      document.documentElement.addEventListener("pointerleave", onLeave, { passive: true });
     }
 
     // A theme change repaints once even while the loop is parked.
@@ -803,7 +870,7 @@ export function DotTerrain({ className }: { className?: string }) {
       io.disconnect();
       document.removeEventListener("visibilitychange", onVisibility);
       window.removeEventListener("pointermove", onPointer);
-      document.removeEventListener("pointerleave", onLeave);
+      document.documentElement.removeEventListener("pointerleave", onLeave);
       gl.deleteBuffer(buffer);
       gl.deleteBuffer(indexBuffer);
       gl.deleteProgram(program);

@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Icon } from "@/components/ui";
 import { DotMatrix } from "@/components/marketing/dot-matrix";
 import { docsHref } from "@/lib/docs/href";
+import { STATUS_URL } from "@/lib/site";
 
 const BASE = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
 
@@ -33,6 +34,7 @@ const GROUPS = [
     links: [
       { href: "/company", label: "About CoreValley" },
       { href: "/contact", label: "Contact sales" },
+      { href: STATUS_URL, label: "System status", external: true },
       {
         href: "https://www.linkedin.com/company/corevalleyai/jobs/",
         label: "Careers",
@@ -68,7 +70,7 @@ export function SiteFooter() {
                 the copy beside it. */}
             <div
               aria-hidden="true"
-              className="pointer-events-none relative -ml-4 h-[260px] w-[260px] md:h-[300px] md:w-[300px]"
+              className="pointer-events-none relative h-[260px] w-[260px] md:h-[300px] md:w-[300px]"
             >
               <DotMatrix
                 src={`${BASE}/brand/cv-combinedmark-green.svg`}
@@ -78,6 +80,8 @@ export function SiteFooter() {
                 intensity={1}
                 radius={90}
                 push={18}
+                bleed={90}
+                replay
               />
             </div>
             <p className="sr-only">CoreValley</p>

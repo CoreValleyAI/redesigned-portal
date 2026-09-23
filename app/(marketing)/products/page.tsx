@@ -4,12 +4,14 @@ import { PageHero, Section } from "@/components/marketing/page-hero";
 import { PRODUCTS } from "@/lib/products";
 import { GPU_SKUS } from "@/lib/catalog";
 import { RevealGroup } from "@/components/fx/reveal";
+import { pageMetadata } from "@/lib/seo";
 
-export const metadata = {
-  title: "Products",
+export const metadata = pageMetadata({
+  title: "GPU Cloud Products — Pods, JupyterHub, Model Endpoints, Dedicated Nodes",
   description:
-    "GPU pods with MIG and HAMi slicing, JupyterHub, model API endpoints on vLLM, and dedicated bare metal — all hosted in Kathmandu.",
-};
+    "GPU pods with MIG and HAMi slicing, managed JupyterHub, OpenAI-compatible model endpoints on vLLM, and dedicated bare-metal nodes — all hosted in Kathmandu and billed in NPR.",
+  path: "/products",
+});
 
 export default function ProductsPage() {
   return (
@@ -98,13 +100,9 @@ export default function ProductsPage() {
                     {s.migCapable ? "mig + hami" : "whole card"}
                   </td>
                   <td className="px-4 py-3.5">
-                    {s.status === "available" ? (
-                      <Badge tone="success" dot>
-                        available
-                      </Badge>
-                    ) : (
-                      <Badge tone="neutral">coming soon</Badge>
-                    )}
+                    {/* Early access: nothing is listed as generally
+                        available yet, including the H200 and H100. */}
+                    <Badge tone="neutral">coming soon</Badge>
                   </td>
                 </tr>
               ))}

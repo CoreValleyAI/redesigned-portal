@@ -1,0 +1,6 @@
+# CoreValley AI — security contact (RFC 9116)
+# Report a vulnerability in corevalley.ai or the CoreValley platform here.
+Contact: mailto:info@corevalley.ai
+Expires: 2027-09-30T00:00:00.000Z
+Preferred-Languages: en, ne
+Canonical: https://corevalley.ai/.well-known/security.txt

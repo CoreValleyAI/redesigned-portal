@@ -3,6 +3,8 @@ import Link from "next/link";
 import { Button, Card, Icon, Terminal } from "@/components/ui";
 import { PageHero, Section } from "@/components/marketing/page-hero";
 import { PRODUCTS, productBySlug } from "@/lib/products";
+import { pageMetadata } from "@/lib/seo";
+import { JsonLd, breadcrumbJsonLd, serviceJsonLd } from "@/components/seo/json-ld";
 
 export function generateStaticParams() {
   return PRODUCTS.map((p) => ({ slug: p.slug }));
@@ -16,7 +18,11 @@ export async function generateMetadata({
   const { slug } = await params;
   const product = productBySlug(slug);
   if (!product) return {};
-  return { title: product.name, description: product.summary };
+  return pageMetadata({
+    title: `${product.name} — GPU cloud in Nepal`,
+    description: product.summary,
+    path: `/products/${product.slug}`,
+  });
 }
 
 export default async function ProductPage({
@@ -30,6 +36,20 @@ export default async function ProductPage({
 
   return (
     <>
+      <JsonLd
+        data={[
+          serviceJsonLd({
+            path: `/products/${product.slug}`,
+            name: product.name,
+            description: product.summary,
+            audience: product.audience,
+          }),
+          breadcrumbJsonLd([
+            { name: "Products", path: "/products" },
+            { name: product.name, path: `/products/${product.slug}` },
+          ]),
+        ]}
+      />
       <PageHero
         eyebrow={product.meta}
         title={product.name}
@@ -41,7 +61,7 @@ export default async function ProductPage({
               variant="primary"
               iconRight={<Icon name="arrow-right" size={16} />}
             >
-              Talk to sales
+              Get early access
             </Button>
           </Link>
           <Link href="/pricing">

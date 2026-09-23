@@ -22,8 +22,8 @@ export function WipeText({
   return (
     <span className={cn("wipe", className)}>
       {words.map((w, i) => (
-        <span key={i} className="wipe__w">
-          <span className="wipe__t" style={{ "--i": start + i } as React.CSSProperties}>
+        <span key={i} className="wipe__w" style={{ "--i": start + i } as React.CSSProperties}>
+          <span className="wipe__t">
             {w}
             {i < words.length - 1 ? " " : ""}
           </span>

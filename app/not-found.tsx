@@ -5,6 +5,7 @@ import { docsHref } from "@/lib/docs/href";
 
 export const metadata = {
   title: "Page not found",
+  robots: { index: false, follow: false },
 };
 
 /* Three routes out, in order of how likely each is to be what the visitor

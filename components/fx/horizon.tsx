@@ -9,9 +9,13 @@
  */
 
 import { Reveal } from "./reveal";
+import { DotSeam } from "./dot-seam";
 
 export function Horizon({ index, label }: { index: string; label: string }) {
   return (
+    <>
+    {/* The dot-matrix dissolve between the previous section and this one. */}
+    <DotSeam />
     <Reveal
       kind="horizon"
       aria-hidden="true"
@@ -24,5 +28,6 @@ export function Horizon({ index, label }: { index: string; label: string }) {
         <span className="text-hydro">{index}</span> / {label}
       </span>
     </Reveal>
+    </>
   );
 }

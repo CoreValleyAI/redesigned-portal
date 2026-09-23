@@ -73,8 +73,7 @@ export function DocArticle({ page }: { page: DocPage }) {
                 className="text-hydro underline decoration-hydro/40 underline-offset-4 transition-colors duration-normal hover:text-hydro-300"
               >
                 info@corevalley.ai
-              </a>{" "}
-              — a Kathmandu engineer answers, not a ticket queue.
+              </a>.
             </p>
           </div>
         </Card>

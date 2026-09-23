@@ -63,7 +63,7 @@ export function GridFloor() {
       w = window.innerWidth;
       h = window.innerHeight;
       // 1.5 is enough for hairlines this faint, and a third fewer pixels.
-      dpr = Math.min(window.devicePixelRatio || 1, 1.5);
+      dpr = Math.min(window.devicePixelRatio || 1, 1.25);
       canvas.width = Math.round(w * dpr);
       canvas.height = Math.round(h * dpr);
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
@@ -179,9 +179,10 @@ export function GridFloor() {
       drawHalf(1, hy, vx, phase, 1);
       drawHalf(-1, hy, vx, phase, 0.55);
 
-      // Pointer: a pool of light wherever the pointer is.
-      if (px >= 0) {
-        const pal = canvasPalette();
+      // Pointer: a pool of light wherever the pointer is. Not on paper,
+      // where a pool of darker green reads as a shadow under the cursor.
+      const pal = canvasPalette();
+      if (px >= 0 && !pal.subtractive) {
         const g = ctx.createRadialGradient(px, py, 0, px, py, 240);
         g.addColorStop(0, `rgba(${pal.hydro}, 0.12)`);
         g.addColorStop(1, `rgba(${pal.hydro}, 0)`);
@@ -205,9 +206,10 @@ export function GridFloor() {
     const tick = (now: number) => {
       if (!running) return;
       frame = requestAnimationFrame(tick);
-      // 30 fps: the floor moves slowly, and every frame it paints is a frame
-      // every glass pane above it has to re-filter.
-      if (now - lastDraw < 31) return;
+      // Every frame: the row phase follows scrollY, and a floor drawn at
+      // 30 fps visibly steps behind a 60 fps scroll. The cost is held down
+      // by the pixel ratio cap in resize() instead.
+      if (now - lastDraw < 8) return;
       lastDraw = now;
       const k = visibility();
       if (k !== shown) {

@@ -14,7 +14,8 @@
     "start": "next start",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
-    "generate:basemap": "node scripts/generate-basemap.mjs"
+    "generate:basemap": "node scripts/generate-basemap.mjs",
+    "generate:brand": "node scripts/generate-brand-images.mjs"
   },
   "dependencies": {
     "@phosphor-icons/react": "2.1.10",

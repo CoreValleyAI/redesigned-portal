@@ -4,10 +4,10 @@ site_description: Nepal's Sovereign AI Cloud — documentation, guides, and API 
 # NOTE: the website renders these Markdown files itself (see the repo README,
 # "Documentation"). This config is for an optional standalone MkDocs build
 # (`npm run docs:mkdocs` → corevalley-docs/site/), which the site never ships.
-site_url: !ENV [DOCS_SITE_URL, "https://docs.corevalley.com.np"]
+site_url: !ENV [DOCS_SITE_URL, "https://docs.corevalley.ai"]
 
-repo_name: corevalley/docs
-repo_url: https://github.com/corevalley/docs
+repo_name: CoreValleyAI/docs
+repo_url: https://github.com/CoreValleyAI/docs
 
 theme:
   name: material

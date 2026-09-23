@@ -233,6 +233,10 @@ export const dynamic = "force-dynamic";
 | `NEXT_STATIC_EXPORT` | Unset | `true` | Selects the build target |
 | `NEXT_PUBLIC_BASE_PATH` | `""` | `/<repo>` in CI | Subpath deployments |
 | `NEXT_PUBLIC_STATIC_DEMO` | Set by `next.config.ts` | Set by `next.config.ts` | **Derived — never set by hand** |
+| `NEXT_PUBLIC_SITE_URL` | `https://corevalley.ai` | Pages origin + base path, set by the workflow | Canonical origin for metadata, sitemap, JSON-LD (see [11](11-seo-status-and-content.md)) |
+| `NEXT_PUBLIC_DOCS_URL` | unset | Repository variable `DOCS_URL` | Docs on a separate host; docs links and sitemap follow |
+| `NEXT_PUBLIC_STATUS_URL` | `https://status.corevalley.ai` | Repository variable `STATUS_URL` | Status page link |
+| `NEXT_PUBLIC_GSC_VERIFICATION` / `NEXT_PUBLIC_BING_VERIFICATION` | unset | Repository variables | Search-console verification meta tags |
 
 ### Environment profiles
 

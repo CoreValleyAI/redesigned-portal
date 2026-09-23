@@ -2,9 +2,9 @@
 
 /**
  * The dark / light switch. One ghost icon button: a sun on Carbon (what you
- * get if you press it), a moon on paper. Hydrates as the dark state — the
- * server does not know the visitor's theme — and corrects itself on the
- * first client render, before the header is interactive anyway.
+ * get if you press it), a moon on paper. Hydrates as the light state — the
+ * default, and what the server renders — and corrects itself on the first
+ * client render if a dark choice is saved.
  */
 import * as React from "react";
 import { Icon, IconButton } from "@/components/ui";

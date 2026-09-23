@@ -24,6 +24,7 @@ New joiners should read 01 → 02 → 03. Everything else is reference.
 | [08](08-operations-runbook.md) | **Operations Runbook** | Health checks, telemetry, local stack operations, incident playbooks |
 | [09](09-security-and-compliance.md) | **Security & Compliance** | Threat model, secret handling, audit chain, production gates |
 | [10](10-implementation-status.md) | **Implementation Status** | As-built vs. designed vs. absent — the authoritative gap register |
+| [11](11-seo-status-and-content.md) | **SEO, Status Page & Content Surfaces** | Site facts, metadata, sitemap, structured data, the status page, the docs-host switch |
 
 ---
 

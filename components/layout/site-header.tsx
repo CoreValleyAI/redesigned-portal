@@ -26,6 +26,7 @@ import { usePathname } from "next/navigation";
 import { Button, Icon } from "@/components/ui";
 import { cn } from "@/lib/cn";
 import { docsHref } from "@/lib/docs/href";
+import { STATUS_URL } from "@/lib/site";
 import { LogoLockup } from "./logo";
 import { ThemeToggle } from "./theme-toggle";
 
@@ -34,7 +35,12 @@ const NAV = [
   { href: "/use-cases", label: "Use cases" },
   { href: docsHref(), label: "Docs" },
   { href: "/company", label: "Company" },
+  // The status page is its own static site on a separate host (see /status
+  // in the repo), so this one is a plain external link.
+  { href: STATUS_URL, label: "Status", external: true },
 ] as const;
+
+const isExternal = (item: (typeof NAV)[number]) => "external" in item && item.external;
 
 export function SiteHeader() {
   const pathname = usePathname();
@@ -117,6 +123,20 @@ export function SiteHeader() {
               }}
             />
             {NAV.map((item) => {
+              if (isExternal(item)) {
+                return (
+                  <a
+                    key={item.href}
+                    href={item.href}
+                    target="_blank"
+                    rel="noreferrer noopener"
+                    className="inline-flex items-center gap-1 px-3.5 py-2 text-[13.5px] font-medium text-ink-400 transition-colors duration-normal hover:text-ink-100"
+                  >
+                    {item.label}
+                    <Icon name="external" size={12} className="text-ink-600" />
+                  </a>
+                );
+              }
               const active = pathname.startsWith(item.href.replace(/\/$/, ""));
               return (
                 <Link
@@ -138,7 +158,7 @@ export function SiteHeader() {
           <div className="ml-auto flex items-center gap-1.5">
             <Link href="/contact" className="hidden md:block">
               <Button variant="primary" size="sm">
-                Talk to sales
+                Get early access
               </Button>
             </Link>
 
@@ -169,19 +189,32 @@ export function SiteHeader() {
         >
           <div className="min-h-0">
             <nav className="mx-auto flex max-w-page-xl flex-col gap-0.5 border-t border-line-subtle px-5 py-4 md:px-10">
-              {NAV.map((item) => (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  className="flex items-center justify-between rounded-md px-2 py-3 text-[15px] text-ink-300 transition-colors duration-fast hover:bg-carbon-600 hover:text-ink-100"
-                >
-                  {item.label}
-                  <Icon name="arrow-right" size={14} className="text-ink-600" />
-                </Link>
-              ))}
+              {NAV.map((item) =>
+                isExternal(item) ? (
+                  <a
+                    key={item.href}
+                    href={item.href}
+                    target="_blank"
+                    rel="noreferrer noopener"
+                    className="flex items-center justify-between rounded-md px-2 py-3 text-[15px] text-ink-300 transition-colors duration-fast hover:bg-carbon-600 hover:text-ink-100"
+                  >
+                    {item.label}
+                    <Icon name="external" size={14} className="text-ink-600" />
+                  </a>
+                ) : (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    className="flex items-center justify-between rounded-md px-2 py-3 text-[15px] text-ink-300 transition-colors duration-fast hover:bg-carbon-600 hover:text-ink-100"
+                  >
+                    {item.label}
+                    <Icon name="arrow-right" size={14} className="text-ink-600" />
+                  </Link>
+                ),
+              )}
               <Link href="/contact" className="mt-3">
                 <Button variant="primary" size="md" fullWidth>
-                  Talk to sales
+                  Get early access
                 </Button>
               </Link>
             </nav>

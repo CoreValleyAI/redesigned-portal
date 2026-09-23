@@ -2,13 +2,21 @@ import Link from "next/link";
 import { Button, Card, Icon, StatBlock } from "@/components/ui";
 import { PageHero, Section } from "@/components/marketing/page-hero";
 import { Reveal, RevealGroup } from "@/components/fx/reveal";
+import { JsonLd, breadcrumbJsonLd, faqJsonLd } from "@/components/seo/json-ld";
+import { pageMetadata } from "@/lib/seo";
+import { ORG } from "@/lib/site";
 import type { IconName } from "@/components/ui";
 
-export const metadata = {
-  title: "Company",
+export const metadata = pageMetadata({
+  title: "About CoreValley — Nepal's Sovereign AI Cloud",
   description:
-    "CoreValley builds sovereign GPU infrastructure in Nepal so local teams can train, fine-tune and deploy AI without depending on foreign clouds.",
-};
+    "CoreValley builds GPU infrastructure in Kathmandu so researchers, startups, banks and public bodies can train and run AI without foreign clouds, foreign currency or foreign support hours.",
+  path: "/company",
+});
+
+/* Copy rule for this page: every claim is something the public site states
+   or a customer can verify. Positioning and principles are the company's own
+   words; hardware and payment details match the products and pricing pages. */
 
 const PRINCIPLES: { icon: IconName; title: string; body: string }[] = [
   {
@@ -33,6 +41,30 @@ const PRINCIPLES: { icon: IconName; title: string; body: string }[] = [
   },
 ];
 
+const OFFER: { icon: IconName; title: string; body: string; href: string; cta: string }[] = [
+  {
+    icon: "notebook",
+    title: "AI Lab",
+    body: "Managed JupyterHub on GPUs for teams, labs and courses. Collaborative workspaces, GPU monitoring, no infrastructure expertise required.",
+    href: "/products/jupyterhub",
+    cta: "JupyterHub",
+  },
+  {
+    icon: "slice",
+    title: "GPU Workspace",
+    body: "Full GPU environments with root access, custom images and multi-GPU scaling for fine-tuning, full training and computer vision.",
+    href: "/products/gpu-pods",
+    cta: "GPU pods and dedicated nodes",
+  },
+  {
+    icon: "broadcast",
+    title: "Inference & endpoints",
+    body: "Shared or dedicated OpenAI-compatible endpoints with autoscaling, served with low latency from inside Nepal.",
+    href: "/products/model-endpoints",
+    cta: "Model endpoints",
+  },
+];
+
 const AUDIENCES: { icon: IconName; title: string; body: string }[] = [
   {
     icon: "university",
@@ -47,13 +79,43 @@ const AUDIENCES: { icon: IconName; title: string; body: string }[] = [
   {
     icon: "building",
     title: "Enterprises and public sector",
-    body: "Isolated environments, data-residency guarantees and local support suitable for regulated industries and government use cases.",
+    body: "Isolated environments, data-residency guarantees and local support suitable for banks, healthcare, government and any regulated workload that cannot cross borders.",
+  },
+];
+
+const FAQ = [
+  {
+    q: "Where is CoreValley hosted?",
+    a: "In Kathmandu, Nepal. Compute and storage are physically located in the country, in the region we call np-ktm-1. Nothing is replicated abroad.",
+  },
+  {
+    q: "Which GPUs do you run?",
+    a: "NVIDIA H200 (141 GB HBM3e) and H100 (80 GB HBM3), whole or sliced with MIG and HAMi, are coming online through early access. RTX PRO 6000 Blackwell, L40S and L4 are on the roadmap.",
+  },
+  {
+    q: "How do you bill?",
+    a: "In Nepali rupees. On-demand usage is metered per second and invoiced monthly; monthly reserved and custom enterprise terms are available. We accept eSewa, Khalti, bank transfer and corporate invoices on net terms.",
+  },
+  {
+    q: "Are you open to new customers?",
+    a: "Yes, through early access. Tell us the model, the dataset size and the GPU hours you expect, and we size capacity with you before you commit to anything.",
+  },
+  {
+    q: "How do I reach the team?",
+    a: "Email info@corevalley.ai or use the contact form. We answer in Nepal Standard Time, usually within one business day.",
   },
 ];
 
 export default function CompanyPage() {
   return (
     <>
+      <JsonLd
+        data={[
+          faqJsonLd(FAQ),
+          breadcrumbJsonLd([{ name: "Company", path: "/company" }]),
+        ]}
+      />
+
       <PageHero
         eyebrow="Company"
         title="Nepal's AI infrastructure, built for Nepal."
@@ -80,10 +142,10 @@ export default function CompanyPage() {
                 the next generation of Nepali AI companies.
               </p>
               <p>
-                The alternative is straightforward: high-performance NVIDIA
-                compute hosted in Kathmandu, billed in rupees, drawing on
-                Himalayan hydroelectricity, supported by engineers who
-                understand both the technology and the local context.
+                The alternative is straightforward: the same class of NVIDIA
+                hardware powering global AI labs, hosted in Kathmandu, billed in
+                rupees, and supported by engineers who understand both the
+                technology and the local context.
               </p>
             </div>
           </div>
@@ -104,7 +166,59 @@ export default function CompanyPage() {
         </div>
       </Section>
 
-      <Section eyebrow="Principles" title="What guides us." alt>
+      <Section
+        eyebrow="What we run"
+        title="Three service lines, one platform."
+        lead="Notebooks for teams, full GPU environments for training, and endpoints for serving — on H100 and H200 cards in Kathmandu, sharing projects, storage and keys."
+        alt
+      >
+        <RevealGroup step={80} className="grid gap-4 md:grid-cols-3">
+          {OFFER.map((o) => (
+            <Card key={o.title} padding={26} className="flex h-full flex-col">
+              <Icon name={o.icon} size={21} weight="duotone" className="text-ink-100" />
+              <h3 className="mt-4 text-lg font-semibold tracking-tight text-ink-100">
+                {o.title}
+              </h3>
+              <p className="mt-2 flex-1 text-sm leading-relaxed text-ink-400">{o.body}</p>
+              <Link
+                href={o.href}
+                className="mt-5 inline-flex items-center gap-1.5 font-mono text-[12px] tracking-wide text-hydro transition-colors duration-normal hover:text-hydro-300"
+              >
+                {o.cta}
+                <Icon name="arrow-right" size={13} />
+              </Link>
+            </Card>
+          ))}
+        </RevealGroup>
+
+        <Reveal>
+          <dl className="mt-10 grid gap-x-10 gap-y-6 border-t border-line-subtle pt-8 sm:grid-cols-3">
+            <div>
+              <dt className="cv-label text-[10px]">Hardware</dt>
+              <dd className="mt-2 text-sm text-ink-300">
+                NVIDIA H200 and H100 today; RTX PRO 6000 Blackwell, L40S and L4 on
+                the roadmap.
+              </dd>
+            </div>
+            <div>
+              <dt className="cv-label text-[10px]">Software</dt>
+              <dd className="mt-2 text-sm text-ink-300">
+                CUDA, cuDNN, PyTorch, TensorFlow, Jupyter, vLLM and DeepSpeed from
+                first boot.
+              </dd>
+            </div>
+            <div>
+              <dt className="cv-label text-[10px]">Billing</dt>
+              <dd className="mt-2 text-sm text-ink-300">
+                NPR, metered per second. eSewa, Khalti, bank transfer and
+                corporate invoices.
+              </dd>
+            </div>
+          </dl>
+        </Reveal>
+      </Section>
+
+      <Section eyebrow="Principles" title="What guides us.">
         <RevealGroup step={80} className="grid gap-4 md:grid-cols-2">
           {PRINCIPLES.map((p) => (
             <Card key={p.title} padding={26} className="h-full">
@@ -129,7 +243,7 @@ export default function CompanyPage() {
           it and the section below it. These are three audiences, not three
           products — so they are a list with hanging icons and dividing rules,
           which also lets each entry be as long as it needs to be. */}
-      <Section eyebrow="Who we serve" title="Who we build for.">
+      <Section eyebrow="Who we serve" title="Who we build for." alt>
         <ul className="flex flex-col">
           {AUDIENCES.map((a, i) => (
             <Reveal as="li" key={a.title} delay={i * 80}>
@@ -154,9 +268,20 @@ export default function CompanyPage() {
         </ul>
       </Section>
 
+      <Section eyebrow="Questions" title="Frequently asked.">
+        <RevealGroup step={60} className="grid gap-4 md:grid-cols-2">
+          {FAQ.map((f) => (
+            <Card key={f.q} surface="solid" padding={24}>
+              <h3 className="text-base font-semibold tracking-tight text-ink-100">{f.q}</h3>
+              <p className="mt-2 text-[13.5px] leading-relaxed text-ink-400">{f.a}</p>
+            </Card>
+          ))}
+        </RevealGroup>
+      </Section>
+
       <Section eyebrow="Contact" title="Where to find us." alt>
         <Reveal>
-          <dl className="grid gap-x-10 gap-y-8 border-t border-line-subtle pt-10 sm:grid-cols-3">
+          <dl className="grid gap-x-10 gap-y-8 border-t border-line-subtle pt-10 sm:grid-cols-2 lg:grid-cols-4">
             <div>
               <dt className="cv-label text-[10px]">Location</dt>
               <dd className="mt-3 text-ink-200">Kathmandu Valley, Nepal</dd>
@@ -166,10 +291,10 @@ export default function CompanyPage() {
               <dt className="cv-label text-[10px]">Email</dt>
               <dd className="mt-3">
                 <a
-                  href="mailto:info@corevalley.ai"
+                  href={`mailto:${ORG.email}`}
                   className="text-hydro underline decoration-hydro/40 underline-offset-4 transition-colors duration-normal hover:text-hydro-300"
                 >
-                  info@corevalley.ai
+                  {ORG.email}
                 </a>
               </dd>
               <dd className="mt-1 font-mono text-xs text-ink-500">
@@ -191,6 +316,29 @@ export default function CompanyPage() {
               </dd>
               <dd className="mt-1 font-mono text-xs text-ink-500">
                 hiring in kathmandu
+              </dd>
+            </div>
+            <div>
+              <dt className="cv-label text-[10px]">Elsewhere</dt>
+              <dd className="mt-3 flex flex-col gap-2">
+                <a
+                  href={ORG.linkedin}
+                  target="_blank"
+                  rel="noreferrer noopener"
+                  className="inline-flex items-center gap-1.5 text-ink-200 transition-colors duration-normal hover:text-hydro"
+                >
+                  LinkedIn
+                  <Icon name="external" size={13} className="text-ink-500" />
+                </a>
+                <a
+                  href={ORG.github}
+                  target="_blank"
+                  rel="noreferrer noopener"
+                  className="inline-flex items-center gap-1.5 text-ink-200 transition-colors duration-normal hover:text-hydro"
+                >
+                  GitHub
+                  <Icon name="external" size={13} className="text-ink-500" />
+                </a>
               </dd>
             </div>
           </dl>

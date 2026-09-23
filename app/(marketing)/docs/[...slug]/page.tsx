@@ -1,6 +1,10 @@
 import { notFound } from "next/navigation";
 import { DocArticle } from "@/components/docs/doc-article";
 import { getPage, getPages } from "@/lib/docs/content";
+import { pageMetadata } from "@/lib/seo";
+import { docsHref } from "@/lib/docs/href";
+import { DOCS_URL } from "@/lib/site";
+import { JsonLd, breadcrumbJsonLd } from "@/components/seo/json-ld";
 
 /**
  * Every documentation page except the landing one, e.g.
@@ -19,12 +23,28 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const { slug } = await params;
   const page = getPage(slug.join("/"));
   if (!page) return {};
-  return { title: `${page.title} · Docs`, description: page.lead || undefined };
+  return pageMetadata({
+    title: `${page.title} · Docs`,
+    description: page.lead || `${page.title} — CoreValley platform documentation.`,
+    path: page.url,
+    ...(DOCS_URL ? { canonical: docsHref(page.slug), noindex: true } : {}),
+  });
 }
 
 export default async function DocPageRoute({ params }: { params: Promise<{ slug: string[] }> }) {
   const { slug } = await params;
   const page = getPage(slug.join("/"));
   if (!page) notFound();
-  return <DocArticle page={page} />;
+  return (
+    <>
+      <JsonLd
+        data={breadcrumbJsonLd([
+          { name: "Documentation", path: "/docs" },
+          ...(page.section ? [{ name: page.section, path: "/docs" }] : []),
+          { name: page.title, path: page.url },
+        ])}
+      />
+      <DocArticle page={page} />
+    </>
+  );
 }
