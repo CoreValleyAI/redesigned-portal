@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { Button, Icon } from "@/components/ui";
-import { LogoLockup } from "@/components/layout/logo";
+import type { IconName } from "@/components/ui";
+import { SiteHeader } from "@/components/layout/site-header";
+import { DotTerrain } from "@/components/marketing/dot-terrain";
 import { docsHref } from "@/lib/docs/href";
 
 export const metadata = {
@@ -8,67 +10,95 @@ export const metadata = {
   robots: { index: false, follow: false },
 };
 
-/* Three routes out, in order of how likely each is to be what the visitor
-   wanted. A 404 whose only exit is "back to home" makes the visitor do the
-   navigation again by hand — the whole point of this page is to guess. */
-const EXITS = [
-  { href: "/products", label: "Products", meta: "pods · notebooks · endpoints" },
-  { href: "/pricing", label: "Pricing", meta: "npr rates, per second" },
-  { href: docsHref(), label: "Documentation", meta: "quickstart · platform · billing" },
-] as const;
+/* The site used to be previewed under /redesigned-portal/. Links from that
+   period (bookmarks, open tabs, shared URLs) land here; forward them to the
+   same page at the root before anything renders. GitHub Pages serves this
+   page as 404.html for every unknown path, so this runs for all of them. */
+const LEGACY_REDIRECT = `(function(){var p=location.pathname,b="/redesigned-portal";if(p===b||p.indexOf(b+"/")===0){location.replace((p.slice(b.length)||"/")+location.search+location.hash)}})();`;
+
+/* Where the visitor most likely meant to go, in that order. */
+const EXITS: { href: string; label: string; meta: string; icon: IconName }[] = [
+  { href: "/products", label: "Products", meta: "pods · notebooks · endpoints", icon: "slice" },
+  { href: "/pricing", label: "Pricing", meta: "npr rates, per second", icon: "cost" },
+  { href: docsHref(), label: "Documentation", meta: "guides · platform · billing", icon: "docs" },
+  { href: "/contact", label: "Contact", meta: "talk to the team in kathmandu", icon: "send" },
+];
 
 export default function NotFound() {
   return (
-    <main className="mx-auto flex min-h-dvh w-full max-w-lg flex-col justify-center px-6 py-20">
-      <LogoLockup size={20} />
+    <>
+      <script dangerouslySetInnerHTML={{ __html: LEGACY_REDIRECT }} />
+      <SiteHeader />
 
-      {/* The code, set as data rather than as decoration — this page is a
-          status report, and the status is the one concrete thing on it. */}
-      <p className="cv-label mt-14">error · 404</p>
+      <main id="main" tabIndex={-1} className="relative isolate flex min-h-[calc(100dvh-4rem)] flex-col overflow-hidden focus:outline-none">
+        {/* The same range as the homepage, behind everything. */}
+        <div className="absolute inset-0 -z-10">
+          <DotTerrain />
+          <div
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-x-0 bottom-0 h-[30%] bg-gradient-to-b from-transparent via-bg-base/60 to-bg-base"
+          />
+        </div>
 
-      <h1 className="display mt-4 text-[clamp(2rem,7vw,3rem)]">
-        That page isn&rsquo;t here.
-      </h1>
-      <p className="mt-5 leading-relaxed text-ink-400">
-        The address doesn&rsquo;t match anything we serve. It may have moved,
-        or the link that sent you here may be out of date.
-      </p>
+        <div className="hero-copy mx-auto flex w-full max-w-[52rem] flex-1 flex-col items-center justify-center px-5 py-20 text-center md:py-24">
+          <p className="nf-code nums font-mono text-[clamp(5rem,16vw,10rem)] leading-none font-medium tracking-[-0.06em]">
+            404
+          </p>
 
-      <ul className="mt-10 flex flex-col">
-        {EXITS.map((e) => {
-          return (
-            <li key={e.href}>
+          <h1 className="display mt-6 text-[clamp(2rem,5vw,3.4rem)] leading-[1.04] tracking-[-0.03em]">
+            This trail goes off the map.
+          </h1>
+          <p className="mt-5 max-w-[46ch] text-[clamp(1rem,1.5vw,1.15rem)] leading-relaxed text-ink-300">
+            The page you were looking for isn&rsquo;t here. It may have moved, or
+            the link that brought you here is out of date.
+          </p>
+
+          <div className="mt-9 flex flex-wrap justify-center gap-3">
+            <Link href="/">
+              <Button variant="primary" size="lg" iconRight={<Icon name="arrow-right" size={17} />}>
+                Back to home
+              </Button>
+            </Link>
+            <Link href="/contact">
+              <Button variant="secondary" size="lg">
+                Get early access
+              </Button>
+            </Link>
+          </div>
+
+          <nav aria-label="Popular pages" className="mt-14 grid w-full gap-3 sm:grid-cols-2">
+            {EXITS.map((e) => (
               <Link
+                key={e.href}
                 href={e.href}
-                className="group flex items-center justify-between gap-4 border-t border-line-subtle py-4 transition-colors duration-normal hover:border-line-strong"
+                className="nf-exit group lg lg-hover flex items-center gap-4 rounded-xl px-5 py-4 text-left"
               >
-              <span>
-                <span className="block text-ink-100 transition-colors duration-normal">
-                  {e.label}
+                <span className="inline-flex size-10 shrink-0 items-center justify-center rounded-lg border border-line bg-carbon-600">
+                  <Icon name={e.icon} size={18} weight="duotone" className="text-hydro" />
                 </span>
-                <span className="mt-0.5 block font-mono text-[11.5px] tracking-wide text-ink-600">
-                  {e.meta}
+                <span className="min-w-0 flex-1">
+                  <span className="block font-semibold tracking-tight text-ink-100">{e.label}</span>
+                  <span className="mt-0.5 block truncate font-mono text-[11.5px] tracking-wide text-ink-500">
+                    {e.meta}
+                  </span>
                 </span>
-              </span>
-              <Icon
-                name="arrow-right"
-                size={15}
-                className="text-ink-600 transition-transform duration-normal ease-out group-hover:translate-x-1 group-hover:text-ink-200"
-              />
+                <Icon
+                  name="arrow-right"
+                  size={15}
+                  className="shrink-0 text-ink-500 transition-transform duration-normal ease-out group-hover:translate-x-1 group-hover:text-hydro"
+                />
               </Link>
-            </li>
-          );
-        })}
-      </ul>
+            ))}
+          </nav>
 
-      <div className="mt-10 flex flex-wrap gap-3">
-        <Link href="/">
-          <Button variant="primary">Back to home</Button>
-        </Link>
-        <Link href="/contact">
-          <Button variant="secondary">Contact us</Button>
-        </Link>
-      </div>
-    </main>
+          <p className="mt-10 font-mono text-[11.5px] tracking-wide text-ink-500">
+            error 404 · page not found ·{" "}
+            <a href="mailto:info@corevalley.ai" className="text-hydro underline-offset-4 hover:underline">
+              info@corevalley.ai
+            </a>
+          </p>
+        </div>
+      </main>
+    </>
   );
 }

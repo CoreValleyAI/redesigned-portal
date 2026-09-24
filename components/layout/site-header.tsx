@@ -26,7 +26,7 @@ import { usePathname } from "next/navigation";
 import { Button, Icon } from "@/components/ui";
 import { cn } from "@/lib/cn";
 import { docsHref } from "@/lib/docs/href";
-import { STATUS_URL } from "@/lib/site";
+import { SHOW_STATUS, STATUS_URL } from "@/lib/site";
 import { LogoLockup } from "./logo";
 import { ThemeToggle } from "./theme-toggle";
 
@@ -39,6 +39,9 @@ const NAV = [
   // in the repo), so this one is a plain external link.
   { href: STATUS_URL, label: "Status", external: true },
 ] as const;
+
+/* Status is hidden until monitoring is integrated (SHOW_STATUS in lib/site.ts). */
+const VISIBLE_NAV = NAV.filter((item) => SHOW_STATUS || item.label !== "Status");
 
 const isExternal = (item: (typeof NAV)[number]) => "external" in item && item.external;
 
@@ -122,7 +125,7 @@ export function SiteHeader() {
                 transform: `translate3d(${rail?.x ?? 0}px,0,0)`,
               }}
             />
-            {NAV.map((item) => {
+            {VISIBLE_NAV.map((item) => {
               if (isExternal(item)) {
                 return (
                   <a
@@ -189,7 +192,7 @@ export function SiteHeader() {
         >
           <div className="min-h-0">
             <nav className="mx-auto flex max-w-page-xl flex-col gap-0.5 border-t border-line-subtle px-5 py-4 md:px-10">
-              {NAV.map((item) =>
+              {VISIBLE_NAV.map((item) =>
                 isExternal(item) ? (
                   <a
                     key={item.href}

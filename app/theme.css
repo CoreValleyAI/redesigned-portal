@@ -388,3 +388,21 @@
     transition: none;
   }
 }
+
+/* ── 404 ──────────────────────────────────────────────────────────────────
+   The status code as a lit figure: Hydro to teal, with a soft glow in the
+   theme's own ground colour behind it (hero-copy halo). */
+.nf-code {
+  background: linear-gradient(180deg, var(--hydro) 10%, color-mix(in srgb, var(--hydro) 55%, #14b8a6) 90%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  text-shadow: none;
+  filter: drop-shadow(0 0 28px rgb(var(--hydro-rgb) / 0.28));
+}
+.hero-copy .nf-code {
+  text-shadow: none;
+}
+.nf-exit .block {
+  text-shadow: none;
+}

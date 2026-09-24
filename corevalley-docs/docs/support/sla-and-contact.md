@@ -11,14 +11,13 @@ How to reach the CoreValley team, what to expect from support, and where service
 |---|---|---|
 | [info@corevalley.ai](mailto:info@corevalley.ai) | Sales, onboarding, technical questions, billing | Nepal Standard Time (UTC+05:45), business days; urgent platform issues are read outside hours |
 | [Contact form](https://corevalley.ai/contact/) | New workloads and capacity requests | — |
-| [Status page](https://status.corevalley.ai/) | Current platform state, incidents and maintenance | Always on |
 
 ## What this page will cover
 
 - **Support tiers** — response targets by tier and severity.
 - **Service levels** — availability targets for the control plane and for dedicated capacity, how they are measured, and service credits.
 - **Maintenance** — the announcement window, the maintenance schedule and how running workloads are handled.
-- **Incident communication** — where incidents are reported and how to subscribe.
+- **Incident communication** — how incidents are reported and how to hear about them.
 - **Escalation** — what to include in a report and how it moves through the team.
 
 ## Related

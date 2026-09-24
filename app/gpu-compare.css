@@ -302,3 +302,51 @@
     transition: none;
   }
 }
+
+/* ── GDDR7 channels (RTX PRO 6000): chips in pairs flanking the die ─────── */
+.gpu-gddr {
+  align-items: center;
+  gap: 8px;
+}
+.gpu-gddr .gpu-hbm__die {
+  margin-left: 0;
+}
+.gpu-gddr__col {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+.gpu-gddr__pair {
+  display: flex;
+  gap: 4px;
+}
+.gpu-gddr__chip {
+  width: 16px;
+  height: 14px;
+  border-radius: 3px;
+}
+
+/* Second series in the throughput chart, and the legend keys. */
+.gpu-seg--b i[data-lit] {
+  background: linear-gradient(180deg, var(--info), color-mix(in srgb, var(--info) 70%, var(--carbon-900)));
+}
+.gpu-key {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+  background: var(--hydro);
+}
+.gpu-key--b {
+  margin-left: 8px;
+  background: var(--info);
+}
+.gpu-more--top {
+  border-top: 0;
+}
+.gpu-more--top > .gpu-more__head {
+  padding-top: 0;
+}
+.gpu-seg {
+  grid-template-columns: repeat(28, 1fr);
+}

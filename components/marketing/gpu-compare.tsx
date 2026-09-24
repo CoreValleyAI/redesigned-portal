@@ -1,144 +1,51 @@
 "use client";
 
 /**
- * H200 vs H100, side by side, in full datasheet detail.
+ * H200 vs RTX PRO 6000 Blackwell, side by side.
  *
- * The two GPUs share most of their datasheet, so the page says the shared
- * part once and gives each card only what differs:
- *
- *   · EACH CARD   memory (HBM stacks drawn as towers, capacity counting up),
- *                 memory bandwidth as a plain metric, and — on click — the
- *                 MIG partitions, whose slice size differs.
- *   · SHARED      one panel under the pair: platform (NVLink, PCIe, power,
- *                 form factor, media) always visible, and — on click — the
- *                 tensor throughput ladder, identical for both.
- *
- * Hovering a row lights the same row on the other card. Motion is
- * transform/opacity only, and static under reduced motion.
+ * The two share little beyond MIG partitioning and PCIe Gen5, so each card
+ * carries its own full profile:
+ *   · MEMORY     capacity counting up, drawn as HBM stacks (H200) or the
+ *                GDDR7 bus channels (RTX PRO 6000) around the die.
+ *   · BANDWIDTH  a plain metric with a delta pill.
+ *   · PLATFORM   interconnect, power, form factor, cores, media engines.
+ *   · MIG        on click: the hardware partitions, which differ in count
+ *                and size.
+ * Under the pair, one expandable chart compares throughput by precision on a
+ * shared log scale, both GPUs per row. Hovering a row lights its twin on the
+ * other card. Motion is transform/opacity only; static under reduced motion.
  */
 
 import * as React from "react";
 import { Icon } from "@/components/ui";
 import { CountUp } from "@/components/fx/count-up";
 import { cn } from "@/lib/cn";
-import { GPU_SPECS, PRECISIONS, type GpuSpec, type Precision } from "@/lib/gpu-specs";
+import { GPU_SPECS, PRECISIONS, type GpuSpec } from "@/lib/gpu-specs";
 
-const SEGMENTS = 24; // cells per precision bar
-
-/* Shared log scale across both cards: 10 TFLOPS … 4,000 TFLOPS. */
+const SEGMENTS = 28;
+/* Shared log scale: 10 TFLOPS … 4,000 TFLOPS. */
 const LOG_MIN = Math.log10(10);
 const LOG_MAX = Math.log10(4000);
 const logFrac = (v: number) =>
   Math.max(0.04, Math.min(1, (Math.log10(v) - LOG_MIN) / (LOG_MAX - LOG_MIN)));
-
 const fmt = (n: number) => n.toLocaleString("en-US");
 
-type RowKey =
-  | "memory"
-  | "bandwidth"
-  | `t-${Precision}`
-  | "mig"
-  | "nvlink"
-  | "pcie"
-  | "tdp"
-  | "form"
-  | "media";
-
 interface RowCtx {
-  active: RowKey | null;
-  set: (k: RowKey | null) => void;
+  active: string | null;
+  set: (k: string | null) => void;
 }
 const RowContext = React.createContext<RowCtx>({ active: null, set: () => {} });
 
-/** A hover-linked row: highlights itself and its twin on the other card. */
-function Row({
-  k,
-  className,
-  children,
-}: {
-  k: RowKey;
-  className?: string;
-  children: React.ReactNode;
-}) {
+function Row({ k, className, children }: { k: string; className?: string; children: React.ReactNode }) {
   const { active, set } = React.useContext(RowContext);
   return (
     <div
-      data-row={k}
       data-on={active === k ? "" : undefined}
       onPointerEnter={() => set(k)}
       onPointerLeave={() => set(null)}
       className={cn("gpu-row", className)}
     >
       {children}
-    </div>
-  );
-}
-
-function Hbm({ spec, maxStacks }: { spec: GpuSpec; maxStacks: number }) {
-  const layers = 8;
-  return (
-    <div className="gpu-hbm" aria-hidden="true">
-      {Array.from({ length: maxStacks }, (_, s) => {
-        const on = s < spec.hbmStacks;
-        return (
-          <div key={s} className={cn("gpu-hbm__stack", !on && "gpu-hbm__stack--off")}>
-            {Array.from({ length: layers }, (_, l) => (
-              <span
-                key={l}
-                className="gpu-hbm__layer"
-                style={{ "--d": `${s * 70 + (layers - l) * 45}ms` } as React.CSSProperties}
-              />
-            ))}
-          </div>
-        );
-      })}
-      <div className="gpu-hbm__die">
-        <span>GH100</span>
-      </div>
-    </div>
-  );
-}
-
-function Ladder({ spec }: { spec: GpuSpec }) {
-  return (
-    <div className="flex flex-col">
-      {PRECISIONS.map((p, pi) => {
-        const t = spec.tensor[p];
-        const lit = Math.round(logFrac(t.value) * SEGMENTS);
-        const unit = p === "INT8" ? "TOPS" : "TFLOPS";
-        return (
-          <Row key={p} k={`t-${p}`} className="grid grid-cols-[4.5rem_1fr_6.5rem] items-center gap-3 py-1.5">
-            <span className="font-mono text-[12px] tracking-wide text-ink-400">{p}</span>
-            <span className="gpu-seg" aria-hidden="true">
-              {Array.from({ length: SEGMENTS }, (_, i) => (
-                <i
-                  key={i}
-                  data-lit={i < lit ? "" : undefined}
-                  style={{ "--d": `${pi * 60 + i * 18}ms` } as React.CSSProperties}
-                />
-              ))}
-            </span>
-            <span className="nums text-right font-mono text-[13px] text-ink-100">
-              {fmt(t.value)}
-              {t.sparse ? <sup className="text-ink-500">*</sup> : null}
-              <span className="ml-1 text-[10px] text-ink-500">{unit}</span>
-            </span>
-          </Row>
-        );
-      })}
-    </div>
-  );
-}
-
-function Mig({ spec }: { spec: GpuSpec }) {
-  return (
-    <div className="gpu-mig" aria-hidden="true">
-      {Array.from({ length: spec.migSlices }, (_, i) => (
-        <span key={i} style={{ "--d": `${i * 70}ms` } as React.CSSProperties}>
-          {spec.migSliceGb}
-          <small>GB</small>
-        </span>
-      ))}
     </div>
   );
 }
@@ -152,22 +59,98 @@ function Section({ label, children }: { label: string; children: React.ReactNode
   );
 }
 
+/** HBM stacks as towers beside the die, or GDDR channels flanking it. */
+function MemoryVisual({ spec }: { spec: GpuSpec }) {
+  const m = spec.memoryLayout;
+  const die = (
+    <div className="gpu-hbm__die">
+      <span>{spec.chip}</span>
+    </div>
+  );
+  if (m.kind === "hbm") {
+    const layers = 8;
+    return (
+      <div className="gpu-hbm" aria-hidden="true">
+        {Array.from({ length: m.units }, (_, s) => (
+          <div key={s} className="gpu-hbm__stack">
+            {Array.from({ length: layers }, (_, l) => (
+              <span
+                key={l}
+                className="gpu-hbm__layer"
+                style={{ "--d": `${s * 70 + (layers - l) * 45}ms` } as React.CSSProperties}
+              />
+            ))}
+          </div>
+        ))}
+        {die}
+      </div>
+    );
+  }
+  const half = m.units / 2;
+  const col = (offset: number) => (
+    <div className="gpu-gddr__col">
+      {Array.from({ length: half / 2 }, (_, i) => (
+        <div key={i} className="gpu-gddr__pair">
+          {[0, 1].map((j) => (
+            <span
+              key={j}
+              className="gpu-hbm__layer gpu-gddr__chip"
+              style={{ "--d": `${(offset + i * 2 + j) * 55}ms` } as React.CSSProperties}
+            />
+          ))}
+        </div>
+      ))}
+    </div>
+  );
+  return (
+    <div className="gpu-hbm gpu-gddr" aria-hidden="true">
+      {col(0)}
+      {die}
+      {col(half)}
+    </div>
+  );
+}
+
+function Mig({ spec }: { spec: GpuSpec }) {
+  return (
+    <div
+      className="gpu-mig"
+      aria-hidden="true"
+      style={{ gridTemplateColumns: `repeat(${spec.migSlices}, 1fr)` }}
+    >
+      {Array.from({ length: spec.migSlices }, (_, i) => (
+        <span key={i} style={{ "--d": `${i * 70}ms` } as React.CSSProperties}>
+          {spec.migSliceGb}
+          <small>GB</small>
+        </span>
+      ))}
+    </div>
+  );
+}
+
 function GpuCard({ spec, other }: { spec: GpuSpec; other: GpuSpec }) {
-  const maxStacks = Math.max(spec.hbmStacks, other.hbmStacks);
   const memDelta = Math.round((spec.memoryGb / other.memoryGb - 1) * 100);
-  const bwDelta = Math.round((spec.bandwidthTbs / other.bandwidthTbs - 1) * 100);
+  const bwRatio = spec.bandwidthTbs / other.bandwidthTbs;
+
+  const platform: [string, string, string][] = [
+    ["interconnect", "Interconnect", spec.interconnect],
+    ["power", "Max power", spec.maxPower],
+    ["form", "Form factor", spec.formFactor],
+    ["cores", "Cores", spec.cores],
+    ["media", "Media engines", spec.media],
+    ["extras", "Also", spec.extras],
+  ];
 
   return (
     <article className="gpu-card cv-spotlight lg lg-hover relative flex h-full flex-col gap-6 rounded-xl p-7 md:p-8">
       <span className="gpu-card__beam" aria-hidden="true" />
 
-      {/* Header */}
       <header className="flex items-start justify-between gap-4">
         <div>
           <p className="font-mono text-[11px] tracking-label text-hydro uppercase">
-            {spec.architecture} · {spec.formFactor}
+            {spec.architecture} · {spec.chip}
           </p>
-          <h3 className="mt-2 text-[clamp(1.6rem,2.6vw,2.1rem)] font-semibold tracking-tight text-ink-100">
+          <h3 className="mt-2 text-[clamp(1.5rem,2.4vw,2rem)] font-semibold tracking-tight text-ink-100">
             {spec.name}
           </h3>
           <p className="mt-1.5 text-[14px] leading-relaxed text-ink-400">{spec.tagline}.</p>
@@ -177,44 +160,51 @@ function GpuCard({ spec, other }: { spec: GpuSpec; other: GpuSpec }) {
         </span>
       </header>
 
-      {/* Memory */}
       <Section label="Memory">
         <Row k="memory" className="grid items-end gap-5 sm:grid-cols-[1fr_auto]">
-          <Hbm spec={spec} maxStacks={maxStacks} />
+          <MemoryVisual spec={spec} />
           <div className="text-right">
             <div className="nums font-mono text-[clamp(2.2rem,3.6vw,2.9rem)] leading-none font-medium tracking-tight text-ink-100">
               <CountUp value={spec.memoryGb} />
               <span className="ml-1.5 text-[0.45em] text-ink-400">GB</span>
             </div>
             <p className="mt-2 font-mono text-[12px] text-ink-500">
-              {spec.memoryType} · {spec.hbmStacks} stacks
+              {spec.memoryType} · {spec.memoryLayout.label}
             </p>
-            {/* Both cards carry a pill so their rows line up across the pair. */}
             {memDelta > 0 ? (
               <p className="gpu-delta mt-2">+{memDelta}% vs {other.short}</p>
             ) : (
-              <p className="gpu-delta gpu-delta--base mt-2">baseline</p>
+              <p className="gpu-delta gpu-delta--base mt-2">single PCIe card</p>
             )}
           </div>
         </Row>
       </Section>
 
-      {/* Bandwidth: a metric, no animation. */}
       <Section label="Memory bandwidth">
         <Row k="bandwidth" className="flex items-end justify-between gap-4">
           <span className="nums font-mono text-[clamp(1.6rem,2.6vw,2rem)] leading-none font-medium tracking-tight text-ink-100">
             {spec.bandwidthTbs}
             <span className="ml-1.5 text-[0.5em] text-ink-400">TB/s</span>
           </span>
-          {bwDelta > 0 ? (
-            <span className="gpu-delta">+{bwDelta}% vs {other.short}</span>
+          {bwRatio > 1 ? (
+            <span className="gpu-delta">{bwRatio.toFixed(1)}× vs {other.short}</span>
           ) : (
-            <span className="gpu-delta gpu-delta--base">baseline</span>
+            <span className="gpu-delta gpu-delta--base">GDDR7</span>
           )}
         </Row>
       </Section>
 
-      {/* MIG: the one partitioning difference, on click. */}
+      <Section label="Platform">
+        <dl className="flex flex-col">
+          {platform.map(([k, label, value]) => (
+            <Row key={k} k={k} className="flex items-baseline justify-between gap-4 border-b border-line-subtle py-2.5 last:border-b-0">
+              <dt className="shrink-0 text-[13px] text-ink-400">{label}</dt>
+              <dd className="text-right font-mono text-[13px] text-ink-100">{value}</dd>
+            </Row>
+          ))}
+        </dl>
+      </Section>
+
       <details className="gpu-more mt-auto">
         <summary className="gpu-more__head">
           <span className="cv-label text-[10px]">Multi-Instance GPU</span>
@@ -238,61 +228,56 @@ function GpuCard({ spec, other }: { spec: GpuSpec; other: GpuSpec }) {
   );
 }
 
-/** What both GPUs have in common, stated once. */
-function Shared({ spec }: { spec: GpuSpec }) {
-  const platform = [
-    ["Architecture", `${spec.architecture} · GH100`],
-    ["Form factor", `${spec.formFactor} · HGX`],
-    ["NVLink", `${spec.nvlinkGbs} GB/s`],
-    ["PCIe", spec.pcie],
-    ["Max power", `up to ${spec.tdpW} W`],
-    ["Media engines", spec.decoders],
-    ["MIG instances", `up to ${spec.migSlices}`],
-    ["Peak FP8", `${fmt(spec.tensor.FP8.value)}* TFLOPS`],
-  ] as const;
-  return (
-    <section className="lg mt-5 rounded-xl p-7 md:p-8" aria-label="Specifications shared by H200 and H100">
-      <div className="flex flex-wrap items-baseline justify-between gap-3">
-        <h3 className="text-lg font-semibold tracking-tight text-ink-100">Shared by both</h3>
-        <p className="font-mono text-[11px] tracking-label text-ink-500 uppercase">
-          same Hopper silicon · same platform
-        </p>
+/** Throughput by precision, both GPUs per row, on one log scale. */
+function Throughput({ a, b }: { a: GpuSpec; b: GpuSpec }) {
+  const bar = (spec: GpuSpec, p: (typeof PRECISIONS)[number], pi: number, tone: "a" | "b") => {
+    const t = spec.throughput[p];
+    const lit = t.value ? Math.round(logFrac(t.value) * SEGMENTS) : 0;
+    return (
+      <div className="grid grid-cols-[7.5rem_1fr_7rem] items-center gap-3">
+        <span className="truncate font-mono text-[11px] text-ink-500">{spec.short}</span>
+        <span className={cn("gpu-seg", tone === "b" && "gpu-seg--b")} aria-hidden="true">
+          {Array.from({ length: SEGMENTS }, (_, i) => (
+            <i
+              key={i}
+              data-lit={i < lit ? "" : undefined}
+              style={{ "--d": `${pi * 60 + i * 14}ms` } as React.CSSProperties}
+            />
+          ))}
+        </span>
+        <span className="nums text-right font-mono text-[13px] text-ink-100">
+          {t.value ? (
+            <>
+              {fmt(t.value)}
+              {t.sparse ? <sup className="text-ink-500">*</sup> : null}
+            </>
+          ) : (
+            <span className="text-[11px] text-ink-500">{t.note}</span>
+          )}
+        </span>
       </div>
-
-      <dl className="mt-5 grid grid-cols-1 gap-x-8 sm:grid-cols-2 lg:grid-cols-4">
-        {platform.map(([label, value]) => (
-          <div key={label} className="flex items-baseline justify-between gap-3 border-b border-line-subtle py-3 lg:flex-col lg:items-start lg:gap-1.5">
-            <dt className="text-[13px] text-ink-400">{label}</dt>
-            <dd className="font-mono text-[14px] text-ink-100">{value}</dd>
+    );
+  };
+  return (
+    <div className="flex flex-col gap-4">
+      {PRECISIONS.map((p, pi) => (
+        <Row key={p} k={`t-${p}`} className="grid gap-1.5 py-1 md:grid-cols-[5.5rem_1fr] md:items-center md:gap-4">
+          <span className="font-mono text-[12px] tracking-wide text-ink-300">{p}</span>
+          <div className="flex flex-col gap-1.5">
+            {bar(a, p, pi, "a")}
+            {bar(b, p, pi, "b")}
           </div>
-        ))}
-      </dl>
-
-      <details className="gpu-more mt-5">
-        <summary className="gpu-more__head">
-          <span className="cv-label text-[10px]">Tensor throughput · FP64 to INT8</span>
-          <span className="flex items-center gap-3">
-            <span className="font-mono text-[13px] text-ink-200">identical on both</span>
-            <span className="gpu-more__icon">
-              <Icon name="plus" size={13} />
-            </span>
-          </span>
-        </summary>
-        <div className="pt-3">
-          <Ladder spec={spec} />
-          <p className="mt-2 font-mono text-[11px] text-ink-500">shared log scale · 10 to 4,000 TFLOPS</p>
-        </div>
-      </details>
-    </section>
+        </Row>
+      ))}
+    </div>
   );
 }
 
 export function GpuCompare() {
-  const [active, setActive] = React.useState<RowKey | null>(null);
+  const [active, setActive] = React.useState<string | null>(null);
   const ref = React.useRef<HTMLDivElement>(null);
-  const [h200, h100] = GPU_SPECS as [GpuSpec, GpuSpec];
+  const [h200, rtx] = GPU_SPECS as [GpuSpec, GpuSpec];
 
-  // Start every animation once, when the pair scrolls into view.
   React.useEffect(() => {
     const el = ref.current;
     if (!el) return;
@@ -313,40 +298,66 @@ export function GpuCompare() {
     return () => io.disconnect();
   }, []);
 
-  const bw = Math.round((h200.bandwidthTbs / h100.bandwidthTbs - 1) * 100);
-  const mem = (h200.memoryGb / h100.memoryGb).toFixed(2);
+  const mem = (h200.memoryGb / rtx.memoryGb).toFixed(2);
+  const bw = (h200.bandwidthTbs / rtx.bandwidthTbs).toFixed(0);
 
   return (
     <RowContext.Provider value={{ active, set: setActive }}>
       <div ref={ref} className="gpu-compare">
-        {/* The deltas, stated once, between the two cards. */}
         <div className="gpu-deltas mb-6 flex flex-wrap items-center justify-center gap-x-8 gap-y-3 rounded-xl border border-line px-6 py-4">
           <span className="font-mono text-[11px] tracking-label text-ink-500 uppercase">
-            H200 vs H100
+            H200 vs RTX PRO 6000
           </span>
           <span className="gpu-deltas__item">
             <b>{mem}×</b> memory
           </span>
           <span className="gpu-deltas__item">
-            <b>+{bw}%</b> bandwidth
+            <b>{bw}×</b> bandwidth
           </span>
           <span className="gpu-deltas__item">
-            <b>same</b> Hopper tensor cores
+            <b>FP4</b> on Blackwell
           </span>
           <span className="gpu-deltas__item">
-            <b>{h200.migSliceGb} GB</b> vs {h100.migSliceGb} GB per MIG slice
+            <b>{rtx.migSliceGb} GB</b> vs {h200.migSliceGb} GB per MIG slice
           </span>
         </div>
 
         <div className="grid gap-5 lg:grid-cols-2">
-          <GpuCard spec={h200} other={h100} />
-          <GpuCard spec={h100} other={h200} />
+          <GpuCard spec={h200} other={rtx} />
+          <GpuCard spec={rtx} other={h200} />
         </div>
 
-        <Shared spec={h200} />
+        <section className="lg mt-5 rounded-xl p-7 md:p-8" aria-label="Throughput by precision">
+          <details className="gpu-more gpu-more--top">
+            <summary className="gpu-more__head">
+              <span>
+                <span className="block text-lg font-semibold tracking-tight text-ink-100">
+                  Throughput by precision
+                </span>
+                <span className="mt-1 block font-mono text-[11px] tracking-label text-ink-500 uppercase">
+                  FP4 to FP64 · TFLOPS · shared log scale
+                </span>
+              </span>
+              <span className="flex items-center gap-4">
+                <span className="hidden items-center gap-3 font-mono text-[11px] text-ink-400 sm:flex">
+                  <span className="gpu-key" /> {h200.short}
+                  <span className="gpu-key gpu-key--b" /> {rtx.short}
+                </span>
+                <span className="gpu-more__icon">
+                  <Icon name="plus" size={13} />
+                </span>
+              </span>
+            </summary>
+            <div className="pt-5">
+              <Throughput a={h200} b={rtx} />
+            </div>
+          </details>
+        </section>
 
-        <p className="mt-5 text-center font-mono text-[11px] text-ink-500">
-          * with sparsity. Figures from NVIDIA datasheets, SXM5 modules.
+        <p className="mx-auto mt-5 max-w-3xl text-center font-mono text-[11px] leading-relaxed text-ink-500">
+          * H200 tensor figures with sparsity (SXM5 datasheet). RTX PRO 6000 Blackwell Server
+          Edition figures as NVIDIA publishes them, without a dense/sparse label. FP32 and FP64
+          are non-tensor.
         </p>
       </div>
     </RowContext.Provider>

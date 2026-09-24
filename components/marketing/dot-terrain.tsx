@@ -96,6 +96,7 @@ uniform float uDpr;
 uniform float uPass;           // 0 = body, 1 = halo sprites, 2 = core sprites
 uniform float uRiverGain;      // river weight: 1 on Carbon, higher on paper (also in FRAG)
 uniform float uMouseLight;     // how much the pointer lights the ground (also in FRAG); the swell is always on
+uniform vec2  uBalance;        // ink multiplier at the far left (x) and far right (y) (also in FRAG)
 uniform float uDot;            // dot boldness: base disc radius in a grid cell (also in FRAG)
 
 varying vec3  vWorld;
@@ -141,6 +142,19 @@ float skyline(float x, float n, float W, float baseW, float seed) {
     float summit = ph * exp(-pow(d, 1.5));
     float skirt = 0.5 * ph * exp(-pow(d / 2.8, 1.8));
     s = max(s, max(summit, skirt));
+  }
+  // Flanking summits past both ends of the range, so its end never shows on
+  // screen. max() means they only add ground where the range would drop away.
+  for (int k = 0; k < 2; k++) {
+    for (int sd = 0; sd < 2; sd++) {
+      float side = sd == 0 ? -1.0 : 1.0;
+      float fk = float(k) + float(sd) * 5.0;
+      float px = side * (W * 0.5 + (float(k) + 0.6) * W / n * 0.9);
+      float ph = 0.4 + 0.35 * hash(vec2(fk + 11.0, seed));
+      float pw = baseW * (0.8 + 0.5 * hash(vec2(fk + 17.0, seed)));
+      float d = abs(x - px) / pw;
+      s = max(s, max(ph * exp(-pow(d, 1.5)), 0.5 * ph * exp(-pow(d / 2.8, 1.8))));
+    }
   }
   // Fine relief on the flanks, too small to change the silhouette.
   s += 0.03 * vnoise(vec2(x * 0.35 + seed * 9.0, seed));
@@ -199,10 +213,10 @@ void main() {
   float mk = mix(1.0, 3.2, smoothstep(12.0, 100.0, uMouse.y));
   float md = distance(p, uMouse);
   float mg = exp(-md * md / (150.0 * mk * mk)) * uMouseGain;
-  h += mg * 3.4 * mk;
+  h += mg * 2.6 * mk;
 
   // Breathing on the dunes only — slow, low, mechanical. Mountains hold.
-  h += sin(uTime * 0.45 + z * 0.18 + x * 0.09) * 0.25 * (1.0 - sec);
+  h += sin(uTime * 0.25 + z * 0.12 + x * 0.06) * 0.08 * (1.0 - sec);
 
   gl_Position = uViewProj * vec4(x, h, z, 1.0);
 
@@ -221,12 +235,13 @@ void main() {
   // Sprites: crest lines, river and pointer only. The body paints the rest.
   float crest = pow(sec, 6.0) * (0.6 + 0.4 * clamp(h / 30.0, 0.0, 1.0));
   float flow  = 0.75 + 0.45 * sin(z * 0.5 - uTime * 2.2);
-  float flick = 0.72 + 0.28 * sin(uTime * 1.6 + hash(aGrid) * 6.2832);
-  float bright = crest * 1.5 * mix(0.5, 1.0, fog)
+  float flick = 0.92 + 0.08 * sin(uTime * 0.7 + hash(aGrid) * 6.2832);
+  float bright = crest * 1.5 * mix(0.85, 1.0, fog)
                + river * flow * 1.7 * fog * uRiverGain
                + mg * 1.3 * uMouseLight;
   float halo = step(0.5, uPass) * (1.0 - step(1.5, uPass));
-  vBright = bright * flick * mix(1.0, 0.16, halo) * vEdge;
+  vBright = bright * flick * mix(1.0, 0.16, halo) * vEdge
+          * mix(uBalance.x, uBalance.y, smoothstep(45.0, -45.0, x));
 
   float size = (2.4 + crest * 2.4 + river * 2.2 * uRiverGain + mg * 1.6) * uDpr;
   float px = max(size * 34.0 / max(gl_Position.w, 1.0), 1.2 * uDpr);
@@ -247,6 +262,7 @@ uniform highp float uMouseLight;
 uniform vec3 uTeal; // peak tint: the ridges shade from hydro toward teal with height
 uniform vec3 uRiverTone; // the river's own colour (water: cyan), so it stands apart from the green
 uniform highp float uDot;
+uniform highp vec2 uBalance;
 uniform float uFill; // strength of the solid tint across the faces (mass), before uGain
 uniform vec3 uHot;
 // highp to match the vertex shader: a uniform shared by both stages must
@@ -286,21 +302,39 @@ void main() {
                 + pow(vSec, 8.0) * 0.9
                 + vRiver * flow * 1.6 * uRiverGain
                 + (1.0 - vSec) * clamp(vWorld.y / 3.0, 0.0, 1.0) * 0.25;
-    light *= 0.82 + 0.18 * sin(uTime * 1.5 + hash(cell) * 6.2832);
+    light *= 0.95 + 0.05 * sin(uTime * 0.6 + hash(cell) * 6.2832);
 
     // Dot radius grows a little with light, so lit faces read denser.
-    float rad = uDot + 0.12 * clamp(light, 0.0, 1.0);
+    // Dots are world-space, so a far range covers less of the screen and
+    // reads fainter than a near one. Growing the disc with distance keeps the
+    // back ranges (the tall peaks on the left) as solid as the near ones.
+    // Screen right is world -x (the camera looks down +z), so the mapping
+    // runs from +45 (screen left) to -45 (screen right).
+    // Left/right balance: the nearer, taller faces all fall right of the
+    // river, so the right half carries more ink. On a dot field the ink is
+    // mostly coverage, so the balance scales the dot radius (coverage goes
+    // with its square) as well as the ink.
+    float bal = mix(uBalance.x, uBalance.y, smoothstep(45.0, -45.0, vWorld.x));
+    float rad = uDot + 0.12 * clamp(light, 0.0, 1.0) + 0.15 * smoothstep(0.4, 0.95, vFar);
+    rad = min(0.47, rad * sqrt(bal));
     float dotv = smoothstep(rad, rad - 0.10, d);
     // Past the point where a cell is only a pixel or two wide the pattern
     // would alias, so the far ranges dissolve into an even haze.
-    dotv = mix(dotv, 0.45, smoothstep(0.78, 1.0, vFar));
+    // The haze carries the same weight as a crisp dot field, so the back
+    // range (the tall peaks on the left) is as solid as the near ridges.
+    dotv = mix(dotv, 0.85, smoothstep(0.8, 1.0, vFar));
 
-    light *= fog;
+    // Distance fog, held light on the ranges: the back range should read as a
+    // range, not as haze. The flat ground keeps the full fall-off.
+    light *= mix(fog, mix(1.0, fog, 0.3), vSec);
+    // Balance: the nearer, taller faces all fall right of the river, so the
+    // right half reads heavier. A smooth lift across the left half evens the
+    // two sides without touching the shape.
     // The pointer's light is added after the fog, so a far range lights up
     // under the cursor as clearly as a near one.
     light += vMouse * 0.9 * uMouseLight;
     light *= vEdge;
-    vec3 fill = uCarbon + uSign * uColor * uFill * vSec * fog * uGain * vEdge;
+    vec3 fill = uCarbon + uSign * uColor * uFill * vSec * mix(fog, 1.0, 0.7) * uGain * vEdge;
     // Two-tone: the high ground leans teal, the valley floor stays hydro.
     float peak = smoothstep(9.0, 30.0, vWorld.y) * 0.55;
     vec3 tone = mix(uColor, uTeal, peak);
@@ -310,7 +344,7 @@ void main() {
     // lit face at the same dark green and the range goes flat; a soft
     // exponential keeps the gradation from haze to crest.
     float lit = uSign > 0.0 ? min(1.0, light * uGain) : 1.0 - exp(-light * uGain);
-    gl_FragColor = vec4(fill + uSign * glow * lit * dotv, 1.0);
+    gl_FragColor = vec4(fill + uSign * glow * min(1.0, lit * dotv * bal), 1.0);
     return;
   }
 
@@ -448,6 +482,17 @@ function skyline(x: number, n: number, W: number, baseW: number, seed: number) {
     const summit = ph * Math.exp(-Math.pow(d, 1.5));
     const skirt = 0.5 * ph * Math.exp(-Math.pow(d / 2.8, 1.8));
     s = Math.max(s, summit, skirt);
+  }
+  for (let k = 0; k < 2; k++) {
+    for (let sd = 0; sd < 2; sd++) {
+      const side = sd === 0 ? -1 : 1;
+      const fk = k + sd * 5;
+      const px = side * (W * 0.5 + ((k + 0.6) * W) / n * 0.9);
+      const ph = 0.4 + 0.35 * hash2(fk + 11, seed);
+      const pw = baseW * (0.8 + 0.5 * hash2(fk + 17, seed));
+      const d = Math.abs(x - px) / pw;
+      s = Math.max(s, ph * Math.exp(-Math.pow(d, 1.5)), 0.5 * ph * Math.exp(-Math.pow(d / 2.8, 1.8)));
+    }
   }
   s += 0.03 * vnoise(x * 0.35 + seed * 9, seed);
   return s;
@@ -604,6 +649,7 @@ export function DotTerrain({ className }: { className?: string }) {
       riverTone: gl.getUniformLocation(program, "uRiverTone"),
       dot: gl.getUniformLocation(program, "uDot"),
       fill: gl.getUniformLocation(program, "uFill"),
+      balance: gl.getUniformLocation(program, "uBalance"),
     };
     gl.uniform2f(u.extent, EXTENT_X, EXTENT_Z);
     // Ground and mark colours follow the theme. On paper the marks SUBTRACT
@@ -622,6 +668,7 @@ export function DotTerrain({ className }: { className?: string }) {
       gl.uniform3f(u.riverTone, ...pal.riverVec);
       gl.uniform1f(u.dot, pal.dot);
       gl.uniform1f(u.fill, pal.fill);
+      gl.uniform2f(u.balance, ...pal.balance);
       return pal.subtractive;
     };
     let subtractive = applyPalette();
@@ -728,7 +775,7 @@ export function DotTerrain({ className }: { className?: string }) {
         const t = 140;
         tx = Math.max(-EXTENT_X / 2, Math.min(EXTENT_X / 2, eye[0] + dir[0] * t));
         tz = Math.max(4, Math.min(EXTENT_Z - 4, eye[2] + dir[2] * t));
-        targetGain = 0.8;
+        targetGain = 1;
         wake();
         return;
       }
@@ -755,8 +802,10 @@ export function DotTerrain({ className }: { className?: string }) {
       // ridge to the range behind it) into a smooth travel across the ground.
       const dt = Math.min(0.05, lastNow ? (now - lastNow) / 1000 : 0.016);
       lastNow = now;
-      const kPos = 1 - Math.exp(-dt * 6.5);
-      const kGain = 1 - Math.exp(-dt * 4);
+      // Slow, critically damped: the swell glides rather than snaps when the
+      // ray moves from one ridge to the range behind it.
+      const kPos = 1 - Math.exp(-dt * 3.2);
+      const kGain = 1 - Math.exp(-dt * 2.4);
       mx += (tx - mx) * kPos;
       mz += (tz - mz) * kPos;
       // The range swells under the pointer in both themes. How much the

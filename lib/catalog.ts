@@ -79,7 +79,7 @@ export const GPU_SKUS: GpuSku[] = [
     architecture: "Blackwell",
     memoryGb: 96,
     memoryType: "GDDR7",
-    bandwidth: "1.8 TB/s",
+    bandwidth: "1.6 TB/s",
     fp8Tflops: null,
     bestFor: "Inference, rendering and visualisation",
     status: "coming-soon",

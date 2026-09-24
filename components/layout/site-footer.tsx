@@ -2,7 +2,7 @@ import Link from "next/link";
 import { Icon } from "@/components/ui";
 import { DotMatrix } from "@/components/marketing/dot-matrix";
 import { docsHref } from "@/lib/docs/href";
-import { STATUS_URL } from "@/lib/site";
+import { SHOW_STATUS, STATUS_URL } from "@/lib/site";
 
 const BASE = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
 
@@ -34,7 +34,8 @@ const GROUPS = [
     links: [
       { href: "/company", label: "About CoreValley" },
       { href: "/contact", label: "Contact sales" },
-      { href: STATUS_URL, label: "System status", external: true },
+      // Hidden until status monitoring is integrated (SHOW_STATUS in lib/site.ts).
+      ...(SHOW_STATUS ? [{ href: STATUS_URL, label: "System status", external: true }] : []),
       {
         href: "https://www.linkedin.com/company/corevalleyai/jobs/",
         label: "Careers",

@@ -135,6 +135,9 @@ export interface CanvasPalette {
   dot: number;
   /** Solid tint across the terrain faces, giving the ranges mass. */
   fill: number;
+  /** Terrain ink multiplier at the far left and far right of the range, to
+      even out the two halves (the nearer ridges sit on the right). */
+  balance: readonly [number, number];
 }
 
 const v = (r: number, g: number, b: number): Vec3 => [r / 255, g / 255, b / 255];
@@ -161,6 +164,7 @@ export const CANVAS_PALETTES: Record<Theme, CanvasPalette> = {
     riverVec: v(103, 232, 249), // cyan-300
     dot: 0.15,
     fill: 0.08,
+    balance: [1.9, 0.75],
     hydroPlain: v(74, 222, 128),
     gain: 1,
     riverGain: 1.3,
@@ -183,6 +187,7 @@ export const CANVAS_PALETTES: Record<Theme, CanvasPalette> = {
     riverVec: sub(PAPER, v(8, 145, 178)), // cyan-600
     dot: 0.2,
     fill: 0.1,
+    balance: [2.3, 0.7],
     hydroPlain: v(21, 128, 61),
     gain: 3.4,
     riverGain: 3,

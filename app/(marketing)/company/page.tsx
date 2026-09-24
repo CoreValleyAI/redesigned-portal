@@ -4,6 +4,7 @@ import { PageHero, Section } from "@/components/marketing/page-hero";
 import { Reveal, RevealGroup } from "@/components/fx/reveal";
 import { JsonLd, breadcrumbJsonLd, faqJsonLd } from "@/components/seo/json-ld";
 import { pageMetadata } from "@/lib/seo";
+import { FaqList } from "@/components/marketing/faq-list";
 import { ORG } from "@/lib/site";
 import type { IconName } from "@/components/ui";
 
@@ -269,14 +270,7 @@ export default function CompanyPage() {
       </Section>
 
       <Section eyebrow="Questions" title="Frequently asked.">
-        <RevealGroup step={60} className="grid gap-4 md:grid-cols-2">
-          {FAQ.map((f) => (
-            <Card key={f.q} surface="solid" padding={24}>
-              <h3 className="text-base font-semibold tracking-tight text-ink-100">{f.q}</h3>
-              <p className="mt-2 text-[13.5px] leading-relaxed text-ink-400">{f.a}</p>
-            </Card>
-          ))}
-        </RevealGroup>
+        <FaqList items={FAQ} />
       </Section>
 
       <Section eyebrow="Contact" title="Where to find us." alt>

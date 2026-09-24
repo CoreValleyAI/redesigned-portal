@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Badge, Button, Card, Icon } from "@/components/ui";
+import { Button, Card, Icon } from "@/components/ui";
 import { DotTerrain } from "@/components/marketing/dot-terrain";
 import { SovereignMesh } from "@/components/marketing/sovereign-mesh";
 import { SpotlightGroup } from "@/components/marketing/spotlight";
@@ -149,7 +149,8 @@ const ARCHITECTURE: { title: string; body: string }[] = [
 ];
 
 export default function HomePage() {
-  const soon = GPU_SKUS.filter((s) => s.status === "coming-soon");
+  // The RTX PRO 6000 is in the comparison above, so the roadmap row skips it.
+  const soon = GPU_SKUS.filter((s) => s.status === "coming-soon" && !s.id.startsWith("rtx-pro-6000"));
 
   return (
     <>
@@ -181,14 +182,8 @@ export default function HomePage() {
               row (the stagger wipe every section heading below uses), so the
               page opens with one motion language rather than two. */}
           <div className="hero-copy mx-auto flex max-w-[56rem] flex-col items-center text-center">
-            <Reveal>
-              <Badge tone="hydro" dot>
-                np-ktm-1 · live in kathmandu
-              </Badge>
-            </Reveal>
-
             <Reveal delay={70}>
-              <h1 className="display mt-8 text-[clamp(3rem,8.4vw,6.5rem)] leading-[0.98] tracking-[-0.035em]">
+              <h1 className="display text-[clamp(3rem,8.4vw,6.5rem)] leading-[0.98] tracking-[-0.035em]">
                 <WipeText text="The valley is" />
                 <br />
                 <WipeText text="coming" start={3} />{" "}
@@ -203,9 +198,8 @@ export default function HomePage() {
                 Green-energy GPU compute, launched on Himalayan hydropower.
               </p>
               <p className="mx-auto mt-4 max-w-[52ch] text-[15px] leading-relaxed text-ink-400 md:text-base">
-                NVIDIA H100 and H200 capacity by the second, inside Nepal.
-                Train, fine-tune and serve — and never move the data, or the
-                invoice, across a border.
+                Enterprise-grade GPU infrastructure with local support,
+                predictable NPR pricing and data that never leaves Nepal.
               </p>
             </Reveal>
 
@@ -526,14 +520,15 @@ export default function HomePage() {
             </Reveal>
             <Reveal delay={60}>
               <h2 className="display mt-4 text-[clamp(1.9rem,3.6vw,2.9rem)]">
-                <WipeText text="Two Hoppers, side by side." />
+                <WipeText text="Hopper and Blackwell, side by side." />
               </h2>
             </Reveal>
             <Reveal delay={120}>
               <p className="mt-5 leading-relaxed text-ink-400">
-                The same Hopper tensor cores, with very different memory.
-                The H200 carries 76% more HBM at 43% more bandwidth, which is
-                what long-context and large-model work runs out of first.
+                The H200 is built for the largest models: 141 GB of HBM3e at
+                4.8 TB/s, joined by NVLink. The RTX PRO 6000 Blackwell brings
+                96 GB of GDDR7, FP4 and ray tracing to inference, fine-tuning
+                and visual AI on a single PCIe card.
               </p>
             </Reveal>
           </div>

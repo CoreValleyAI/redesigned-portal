@@ -16,6 +16,10 @@ export const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL || "https://corevalley
   "",
 );
 
+/** Show the Status link in the header and footer. Off until status monitoring
+    is integrated; flip to true to bring the links back. */
+export const SHOW_STATUS = false;
+
 /** The public status page. A separate static site (see /status in the repo). */
 export const STATUS_URL = (process.env.NEXT_PUBLIC_STATUS_URL || "https://status.corevalley.ai").replace(
   /\/+$/,
