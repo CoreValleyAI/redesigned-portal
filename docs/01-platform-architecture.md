@@ -138,7 +138,7 @@ types/
   next-auth.d.ts        module augmentation adding role/org to Session and JWT
 middleware.ts           gates /portal/:path*
 docker-compose.yml      Keycloak + Postgres
-design_system/          read-only source of truth (also a Claude skill folder)
+design_system/          read-only source of truth (read-only design reference)
 reference/              the previous static site, archived
 ```
 

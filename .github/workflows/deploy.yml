@@ -11,15 +11,12 @@ on:
       - "reference/**"
       - "design_system/**"
       - "files/**"
-      - ".agents/**"
-      - ".claude/**"
       - ".github/workflows/verify.yml"
       - "README.md"
       - "SEO_roadmap.txt"
       - "doc_cname_readme.txt"
       - "status/**"
       - "report_0903.txt"
-      - "skills-lock.json"
   workflow_dispatch:
 
 # Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages

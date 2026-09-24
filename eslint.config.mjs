@@ -11,7 +11,7 @@ const eslintConfig = [
       ".next/**",
       "node_modules/**",
       "out/**",
-      // The design system is a read-only upstream (a Claude skill folder).
+      // The design system is a read-only upstream reference.
       // It ships plain .jsx with its own conventions we are not free to fix.
       "design_system/**",
       "reference/**",

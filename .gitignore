@@ -32,5 +32,19 @@ npm-debug.log*
 .eslintcache
 
 # Reference material is intentionally tracked, NOT ignored:
-#   design_system/  (Claude skill + token source of truth)
+#   design_system/  (design tokens, source of truth)
 #   reference/      (archived static site)
+
+# AI assistant / agent tooling: local only, never committed
+.claude/
+.agents/
+**/.claude/
+**/.agents/
+CLAUDE.md
+CLAUDE.local.md
+AGENTS.md
+skills-lock.json
+.cursor/
+.aider*
+.continue/
+.codex/
