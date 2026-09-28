@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>Valleys · CoreValley</title>
+    <!-- A design draft, not the live site. -->
+    <meta name="robots" content="noindex, nofollow" />
+    <meta name="description" content="A flight through a dot-matrix mountain range to the Kathmandu Valley: CoreValley's GPU cloud, drawn as terrain, rivers of data and the compute on the peaks." />
+    <meta name="theme-color" content="#050608" media="(prefers-color-scheme: dark)" />
+    <meta name="theme-color" content="#f4f4f1" media="(prefers-color-scheme: light)" />
+    <link rel="icon" href="./brand/cv-brandmark.svg" type="image/svg+xml" />
+    <!-- The saved theme, stamped before first paint so nothing flashes. -->
+    <script>
+      try {
+        var t = localStorage.getItem("valleys-theme");
+        if (t === "light" || t === "dark") {
+          document.documentElement.dataset.theme = t;
+          document.documentElement.style.colorScheme = t;
+        }
+      } catch (e) {}
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Geist:wght@300..700&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

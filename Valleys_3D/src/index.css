@@ -1,0 +1,258 @@
+@import "tailwindcss";
+@import "lenis/dist/lenis.css";
+
+/* ══════════════════════════════════════════════════════════════════════════
+   Tokens. Every colour is a CSS variable keyed on <html data-theme>, so the
+   whole interface flips in one style recalc; Tailwind utilities read the
+   variables (bg-bg, text-fg-3, border-line, text-accent …).
+
+   Dark: obsidian, hairlines of white at 8%, electric cyan and neon pink.
+   Light: porcelain, graphite ink, hairlines of ink at 8%, deep cyan and
+   magenta.
+   ══════════════════════════════════════════════════════════════════════════ */
+
+:root {
+  --bg: #050608;
+  --fg: #f3f5f6;
+  --fg-2: #b6bdc4;
+  --fg-3: #80888f;
+  --fg-4: #545b62;
+  --line: rgb(255 255 255 / 0.08);
+  --line-2: rgb(255 255 255 / 0.14);
+  --surface: rgb(11 13 17 / 0.56);
+  --surface-2: rgb(17 20 25 / 0.74);
+  --inset: rgb(255 255 255 / 0.06);
+  --code: rgb(0 0 0 / 0.38);
+  --accent: #22d3ee;
+  --accent-2: #ff4fb0;
+  --accent-rgb: 34 211 238;
+  --accent2-rgb: 255 79 176;
+  --scrim-rgb: 3 4 7;
+  --btn-bg: #f3f5f6;
+  --btn-fg: #07080a;
+  --shadow: 0 24px 60px -28px rgb(0 0 0 / 0.85), 0 2px 6px -2px rgb(0 0 0 / 0.4);
+  color-scheme: dark;
+}
+
+:root[data-theme="light"] {
+  --bg: #f4f4f1;
+  --fg: #0c0e11;
+  --fg-2: #3a4148;
+  --fg-3: #69717a;
+  --fg-4: #9ba2a9;
+  --line: rgb(12 14 17 / 0.08);
+  --line-2: rgb(12 14 17 / 0.15);
+  --surface: rgb(255 255 255 / 0.6);
+  --surface-2: rgb(255 255 255 / 0.82);
+  --inset: rgb(255 255 255 / 0.95);
+  --code: rgb(12 14 17 / 0.05);
+  --accent: #0b7285;
+  --accent-2: #c81d67;
+  --accent-rgb: 11 114 133;
+  --accent2-rgb: 200 29 103;
+  --scrim-rgb: 244 244 241;
+  --btn-bg: #0c0e11;
+  --btn-fg: #f4f4f1;
+  --shadow: 0 22px 48px -24px rgb(18 24 30 / 0.22), 0 1px 3px rgb(18 24 30 / 0.06);
+  color-scheme: light;
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-fg: var(--fg);
+  --color-fg-2: var(--fg-2);
+  --color-fg-3: var(--fg-3);
+  --color-fg-4: var(--fg-4);
+  --color-line: var(--line);
+  --color-line-2: var(--line-2);
+  --color-accent: var(--accent);
+  --color-accent-2: var(--accent-2);
+  --font-sans: "Geist", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: "Geist Mono", ui-monospace, "SF Mono", Menlo, monospace;
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+html {
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  /* Nothing may widen the page on a phone: the canvas and bar are fixed to it. */
+  overflow-x: clip;
+  transition: background-color 0.5s ease;
+}
+body {
+  margin: 0;
+  background: var(--bg);
+  transition: background-color 0.5s ease;
+}
+::selection {
+  background: rgb(var(--accent-rgb) / 0.28);
+}
+
+/* Component classes sit in the components layer, so utilities still win. */
+@layer components {
+/* ── Type ──────────────────────────────────────────────────────────────── */
+
+.display {
+  font-weight: 600;
+  letter-spacing: -0.045em;
+  line-height: 0.95;
+  text-wrap: balance;
+}
+.eyebrow {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--fg-3);
+}
+.metric {
+  font-family: var(--font-mono);
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.04em;
+}
+.accent-text {
+  background: linear-gradient(100deg, var(--accent) 10%, var(--accent-2) 95%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* ── Card ──────────────────────────────────────────────────────────────────
+   Frosted, a hairline border, a lit top edge and a soft drop. Under the
+   pointer the border catches a gradient of accent light and the face takes a
+   faint spotlight; --mx and --my are set from the pointer by <Card>. */
+.card {
+  position: relative;
+  border-radius: 14px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  box-shadow: inset 0 1px 0 var(--inset), var(--shadow);
+  backdrop-filter: blur(20px) saturate(1.5);
+  -webkit-backdrop-filter: blur(20px) saturate(1.5);
+  isolation: isolate;
+  transition:
+    border-color 0.35s ease,
+    background-color 0.5s ease;
+}
+.card::before,
+.card::after {
+  content: "";
+  position: absolute;
+  pointer-events: none;
+  border-radius: inherit;
+  opacity: 0;
+  transition: opacity 0.4s ease;
+}
+.card::before {
+  inset: -1px;
+  padding: 1px;
+  background: radial-gradient(240px circle at var(--mx, 50%) var(--my, 0%), rgb(var(--accent-rgb) / 0.75), rgb(var(--accent2-rgb) / 0.35) 45%, transparent 75%);
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+}
+.card::after {
+  inset: 0;
+  z-index: -1;
+  background: radial-gradient(380px circle at var(--mx, 50%) var(--my, 0%), rgb(var(--accent-rgb) / 0.08), transparent 55%);
+}
+.card:hover::before,
+.card:hover::after {
+  opacity: 1;
+}
+
+/* A hairline divider that fades at its ends. */
+.rule {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--line-2) 18%, var(--line-2) 82%, transparent);
+}
+
+/* ── Buttons ───────────────────────────────────────────────────────────── */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 44px;
+  padding: 0 20px;
+  border-radius: 999px;
+  font-size: 14.5px;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+  transition:
+    transform 0.4s var(--ease-out-expo),
+    box-shadow 0.4s ease,
+    background-color 0.3s ease,
+    border-color 0.3s ease;
+}
+.btn-primary {
+  background: var(--btn-bg);
+  color: var(--btn-fg);
+  box-shadow: 0 1px 0 rgb(255 255 255 / 0.25) inset, 0 8px 24px -10px rgb(var(--accent-rgb) / 0.5);
+}
+.btn-primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 1px 0 rgb(255 255 255 / 0.25) inset, 0 14px 34px -10px rgb(var(--accent-rgb) / 0.7);
+}
+.btn-ghost {
+  background: var(--surface);
+  color: var(--fg);
+  border: 1px solid var(--line-2);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+.btn-ghost:hover {
+  transform: translateY(-1px);
+  border-color: rgb(var(--accent-rgb) / 0.55);
+}
+.btn:focus-visible,
+.icon-btn:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+.icon-btn {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 999px;
+  border: 1px solid var(--line-2);
+  color: var(--fg-2);
+  transition:
+    color 0.2s ease,
+    border-color 0.2s ease;
+}
+.icon-btn:hover {
+  color: var(--fg);
+  border-color: rgb(var(--accent-rgb) / 0.55);
+}
+}
+
+/* Theme-dependent images (the wordmark). */
+.only-dark {
+  display: block;
+}
+.only-light {
+  display: none;
+}
+:root[data-theme="light"] .only-dark {
+  display: none;
+}
+:root[data-theme="light"] .only-light {
+  display: block;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    transition-duration: 0.001ms !important;
+  }
+}

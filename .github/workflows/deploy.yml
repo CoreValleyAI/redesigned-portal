@@ -16,6 +16,8 @@ on:
       - "SEO_roadmap.txt"
       - "doc_cname_readme.txt"
       - "status/**"
+      - "drafts/**"
+      - "Kathmandu_Core/**"
       - "report_0903.txt"
   workflow_dispatch:
 
@@ -45,6 +47,9 @@ jobs:
         with:
           node-version: 24
           cache: npm
+          cache-dependency-path: |
+            package-lock.json
+            Valleys_3D/package-lock.json
 
       # Reads the site's Pages settings and exposes the base path the site
       # will be served from: "/<repo>" for a project site (also when the
@@ -118,6 +123,16 @@ jobs:
         run: npm run docs:check
         env:
           NEXT_PUBLIC_BASE_PATH: ${{ steps.basepath.outputs.value }}
+
+      # Valleys 3D is a separate Vite app, served unlisted at /valleys/. Its
+      # build uses a relative base, so it works under any site base path.
+      - name: Build Valleys 3D
+        working-directory: Valleys_3D
+        run: |
+          npm ci
+          npm run build
+          mkdir -p ../out/valleys
+          cp -r dist/. ../out/valleys/
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v4
