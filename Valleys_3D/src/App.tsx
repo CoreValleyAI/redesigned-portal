@@ -16,7 +16,7 @@ import { Compute, River, Scale } from "./components/sections/Specs";
 import { Finale, Platform, Sovereign } from "./components/sections/Story";
 import { Hud, Veil } from "./components/ui/Hud";
 
-/** ?tier=0|1|2 pins a tier (and stops the monitor moving it), for testing. */
+/** ?tier=0|1|2 pins a tier (and stops the monitor adapting), for testing. */
 function pinnedTier() {
   return new URLSearchParams(window.location.search).get("tier");
 }
@@ -36,8 +36,8 @@ function hasWebGL() {
 }
 
 export default function App() {
-  const [maxTier] = React.useState(initialTier);
-  const [tier, setTier] = React.useState<Tier>(maxTier);
+  // Fixed for the visit: see lib/quality.ts for why the tier never moves.
+  const [tier] = React.useState(initialTier);
   const [ready, setReady] = React.useState(false);
   const [gl] = React.useState(hasWebGL);
 
@@ -53,7 +53,7 @@ export default function App() {
   return (
     <MotionConfig reducedMotion="user">
       {gl ? (
-        <Experience tier={tier} maxTier={maxTier} onTier={pinnedTier() ? () => {} : setTier} onReady={() => setReady(true)} />
+        <Experience tier={tier} adaptive={!pinnedTier()} onReady={() => setReady(true)} />
       ) : (
         <div
           className="fixed inset-0 -z-10"

@@ -1,6 +1,6 @@
 /**
- * The instruments over the flight: the bar (brand, stations, live telemetry,
- * the theme toggle and the way in), a rail of stations to jump between, and
+ * The instruments over the flight: the bar (brand, stations, live telemetry
+ * and the way in), a rail of stations to jump between, and
  * the veil that lifts while the range rises on load.
  *
  * Telemetry is written straight to the DOM from a rAF loop at a few hertz;
@@ -11,38 +11,10 @@ import { AnimatePresence, motion } from "framer-motion";
 import { flight, flyTo } from "../../lib/flight";
 import { SITE } from "../../lib/content";
 import { STATIONS } from "../../lib/stations";
-import { toggleTheme, useTheme } from "../../lib/theme";
 import type { Quality } from "../../lib/quality";
-import { IconMoon, IconPulse, IconSun } from "./icons";
+import { IconPulse } from "./icons";
 
 const TIER = ["low", "medium", "high"] as const;
-
-function ThemeToggle() {
-  const theme = useTheme();
-  const dark = theme === "dark";
-  return (
-    <button
-      type="button"
-      onClick={toggleTheme}
-      className="icon-btn relative overflow-hidden"
-      aria-label={dark ? "Switch to light theme" : "Switch to dark theme"}
-      title={dark ? "Light theme" : "Dark theme"}
-    >
-      <AnimatePresence initial={false} mode="popLayout">
-        <motion.span
-          key={theme}
-          initial={{ y: 14, opacity: 0, rotate: -40 }}
-          animate={{ y: 0, opacity: 1, rotate: 0 }}
-          exit={{ y: -14, opacity: 0, rotate: 40 }}
-          transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
-          className="grid place-items-center"
-        >
-          {dark ? <IconSun size={16} /> : <IconMoon size={16} />}
-        </motion.span>
-      </AnimatePresence>
-    </button>
-  );
-}
 
 export function Hud({ quality, dots }: { quality: Quality; dots: number }) {
   const [active, setActive] = React.useState(0);
@@ -128,7 +100,6 @@ export function Hud({ quality, dots }: { quality: Quality; dots: number }) {
             </span>
           </div>
           <div className="ml-auto flex items-center gap-2 lg:ml-0">
-            <ThemeToggle />
             <a href={`${SITE}/contact/`} className="btn btn-primary h-9 px-4 text-[13.5px]">
               Get early access
             </a>

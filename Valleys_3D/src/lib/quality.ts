@@ -1,7 +1,10 @@
 /**
- * GPU tiers. The first guess comes from the device (screen, cores, memory,
- * renderer string); after that, drei's PerformanceMonitor measures real frame
- * times and steps the tier down (or back up) to hold 60 fps.
+ * GPU tiers. The tier comes from the device (screen, cores, memory, renderer
+ * string) once, at load, and never changes after: the tiers look different
+ * (denser dots and depth of field glow brighter), so switching mid-flight
+ * reads as the scene suddenly going dark. To hold the frame rate, drei's
+ * PerformanceMonitor lowers only the pixel ratio, which costs sharpness but
+ * not brightness.
  */
 
 export type Tier = 0 | 1 | 2; // low · medium · high
@@ -40,7 +43,9 @@ export function guessTier(): Tier {
     /* no renderer string: keep the heuristic */
   }
   const software = /swiftshader|llvmpipe|software|basic render/i.test(renderer);
-  const integrated = /intel|uhd|iris|mali|adreno|powervr|apple gpu/i.test(renderer);
+  // Apple silicon reports "Apple GPU" (Safari) or "ANGLE Metal Renderer:
+  // Apple M…" (Chrome): shared-memory GPUs driving Retina panels, so medium.
+  const integrated = /intel|uhd|iris|mali|adreno|powervr|apple/i.test(renderer);
   if (software || small || cores <= 4 || mem <= 4) return 0;
   if (integrated) return 1;
   return 2;

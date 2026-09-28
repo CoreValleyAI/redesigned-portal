@@ -22,7 +22,7 @@ npm run preview    # serve dist/
 ```
 
 `?tier=0`, `?tier=1` or `?tier=2` pins a quality tier (low, medium or high) and
-stops it from adapting. Use it to judge a look on a slow machine.
+stops the pixel ratio from adapting. Use it to judge a look on a slow machine.
 
 ## Stack
 
@@ -34,9 +34,9 @@ on the page is one corevalley.ai already publishes (see `src/lib/content.ts`).
 
 ## Themes
 
-The theme toggle in the bar switches light and dark. The choice is saved in
-`localStorage` (`valleys-theme`) and stamped on `<html data-theme>` before first
-paint.
+The page ships dark only: there is no toggle, and `index.html` sets
+`<html data-theme="dark">`. The light theme is still in the code, so a toggle
+calling `toggleTheme()` from `src/lib/theme.ts` would bring it back.
 
 - **The interface:** every colour is a CSS variable in `src/index.css`, and Tailwind reads them (`bg-bg`, `text-fg-3`, `border-line`, `text-accent` and so on).
 - **The scene:** the theme is a crossfade, not a reload. The director eases `uTheme` from 0 to 1, and each station has a dark and a light grade (`src/lib/stations.ts`).
@@ -56,14 +56,14 @@ paint.
 | `components/terrain/Director.tsx` | The camera rig, which runs first each frame. Every moving value is a critically damped spring, stepped at a fixed 120 Hz, so the flight is identical at any frame rate. It avoids the ground by raising the spring's target from a look-ahead, never by clamping mid-motion. Height, offset and gaze follow a Catmull-Rom spline through the stations. The director also crossfades the theme. |
 | `components/terrain/Effects.tsx` | Depth of field focused on the gaze, bloom, chromatic aberration, tone mapping (ACES in dark, neutral in light), grain and vignette. All of them are adjusted live. |
 | `lib/stations.ts` | One camera pose and a dark and light grade per section. Tune the flight here. |
-| `lib/quality.ts` | The GPU tiers. The first guess comes from the device; drei's `PerformanceMonitor` then steps the tier down (or back up) from measured frame times. |
+| `lib/quality.ts` | The GPU tiers. The tier is picked from the device once, at load, and never changes, because the tiers look different and a mid-flight switch reads as the scene going dark. drei's `PerformanceMonitor` lowers (or raises) only the pixel ratio from measured frame times. |
 | `lib/theme.ts` | The theme store, shared by the DOM and the scene. |
 | `components/sections/` | The page sections. Each is a stretch of scroll with its panel pinned while the camera travels. |
-| `components/ui/` | Pointer-lit cards, the micro-icons, the bar with live telemetry and the theme toggle, the station rail and the loading veil. |
+| `components/ui/` | Pointer-lit cards, the micro-icons, the bar with live telemetry, the station rail and the loading veil. |
 
 ## Performance
 
-- The pixel ratio is capped per tier (1 / 1.25 / 1.75).
+- The pixel ratio is capped per tier (1 / 1.25 / 1.75) and drops toward 1 when frames do.
 - Point density, river particles and the finale's detail all scale with the tier.
 - The terrain is uploaded once and every frame runs on the GPU. Materials share one uniform object, so a frame writes a handful of values.
 - The finale costs nothing until it's near.
