@@ -576,6 +576,8 @@ export function DotTerrain({ className }: { className?: string }) {
 
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     const fine = window.matchMedia("(pointer: fine)").matches;
+    const ambient = !fine && !reduced;
+    let tapUntil = 0;
 
     // ── Program ─────────────────────────────────────────────────────────────
     const vs = compile(gl, gl.VERTEX_SHADER, VERT);
@@ -681,7 +683,12 @@ export function DotTerrain({ className }: { className?: string }) {
 
     // ── Camera ──────────────────────────────────────────────────────────────
     const worldUp: Vec3 = [0, 1, 0];
-    const tanHalf = Math.tan((FOV_DEG * Math.PI) / 180 / 2);
+    const baseTanHalf = Math.tan((FOV_DEG * Math.PI) / 180 / 2);
+    /* A tall phone screen with the desktop's vertical field of view sees a
+       thin, zoomed-in sliver of the range. Below a landscape aspect the view
+       widens instead (up to 1.7×), so a phone still shows whole mountains
+       and a valley, not three giant dots. */
+    let tanHalf = baseTanHalf;
 
     let aspect = 1;
     let dpr = 1;
@@ -712,7 +719,8 @@ export function DotTerrain({ className }: { className?: string }) {
       canvas.width = Math.round(rect.width * dpr);
       canvas.height = Math.round(rect.height * dpr);
       gl.viewport(0, 0, canvas.width, canvas.height);
-      proj = perspective((FOV_DEG * Math.PI) / 180, aspect, 0.5, 400);
+      tanHalf = baseTanHalf * Math.min(1.7, Math.max(1, 1.2 / aspect));
+      proj = perspective(2 * Math.atan(tanHalf), aspect, 0.5, 400);
       gl.uniform1f(u.dpr, dpr);
       // Assigning canvas.width clears the bitmap; under reduced motion there
       // is no next frame to repaint it, so paint now.
@@ -802,6 +810,14 @@ export function DotTerrain({ className }: { className?: string }) {
       // ridge to the range behind it) into a smooth travel across the ground.
       const dt = Math.min(0.05, lastNow ? (now - lastNow) / 1000 : 0.016);
       lastNow = now;
+      // Touch screens have no cursor: a swell of light wanders slowly across
+      // the valley on its own, and a tap pulls it to the finger for a moment.
+      if (ambient && now > tapUntil) {
+        const s = now / 1000;
+        tx = Math.sin(s * 0.16) * 34 + Math.sin(s * 0.41) * 8;
+        tz = 34 + Math.sin(s * 0.11 + 1.3) * 14;
+        targetGain = 0.9;
+      }
       // Slow, critically damped: the swell glides rather than snaps when the
       // ray moves from one ridge to the range behind it.
       const kPos = 1 - Math.exp(-dt * 3.2);
@@ -895,6 +911,7 @@ export function DotTerrain({ className }: { className?: string }) {
     let tapTimer = 0;
     const onTap = (e: PointerEvent) => {
       if (fine) return;
+      tapUntil = performance.now() + 1800;
       onPointer(e);
       window.clearTimeout(tapTimer);
       tapTimer = window.setTimeout(onLeave, 1100);
@@ -932,21 +949,11 @@ export function DotTerrain({ className }: { className?: string }) {
     <canvas
       ref={canvasRef}
       aria-hidden="true"
-      className={className}
-      style={{
-        display: "block",
-        width: "100%",
-        height: "100%",
-        // Two masks intersected: the sky fades to Carbon at the top, and the
-        // field softens under the headline column on the left so the type
-        // stays legible over the dots.
-        WebkitMaskImage:
-          "linear-gradient(180deg, transparent 0%, #000 22%, #000 100%), linear-gradient(90deg, rgba(0,0,0,0.28) 0%, rgba(0,0,0,0.5) 38%, #000 62%)",
-        WebkitMaskComposite: "source-in",
-        maskImage:
-          "linear-gradient(180deg, transparent 0%, #000 22%, #000 100%), linear-gradient(90deg, rgba(0,0,0,0.28) 0%, rgba(0,0,0,0.5) 38%, #000 62%)",
-        maskComposite: "intersect",
-      }}
+      // The mask lives in app/glass.css (.dot-terrain): the sky fades out at
+      // the top, and the field softens where the headline sits — a centred
+      // softening on phones, where the copy is one centred column.
+      className={["dot-terrain", className].filter(Boolean).join(" ")}
+      style={{ display: "block", width: "100%", height: "100%" }}
     />
   );
 }

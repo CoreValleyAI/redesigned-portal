@@ -219,7 +219,7 @@ export function LaunchForm({
           {soon.length ? (
             <p className="mt-3.5 text-[12.5px] text-ink-500">
               Early access runs on the H200. The rest launch from here as they
-              land, starting with the H100 and RTX PRO 6000 Blackwell.
+              land, starting with the RTX PRO 6000 Blackwell.
             </p>
           ) : null}
         </Panel>

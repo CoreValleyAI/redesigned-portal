@@ -374,8 +374,21 @@
   }
 }
 
-/* No cursor to follow, and no motion budget for it. */
-@media (prefers-reduced-motion: reduce), (pointer: coarse) {
+/* Touch: <SpotlightGroup> lights a card as it scrolls through the middle of
+   the screen, and the bloom eases in and out instead of snapping. */
+.cv-spotlight[data-lit]::before,
+.cv-spotlight[data-lit]::after {
+  opacity: 1;
+}
+@media (pointer: coarse) {
+  .cv-spotlight::before,
+  .cv-spotlight::after {
+    transition: opacity 600ms var(--ease-standard);
+  }
+}
+
+/* No motion budget for it. */
+@media (prefers-reduced-motion: reduce) {
   .cv-spotlight::before,
   .cv-spotlight::after {
     display: none;

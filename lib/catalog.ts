@@ -60,20 +60,6 @@ export const GPU_SKUS: GpuSku[] = [
     migCapable: true,
   },
   {
-    id: "h100-sxm-80",
-    name: "NVIDIA H100",
-    shortName: "h100",
-    architecture: "Hopper",
-    memoryGb: 80,
-    memoryType: "HBM3",
-    bandwidth: "3.35 TB/s",
-    fp8Tflops: 3958,
-    bestFor: "LLM fine-tuning and multi-GPU training",
-    // Not live yet: early access is H200-only. Flip back when H100s land.
-    status: "coming-soon",
-    migCapable: true,
-  },
-  {
     id: "rtx-pro-6000-blackwell-96",
     name: "NVIDIA RTX PRO 6000 Blackwell",
     shortName: "rtx-pro-6000",
@@ -96,19 +82,6 @@ export const GPU_SKUS: GpuSku[] = [
     bandwidth: "864 GB/s",
     fp8Tflops: null,
     bestFor: "Cost-efficient serving and mixed media workloads",
-    status: "coming-soon",
-    migCapable: false,
-  },
-  {
-    id: "l4-24",
-    name: "NVIDIA L4",
-    shortName: "l4",
-    architecture: "Ada Lovelace",
-    memoryGb: 24,
-    memoryType: "GDDR6",
-    bandwidth: "300 GB/s",
-    fp8Tflops: null,
-    bestFor: "Low-power inference and video pipelines",
     status: "coming-soon",
     migCapable: false,
   },
@@ -150,30 +123,6 @@ export const SLICE_PROFILES: SliceProfile[] = [
     computePercent: 100,
     vcpus: 208,
     systemMemoryGb: 1760,
-    faultIsolated: true,
-    description: "A full NVLink node for distributed training.",
-  },
-  {
-    id: "h100-x1",
-    label: "1x",
-    skuId: "h100-sxm-80",
-    isolation: "exclusive",
-    gpuMemoryGb: 80,
-    computePercent: 100,
-    vcpus: 26,
-    systemMemoryGb: 200,
-    faultIsolated: true,
-    description: "A whole H100.",
-  },
-  {
-    id: "h100-x8",
-    label: "8x nvlink",
-    skuId: "h100-sxm-80",
-    isolation: "exclusive",
-    gpuMemoryGb: 640,
-    computePercent: 100,
-    vcpus: 208,
-    systemMemoryGb: 1600,
     faultIsolated: true,
     description: "A full NVLink node for distributed training.",
   },
@@ -306,16 +255,6 @@ export const GPU_HOURLY: HourlyRate[] = [
     "h200-sxm-141",
     p(NPR(3180), "PLACEHOLDER - 8x h200 less ~4% whole-node discount"),
   ),
-  hourly(
-    "h100-x1",
-    "h100-sxm-80",
-    p(NPR(315), "PLACEHOLDER - anchored to ~USD 2.26/h H100 SXM"),
-  ),
-  hourly(
-    "h100-x8",
-    "h100-sxm-80",
-    p(NPR(2420), "PLACEHOLDER - 8x h100 less ~4% whole-node discount"),
-  ),
 
   // MIG: priced above the linear fraction to cover partitioning overhead.
   hourly(
@@ -366,7 +305,8 @@ export interface JupyterRate extends HourlyRate {
 
 export const JUPYTER_RATES: JupyterRate[] = [
   {
-    ...hourly("jhub-cpu", "l4-24", p(NPR(9), "PLACEHOLDER - 4 vCPU / 16 GB, no GPU")),
+    // No GPU attached; filed under the H200 hosts the CPU profile runs on.
+    ...hourly("jhub-cpu", "h200-sxm-141", p(NPR(9), "PLACEHOLDER - 4 vCPU / 16 GB, no GPU")),
     spawnerProfileId: "jhub-cpu",
     displayName: "cpu only",
   },
@@ -443,7 +383,7 @@ export const TOKEN_RATES: TokenRate[] = [
     9,
     27,
     4.5,
-    "PLACEHOLDER - 24B dense on h100; ~USD 0.065/0.19 per 1M tok",
+    "PLACEHOLDER - 24B dense on an h200 slice; ~USD 0.065/0.19 per 1M tok",
   ),
 ];
 
@@ -493,14 +433,6 @@ export const DEDICATED_MONTHLY: MonthlyRate[] = [
     8,
     "bare-metal",
     p(NPR(2_150_000), "PLACEHOLDER - ~30% under 730h at the on-demand 8x rate"),
-  ),
-  monthly(
-    "node-h100-8x",
-    "8x h100 · bare metal",
-    "h100-sxm-80",
-    8,
-    "bare-metal",
-    p(NPR(1_620_000), "PLACEHOLDER - ~31% under 730h at the on-demand 8x rate"),
   ),
   monthly(
     "node-h200-4x",

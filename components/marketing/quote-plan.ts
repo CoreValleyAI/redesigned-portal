@@ -74,15 +74,6 @@ const ENTRIES: (Omit<QuoteGpu, "soon" | "sub"> & { sku: string; memGb: number })
     slice: false,
   },
   {
-    id: "h100",
-    sku: "h100-sxm-80",
-    memGb: 80,
-    dial: "h100",
-    short: "H100 · 80 GB",
-    name: "NVIDIA H100 (80 GB HBM3)",
-    slice: false,
-  },
-  {
     id: "rtx-pro-6000",
     sku: "rtx-pro-6000-blackwell-96",
     memGb: 96,
@@ -98,15 +89,6 @@ const ENTRIES: (Omit<QuoteGpu, "soon" | "sub"> & { sku: string; memGb: number })
     dial: "l40s",
     short: "L40S · 48 GB",
     name: "NVIDIA L40S (48 GB GDDR6)",
-    slice: false,
-  },
-  {
-    id: "l4",
-    sku: "l4-24",
-    memGb: 24,
-    dial: "l4",
-    short: "L4 · 24 GB",
-    name: "NVIDIA L4 (24 GB GDDR6)",
     slice: false,
   },
 ];

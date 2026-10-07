@@ -142,7 +142,7 @@ export function IcebergDive() {
               by the second in rupees. It&apos;s the part everyone compares,
               and the smallest part of the job.
             </p>
-            <p className="ib-cap__tags">h200 · available now — h100 · rtx pro 6000 · coming soon</p>
+            <p className="ib-cap__tags">h200 · available now — rtx pro 6000 blackwell · coming soon</p>
           </section>
 
           <section className="ib-cap">

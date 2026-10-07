@@ -31,7 +31,7 @@ const PLATFORM_FACTS = [
   "invoices in npr",
   "hydro-powered datacenter",
   "append-only audit log",
-  "h100 + blackwell coming soon",
+  "blackwell coming soon",
 ];
 
 export function SpecTicker() {

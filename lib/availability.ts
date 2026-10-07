@@ -8,7 +8,7 @@
  *
  * Confirmed facts (October 2026):
  *  · NVIDIA H200 is available now, through enterprise early access.
- *  · H100 and RTX PRO 6000 Blackwell are coming soon; L40S and L4 after them.
+ *  · RTX PRO 6000 Blackwell is coming soon; L40S after it.
  *  · Network latency inside Kathmandu is under 5 ms.
  *  · The datacenter runs on hydropower.
  *  · Rates are not published yet; every request gets a firm NPR quote.

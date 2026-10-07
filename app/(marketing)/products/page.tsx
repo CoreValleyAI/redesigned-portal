@@ -11,7 +11,7 @@ import type { GpuSku } from "@/lib/api/types";
 export const metadata = pageMetadata({
   title: "GPU Cloud Products — GPU Pods, JupyterHub, Model Endpoints, Dedicated Servers",
   description:
-    "Four ways to use NVIDIA H200 GPUs in Kathmandu: per-second GPU pods, managed JupyterHub notebooks, OpenAI-compatible model endpoints and dedicated servers. Billed in NPR, with data that stays in Nepal. H100 and Blackwell coming soon.",
+    "Four ways to use NVIDIA H200 GPUs in Kathmandu: per-second GPU pods, managed JupyterHub notebooks, OpenAI-compatible model endpoints and dedicated servers. Billed in NPR, with data that stays in Nepal. Blackwell coming soon.",
   path: "/products",
 });
 

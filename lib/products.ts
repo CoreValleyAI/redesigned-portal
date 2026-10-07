@@ -32,7 +32,7 @@ export const PRODUCTS: ProductDef[] = [
     name: "GPU pods",
     tagline: "A whole H200, or just the slice you need.",
     summary:
-      "Run your own containers on NVIDIA H200 GPUs. Take a whole card, a hardware slice or a cheaper shared slice, and pay by the second either way. H100s are coming soon.",
+      "Run your own containers on NVIDIA H200 GPUs. Take a whole card, a hardware slice or a cheaper shared slice, and pay by the second either way.",
     meta: "mig · hami · per-second billing",
     audience: "ML engineers, startups and research teams",
     features: [
@@ -72,7 +72,7 @@ export const PRODUCTS: ProductDef[] = [
     ],
     specs: [
       { label: "GPU", value: "H200 · 141 GB · available now" },
-      { label: "Coming soon", value: "H100 · 80 GB" },
+      { label: "Coming soon", value: "RTX PRO 6000 · 96 GB" },
       { label: "Ways to rent", value: "whole card · MIG · HAMi" },
       { label: "Billing", value: "per second, 60 s minimum" },
       { label: "Region", value: "np-ktm-1 (Kathmandu)" },

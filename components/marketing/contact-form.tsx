@@ -40,7 +40,7 @@ const GROUPS: { label: string; options: string[] }[] = [
   {
     label: "Coming soon — join the list",
     options: [
-      "H100, Blackwell or another GPU",
+      "Blackwell or another GPU",
       "A university or research lab",
       "A startup or small team",
     ],

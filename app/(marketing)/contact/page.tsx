@@ -46,7 +46,7 @@ const DETAILS: { icon: IconName; title: string; body: React.ReactNode }[] = [
 const FAQ = [
   {
     q: "Who can get access today?",
-    a: "Enterprises, on NVIDIA H200. The H100 and the RTX PRO 6000 Blackwell are coming soon, and so is access for more teams. Ask now and we will tell you first.",
+    a: "Enterprises, on NVIDIA H200. The RTX PRO 6000 Blackwell is coming soon, and so is access for more teams. Ask now and we will tell you first.",
   },
   {
     q: "What should I include?",

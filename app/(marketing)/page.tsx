@@ -379,11 +379,8 @@ export default function HomePage() {
             <ul className="mt-8 flex flex-col gap-5 pl-7 sm:pl-10">
               {SOVEREIGN.map((s, i) => (
                 <Reveal as="li" key={s.term} delay={180 + i * 70}>
-                  <div className="group flex gap-3.5 text-[15px] leading-relaxed">
-                    <span
-                      aria-hidden="true"
-                      className="mt-px shrink-0 font-mono text-hydro transition-transform duration-normal ease-out group-hover:rotate-90"
-                    >
+                  <div className="flex gap-3.5 text-[15px] leading-relaxed">
+                    <span aria-hidden="true" className="mt-px shrink-0 font-mono text-hydro">
                       +
                     </span>
                     <p className="text-ink-400">
@@ -584,7 +581,7 @@ export default function HomePage() {
                 training and serving the largest models.{" "}
                 <span className="font-semibold text-ink-200">Coming soon:</span>{" "}
                 the RTX PRO 6000 Blackwell for fast, affordable inference and
-                visual AI, and the H100.
+                visual AI.
               </p>
             </Reveal>
           </div>
@@ -601,7 +598,7 @@ export default function HomePage() {
               <RevealGroup
                 step={60}
                 start={120}
-                className="mt-4 grid gap-4 sm:grid-cols-3"
+                className={`mt-4 grid gap-4 ${soon.length > 1 ? "sm:grid-cols-2" : "max-w-[30rem]"}`}
               >
                 {soon.map((sku) => (
                   <div

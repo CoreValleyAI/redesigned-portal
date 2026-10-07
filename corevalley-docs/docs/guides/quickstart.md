@@ -9,7 +9,7 @@ From an invitation to your first GPU workload on CoreValley, in one sitting.
 
 1. **Get access** — request early access, receive an invitation, sign in to the console.
 2. **Create a project** — the unit that groups pods, notebooks, endpoints, storage and billing.
-3. **Choose a GPU** — an NVIDIA H200 as a whole card, a hardware slice (MIG) or a shared slice (HAMi), and what each is quoted at. H100 and RTX PRO 6000 Blackwell are coming soon.
+3. **Choose a GPU** — an NVIDIA H200 as a whole card, a hardware slice (MIG) or a shared slice (HAMi), and what each is quoted at. The RTX PRO 6000 Blackwell is coming soon.
 4. **Launch** — a notebook in JupyterHub, a GPU pod, or a model endpoint, with the console and with the CLI.
 5. **Connect** — SSH, port forwarding, and mounting a persistent volume.
 6. **Watch the meter** — where usage appears, and how to stop a workload so billing stops with it.

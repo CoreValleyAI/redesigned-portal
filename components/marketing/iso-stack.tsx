@@ -60,7 +60,7 @@ function topCells(
       const x0 = x + c * cw + g, y0 = y + r * rd + g;
       out.push({
         kind: "cell",
-        k: strength(c, r),
+        k: Math.round(strength(c, r) * 1000) / 1000,
         points: poly([[x0, y0, z], [x0 + cw - 2 * g, y0, z], [x0 + cw - 2 * g, y0 + rd - 2 * g, z], [x0, y0 + rd - 2 * g, z]]),
       });
     }
@@ -79,7 +79,7 @@ function frontCells(
       const y0 = y + c * cd + g, z0 = z + r * rh + g;
       out.push({
         kind: "cell",
-        k: strength(c, r),
+        k: Math.round(strength(c, r) * 1000) / 1000,
         points: poly([[x, y0, z0], [x, y0 + cd - 2 * g, z0], [x, y0 + cd - 2 * g, z0 + rh - 2 * g], [x, y0, z0 + rh - 2 * g]]),
       });
     }

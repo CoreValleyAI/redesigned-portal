@@ -68,7 +68,7 @@ Guides and reference for running AI workloads on CoreValley, Nepal's sovereign G
 | Section | What it covers |
 |---|---|
 | **Platform** | The four products — GPU pods, JupyterHub, Model endpoints and Dedicated servers — and how they share projects, storage and keys. They were previously called GPU Workspace, AI Lab and Inference API. |
-| **Hardware** | Which NVIDIA GPUs are available (H200 today; H100, RTX PRO 6000 Blackwell, L40S and L4 coming soon), slice profiles, memory, bandwidth and networking. |
+| **Hardware** | Which NVIDIA GPUs are available (H200 today; RTX PRO 6000 Blackwell and L40S coming soon), slice profiles, memory, bandwidth and networking. |
 | **Billing** | How usage is metered, how invoices are produced and how to pay in NPR. |
 | **Guides** | Task-oriented walkthroughs, starting with the quickstart. |
 | **Support** | Service levels, maintenance windows and how to reach the team. |

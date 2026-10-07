@@ -3,18 +3,15 @@
 The NVIDIA hardware behind CoreValley, what you can run on it today, and the shapes it is offered in.
 
 !!! info "Early access"
-    The NVIDIA H200 is available now through enterprise early access. The H100 and the RTX PRO 6000 Blackwell are coming soon, with the L40S and L4 after them. Full specification tables are still being prepared; for capacity questions contact [info@corevalley.ai](mailto:info@corevalley.ai).
+    The NVIDIA H200 is available now through enterprise early access. The RTX PRO 6000 Blackwell is coming soon, with the L40S after it. Full specification tables are still being prepared; for capacity questions contact [info@corevalley.ai](mailto:info@corevalley.ai).
 
 ## GPU models
 
 | GPU | Memory | Bandwidth | Status |
 |---|---|---|---|
 | NVIDIA H200 (Hopper) | 141 GB HBM3e | 4.8 TB/s | **Available now** |
-| NVIDIA H100 (Hopper) | 80 GB HBM3 | 3.35 TB/s | Coming soon |
 | NVIDIA RTX PRO 6000 (Blackwell) | 96 GB GDDR7 | 1.6 TB/s | Coming soon |
 | NVIDIA L40S (Ada Lovelace) | 48 GB GDDR6 | 864 GB/s | Coming soon |
-| NVIDIA L4 (Ada Lovelace) | 24 GB GDDR6 | 300 GB/s | Coming soon |
-
 ## Ways to rent an H200
 
 - **Whole card** — all 141 GB of one H200. Exclusive: no neighbours.

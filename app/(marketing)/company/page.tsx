@@ -121,7 +121,7 @@ const FAQ = [
   },
   {
     q: "Which GPUs do you run?",
-    a: "The NVIDIA H200, with 141 GB of memory, is available now through enterprise early access — as a whole card or as a slice. The H100 and the RTX PRO 6000 Blackwell are coming soon, with the L40S and L4 after them.",
+    a: "The NVIDIA H200, with 141 GB of memory, is available now through enterprise early access — as a whole card or as a slice. The RTX PRO 6000 Blackwell is coming soon, with the L40S after it.",
   },
   {
     q: "How do you bill?",
@@ -215,7 +215,7 @@ export default function CompanyPage() {
       <Section
         eyebrow="What we run"
         title="Four products, one platform."
-        lead="Notebooks for teams, GPU environments for training, endpoints for serving and dedicated servers for steady load. All on NVIDIA H200s in Kathmandu today, with H100 and Blackwell coming soon — one account, one rupee invoice."
+        lead="Notebooks for teams, GPU environments for training, endpoints for serving and dedicated servers for steady load. All on NVIDIA H200s in Kathmandu today, with Blackwell coming soon — one account, one rupee invoice."
         alt
       >
         <RevealGroup step={80} className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -245,8 +245,8 @@ export default function CompanyPage() {
             <div>
               <dt className="cv-label text-[10px]">Hardware</dt>
               <dd className="mt-2 text-sm leading-relaxed text-ink-300">
-                NVIDIA H200, available now. H100 and RTX PRO 6000 Blackwell
-                coming soon; L40S and L4 after them.
+                NVIDIA H200, available now. RTX PRO 6000 Blackwell coming
+                soon; L40S after it.
               </dd>
             </div>
             <div>

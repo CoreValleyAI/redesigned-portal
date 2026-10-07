@@ -7,7 +7,7 @@ Full GPU environments with root access: containerised pods on a whole card or a 
 
 ## What this page will cover
 
-- **Pods** — launching a container on a whole NVIDIA H200, a hardware slice of one (MIG, fault-isolated) or a shared software slice (HAMi, cheaper but not fault-isolated), and what the difference means for isolation and price. H100s are coming soon.
+- **Pods** — launching a container on a whole NVIDIA H200, a hardware slice of one (MIG, fault-isolated) or a shared software slice (HAMi, cheaper but not fault-isolated), and what the difference means for isolation and price.
 - **Images** — the pre-built stack (CUDA, cuDNN, PyTorch, TensorFlow, vLLM, DeepSpeed) and custom images.
 - **Storage** — persistent replicated volumes, ephemeral local NVMe scratch, and sharing a volume across pods in a project.
 - **Access** — SSH with your own key, exposed ports for TensorBoard or Jupyter, and environment variables and secrets.

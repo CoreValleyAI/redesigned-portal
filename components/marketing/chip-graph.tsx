@@ -65,6 +65,7 @@ export function ChipGraph({
 
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     const fine = window.matchMedia("(pointer: fine)").matches;
+    let tapUntil = 0;
 
     let w = 0;
     let h = 0;
@@ -205,6 +206,11 @@ export function ChipGraph({
           nd = d;
           nearest = i;
         }
+      }
+      // Touch screens: no cursor to pick a trace, so each one takes a turn —
+      // the die walks through everything it touches, one system at a time.
+      if (!fine && !reduced && now > tapUntil && traces.length) {
+        nearest = Math.floor(t / 2.2) % traces.length;
       }
       const over = Math.abs(px - chip.x) < chip.s && Math.abs(py - chip.y) < chip.s;
       const wantX = over ? (px - chip.x) * 0.06 : 0;
@@ -365,6 +371,7 @@ export function ChipGraph({
     let tapTimer = 0;
     const onTap = (e: PointerEvent) => {
       if (fine) return;
+      tapUntil = performance.now() + 2400;
       onPointer(e);
       window.clearTimeout(tapTimer);
       tapTimer = window.setTimeout(onLeave, 1100);

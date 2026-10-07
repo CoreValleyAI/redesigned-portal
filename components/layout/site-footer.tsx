@@ -75,12 +75,12 @@ export function SiteFooter() {
                 scrolls into view and afterwards parts around the pointer and
                 lights where it passes. The official combined lockup is the
                 sampling source, so the proportions are the brandbook's.
-                aria-hidden and inert to the pointer; the accessible name is
+                aria-hidden; a tap on a phone pushes the dots. The accessible name is
                 the copy beside it. Smaller on a phone, where it would
                 otherwise push the links a full screen down. */}
             <div
               aria-hidden="true"
-              className="pointer-events-none relative h-[190px] w-[190px] md:h-[300px] md:w-[300px]"
+              className="relative mx-auto h-[230px] w-[230px] md:mx-0 md:h-[300px] md:w-[300px]"
             >
               <DotMatrix
                 src={`${BASE}/brand/cv-combinedmark-green.svg`}

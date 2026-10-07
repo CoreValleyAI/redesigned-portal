@@ -166,7 +166,7 @@ const LIFECYCLE: { step: string; title: string; body: string }[] = [
   {
     step: "02",
     title: "Train on whole cards",
-    body: "Move to whole H200 cards, or a full eight-GPU server joined by NVLink for distributed runs. H100s are coming soon.",
+    body: "Move to whole H200 cards, or a full eight-GPU server joined by NVLink for distributed runs.",
   },
   {
     step: "03",
@@ -183,7 +183,7 @@ const LIFECYCLE: { step: string; title: string; body: string }[] = [
 const FAQ = [
   {
     q: "Who can get access today?",
-    a: "Enterprises, on NVIDIA H200, through early access. More GPUs — the H100 and the RTX PRO 6000 Blackwell — and access for more teams, including universities and startups, are coming soon. You can join the list now.",
+    a: "Enterprises, on NVIDIA H200, through early access. More GPUs — starting with the RTX PRO 6000 Blackwell — and access for more teams, including universities and startups, are coming soon. You can join the list now.",
   },
   {
     q: "Does my data ever leave Nepal?",
