@@ -1,9 +1,11 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { Badge, Card, Icon } from "@/components/ui";
+import { Badge, Icon } from "@/components/ui";
 import {
+  Panel,
   PlaceholderPricingBadge,
   PortalPageHeader,
+  SectionHeading,
 } from "@/components/portal/primitives";
 import { PodLivePanel } from "@/components/portal/pod-live";
 import { UsageChart } from "@/components/portal/usage-chart";
@@ -50,31 +52,34 @@ export default async function PodDetailPage({
     <>
       <Link
         href="/portal/pods"
-        className="mb-4 inline-flex items-center gap-1.5 font-mono text-[12px] text-ink-500 hover:text-ink-100"
+        className="group mb-5 inline-flex items-center gap-1.5 font-mono text-[12px] tracking-wide text-ink-500 transition-colors duration-fast hover:text-hydro"
       >
-        <Icon name="caret-right" size={12} className="rotate-180" />
+        <Icon name="caret-right" size={12} className="rotate-180 transition-transform duration-normal ease-out group-hover:-translate-x-0.5" />
         all pods
       </Link>
 
       <PortalPageHeader
+        eyebrow="compute / pods"
+        mono
         title={pod.name}
         description={`${pod.id} · ${project?.name ?? "no project"} · ${pod.regionId}`}
       />
 
       <PodLivePanel initial={pod} />
 
-      <div className="mt-8 grid gap-3 lg:grid-cols-[1.4fr_1fr] lg:items-start">
-        <Card surface="panel" padding={22}>
+      <div className="mt-4 grid gap-4 lg:grid-cols-[1.4fr_1fr] lg:items-start">
+        <Panel padding={24} className="pt-in" style={{ "--pt-d": "320ms" } as React.CSSProperties}>
           <UsageChart
             label="gpu utilisation · last 60 min"
             unit="%"
             points={telemetrySeries}
+            live={pod.status === "running"}
           />
-        </Card>
+        </Panel>
 
-        <Card surface="panel" padding={0}>
-          <div className="flex items-center justify-between border-b border-line-subtle px-5 py-3.5">
-            <span className="font-mono text-[13px] text-ink-200">configuration</span>
+        <Panel padding={0} className="pt-in" style={{ "--pt-d": "380ms" } as React.CSSProperties}>
+          <div className="flex items-center justify-between border-b border-line-subtle px-5 py-4">
+            <span className="text-[14px] font-semibold tracking-tight text-ink-100">Configuration</span>
             <Badge
               tone={
                 profile.isolation === "exclusive"
@@ -105,7 +110,7 @@ export default async function PodDetailPage({
                 }`}
               >
                 <dt className="cv-label text-[10px]">{k}</dt>
-                <dd className="text-right font-mono text-[12.5px] text-ink-200">
+                <dd className="text-right font-mono text-[12.5px] font-medium text-ink-100">
                   {v}
                 </dd>
               </div>
@@ -114,21 +119,32 @@ export default async function PodDetailPage({
               <dt className="cv-label text-[10px]">Rate</dt>
               <dd className="flex items-center gap-2">
                 <PlaceholderPricingBadge />
-                <span className="font-mono text-[12.5px] text-hydro">
+                <span className="nums font-mono text-[12.5px] font-medium text-hydro">
                   {formatNpr(pod.ratePaisaPerHour)}/hr
                 </span>
               </dd>
             </div>
           </dl>
-        </Card>
+        </Panel>
       </div>
 
-      <section className="mt-8">
-        <h2 className="mb-3 font-mono text-[14px] text-ink-200">logs</h2>
-        <div className="max-h-96 overflow-y-auto rounded-lg border border-line bg-carbon-800 px-4 py-3">
+      <section className="mt-10">
+        <SectionHeading
+          aside={
+            <span className="font-mono text-[11px] tracking-wide text-ink-500">
+              streaming · last {logs.length} lines
+            </span>
+          }
+        >
+          Logs
+        </SectionHeading>
+        {/* The Terminal's surface: .cv-terminal remaps carbon and ink to the
+            pale-teal console palette on paper, so the pane reads as a screen
+            in both themes. */}
+        <div className="cv-terminal pt-in max-h-96 overflow-y-auto rounded-xl border border-line bg-carbon-800 px-5 py-4">
           {logs.map((l, i) => (
             <div key={i} className="flex gap-3 py-0.5 font-mono text-[12px]">
-              <span className="shrink-0 text-ink-700">
+              <span className="nums shrink-0 text-ink-500">
                 {formatDateTime(l.at).slice(11)}
               </span>
               <span

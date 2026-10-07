@@ -1,5 +1,6 @@
-import { Badge, Card, Icon, Terminal } from "@/components/ui";
+import { Badge, Icon, Terminal } from "@/components/ui";
 import {
+  Panel,
   PlaceholderPricingBadge,
   PortalPageHeader,
 } from "@/components/portal/primitives";
@@ -23,27 +24,28 @@ export default async function ModelsPage() {
   return (
     <>
       <PortalPageHeader
-        title="models"
+        eyebrow="compute / models"
+        title="Model endpoints"
         description="Open-weight models served on vLLM behind a LiteLLM gateway. OpenAI-compatible, billed per token, processed inside Nepal."
       />
 
       <div className="grid gap-3 lg:grid-cols-[1fr_1fr]">
-        <Card surface="panel" padding={20}>
+        <Panel padding={20}>
           <p className="cv-label text-[10px]">tokens in · 30 days</p>
           <p className="mt-2.5 font-mono text-[26px] leading-none text-ink-100">
             {formatCompactNumber(tokensIn?.total ?? 0)}
           </p>
-        </Card>
-        <Card surface="panel" padding={20}>
+        </Panel>
+        <Panel padding={20}>
           <p className="cv-label text-[10px]">tokens out · 30 days</p>
           <p className="mt-2.5 font-mono text-[26px] leading-none text-hydro">
             {formatCompactNumber(tokensOut?.total ?? 0)}
           </p>
-        </Card>
+        </Panel>
       </div>
 
       <div className="mt-6 mb-3 flex items-center gap-3">
-        <h2 className="font-mono text-[14px] text-ink-200">catalogue</h2>
+        <h2 className="text-[15px] font-semibold tracking-tight text-ink-100">Catalogue</h2>
         <PlaceholderPricingBadge />
       </div>
 
@@ -51,7 +53,7 @@ export default async function ModelsPage() {
         {endpoints.map((ep) => {
           const rate = TOKEN_RATES.find((r) => r.endpointId === ep.id);
           return (
-            <Card key={ep.id} surface="panel" padding={22}>
+            <Panel key={ep.id} padding={22}>
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div>
                   <h3 className="font-mono text-[14px] text-ink-100">
@@ -62,7 +64,7 @@ export default async function ModelsPage() {
                     {formatCompactNumber(ep.contextLength)} context
                   </p>
                 </div>
-                <Badge tone={ep.status === "live" ? "success" : "warning"} dot>
+                <Badge tone={ep.status === "live" ? "success" : "warning"}>
                   {ep.status}
                 </Badge>
               </div>
@@ -72,23 +74,23 @@ export default async function ModelsPage() {
               </p>
 
               <div className="mt-4 flex flex-wrap gap-2">
-                <span className="rounded-md border border-line bg-carbon-600 px-2 py-1 font-mono text-[10.5px] text-ink-400">
+                <span className="rounded-md border border-line bg-carbon-500/60 px-2 py-1 font-mono text-[10.5px] text-ink-400">
                   {ep.engine}
                 </span>
                 {ep.supportsToolCalling ? (
-                  <span className="rounded-md border border-line bg-carbon-600 px-2 py-1 font-mono text-[10.5px] text-ink-400">
+                  <span className="rounded-md border border-line bg-carbon-500/60 px-2 py-1 font-mono text-[10.5px] text-ink-400">
                     tools
                   </span>
                 ) : null}
                 {ep.supportsVision ? (
-                  <span className="rounded-md border border-line bg-carbon-600 px-2 py-1 font-mono text-[10.5px] text-ink-400">
+                  <span className="rounded-md border border-line bg-carbon-500/60 px-2 py-1 font-mono text-[10.5px] text-ink-400">
                     vision
                   </span>
                 ) : null}
-                <span className="rounded-md border border-line bg-carbon-600 px-2 py-1 font-mono text-[10.5px] text-ink-400">
+                <span className="rounded-md border border-line bg-carbon-500/60 px-2 py-1 font-mono text-[10.5px] text-ink-400">
                   {ep.tokensPerSecond} tok/s
                 </span>
-                <span className="rounded-md border border-line bg-carbon-600 px-2 py-1 font-mono text-[10.5px] text-ink-400">
+                <span className="rounded-md border border-line bg-carbon-500/60 px-2 py-1 font-mono text-[10.5px] text-ink-400">
                   {ep.rateLimitRpm} rpm
                 </span>
               </div>
@@ -117,13 +119,13 @@ export default async function ModelsPage() {
                   </div>
                 </dl>
               ) : null}
-            </Card>
+            </Panel>
           );
         })}
       </div>
 
       <section className="mt-8">
-        <h2 className="mb-3 flex items-center gap-2 font-mono text-[14px] text-ink-200">
+        <h2 className="mb-3 flex items-center gap-2 text-[15px] font-semibold tracking-tight text-ink-100">
           <Icon name="terminal" size={15} className="text-hydro" />
           calling an endpoint
         </h2>

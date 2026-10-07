@@ -1,5 +1,6 @@
 export { Badge, badgeVariants, type BadgeProps } from "./badge";
 export { Button, buttonVariants, type ButtonProps } from "./button";
+export { ButtonLink, type ButtonLinkProps } from "./button-link";
 export { Card, cardVariants, type CardProps } from "./card";
 export { Icon, ICON_NAMES, type IconName, type IconProps } from "./icon";
 export { IconButton, type IconButtonProps } from "./icon-button";

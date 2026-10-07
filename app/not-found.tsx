@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Button, Icon } from "@/components/ui";
+import { ButtonLink, Icon } from "@/components/ui";
 import type { IconName } from "@/components/ui";
 import { SiteHeader } from "@/components/layout/site-header";
 import { DotTerrain } from "@/components/marketing/dot-terrain";
@@ -18,10 +18,10 @@ const LEGACY_REDIRECT = `(function(){var p=location.pathname,b="/redesigned-port
 
 /* Where the visitor most likely meant to go, in that order. */
 const EXITS: { href: string; label: string; meta: string; icon: IconName }[] = [
-  { href: "/products", label: "Products", meta: "pods · notebooks · endpoints", icon: "slice" },
-  { href: "/pricing", label: "Pricing", meta: "npr rates, per second", icon: "cost" },
+  { href: "/products", label: "Products", meta: "gpu pods · notebooks · endpoints", icon: "slice" },
+  { href: "/pricing", label: "Pricing", meta: "billed per second, in rupees", icon: "cost" },
   { href: docsHref(), label: "Documentation", meta: "guides · platform · billing", icon: "docs" },
-  { href: "/contact", label: "Contact", meta: "talk to the team in kathmandu", icon: "send" },
+  { href: "/contact", label: "Get early access", meta: "h200 available now", icon: "send" },
 ];
 
 export default function NotFound() {
@@ -49,21 +49,18 @@ export default function NotFound() {
             This trail goes off the map.
           </h1>
           <p className="mt-5 max-w-[46ch] text-[clamp(1rem,1.5vw,1.15rem)] leading-relaxed text-ink-300">
-            The page you were looking for isn&rsquo;t here. It may have moved, or
-            the link that brought you here is out of date.
+            This page isn&rsquo;t here. It may have moved, or the link that
+            brought you here is out of date. One of these will get you back
+            on track.
           </p>
 
           <div className="mt-9 flex flex-wrap justify-center gap-3">
-            <Link href="/">
-              <Button variant="primary" size="lg" iconRight={<Icon name="arrow-right" size={17} />}>
-                Back to home
-              </Button>
-            </Link>
-            <Link href="/contact">
-              <Button variant="secondary" size="lg">
-                Get early access
-              </Button>
-            </Link>
+            <ButtonLink href="/" variant="primary" size="lg" iconRight={<Icon name="arrow-right" size={17} />}>
+              Back to home
+            </ButtonLink>
+            <ButtonLink href="/contact" variant="secondary" size="lg">
+              Get early access
+            </ButtonLink>
           </div>
 
           <nav aria-label="Popular pages" className="mt-14 grid w-full gap-3 sm:grid-cols-2">

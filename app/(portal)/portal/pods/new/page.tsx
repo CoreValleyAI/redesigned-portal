@@ -1,4 +1,6 @@
-import { PortalPageHeader } from "@/components/portal/primitives";
+import {
+  PortalPageHeader,
+} from "@/components/portal/primitives";
 import { LaunchForm } from "@/components/portal/launch-form";
 import { getClient } from "@/lib/api/client";
 
@@ -15,7 +17,8 @@ export default async function NewPodPage() {
   return (
     <>
       <PortalPageHeader
-        title="launch pod"
+        eyebrow="compute / pods / new"
+        title="Launch a pod"
         description="Pick a GPU and a slice profile. The estimate updates as you go, and billing starts only when the pod reaches running."
       />
       <LaunchForm skus={skus} profiles={profiles} projects={projects} />

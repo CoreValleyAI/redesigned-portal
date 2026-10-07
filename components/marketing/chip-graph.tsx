@@ -13,6 +13,11 @@
  * and redraws — a few hundred draw calls. Sleeps out of view and when the
  * tab is hidden; `prefers-reduced-motion` renders one static frame; coarse
  * pointers get no pointer coupling.
+ *
+ * Labels never leave the frame. Each one is measured at layout: a side
+ * node is pulled in until its label fits, and if that would crowd the chip
+ * the label stacks above or below its node instead. Narrow frames also get
+ * a smaller chip and a 10px label face.
  */
 
 import * as React from "react";
@@ -29,10 +34,19 @@ interface Trace {
   len: number;
   seg: number[]; // cumulative lengths
   label: string;
+  /** Where the label is drawn, and how it is anchored there. */
+  lx: number;
+  ly: number;
+  align: CanvasTextAlign;
   teal: boolean;
   packets: { t: number; v: number }[];
   lit: number;
 }
+
+/** Breathing room between a label and the frame edge, px. */
+const EDGE = 6;
+/** Gap between a node and its side label, px. */
+const GAP = 9;
 
 export function ChipGraph({
   labels,
@@ -57,6 +71,7 @@ export function ChipGraph({
     let dpr = 1;
     let traces: Trace[] = [];
     let chip = { x: 0, y: 0, s: 0 };
+    let labelFont = `500 11px ui-monospace, "JetBrains Mono", Menlo, monospace`;
     let px = -1e4;
     let py = -1e4;
     let tiltX = 0;
@@ -76,8 +91,13 @@ export function ChipGraph({
       canvas.height = Math.round(h * dpr);
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
-      const s = Math.min(w, h) * 0.3;
+      // A phone-width frame gets a smaller chip and label face, so the side
+      // labels have room to sit beside their nodes.
+      const narrow = w < 480;
+      const s = Math.min(w, h) * (narrow ? 0.24 : 0.3);
       chip = { x: w * 0.5, y: h * 0.5, s };
+      labelFont = `500 ${w < 420 ? 10 : 11}px ui-monospace, "JetBrains Mono", Menlo, monospace`;
+      ctx.font = labelFont;
 
       // Traces leave from points spread around the chip's perimeter and end
       // on an ellipse near the canvas edge, alternating sides so labels have
@@ -90,9 +110,28 @@ export function ChipGraph({
         // Exit at the chip edge along this direction.
         const k = s / 2 / Math.max(Math.abs(ca), Math.abs(sa));
         const start = { x: chip.x + ca * k, y: chip.y + sa * k };
-        // Nodes sit on an ellipse inset enough that a right-aligned label on
-        // the left side still fits inside the canvas.
-        const end = { x: chip.x + ca * (w * 0.34), y: chip.y + sa * (h * 0.4) };
+        // Nodes sit on an ellipse near the edge…
+        const home = { x: chip.x + ca * (w * 0.34), y: chip.y + sa * (h * 0.4) };
+        const end = { ...home };
+        const lw = ctx.measureText(label).width;
+        const right = home.x >= chip.x;
+        // …pulled in until a side label fits inside the frame.
+        if (right) end.x = Math.min(end.x, w - EDGE - GAP - lw);
+        else end.x = Math.max(end.x, EDGE + GAP + lw);
+        let lx = end.x + (right ? GAP : -GAP);
+        let ly = end.y;
+        let align: CanvasTextAlign = right ? "left" : "right";
+        // If pulling it in crowds the chip, keep the node home and stack the
+        // label over or under it instead, centred and clamped to the frame.
+        const pulled = end.x !== home.x;
+        const crowded =
+          Math.abs(end.x - chip.x) - s / 2 < 18 && Math.abs(end.y - chip.y) < s / 2 + 24;
+        if (pulled && crowded) {
+          end.x = home.x;
+          lx = Math.min(Math.max(home.x, EDGE + lw / 2), w - EDGE - lw / 2);
+          ly = home.y + (sa >= 0 ? 13 : -13);
+          align = "center";
+        }
         // Bend: go straight out of the edge first, then diagonal to the node.
         const horizontal = Math.abs(ca) > Math.abs(sa);
         const mid = horizontal
@@ -110,6 +149,9 @@ export function ChipGraph({
           len,
           seg,
           label,
+          lx,
+          ly,
+          align,
           teal: i % 3 === 2,
           packets: Array.from({ length: 2 }, (_, p) => ({
             t: (p / 2 + i * 0.13) % 1,
@@ -196,12 +238,13 @@ export function ChipGraph({
           ctx.arc(end.x, end.y, 9, 0, Math.PI * 2);
           ctx.fill();
         }
-        ctx.font = `500 11px ui-monospace, "JetBrains Mono", Menlo, monospace`;
+        ctx.font = labelFont;
         ctx.textBaseline = "middle";
-        const right = end.x >= chip.x;
-        ctx.textAlign = right ? "left" : "right";
-        ctx.fillStyle = `rgba(${INK},${0.45 + tr.lit * 0.55})`;
-        ctx.fillText(tr.label, end.x + (right ? 9 : -9), end.y);
+        ctx.textAlign = tr.align;
+        // At rest the label is already at reading contrast; the pointer only
+        // takes it to full Ink.
+        ctx.fillStyle = `rgba(${INK},${0.66 + tr.lit * 0.34})`;
+        ctx.fillText(tr.label, tr.lx, tr.ly);
 
         // Packets flow outward.
         for (const pk of tr.packets) {
@@ -267,12 +310,13 @@ export function ChipGraph({
           );
         }
       }
-      // Label on the die.
+      // Label on the die — the short form when the chip is small, so it
+      // never runs past the package edge.
       ctx.font = `500 10px ui-monospace, "JetBrains Mono", Menlo, monospace`;
       ctx.textAlign = "left";
       ctx.textBaseline = "top";
-      ctx.fillStyle = `rgba(${INK},0.55)`;
-      ctx.fillText("h200 · 141 gb", cx - s / 2 + 8, cy - s / 2 + 6);
+      ctx.fillStyle = `rgba(${INK},0.7)`;
+      ctx.fillText(s >= 110 ? "h200 · 141 gb" : "h200", cx - s / 2 + 8, cy - s / 2 + 6);
     };
 
     const loop = (now: number) => {
@@ -301,6 +345,8 @@ export function ChipGraph({
     };
 
     layout();
+    // Labels are measured at layout; measure again once the mono face lands.
+    document.fonts?.ready.then(layout).catch(() => {});
     const ro = new ResizeObserver(layout);
     ro.observe(canvas);
     const io = new IntersectionObserver(
@@ -345,6 +391,7 @@ export function ChipGraph({
     <canvas
       ref={ref}
       aria-hidden="true"
+      data-chip-graph=""
       className={className}
       style={{ display: "block", width: "100%", height: "100%" }}
     />

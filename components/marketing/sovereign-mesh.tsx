@@ -587,10 +587,6 @@ export function SovereignMesh({ className }: SovereignMeshProps) {
           <KathmanduClock />
 
           <span className="flex items-center gap-2 font-mono text-[12.5px] text-ink-100">
-            <span className="relative flex size-2">
-              <span className="absolute inline-flex size-2 animate-cursor rounded-pill bg-hydro opacity-70" />
-              <span className="relative inline-flex size-2 rounded-pill bg-hydro shadow-[0_0_8px_var(--hydro)]" />
-            </span>
             KATHMANDU (HQ DC)
             <span className="text-hydro">— {CORE_NODE.latencyLabel}</span>
           </span>
@@ -653,7 +649,7 @@ export function SovereignMesh({ className }: SovereignMeshProps) {
                     {formatMetric(node, mode)}
                   </span>
                   {hyper ? (
-                    <span className="rounded-pill border border-danger/30 bg-danger/10 px-1.5 py-px text-[9px] tracking-wide text-danger">
+                    <span className="text-[10px] tracking-wide text-danger uppercase">
                       High Latency / Cross-Border Export
                     </span>
                   ) : null}
@@ -779,7 +775,7 @@ export function SovereignMesh({ className }: SovereignMeshProps) {
           );
         })}
 
-        {/* Core — multi-ring H200 pulse. */}
+        {/* Core — a still H200 marker. No pulsing rings. */}
         {corePos ? (
           <div
             className="pointer-events-none absolute top-0 left-0"
@@ -788,17 +784,7 @@ export function SovereignMesh({ className }: SovereignMeshProps) {
             <span className="relative block size-0">
               <span className="absolute -translate-x-1/2 -translate-y-1/2">
                 <span className="relative flex size-4 items-center justify-center">
-                  {[0, 1, 2].map((i) => (
-                    <span
-                      key={i}
-                      aria-hidden="true"
-                      className="absolute size-4 rounded-pill border border-hydro motion-reduce:hidden"
-                      style={{
-                        animation: `cv-ring 3.4s ${i * 1.13}s cubic-bezier(0.2,0,0.2,1) infinite`,
-                      }}
-                    />
-                  ))}
-                  <span className="relative size-3 rounded-pill bg-hydro shadow-[0_0_18px_var(--hydro)]" />
+                  <span className="relative size-3 rounded-pill bg-hydro" />
                 </span>
               </span>
               <span className="absolute top-4 left-1/2 -translate-x-1/2 rounded-sm border border-hydro/40 bg-carbon-900/90 px-2 py-1 text-center font-mono text-[10.5px] whitespace-nowrap text-hydro">

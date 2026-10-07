@@ -1,8 +1,10 @@
-import { Badge, Card, Icon } from "@/components/ui";
+import { Badge, Icon } from "@/components/ui";
 import {
+  Panel,
   PortalPageHeader,
   TableScroll,
   Th,
+  Tr,
 } from "@/components/portal/primitives";
 import { getClient } from "@/lib/api/client";
 import { formatNpr } from "@/lib/money";
@@ -30,13 +32,14 @@ export default async function SettingsPage() {
   return (
     <>
       <PortalPageHeader
-        title="settings"
+        eyebrow="account / settings"
+        title="Settings"
         description="Organisation, projects, team and access keys."
       />
 
       <section>
-        <h2 className="mb-3 font-mono text-[14px] text-ink-200">organisation</h2>
-        <Card surface="panel" padding={0}>
+        <h2 className="mb-3 text-[15px] font-semibold tracking-tight text-ink-100">Organisation</h2>
+        <Panel padding={0}>
           <dl className="grid sm:grid-cols-2">
             {[
               ["Name", org.name],
@@ -60,14 +63,14 @@ export default async function SettingsPage() {
               </div>
             ))}
           </dl>
-        </Card>
+        </Panel>
       </section>
 
       <section className="mt-8">
-        <h2 className="mb-3 font-mono text-[14px] text-ink-200">projects</h2>
+        <h2 className="mb-3 text-[15px] font-semibold tracking-tight text-ink-100">Projects</h2>
         <div className="grid gap-3 md:grid-cols-3">
           {projects.map((p) => (
-            <Card key={p.id} surface="panel" padding={20}>
+            <Panel key={p.id} padding={20}>
               <div className="flex items-center gap-2.5">
                 <Icon name="folder" size={16} className="text-hydro" />
                 <h3 className="font-mono text-[13.5px] text-ink-100">{p.name}</h3>
@@ -75,16 +78,16 @@ export default async function SettingsPage() {
               <p className="mt-2.5 text-[12.5px] leading-relaxed text-ink-400">
                 {p.description}
               </p>
-              <p className="mt-3 border-t border-line-subtle pt-3 font-mono text-[11px] text-ink-600">
+              <p className="mt-3 border-t border-line-subtle pt-3 font-mono text-[11px] text-ink-500">
                 {p.vclusterId} · created {formatDate(p.createdAt)}
               </p>
-            </Card>
+            </Panel>
           ))}
         </div>
       </section>
 
       <section className="mt-8">
-        <h2 className="mb-3 font-mono text-[14px] text-ink-200">team</h2>
+        <h2 className="mb-3 text-[15px] font-semibold tracking-tight text-ink-100">Team</h2>
         <TableScroll minWidth="44rem">
           <thead>
             <tr>
@@ -96,10 +99,10 @@ export default async function SettingsPage() {
           </thead>
           <tbody>
             {users.map((u, i) => (
-              <tr key={u.id} className={i > 0 ? "border-t border-line-subtle" : ""}>
+              <Tr key={u.id} index={i}>
                 <td className="px-4 py-3.5">
                   <div className="text-[13.5px] text-ink-100">{u.name}</div>
-                  <div className="mt-0.5 font-mono text-[11.5px] text-ink-600">
+                  <div className="mt-0.5 font-mono text-[11.5px] text-ink-500">
                     {u.email}
                   </div>
                 </td>
@@ -122,15 +125,15 @@ export default async function SettingsPage() {
                 <td className="px-4 py-3.5 text-right font-mono text-[11.5px] text-ink-500">
                   {formatDateTime(u.lastActiveAt)}
                 </td>
-              </tr>
+              </Tr>
             ))}
           </tbody>
         </TableScroll>
       </section>
 
       <section className="mt-8">
-        <h2 className="mb-3 font-mono text-[14px] text-ink-200">ssh keys</h2>
-        <Card surface="panel" padding={0}>
+        <h2 className="mb-3 text-[15px] font-semibold tracking-tight text-ink-100">Ssh keys</h2>
+        <Panel padding={0}>
           {sshKeys.map((k, i) => (
             <div
               key={k.id}
@@ -140,15 +143,15 @@ export default async function SettingsPage() {
             >
               <Icon name="key" size={15} className="text-hydro" />
               <span className="font-mono text-[13px] text-ink-100">{k.name}</span>
-              <span className="font-mono text-[11px] text-ink-600">
+              <span className="font-mono text-[11px] text-ink-500">
                 {k.fingerprint.slice(0, 30)}…
               </span>
-              <span className="ml-auto font-mono text-[11px] text-ink-600">
+              <span className="ml-auto font-mono text-[11px] text-ink-500">
                 added {formatDate(k.addedAt)}
               </span>
             </div>
           ))}
-        </Card>
+        </Panel>
       </section>
     </>
   );

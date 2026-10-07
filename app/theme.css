@@ -43,12 +43,31 @@
   --lo-k: 1; /*               shadow alpha multiplier         */
 }
 
+/* ── Dark text ramp, lifted for AA ─────────────────────────────────────────
+   The design system's dark --ink-500 (#6B7280, 4.1:1 on Carbon) and
+   --ink-600 (#4B515C, 2.5:1) carry real text — meta lines, captions, form
+   hints — so both are raised until they pass WCAG AA (4.5:1) on Carbon and
+   on the raised card surfaces. Ordering is kept: ink-400 > ink-500 > ink-600,
+   and ink-700 stays the faint decorative step. Verified ratios:
+     ink-500 #868D9A  6.0 ground · 5.4 card (carbon-600) · 5.0 hover (500)
+     ink-600 #778090  5.0 ground · 4.6 card (carbon-600)
+   --mute is the design system's alias of ink-500 and follows it.
+   The light block below overrides all three (higher specificity). */
+:root {
+  --ink-500: #868d9a;
+  --ink-600: #778090;
+  --mute: #868d9a;
+}
+
 /* ── Light ─────────────────────────────────────────────────────────────── */
 :root[data-theme="light"] {
   color-scheme: light;
 
-  /* Brand base */
-  --hydro: #15803d;
+  /* Brand base. Hydro is held a step darker than green-700 (#15803D, 4.6:1
+     on paper but only 4.1:1 on the pale Hydro tints that pills and badges
+     sit on): #12773A is 5.2:1 on paper and 4.65:1 on a 10% Hydro tint, so
+     small accent text stays AA wherever it lands. */
+  --hydro: #12773a;
   --hydro-dark: #166534;
   --carbon: #f3f5f7;
   --ink: #161c26;
@@ -75,13 +94,16 @@
   --carbon-500: #e6eaef;
   --carbon-400: #d9dee5;
 
-  /* Ink scale — inverted: 100 is the darkest text, 700 the faintest */
+  /* Ink scale — inverted: 100 is the darkest text, 700 the faintest.
+     ink-600 carries small text (meta lines, captions, hints, placeholders),
+     so it is held at AA: #606B7A is 4.95:1 on the ground (#F3F5F7) and
+     4.64:1 on carbon-800 bars. ink-500 is 5.47:1; ink-700 is decorative. */
   --ink-100: #0b0f17;
   --ink-200: #161c26;
   --ink-300: #2b3340;
   --ink-400: #4b5563;
   --ink-500: #5b6472;
-  --ink-600: #8b95a3;
+  --ink-600: #606b7a;
   --ink-700: #c5cbd3;
 
   /* Hairlines — ink on paper */
@@ -91,19 +113,19 @@
   --border-hydro: rgba(21, 128, 61, 0.4);
 
   /* Status — each darkened until it reads as text on paper */
-  --success: #15803d;
+  --success: #12773a;
   --warning: #b45309;
   --danger: #dc2626;
   --info: #0369a1;
 
   /* Aliases that must not follow the inversion */
   --text-on-hydro: #ffffff;
-  --action: #15803d;
+  --action: #12773a;
   --action-hover: #166534;
   --action-press: #14532d;
-  --link: #15803d;
+  --link: #12773a;
   --link-hover: #14532d;
-  --focus-ring: #15803d;
+  --focus-ring: #12773a;
 
   /* Shadows on paper: soft and cool instead of deep and black */
   --shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.08);
@@ -157,7 +179,7 @@
   --hydro-dark: #16a34a;
   --carbon: #05080d;
   --ink: #e8ecef;
-  --mute: #6b7280;
+  --mute: #868d9a;
 
   --hydro-100: #d6fbe5;
   --hydro-200: #a7f3cb;
@@ -181,8 +203,8 @@
   --ink-200: #e8ecef;
   --ink-300: #c2c8cf;
   --ink-400: #9aa2ad;
-  --ink-500: #6b7280;
-  --ink-600: #4b515c;
+  --ink-500: #868d9a;
+  --ink-600: #778090;
   --ink-700: #333944;
 
   --border-subtle: rgba(232, 236, 239, 0.07);
@@ -266,12 +288,14 @@
   --carbon-500: #c3ded7;
   --carbon-400: #b4d3cb;
 
+  /* Text steps held at AA on both the body (#E4F3F0) and the title bar
+     (#D8EDE8): output 6.4:1, title/muted 5.4:1, comments 4.6:1. */
   --ink-200: #143c36; /* command text   */
-  --ink-400: #3f6d66; /* output         */
-  --ink-500: #5b7f79; /* title, muted   */
-  --ink-600: #7a9a95; /* comments       */
+  --ink-400: #335953; /* output         */
+  --ink-500: #47635e; /* title, muted   */
+  --ink-600: #536d69; /* comments       */
   --ink-700: #9dbbb5; /* window dots    */
-  --text-muted: #5b7f79;
+  --text-muted: #47635e;
 
   --border-subtle: rgba(15, 118, 110, 0.12);
   --border-default: rgba(15, 118, 110, 0.22);

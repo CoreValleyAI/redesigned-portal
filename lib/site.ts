@@ -34,10 +34,13 @@ export const STATUS_URL = (process.env.NEXT_PUBLIC_STATUS_URL || "https://status
  */
 export const DOCS_URL = (process.env.NEXT_PUBLIC_DOCS_URL || "").replace(/\/+$/, "");
 
-export const SITE_TITLE = "CoreValley — Nepal's sovereign AI cloud";
+export const SITE_TITLE = "CoreValley — Nepal's GPU cloud, NVIDIA H200 in Kathmandu";
 
+/* The default description, also used by the manifest and the WebSite graph.
+   Every clause is a confirmed fact (see lib/availability.ts); keep it under
+   ~160 characters so search results show it whole. */
 export const SITE_DESCRIPTION =
-  "GPU cloud hosted in Kathmandu, Nepal. NVIDIA H100 and H200 capacity for training, fine-tuning and inference — billed in NPR, supported in Nepal time, with data that never leaves the country.";
+  "NVIDIA H200 GPUs in a hydro-powered Kathmandu datacenter, open now for enterprise early access. Billed in NPR, <5 ms latency in Kathmandu, data kept in Nepal.";
 
 /* Only facts that are stated on the public site or verifiable. Nothing here
    is guessed; see SEO_roadmap.txt for the items awaiting confirmation. */

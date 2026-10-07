@@ -16,6 +16,8 @@ export interface InputProps
   mono?: boolean;
   /** Leading adornment; recolours to Hydro on focus. */
   prefix?: React.ReactNode;
+  /** Trailing adornment, e.g. a keyboard hint. */
+  suffix?: React.ReactNode;
   size?: keyof typeof SIZES;
   wrapperClassName?: string;
 }
@@ -23,6 +25,7 @@ export interface InputProps
 export function Input({
   mono = false,
   prefix,
+  suffix,
   size = "md",
   disabled,
   className,
@@ -60,6 +63,7 @@ export function Input({
         )}
         {...rest}
       />
+      {suffix ? <span className="inline-flex shrink-0">{suffix}</span> : null}
     </div>
   );
 }

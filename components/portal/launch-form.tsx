@@ -6,10 +6,10 @@
  */
 import * as React from "react";
 import { useRouter } from "next/navigation";
-import { Badge, Button, Card, Icon, Input, Tag, Terminal } from "@/components/ui";
-import { PlaceholderPricingBadge } from "./primitives";
+import { Badge, Button, Icon, Input, Terminal } from "@/components/ui";
+import { Panel, PlaceholderPricingBadge } from "./primitives";
+import { LiveNumber } from "./live-number";
 import { getClient } from "@/lib/api/client";
-import { formatNpr } from "@/lib/money";
 import { cn } from "@/lib/cn";
 import type {
   GpuSku,
@@ -31,6 +31,20 @@ const ISOLATION_NOTE: Record<string, string> = {
   hami: "Software slice on a shared card. Cheaper, not fault-isolated.",
 };
 
+/** A numbered step heading: a Hydro index chip, then the step name. */
+function Step({ n, children }: { n: number; children: React.ReactNode }) {
+  return (
+    <div className="mb-5 flex items-center gap-3">
+      <span className="nums flex size-6 items-center justify-center rounded-pill border border-line-hydro bg-hydro/10 font-mono text-[11px] font-medium text-hydro">
+        {n}
+      </span>
+      <h2 className="text-[15px] font-semibold tracking-tight text-ink-100">{children}</h2>
+    </div>
+  );
+}
+
+const enter = (i: number) => ({ "--pt-d": `${80 + i * 70}ms` }) as React.CSSProperties;
+
 export function LaunchForm({
   skus,
   profiles,
@@ -42,6 +56,8 @@ export function LaunchForm({
 }) {
   const router = useRouter();
   const available = skus.filter((s) => s.status === "available");
+  // Shown so the roadmap is visible, but never selectable: only live SKUs launch.
+  const soon = skus.filter((s) => s.status === "coming-soon");
 
   const [name, setName] = React.useState("");
   const [skuId, setSkuId] = React.useState(available[0]?.id ?? "h200-sxm-141");
@@ -104,11 +120,11 @@ export function LaunchForm({
   }
 
   return (
-    <div className="grid gap-6 lg:grid-cols-[1fr_22rem] lg:items-start">
-      <div className="space-y-6">
+    <div className="grid gap-5 lg:grid-cols-[1fr_23rem] lg:items-start">
+      <div className="space-y-5">
         {/* Name and project */}
-        <Card surface="panel" padding={22}>
-          <p className="cv-label mb-4">1 · Identity</p>
+        <Panel padding={24} className="pt-in" style={enter(0)}>
+          <Step n={1}>Identity</Step>
           <div className="grid gap-4 sm:grid-cols-2">
             <div>
               <label htmlFor="pod-name" className="cv-label mb-2 block text-[10px]">
@@ -130,7 +146,7 @@ export function LaunchForm({
                 id="pod-project"
                 value={projectId}
                 onChange={(e) => setProjectId(e.target.value)}
-                className="h-10 w-full rounded-md border border-line bg-surface-input px-3 font-mono text-[13px] text-ink-100 outline-none focus:border-hydro"
+                className="pt-select h-10 w-full cursor-pointer rounded-md border border-line bg-surface-input px-3 font-mono text-[13px] font-medium text-ink-100 outline-none transition-[border-color,box-shadow] duration-fast hover:border-line-strong focus:border-hydro focus:shadow-[0_0_0_3px_rgb(var(--hydro-rgb)/0.12)]"
               >
                 {projects.map((p) => (
                   <option key={p.id} value={p.id}>
@@ -140,31 +156,77 @@ export function LaunchForm({
               </select>
             </div>
           </div>
-        </Card>
+        </Panel>
 
         {/* GPU */}
-        <Card surface="panel" padding={22}>
-          <p className="cv-label mb-4">2 · GPU</p>
-          <div className="flex flex-wrap gap-2">
-            {available.map((s) => (
-              <Tag
+        <Panel padding={24} className="pt-in" style={enter(1)}>
+          <Step n={2}>GPU</Step>
+          <div className="grid gap-2.5 sm:grid-cols-2">
+            {available.map((s) => {
+              const on = skuId === s.id;
+              return (
+                <button
+                  key={s.id}
+                  type="button"
+                  onClick={() => setSkuId(s.id)}
+                  aria-pressed={on}
+                  data-on={on ? "" : undefined}
+                  className="pt-option flex cursor-pointer items-center gap-3.5 px-4 py-3.5 text-left"
+                >
+                  <span
+                    className={cn(
+                      "flex size-10 flex-none items-center justify-center rounded-lg border border-line bg-carbon-600",
+                      on ? "text-hydro" : "text-ink-500",
+                    )}
+                  >
+                    <Icon name="cpu" size={19} weight={on ? "duotone" : "regular"} />
+                  </span>
+                  <span className="min-w-0">
+                    <span className="block text-[14px] font-semibold tracking-tight text-ink-100">
+                      {s.name}
+                    </span>
+                    <span className="mt-0.5 block font-mono text-[11.5px] text-ink-500">
+                      {s.memoryGb} GB {s.memoryType} · {s.architecture}
+                    </span>
+                  </span>
+                  {on ? <Icon name="check" size={15} className="ml-auto text-hydro" /> : null}
+                </button>
+              );
+            })}
+            {soon.map((s) => (
+              <div
                 key={s.id}
-                selected={skuId === s.id}
-                onClick={() => setSkuId(s.id)}
+                aria-disabled="true"
+                className="flex items-center gap-3.5 rounded-lg border border-dashed border-line px-4 py-3.5"
               >
-                {s.shortName} · {s.memoryGb} GB
-              </Tag>
+                <span className="flex size-10 flex-none items-center justify-center rounded-lg border border-line text-ink-500">
+                  <Icon name="cpu" size={19} />
+                </span>
+                <span className="min-w-0">
+                  <span className="block text-[14px] font-semibold tracking-tight text-ink-400">
+                    {s.name}
+                  </span>
+                  <span className="mt-0.5 block font-mono text-[11.5px] text-ink-500">
+                    {s.memoryGb} GB {s.memoryType} · {s.architecture}
+                  </span>
+                </span>
+                <Badge tone="neutral" className="ml-auto shrink-0">
+                  coming soon
+                </Badge>
+              </div>
             ))}
           </div>
-          <p className="mt-3 text-[12.5px] text-ink-500">
-            {skus.filter((s) => s.status === "coming-soon").length} more SKUs
-            arriving — RTX PRO 6000 Blackwell, L40S and L4.
-          </p>
-        </Card>
+          {soon.length ? (
+            <p className="mt-3.5 text-[12.5px] text-ink-500">
+              Early access runs on the H200. The rest launch from here as they
+              land, starting with the H100 and RTX PRO 6000 Blackwell.
+            </p>
+          ) : null}
+        </Panel>
 
         {/* Slice */}
-        <Card surface="panel" padding={22}>
-          <p className="cv-label mb-4">3 · Slice profile</p>
+        <Panel padding={24} className="pt-in" style={enter(2)}>
+          <Step n={3}>Slice profile</Step>
           <div className="space-y-2">
             {skuProfiles.map((p) => {
               const on = p.id === profileId;
@@ -174,13 +236,8 @@ export function LaunchForm({
                   type="button"
                   onClick={() => setProfileId(p.id)}
                   aria-pressed={on}
-                  className={cn(
-                    "flex w-full cursor-pointer items-center gap-3 rounded-md border px-3.5 py-3 text-left",
-                    "transition-colors duration-fast ease-standard",
-                    on
-                      ? "border-hydro bg-hydro/8"
-                      : "border-line bg-carbon-700 hover:bg-carbon-600",
-                  )}
+                  data-on={on ? "" : undefined}
+                  className="pt-option flex w-full cursor-pointer items-center gap-3.5 px-4 py-3 text-left"
                 >
                   <Icon
                     name={p.isolation === "exclusive" ? "cpu" : "slice"}
@@ -189,7 +246,7 @@ export function LaunchForm({
                   />
                   <span className="min-w-0 flex-1">
                     <span className="flex flex-wrap items-center gap-2">
-                      <span className="font-mono text-[13px] text-ink-100">
+                      <span className="font-mono text-[13.5px] font-medium text-ink-100">
                         {p.label}
                       </span>
                       <Badge
@@ -214,20 +271,30 @@ export function LaunchForm({
                       {p.vcpus} vCPU
                     </span>
                   </span>
+                  {/* Compute share, drawn: how much of the card this slice gets. */}
+                  <span className="hidden w-24 flex-none sm:block" aria-hidden="true">
+                    <span className="block h-1 overflow-hidden rounded-pill bg-carbon-500">
+                      <span
+                        className={cn("block h-full rounded-pill", on ? "bg-hydro" : "bg-ink-600")}
+                        style={{ width: `${p.computePercent}%` }}
+                      />
+                    </span>
+                  </span>
                 </button>
               );
             })}
           </div>
           {profile ? (
-            <p className="mt-3 text-[12.5px] leading-relaxed text-ink-400">
+            <p key={profile.isolation} className="pt-in mt-3.5 flex items-center gap-2 text-[12.5px] leading-relaxed text-ink-400">
+              <Icon name="info" size={14} className="flex-none text-ink-500" />
               {ISOLATION_NOTE[profile.isolation]}
             </p>
           ) : null}
-        </Card>
+        </Panel>
 
         {/* Image and count */}
-        <Card surface="panel" padding={22}>
-          <p className="cv-label mb-4">4 · Image and scale</p>
+        <Panel padding={24} className="pt-in" style={enter(3)}>
+          <Step n={4}>Image and scale</Step>
           <div className="space-y-2">
             {IMAGES.map((img) => (
               <button
@@ -235,15 +302,12 @@ export function LaunchForm({
                 type="button"
                 onClick={() => setImage(img.id)}
                 aria-pressed={image === img.id}
-                className={cn(
-                  "flex w-full cursor-pointer items-center justify-between gap-3 rounded-md border px-3.5 py-2.5 text-left",
-                  "transition-colors duration-fast ease-standard",
-                  image === img.id
-                    ? "border-hydro bg-hydro/8"
-                    : "border-line bg-carbon-700 hover:bg-carbon-600",
-                )}
+                data-on={image === img.id ? "" : undefined}
+                className="pt-option flex w-full cursor-pointer flex-col items-start gap-0.5 px-4 py-2.5 text-left sm:flex-row sm:items-center sm:justify-between sm:gap-3"
               >
-                <span className="font-mono text-[12.5px] text-ink-200">
+                {/* An image reference never breaks mid-tag: on a phone the
+                    label drops below it instead. */}
+                <span className="max-w-full overflow-x-auto font-mono text-[12.5px] font-medium whitespace-nowrap text-ink-100">
                   {img.id}
                 </span>
                 <span className="text-[12px] text-ink-500">
@@ -260,17 +324,19 @@ export function LaunchForm({
                 <Button
                   variant="secondary"
                   size="sm"
+                  className="size-11 px-0"
                   onClick={() => setCount((c) => Math.max(1, c - 1))}
                   aria-label="Decrease GPU count"
                 >
                   <Icon name="minus" size={14} />
                 </Button>
-                <span className="w-10 text-center font-mono text-xl text-ink-100">
+                <span className="nums w-10 text-center font-mono text-xl font-medium text-ink-100">
                   {count}
                 </span>
                 <Button
                   variant="secondary"
                   size="sm"
+                  className="size-11 px-0"
                   onClick={() => setCount((c) => Math.min(8, c + 1))}
                   aria-label="Increase GPU count"
                 >
@@ -287,11 +353,11 @@ export function LaunchForm({
               scale out.
             </p>
           )}
-        </Card>
+        </Panel>
       </div>
 
       {/* Summary */}
-      <div className="space-y-4 lg:sticky lg:top-24">
+      <div className="pt-in space-y-4 lg:sticky lg:top-24" style={enter(1)}>
         <Terminal
           title="command preview"
           cursor={false}
@@ -301,7 +367,7 @@ export function LaunchForm({
           ]}
         />
 
-        <Card surface="panel" padding={22}>
+        <Panel padding={24} accent>
           <div className="flex items-center justify-between">
             <p className="cv-label text-[10px]">Estimate</p>
             <PlaceholderPricingBadge />
@@ -309,27 +375,30 @@ export function LaunchForm({
 
           {estimate ? (
             <>
-              <p className="mt-4 font-mono text-[28px] leading-none text-hydro">
-                {formatNpr(estimate.ratePaisaPerHour)}
+              <p className="mt-5 font-mono text-[34px] leading-none font-medium tracking-tight text-hydro">
+                <LiveNumber value={estimate.ratePaisaPerHour / 100} decimals={2} prefix="NPR " />
               </p>
-              <p className="mt-1.5 font-mono text-[11px] text-ink-500">
+              <p className="mt-2 font-mono text-[11px] tracking-wide text-ink-500">
                 per hour · metered per second
               </p>
 
-              <dl className="mt-5 space-y-2.5 border-t border-line-subtle pt-4">
+              <dl className="pt-well mt-5 space-y-2.5 px-4 py-3.5">
                 <div className="flex justify-between gap-3">
                   <dt className="text-[12.5px] text-ink-400">
                     If left running a month
                   </dt>
-                  <dd className="font-mono text-[12.5px] text-ink-200">
-                    {formatNpr(estimate.estimatedMonthlyPaisa, { compact: true })}
+                  <dd className="font-mono text-[12.5px] font-medium text-ink-100">
+                    <LiveNumber
+                      value={Math.round(estimate.estimatedMonthlyPaisa / 100)}
+                      prefix="NPR "
+                    />
                   </dd>
                 </div>
                 <div className="flex justify-between gap-3">
                   <dt className="text-[12.5px] text-ink-400">
                     Minimum billable
                   </dt>
-                  <dd className="font-mono text-[12.5px] text-ink-200">
+                  <dd className="font-mono text-[12.5px] font-medium text-ink-100">
                     {estimate.minimumBillableSeconds}s
                   </dd>
                 </div>
@@ -337,7 +406,7 @@ export function LaunchForm({
                   <dt className="text-[12.5px] text-ink-400">
                     Region
                   </dt>
-                  <dd className="font-mono text-[12.5px] text-ink-200">
+                  <dd className="font-mono text-[12.5px] font-medium text-ink-100">
                     np-ktm-1
                   </dd>
                 </div>
@@ -361,11 +430,11 @@ export function LaunchForm({
             {launching ? "launching…" : "launch pod"}
           </Button>
           {!name ? (
-            <p className="mt-2.5 text-center text-[12px] text-ink-600">
+            <p className="mt-2.5 text-center text-[12px] text-ink-500">
               Give the pod a name to continue.
             </p>
           ) : null}
-        </Card>
+        </Panel>
       </div>
     </div>
   );

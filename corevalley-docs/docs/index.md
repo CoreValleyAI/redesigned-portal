@@ -2,8 +2,8 @@
 
 Guides and reference for running AI workloads on CoreValley, Nepal's sovereign GPU cloud. Everything here describes the platform as it ships; sections that are still being written say so.
 
-!!! info "Documentation in progress"
-    The platform is in early access and these pages are being written alongside it. Each section below describes what it will cover. For anything you need now, email [info@corevalley.ai](mailto:info@corevalley.ai) — an engineer in Kathmandu answers.
+!!! info "Early access — documentation in progress"
+    Early access is open to enterprises on NVIDIA H200. More GPUs, and access for more teams, are coming soon. These pages are being written alongside the platform, and each section below describes what it will cover. For anything you need now, email [info@corevalley.ai](mailto:info@corevalley.ai) — an engineer in Kathmandu answers within one working day.
 
 ---
 
@@ -19,35 +19,35 @@ Guides and reference for running AI workloads on CoreValley, Nepal's sovereign G
 
     [:octicons-arrow-right-24: Read the quickstart](guides/quickstart.md)
 
-- :material-flash:{ .lg .middle } **AI Lab**
+- :material-cloud:{ .lg .middle } **GPU pods & dedicated**
 
     ---
 
-    Managed JupyterHub on GPUs for teams, labs and courses.
+    Containers on a whole H200 or a slice of one, and dedicated servers when a workload needs a machine to itself.
 
-    [:octicons-arrow-right-24: AI Lab](platform/ai-lab.md)
+    [:octicons-arrow-right-24: GPU pods & dedicated](platform/gpu-workspace.md)
 
-- :material-cloud:{ .lg .middle } **GPU Workspace**
-
-    ---
-
-    Full GPU environments with root access, images and volumes.
-
-    [:octicons-arrow-right-24: GPU Workspace](platform/gpu-workspace.md)
-
-- :material-chip:{ .lg .middle } **Inference API**
+- :material-flash:{ .lg .middle } **JupyterHub**
 
     ---
 
-    OpenAI-compatible endpoints and API keys.
+    Managed GPU notebooks for teams, labs and courses.
 
-    [:octicons-arrow-right-24: Inference API](platform/inference.md)
+    [:octicons-arrow-right-24: JupyterHub](platform/ai-lab.md)
+
+- :material-chip:{ .lg .middle } **Model endpoints & API**
+
+    ---
+
+    OpenAI-compatible endpoints and the API keys that control access.
+
+    [:octicons-arrow-right-24: Model endpoints & API](platform/inference.md)
 
 - :material-memory:{ .lg .middle } **Hardware**
 
     ---
 
-    GPU models, slice profiles and instance shapes.
+    GPU models, what is available now, slice profiles and instance shapes.
 
     [:octicons-arrow-right-24: GPU & instance specs](hardware/specs.md)
 
@@ -67,10 +67,10 @@ Guides and reference for running AI workloads on CoreValley, Nepal's sovereign G
 
 | Section | What it covers |
 |---|---|
-| **Platform** | The three service lines — AI Lab (notebooks), GPU Workspace (pods and dedicated nodes) and the Inference API — and how they share projects, storage and keys. |
-| **Hardware** | Which NVIDIA GPUs are available, MIG and HAMi slice profiles, memory, bandwidth and networking. |
+| **Platform** | The four products — GPU pods, JupyterHub, Model endpoints and Dedicated servers — and how they share projects, storage and keys. They were previously called GPU Workspace, AI Lab and Inference API. |
+| **Hardware** | Which NVIDIA GPUs are available (H200 today; H100, RTX PRO 6000 Blackwell, L40S and L4 coming soon), slice profiles, memory, bandwidth and networking. |
 | **Billing** | How usage is metered, how invoices are produced and how to pay in NPR. |
 | **Guides** | Task-oriented walkthroughs, starting with the quickstart. |
 | **Support** | Service levels, maintenance windows and how to reach the team. |
 
-Conventions used throughout: commands are shown for the `corevalley` CLI and the console side by side where both exist; times are Nepal Time (UTC+05:45) unless marked UTC; the region is referred to as `np-ktm-1`.
+Conventions used throughout: commands are shown for the `corevalley` CLI and the console side by side where both exist; times are Nepal Time (UTC+05:45) unless marked UTC; the region — our hydro-powered datacenter in Kathmandu — is referred to as `np-ktm-1`.

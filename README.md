@@ -32,12 +32,11 @@ Next.js 15 · React 19 · TypeScript · Tailwind CSS v4 · static export to GitH
 
 ## Status of the project
 
-The public pages are production-quality. Three things are placeholders and
-are labelled as such in the UI:
+The public pages are production-quality. Three things are placeholders:
 
 | Placeholder | Where | To go live |
 |---|---|---|
-| **Pricing** — every NPR rate was invented for UI work | `lib/catalog.ts` | Replace the rates, set `meta.pricingIsPlaceholder` to `false`, fill `meta.reviewedAt`. The "indicative pricing" badge disappears. |
+| **Pricing** — every NPR rate was invented for UI work. Public pages no longer show any rate (the pricing page explains the billing model and offers a quote); only the console mock still shows them, under an "indicative pricing" badge | `lib/catalog.ts` | Replace the rates, set `meta.pricingIsPlaceholder` to `false`, fill `meta.reviewedAt`. |
 | **Console data** — the portal runs on an in-memory mock | `lib/api/mock.ts` | Implement `lib/api/http.ts` against the control plane and build with `NEXT_PUBLIC_API_MODE=http`. |
 | **Sign-in** — the auth modal sets a cookie, nothing more | `components/layout/auth-modal.tsx` | Wire the Keycloak flow described in `docs/03-keycloak-identity.md`. |
 
@@ -97,7 +96,8 @@ lib/
   seo.ts              per-page metadata helper
   theme.ts            dark/light theme state and the canvas palette
   products.ts         the four products (drives /products and nav)
-  catalog.ts          GPU SKUs, slice profiles and placeholder rates
+  catalog.ts          GPU SKUs (with availability status), slice profiles and placeholder rates
+  availability.ts     what is on offer today: early-access line, latency, power, reply time
   docs/               reads corevalley-docs/ into pages, headings and search
   api/                console data client (mock + HTTP stub)
 corevalley-docs/      documentation source: mkdocs.yml (nav) + docs/**/*.md
@@ -119,9 +119,9 @@ sets the title, description, canonical URL and social card in one call:
 
 ```ts
 export const metadata = pageMetadata({
-  title: "GPU Pricing in NPR — Per-second H100 and H200 Rates",
+  title: "About CoreValley — Nepal's Sovereign AI Cloud",
   description: "…",
-  path: "/pricing",
+  path: "/company",
 });
 ```
 
@@ -136,7 +136,10 @@ the body of each as the content is written.
 **Legal pages** are a content map in `app/(marketing)/legal/[slug]/page.tsx`.
 
 **Facts the whole site repeats** — organisation name, email, location, social
-links, canonical origin — are in `lib/site.ts`.
+links, canonical origin — are in `lib/site.ts`. **What is on offer today** —
+which GPUs are available now, the early-access line, latency, power source and
+reply time — is in `lib/availability.ts`, worded from each SKU's `status` in
+`lib/catalog.ts`. Change availability there, never in page copy.
 
 ---
 

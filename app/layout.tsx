@@ -55,12 +55,13 @@ export const metadata: Metadata = {
   keywords: [
     "GPU cloud Nepal",
     "AI cloud Nepal",
-    "H100 Kathmandu",
+    "NVIDIA H200 Kathmandu",
     "H200 Nepal",
     "sovereign AI infrastructure",
     "GPU rental Nepal",
     "NPR GPU billing",
     "data residency Nepal",
+    "hydro-powered GPU cloud",
     "JupyterHub GPU",
     "LLM inference Nepal",
   ],
@@ -114,10 +115,10 @@ export default function RootLayout({
           into layer(base)) already sets --bg-base, --text-primary and the
           Manrope 300 / 1.6 body defaults. */}
       <body className="min-h-dvh antialiased">
-        {/* Theme bootstrap: stamps <html data-theme> from the saved choice or
-            the OS preference before anything below paints, so the first frame
-            is already the right theme. First in <body> rather than in <head>
-            so it runs after <html> exists and before any content. */}
+        {/* Theme bootstrap: stamps <html data-theme> from the saved choice
+            (else light, see lib/theme.ts) before anything below paints, so the
+            first frame is already the right theme. First in <body> rather than
+            in <head> so it runs after <html> exists and before any content. */}
         <script dangerouslySetInnerHTML={{ __html: THEME_BOOTSTRAP }} />
 
         {/* Organisation and site graph, once, for every page. Pages add their

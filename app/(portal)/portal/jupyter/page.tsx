@@ -1,10 +1,12 @@
-import { Badge, Card, Icon } from "@/components/ui";
+import { Badge, Icon } from "@/components/ui";
 import {
   MetricTile,
+  Panel,
   PlaceholderPricingBadge,
   PortalPageHeader,
   TableScroll,
   Th,
+  Tr,
 } from "@/components/portal/primitives";
 import { getClient } from "@/lib/api/client";
 import { formatNpr } from "@/lib/money";
@@ -31,7 +33,8 @@ export default async function JupyterPage() {
   return (
     <>
       <PortalPageHeader
-        title="notebooks"
+        eyebrow="compute / notebooks"
+        title="Notebooks"
         description="Managed JupyterHub. Users pick a spawner profile; idle servers are culled automatically so a forgotten notebook does not bill overnight."
       />
 
@@ -56,7 +59,7 @@ export default async function JupyterPage() {
       </div>
 
       <section className="mt-8">
-        <h2 className="mb-3 font-mono text-[14px] text-ink-200">servers</h2>
+        <h2 className="mb-3 text-[15px] font-semibold tracking-tight text-ink-100">Servers</h2>
         <TableScroll minWidth="52rem">
           <thead>
             <tr>
@@ -72,15 +75,12 @@ export default async function JupyterPage() {
             {servers.map((s, i) => {
               const profile = profiles.find((p) => p.id === s.spawnerProfileId);
               return (
-                <tr
-                  key={s.id}
-                  className={i > 0 ? "border-t border-line-subtle" : ""}
-                >
+                <Tr key={s.id} index={i}>
                   <td className="px-4 py-3.5">
                     <div className="text-[13.5px] text-ink-100">
                       {s.userName}
                     </div>
-                    <div className="mt-0.5 font-mono text-[11px] text-ink-600">
+                    <div className="mt-0.5 font-mono text-[11px] text-ink-500">
                       {s.id}
                     </div>
                   </td>
@@ -88,12 +88,7 @@ export default async function JupyterPage() {
                     {profile?.displayName ?? s.spawnerProfileId}
                   </td>
                   <td className="px-4 py-3.5">
-                    <Badge
-                      tone={STATUS_TONE[s.status]}
-                      dot={s.status === "running"}
-                    >
-                      {s.status}
-                    </Badge>
+                    <Badge tone={STATUS_TONE[s.status]}>{s.status}</Badge>
                   </td>
                   <td className="px-4 py-3.5 font-mono text-[12px] text-ink-400">
                     {formatDateTime(s.lastActivityAt)}
@@ -104,7 +99,7 @@ export default async function JupyterPage() {
                   <td className="px-4 py-3.5 text-right font-mono text-[12.5px] text-ink-200">
                     {formatNpr(s.costToDatePaisa, { compact: true })}
                   </td>
-                </tr>
+                </Tr>
               );
             })}
           </tbody>
@@ -113,8 +108,8 @@ export default async function JupyterPage() {
 
       <section className="mt-8">
         <div className="mb-3 flex items-center gap-3">
-          <h2 className="font-mono text-[14px] text-ink-200">
-            spawner profiles
+          <h2 className="text-[15px] font-semibold tracking-tight text-ink-100">
+            Spawner profiles
           </h2>
           <PlaceholderPricingBadge />
         </div>
@@ -122,7 +117,7 @@ export default async function JupyterPage() {
           {profiles.map((p) => {
             const rate = JUPYTER_RATES.find((r) => r.spawnerProfileId === p.id);
             return (
-              <Card key={p.id} surface="panel" padding={20}>
+              <Panel key={p.id} padding={20}>
                 <div className="flex items-center gap-2.5">
                   <Icon
                     name={p.skuId ? "cpu" : "database"}
@@ -144,7 +139,7 @@ export default async function JupyterPage() {
                     </span>
                   </p>
                 ) : null}
-              </Card>
+              </Panel>
             );
           })}
         </div>

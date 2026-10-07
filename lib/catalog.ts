@@ -69,7 +69,8 @@ export const GPU_SKUS: GpuSku[] = [
     bandwidth: "3.35 TB/s",
     fp8Tflops: 3958,
     bestFor: "LLM fine-tuning and multi-GPU training",
-    status: "available",
+    // Not live yet: early access is H200-only. Flip back when H100s land.
+    status: "coming-soon",
     migCapable: true,
   },
   {

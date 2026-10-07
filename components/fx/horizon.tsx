@@ -1,33 +1,22 @@
 /**
- * The line a section starts on. When the section crosses into view, a head
- * of Hydro light sweeps along the rule from left to right, drawing it, and
- * the section's index and name resolve at the right-hand end in mono — the
- * page marking a change of scene the way a terminal marks a new command.
+ * The line a section starts on.
  *
- * A server component: the trigger is <Reveal>'s `data-shown`, the motion is
- * keyframes in glass.css. Replaces the plain `.rule-fade` at a section's top.
+ * Deliberately quiet: the same centre-weighted hairline (`.rule-fade`) that
+ * opens every section on the interior pages, so the home page separates its
+ * scenes the way the rest of the site does. It used to carry a dot-matrix
+ * band, a left-to-right sweep of light and a "02 / name" index; all three
+ * were cut as visual noise. The props stay so call sites need no change, and
+ * ride along as data attributes for anyone inspecting the page.
+ *
+ * A server component with no motion and nothing to hydrate.
  */
-
-import { Reveal } from "./reveal";
-import { DotSeam } from "./dot-seam";
 
 export function Horizon({ index, label }: { index: string; label: string }) {
   return (
-    <>
-    {/* The dot-matrix dissolve between the previous section and this one. */}
-    <DotSeam />
-    <Reveal
-      kind="horizon"
+    <hr
       aria-hidden="true"
-      className="horizon pointer-events-none absolute inset-x-0 top-0 mx-auto max-w-page-xl px-5 md:px-10"
-    >
-      <span className="horizon__line">
-        <span className="horizon__head" />
-      </span>
-      <span className="horizon__label">
-        <span className="text-hydro">{index}</span> / {label}
-      </span>
-    </Reveal>
-    </>
+      data-section={`${index} ${label}`}
+      className="rule-fade pointer-events-none absolute inset-x-0 top-0 mx-auto max-w-page-xl"
+    />
   );
 }

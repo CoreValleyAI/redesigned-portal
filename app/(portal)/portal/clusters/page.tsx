@@ -1,5 +1,9 @@
-import { Badge, Card, Icon, Terminal } from "@/components/ui";
-import { PortalPageHeader, UtilBar } from "@/components/portal/primitives";
+import { Badge, Icon, Terminal } from "@/components/ui";
+import {
+  Panel,
+  PortalPageHeader,
+  UtilBar,
+} from "@/components/portal/primitives";
 import { getClient } from "@/lib/api/client";
 import { formatDate } from "@/lib/format";
 import { skuById } from "@/lib/catalog";
@@ -17,7 +21,8 @@ export default async function ClustersPage() {
   return (
     <>
       <PortalPageHeader
-        title="vclusters"
+        eyebrow="platform / vclusters"
+        title="vClusters"
         description="Each project runs in a dedicated virtual Kubernetes cluster with its own API server. Bring kubectl if you would rather not use our CLI."
       />
 
@@ -26,7 +31,7 @@ export default async function ClustersPage() {
           const project = projects.find((p) => p.id === vc.projectId);
           const policy = policies.find((p) => p.vclusterId === vc.id);
           return (
-            <Card key={vc.id} surface="panel" padding={0}>
+            <Panel key={vc.id} padding={0}>
               <div className="flex flex-wrap items-center gap-3 border-b border-line-subtle px-5 py-4">
                 <Icon name="cluster" size={18} className="text-hydro" />
                 <div>
@@ -40,7 +45,7 @@ export default async function ClustersPage() {
                     <Badge tone="info">network isolated</Badge>
                   ) : null}
                   {policy ? <Badge tone="neutral">{policy.mode}</Badge> : null}
-                  <Badge tone={vc.status === "ready" ? "success" : "warning"} dot>
+                  <Badge tone={vc.status === "ready" ? "success" : "warning"}>
                     {vc.status}
                   </Badge>
                 </div>
@@ -57,7 +62,7 @@ export default async function ClustersPage() {
                     return (
                       <div
                         key={pool.id}
-                        className="flex flex-wrap items-center gap-x-5 gap-y-2 rounded-md border border-line bg-carbon-700 px-4 py-3"
+                        className="flex flex-wrap items-center gap-x-5 gap-y-2 rounded-md border border-line bg-carbon-800/60 px-4 py-3"
                       >
                         <span className="font-mono text-[12.5px] text-ink-200">
                           {pool.name}
@@ -69,7 +74,7 @@ export default async function ClustersPage() {
                           {pool.readyReplicas}/{pool.desiredReplicas} ready
                         </span>
                         <span className="ml-auto flex items-center gap-4">
-                          <span className="font-mono text-[11px] text-ink-600">
+                          <span className="font-mono text-[11px] text-ink-500">
                             autoscale {pool.autoscaleMin}–{pool.autoscaleMax}
                           </span>
                           <UtilBar value={pct} width={80} />
@@ -89,19 +94,19 @@ export default async function ClustersPage() {
                   <code className="font-mono text-[12px] text-hydro">
                     {vc.apiServerEndpoint}
                   </code>
-                  <span className="ml-auto font-mono text-[11px] text-ink-600">
+                  <span className="ml-auto font-mono text-[11px] text-ink-500">
                     created {formatDate(vc.createdAt)}
                   </span>
                 </div>
               </div>
-            </Card>
+            </Panel>
           );
         })}
       </div>
 
       <section className="mt-8">
-        <h2 className="mb-3 font-mono text-[14px] text-ink-200">
-          connect with kubectl
+        <h2 className="mb-3 text-[15px] font-semibold tracking-tight text-ink-100">
+          Connect with kubectl
         </h2>
         <Terminal
           cursor={false}

@@ -159,7 +159,7 @@ export function AuthModal({
 
         <div className="my-5 flex items-center gap-2.5">
           <span className="h-px flex-1 bg-[var(--border-subtle)]" />
-          <span className="font-mono text-[10px] tracking-[0.1em] text-ink-600">
+          <span className="font-mono text-[10px] tracking-[0.1em] text-ink-500">
             OR
           </span>
           <span className="h-px flex-1 bg-[var(--border-subtle)]" />

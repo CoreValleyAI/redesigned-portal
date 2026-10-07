@@ -1,7 +1,6 @@
 "use client";
 
-import Link from "next/link";
-import { Button, Icon } from "@/components/ui";
+import { Button, ButtonLink, Icon } from "@/components/ui";
 import { LogoLockup } from "@/components/layout/logo";
 
 export default function GlobalError({
@@ -21,9 +20,9 @@ export default function GlobalError({
         This page didn&rsquo;t load.
       </h1>
       <p className="mt-5 leading-relaxed text-ink-400">
-        Something in the page failed while rendering. Retrying usually fixes
-        it. If it keeps happening, send us the reference below and we will
-        trace it.
+        Something on this page failed to load. Trying again usually fixes it.
+        If it keeps happening, send us the reference below and an engineer in
+        Kathmandu will trace it.
       </p>
 
       {/* The digest is the only thing that makes a support email actionable,
@@ -45,13 +44,13 @@ export default function GlobalError({
         >
           Try again
         </Button>
-        <Link href="/">
-          <Button variant="secondary">Back to home</Button>
-        </Link>
+        <ButtonLink href="/" variant="secondary">
+          Back to home
+        </ButtonLink>
       </div>
 
-      <p className="mt-8 font-mono text-[11.5px] tracking-wide text-ink-600">
-        still broken?{" "}
+      <p className="mt-8 font-mono text-[11.5px] tracking-wide text-ink-500">
+        still broken? email{" "}
         <a
           href="mailto:info@corevalley.ai"
           className="text-hydro underline decoration-hydro/40 underline-offset-4 transition-colors duration-normal hover:text-hydro-300"

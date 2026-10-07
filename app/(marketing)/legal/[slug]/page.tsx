@@ -37,7 +37,7 @@ const PAGES: Record<string, LegalPage> = {
   privacy: {
     title: "Privacy",
     lead: "What CoreValley collects, where it is stored, and who can reach it.",
-    updated: "12 August 2026",
+    updated: "7 October 2026",
     sections: [
       {
         heading: "What we hold",
@@ -68,6 +68,7 @@ const PAGES: Record<string, LegalPage> = {
         heading: "Third parties",
         paragraphs: [
           "Payment processing is handled by eSewa, Khalti or your bank, depending on the method you choose; those providers see the transaction, not your workloads. Identity is handled by Keycloak, which we host ourselves in the same region. Product analytics are first-party and aggregate — we do not embed third-party tracking scripts on the portal.",
+          "The contact form on this website is delivered by FormSubmit (formsubmit.co), a third-party form service with servers outside Nepal. It carries what you type into the form — your name, work email, organisation and message — to our inbox, and nothing from your account or your workloads. Keep confidential details out of the form; we will set up a secure channel for them.",
         ],
       },
       {
@@ -167,9 +168,10 @@ const PAGES: Record<string, LegalPage> = {
       {
         heading: "Where we are not sovereign",
         paragraphs: [
-          "Being specific about the edges is the point. Three things do cross the border, and none of them carry customer data:",
+          "Being specific about the edges is the point. Four things do cross the border, and none of them carry customer workload data:",
         ],
         bullets: [
+          "Enquiries sent through the contact form on this website are delivered to our inbox by FormSubmit, a third-party form service with servers outside Nepal. They carry what you type into the form, so keep confidential details for a secure channel.",
           "Outbound email — invoices and system notifications — is relayed through a provider with servers outside Nepal. It contains billing metadata, not workload content.",
           "Public container and package registries you choose to pull from are outside our control and outside the country; the pull is your egress, under your policy.",
           "If you call a third-party model API from inside a pod, that request leaves Nepal. The platform cannot make someone else's endpoint sovereign.",

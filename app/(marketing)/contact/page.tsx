@@ -2,13 +2,14 @@ import { Card, Icon } from "@/components/ui";
 import { PageHero, Section } from "@/components/marketing/page-hero";
 import { ContactForm } from "@/components/marketing/contact-form";
 import type { IconName } from "@/components/ui";
+import { EARLY_ACCESS } from "@/lib/availability";
 import { pageMetadata } from "@/lib/seo";
 import { JsonLd, faqJsonLd } from "@/components/seo/json-ld";
 
 export const metadata = pageMetadata({
-  title: "Contact Sales — GPU Capacity and NPR Pricing in Nepal",
+  title: "Get Early Access — NVIDIA H200 GPUs in Nepal",
   description:
-    "Talk to the CoreValley team in Kathmandu about H100 and H200 capacity, NPR pricing, academic access and data-residency requirements. Replies in Nepal business hours.",
+    "Enterprise early access to NVIDIA H200 GPUs in a hydro-powered Kathmandu datacenter. Tell us the workload and we reply within one working day with a capacity plan and a firm NPR quote.",
   path: "/contact",
 });
 
@@ -17,7 +18,10 @@ const DETAILS: { icon: IconName; title: string; body: React.ReactNode }[] = [
     icon: "send",
     title: "Email",
     body: (
-      <a href="mailto:info@corevalley.ai" className="text-hydro underline decoration-hydro/40 underline-offset-4 transition-colors duration-normal hover:text-hydro-300">
+      <a
+        href="mailto:info@corevalley.ai"
+        className="text-hydro underline decoration-hydro/40 underline-offset-4 transition-colors duration-normal hover:text-hydro-300"
+      >
         info@corevalley.ai
       </a>
     ),
@@ -30,31 +34,39 @@ const DETAILS: { icon: IconName; title: string; body: React.ReactNode }[] = [
   {
     icon: "health",
     title: "Support hours",
-    body: "Nepal Standard Time. Technical questions welcome.",
+    body: "Nepal Standard Time (UTC+5:45). Technical questions welcome.",
   },
   {
     icon: "cost",
     title: "Payment rails",
-    body: "eSewa, Khalti, bank transfer and corporate invoices on net terms.",
+    body: "eSewa, Khalti, bank transfer or a corporate invoice on net terms — all in NPR.",
   },
 ];
 
 const FAQ = [
   {
+    q: "Who can get access today?",
+    a: "Enterprises, on NVIDIA H200. The H100 and the RTX PRO 6000 Blackwell are coming soon, and so is access for more teams. Ask now and we will tell you first.",
+  },
+  {
     q: "What should I include?",
-    a: "Model type and size, approximate dataset volume, expected GPU hours per month, and whether you need pods, notebooks, endpoints or dedicated capacity.",
+    a: "The model and its size, roughly how much data, the GPU hours you expect each month, and whether you need pods, notebooks, an API for a model or dedicated servers. A rough guess is fine.",
   },
   {
-    q: "How quickly can I start?",
-    a: "Once requirements are agreed and the account is set up, most teams launch their first pod within minutes of capacity being allocated.",
+    q: "How quickly will I hear back?",
+    a: "Within one working day, with a capacity plan and a firm price in NPR. Once you accept it and your account is set up, you launch on H200 and pay by the second.",
   },
   {
-    q: "Do you support academic use?",
-    a: "Yes. JupyterHub is designed for universities and teaching, with discounted profiles and cohort management.",
+    q: "Do you support universities?",
+    a: "Yes. Access for universities and labs is coming soon, with JupyterHub built for teaching. Join the list now and we will be in touch when it opens.",
+  },
+  {
+    q: "How will I pay?",
+    a: "In Nepali rupees, metered by the second with a 60-second minimum. Pay by eSewa, Khalti, bank transfer or a corporate invoice on net terms.",
   },
   {
     q: "Can data stay in Nepal?",
-    a: "Yes — that is the point of the platform. Compute and storage are physically located in Kathmandu and egress can be default-denied per project.",
+    a: "Yes — that is the point. Compute and storage are in our Kathmandu datacenter, nothing is copied abroad, and regulated projects block all outbound traffic by default. This form is the exception: it travels through FormSubmit, so keep confidential details for a secure channel.",
   },
 ];
 
@@ -63,20 +75,34 @@ export default function ContactPage() {
     <>
       <JsonLd data={faqJsonLd(FAQ)} />
       <PageHero
-        eyebrow="Contact sales"
-        title="Let's discuss your workloads."
-        lead="Whether you need a single slice for research or capacity planning for production, the team in Kathmandu is ready to help."
-      />
+        eyebrow="Get early access"
+        title="Tell us what you want to run."
+        lead={`${EARLY_ACCESS.line} We reply ${EARLY_ACCESS.replyTime} with a capacity plan and a firm rupee quote.`}
+      >
+        <p className="mt-7 flex items-center gap-3 font-mono text-[11.5px] tracking-label text-ink-300 uppercase">
+          <span aria-hidden="true" className="h-px w-8 shrink-0 bg-hydro" />
+          <span>
+            <span className="text-hydro light:text-hydro-dark">{EARLY_ACCESS.pill}</span>
+            <span className="hidden sm:inline"> · enterprise early access</span>
+          </span>
+        </p>
+      </PageHero>
 
       <Section>
-        <div className="grid gap-8 lg:grid-cols-[0.85fr_1fr] lg:items-start">
-          <div>
+        <div className="grid gap-10 lg:grid-cols-[0.85fr_1fr] lg:items-start lg:gap-8">
+          {/* The form leads on a phone; on a wide screen it takes the right
+              column and the ways to reach us sit beside it. */}
+          <div className="order-1 lg:order-2">
+            <ContactForm />
+          </div>
+
+          <div className="order-2 lg:order-1">
             <h2 className="text-xl font-semibold tracking-tight text-ink-100">
               Reach us directly
             </h2>
-            <p className="mt-2 text-[13.5px] leading-relaxed text-ink-400">
-              Prefer a conversation first? Email us. We respond during Nepal
-              business hours and often beyond.
+            <p className="mt-2 text-[14px] leading-relaxed text-ink-400">
+              Prefer email? Write to us. We answer in Nepal business hours,
+              usually {EARLY_ACCESS.replyTime}.
             </p>
 
             <div className="mt-6 space-y-3">
@@ -90,7 +116,7 @@ export default function ContactPage() {
                       <h3 className="text-sm font-semibold text-ink-100">
                         {d.title}
                       </h3>
-                      <div className="mt-1 text-[13.5px] leading-relaxed text-ink-400">
+                      <div className="mt-1 text-[14px] leading-relaxed text-ink-400">
                         {d.body}
                       </div>
                     </div>
@@ -99,8 +125,6 @@ export default function ContactPage() {
               ))}
             </div>
           </div>
-
-          <ContactForm />
         </div>
       </Section>
 
@@ -111,7 +135,7 @@ export default function ContactPage() {
               <h3 className="text-[15px] font-semibold tracking-tight text-ink-100">
                 {f.q}
               </h3>
-              <p className="mt-2 text-[13.5px] leading-relaxed text-ink-400">
+              <p className="mt-2 text-[14px] leading-relaxed text-ink-400">
                 {f.a}
               </p>
             </Card>

@@ -1,10 +1,12 @@
-import { Badge, Card, Icon } from "@/components/ui";
+import { Badge, Icon } from "@/components/ui";
 import {
   MetricTile,
+  Panel,
   PlaceholderPricingBadge,
   PortalPageHeader,
   TableScroll,
   Th,
+  Tr,
 } from "@/components/portal/primitives";
 import { getClient } from "@/lib/api/client";
 import { VAT_RATE_PERCENT, formatNpr } from "@/lib/money";
@@ -42,7 +44,8 @@ export default async function BillingPage() {
   return (
     <>
       <PortalPageHeader
-        title="billing"
+        eyebrow="account / billing"
+        title="Billing"
         description={`Invoiced in NPR, VAT at ${VAT_RATE_PERCENT}%. Line items are derived from metered usage, not entered by hand.`}
       />
 
@@ -75,7 +78,7 @@ export default async function BillingPage() {
 
       <section className="mt-8">
         <div className="mb-3 flex flex-wrap items-center gap-3">
-          <h2 className="font-mono text-[14px] text-ink-200">
+          <h2 className="text-[15px] font-semibold tracking-tight text-ink-100">
             draft invoice · {draft.number}
           </h2>
           <Badge tone="neutral">draft</Badge>
@@ -93,15 +96,12 @@ export default async function BillingPage() {
           </thead>
           <tbody>
             {draft.lineItems.map((li, i) => (
-              <tr
-                key={li.id}
-                className={i > 0 ? "border-t border-line-subtle" : ""}
-              >
+              <Tr key={li.id} index={i}>
                 <td className="px-4 py-3.5">
                   <div className="text-[13.5px] text-ink-200">
                     {li.description}
                   </div>
-                  <div className="mt-0.5 font-mono text-[11px] text-ink-600">
+                  <div className="mt-0.5 font-mono text-[11px] text-ink-500">
                     {li.meterId}
                   </div>
                 </td>
@@ -114,7 +114,7 @@ export default async function BillingPage() {
                 <td className="px-4 py-3.5 text-right font-mono text-[12.5px] text-ink-100">
                   {formatNpr(li.amountPaisa)}
                 </td>
-              </tr>
+              </Tr>
             ))}
             <tr className="border-t border-line">
               <td
@@ -168,8 +168,8 @@ export default async function BillingPage() {
 
       <div className="mt-8 grid gap-6 lg:grid-cols-[1.3fr_1fr] lg:items-start">
         <section>
-          <h2 className="mb-3 font-mono text-[14px] text-ink-200">
-            invoice history
+          <h2 className="mb-3 text-[15px] font-semibold tracking-tight text-ink-100">
+            Invoice history
           </h2>
           <TableScroll minWidth="34rem">
             <thead>
@@ -182,10 +182,7 @@ export default async function BillingPage() {
             </thead>
             <tbody>
               {history.map((inv, i) => (
-                <tr
-                  key={inv.id}
-                  className={i > 0 ? "border-t border-line-subtle" : ""}
-                >
+                <Tr key={inv.id} index={i}>
                   <td className="px-4 py-3.5 font-mono text-[12.5px] text-ink-100">
                     {inv.number}
                   </td>
@@ -198,17 +195,17 @@ export default async function BillingPage() {
                   <td className="px-4 py-3.5 text-right font-mono text-[12.5px] text-ink-200">
                     {formatNpr(inv.totalPaisa, { compact: true })}
                   </td>
-                </tr>
+                </Tr>
               ))}
             </tbody>
           </TableScroll>
         </section>
 
         <section>
-          <h2 className="mb-3 font-mono text-[14px] text-ink-200">
-            payment methods
+          <h2 className="mb-3 text-[15px] font-semibold tracking-tight text-ink-100">
+            Payment methods
           </h2>
-          <Card surface="panel" padding={0}>
+          <Panel padding={0}>
             {methods.map((m, i) => (
               <div
                 key={m.id}
@@ -221,7 +218,7 @@ export default async function BillingPage() {
                   <div className="text-[13.5px] text-ink-200">
                     {RAIL_LABEL[m.rail] ?? m.displayName}
                   </div>
-                  <div className="mt-0.5 font-mono text-[11.5px] text-ink-600">
+                  <div className="mt-0.5 font-mono text-[11.5px] text-ink-500">
                     {m.detail}
                   </div>
                 </div>
@@ -232,7 +229,7 @@ export default async function BillingPage() {
                 ) : null}
               </div>
             ))}
-          </Card>
+          </Panel>
           <p className="mt-3 text-[12.5px] leading-relaxed text-ink-500">
             All settlement is in Nepali Rupees. No foreign currency invoices and
             no FX exposure.

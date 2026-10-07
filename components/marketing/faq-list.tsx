@@ -9,6 +9,10 @@ import { RevealGroup } from "@/components/fx/reveal";
  * and every answer stays in the HTML for search engines. The open/close
  * height animation is CSS (`.faq` in app/theme.css).
  */
+/* "5 ms", "141 GB": a number and its unit never split across lines. Display
+   only — the plain strings still feed the FAQ structured data. */
+const keepUnits = (s: string) => s.replace(/(\d) (?=(?:ms|GB|TB\/s|h)\b)/g, "$1 ");
+
 export function FaqList({ items }: { items: { q: string; a: string }[] }) {
   return (
     <RevealGroup step={60} className="mx-auto flex max-w-[52rem] flex-col gap-3">
@@ -21,7 +25,7 @@ export function FaqList({ items }: { items: { q: string; a: string }[] }) {
             </span>
           </summary>
           <p className="px-6 pb-6 text-[15.5px] leading-relaxed text-ink-400 md:px-7 md:pb-7 md:text-base">
-            {f.a}
+            {keepUnits(f.a)}
           </p>
         </details>
       ))}

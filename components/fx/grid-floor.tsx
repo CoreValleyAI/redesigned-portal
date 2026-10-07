@@ -17,17 +17,37 @@
  */
 
 import * as React from "react";
+import { usePathname } from "next/navigation";
 import { canvasPalette, subscribeTheme } from "@/lib/theme";
 
 /** Horizon height as a fraction of the viewport. */
 const HORIZON = 0.44;
+/**
+ * The reading column. The floor sits behind body copy, tables and forms on
+ * every page, so it is held to ~40% in the middle of the viewport, where
+ * the text is, and keeps its full strength at the edges and corners, where
+ * it carries the brand. A mask on the canvas rather than a change to the
+ * draw, so the grid's own falloff is untouched.
+ */
+const READING_MASK =
+  "radial-gradient(ellipse 64% 60% at 50% 48%, rgb(0 0 0 / 0.4) 0%, rgb(0 0 0 / 0.5) 52%, #000 100%)";
+/** On paper the hairlines read darker than the same alpha on Carbon. */
+const PAPER_DIM = 0.8;
 /** Rows drawn from the near edge to the horizon. */
 const ROWS = 26;
 /** Vertical lines either side of the vanishing point. */
 const COLS = 18;
 /* Colours come from lib/theme.ts per pass, so the floor follows the theme. */
 
+/* /platform draws its own world (the iceberg), so the floor stays out of it.
+   A wrapper, not an early return, so the canvas mounts fresh (and its effect
+   runs) when navigating back from /platform. */
 export function GridFloor() {
+  const pathname = usePathname() ?? "";
+  return pathname.startsWith("/platform") ? null : <GridFloorCanvas />;
+}
+
+function GridFloorCanvas() {
   const ref = React.useRef<HTMLCanvasElement>(null);
 
   React.useEffect(() => {
@@ -68,6 +88,7 @@ export function GridFloor() {
       canvas.height = Math.round(h * dpr);
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
       const hy = Math.round(h * HORIZON) + 0.5;
+      const ink = pal.subtractive ? PAPER_DIM : 1;
       rowGrads = [];
       rowAlpha = [];
       for (let i = 0; i < ROWS; i++) {
@@ -76,7 +97,7 @@ export function GridFloor() {
         // the far rows bunch together, and any residual alpha there piles
         // up into a visible line.
         const fade = 1 - Math.min(1, Math.max(0, (t - 0.55) / 0.35));
-        const a = 0.34 * Math.sin(Math.PI * Math.min(1, t * 1.15)) ** 1.4 * fade * fade;
+        const a = 0.34 * ink * Math.sin(Math.PI * Math.min(1, t * 1.15)) ** 1.4 * fade * fade;
         rowAlpha.push(a);
         const g = ctx.createLinearGradient(0, 0, w, 0);
         g.addColorStop(0, `rgba(${pal.hydro}, 0)`);
@@ -88,7 +109,7 @@ export function GridFloor() {
       colGrads = [];
       colGradsTop = [];
       for (let j = -COLS; j <= COLS; j++) {
-        const a = 0.24 * (1 - Math.min(1, Math.abs(j) / (COLS + 2)));
+        const a = 0.24 * ink * (1 - Math.min(1, Math.abs(j) / (COLS + 2)));
         // Columns fade to nothing over the third nearest the horizon, so
         // they never meet at the vanishing point.
         for (const [list, end] of [
@@ -294,6 +315,7 @@ export function GridFloor() {
       ref={ref}
       aria-hidden="true"
       className="pointer-events-none fixed inset-0 -z-10 block h-dvh w-screen transition-opacity duration-slow ease-standard"
+      style={{ WebkitMaskImage: READING_MASK, maskImage: READING_MASK }}
     />
   );
 }

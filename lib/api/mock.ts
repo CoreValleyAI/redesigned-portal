@@ -179,7 +179,8 @@ const POD_SEEDS: PodSeed[] = [
     id: "pod_3a8d77",
     name: "kyc-ocr-train",
     projectId: "prj_kyc_vision",
-    profileId: "h100-x1",
+    // Only the H200 is live (lib/catalog.ts), so every seeded workload runs on one.
+    profileId: "h200-x1",
     gpuCount: 1,
     image: "corevalley/vision:0.9",
     status: "running",
@@ -318,10 +319,10 @@ const VCLUSTERS: VCluster[] = [
     apiServerEndpoint: "https://vc-regulated.np-ktm-1.corevalley.ai",
     nodePools: [
       {
-        id: "np_h100",
-        name: "h100-pool",
-        skuId: "h100-sxm-80",
-        profileId: "h100-x1",
+        id: "np_h200_regulated",
+        name: "h200-pool",
+        skuId: "h200-sxm-141",
+        profileId: "h200-x1",
         desiredReplicas: 2,
         readyReplicas: 2,
         autoscaleMin: 1,
@@ -427,7 +428,7 @@ const MODEL_ENDPOINTS: ModelEndpoint[] = [
     parameterCount: "24B",
     contextLength: 131072,
     engine: "vllm",
-    servedOnSkuId: "h100-sxm-80",
+    servedOnSkuId: "h200-sxm-141",
     status: "live",
     quantization: "bf16",
     supportsToolCalling: true,
@@ -535,9 +536,9 @@ store.sshKeys = [
 
 const DEDICATED_NODES: DedicatedNode[] = [
   {
-    id: "node_h100_01",
+    id: "node_h200_01",
     name: "kyc-dedicated-01",
-    skuId: "h100-sxm-80",
+    skuId: "h200-sxm-141",
     gpuCount: 8,
     regionId: "np-ktm-1",
     form: "bare-metal",
@@ -546,7 +547,7 @@ const DEDICATED_NODES: DedicatedNode[] = [
     startedAt: isoAt(-140 * DAY),
     renewsAt: isoAt(225 * DAY),
     monthlyPaisa: Math.round(
-      (DEDICATED_MONTHLY.find((d) => d.id === "node-h100-8x")?.paisaPerMonth ?? 0) *
+      (DEDICATED_MONTHLY.find((d) => d.id === "node-h200-8x")?.paisaPerMonth ?? 0) *
         (1 - TERM_DISCOUNT_PERCENT["reserved-12mo"] / 100),
     ),
     ipmiEnabled: true,
@@ -1605,7 +1606,7 @@ export const mockClient = {
     delay({
       framework: "SOC 2 Type I",
       posture:
-        "Controls are designed and documented against the SOC 2 Type I framework. Type I attests to the design of controls at a point in time, not their operating effectiveness over a period. An independent audit has not yet been completed.",
+        "CoreValley is not SOC 2 certified or attested. Controls are being designed and documented against the SOC 2 Type I criteria, and no independent audit has started. A Type I report, once issued, covers the design of controls at one point in time, not how they operate over a period.",
       controls: clone(COMPLIANCE_CONTROLS),
       implementedCount: COMPLIANCE_CONTROLS.filter((c) => c.status === "implemented").length,
       totalCount: COMPLIANCE_CONTROLS.length,

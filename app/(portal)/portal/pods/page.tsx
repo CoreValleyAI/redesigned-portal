@@ -1,10 +1,11 @@
 import Link from "next/link";
-import { Button, Icon } from "@/components/ui";
+import { ButtonLink, Icon } from "@/components/ui";
 import {
   PodStatusPill,
   PortalPageHeader,
   TableScroll,
   Th,
+  Tr,
   UtilBar,
 } from "@/components/portal/primitives";
 import { getClient } from "@/lib/api/client";
@@ -22,19 +23,19 @@ export default async function PodsPage() {
   return (
     <>
       <PortalPageHeader
-        title="pods"
+        eyebrow="compute / pods"
+        title="Pods"
         description="Containerised GPU workloads. Exclusive cards, MIG instances and HAMi slices, all metered per second."
         actions={
-          <Link href="/portal/pods/new">
-            <Button
-              variant="primary"
-              size="sm"
-              mono
-              iconLeft={<Icon name="plus" size={15} />}
-            >
-              launch pod
-            </Button>
-          </Link>
+          <ButtonLink
+            href="/portal/pods/new"
+            variant="primary"
+            size="sm"
+            mono
+            iconLeft={<Icon name="plus" size={15} />}
+          >
+            launch pod
+          </ButtonLink>
         }
       />
 
@@ -44,7 +45,7 @@ export default async function PodsPage() {
             <Th>name</Th>
             <Th>project</Th>
             <Th>slice</Th>
-            <Th>image</Th>
+            <Th className="hidden 2xl:table-cell">image</Th>
             <Th>status</Th>
             <Th>utilisation</Th>
             <Th>uptime</Th>
@@ -61,7 +62,7 @@ export default async function PodsPage() {
                 ? Math.round(usageAt(pod.id, "telemetry", 3) * 96)
                 : 0;
             return (
-              <tr key={pod.id} className={i > 0 ? "border-t border-line-subtle" : ""}>
+              <Tr key={pod.id} index={i}>
                 <td className="px-4 py-3.5">
                   <Link
                     href={`/portal/pods/${pod.id}`}
@@ -69,7 +70,7 @@ export default async function PodsPage() {
                   >
                     {pod.name}
                   </Link>
-                  <div className="mt-0.5 font-mono text-[11px] text-ink-600">
+                  <div className="mt-0.5 font-mono text-[11px] text-ink-500">
                     {pod.id}
                   </div>
                 </td>
@@ -81,18 +82,18 @@ export default async function PodsPage() {
                     {pod.gpuCount > 1 ? `${pod.gpuCount}x ` : ""}
                     {sku.shortName} · {profile.label}
                   </span>
-                  <div className="mt-0.5 font-mono text-[10.5px] text-ink-600">
+                  <div className="mt-0.5 font-mono text-[10.5px] text-ink-500">
                     {profile.isolation}
                     {!profile.faultIsolated ? " · shared" : ""}
                   </div>
                 </td>
-                <td className="px-4 py-3.5 font-mono text-[11.5px] text-ink-500">
+                <td className="hidden px-4 py-3.5 font-mono text-[11.5px] text-ink-500 2xl:table-cell">
                   {pod.image.replace("corevalley/", "")}
                 </td>
                 <td className="px-4 py-3.5">
                   <PodStatusPill status={pod.status} />
                   {pod.statusDetail ? (
-                    <div className="mt-1 max-w-[16rem] text-[11.5px] text-ink-600">
+                    <div className="pt-wrap mt-1 max-w-[16rem] min-w-[12rem] text-[11.5px] leading-snug text-ink-500">
                       {pod.statusDetail}
                     </div>
                   ) : null}
@@ -106,7 +107,7 @@ export default async function PodsPage() {
                 <td className="px-4 py-3.5 text-right font-mono text-[12.5px] text-ink-200">
                   {formatNpr(pod.costToDatePaisa, { compact: true })}
                 </td>
-              </tr>
+              </Tr>
             );
           })}
         </tbody>

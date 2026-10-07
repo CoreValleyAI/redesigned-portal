@@ -339,11 +339,11 @@
       align-items: center;
     }
     .drum--gpu {
-      width: 196px;
+      width: 212px;
     }
     .drum--count,
     .drum--hours {
-      width: 132px;
+      width: 144px;
     }
   }
   /* The rack row, fitted to a narrow column: laid out at ~1.9× the column
@@ -475,7 +475,10 @@
       0 8px 22px rgb(var(--lo-rgb) / calc(0.6 * var(--lo-k))),
       0 1px 0 rgb(var(--lo-rgb) / calc(0.8 * var(--lo-k)));
     user-select: none;
-    touch-action: none;
+    /* The console sits in a phone's scroll path: a vertical swipe across a
+       dial must scroll the page. Turning on touch is a tap (chevron or the
+       neighbouring option); drag-to-turn is for mouse and pen only. */
+    touch-action: pan-y;
     transition: border-color var(--duration-normal) var(--ease-standard);
   }
   .drum:hover,
@@ -496,22 +499,58 @@
   }
   .drum__hint {
     font-size: 9px;
-    color: var(--ink-600);
+    white-space: nowrap;
+    color: var(--ink-500);
     transition: color var(--duration-normal) var(--ease-standard);
+  }
+  /* "click" until the dial is held, then "scroll". */
+  .drum__hint-held {
+    display: none;
+  }
+  .drum:focus-within .drum__hint-idle {
+    display: none;
+  }
+  .drum:focus-within .drum__hint-held {
+    display: inline;
   }
   .drum:hover .drum__hint,
   .drum:focus-within .drum__hint {
     color: var(--hydro);
   }
+  /* The hint names the gesture for the pointer in hand. */
+  .drum__hint--coarse {
+    display: none;
+  }
+  @media (pointer: coarse) {
+    .drum__hint--fine {
+      display: none;
+    }
+    .drum__hint--coarse {
+      display: inline;
+    }
+  }
   .drum__chev {
     display: flex;
     justify-content: center;
+    align-items: center;
     padding: 3px 0;
     border: 0;
     background: none;
     color: var(--ink-500);
     cursor: pointer;
     transition: color var(--duration-fast) var(--ease-standard);
+  }
+  /* On touch the chevrons are how a dial turns: give them a full-size
+     target, and a visible glyph. */
+  @media (pointer: coarse) {
+    .drum__chev {
+      min-height: 44px;
+      color: var(--ink-300);
+    }
+    .drum__chev svg {
+      width: 16px;
+      height: 16px;
+    }
   }
   .drum__chev:hover:not(:disabled) {
     color: var(--hydro);
@@ -531,6 +570,11 @@
     box-shadow: inset 0 2px 12px rgb(var(--lo-rgb) / calc(0.65 * var(--lo-k)));
     cursor: ns-resize;
     overflow: hidden;
+  }
+  @media (pointer: coarse) {
+    .drum__win {
+      cursor: default;
+    }
   }
   .drum__view {
     position: absolute;
@@ -585,7 +629,9 @@
     align-items: flex-start;
     justify-content: center;
     gap: 4px;
-    padding-inline: 14px;
+    /* A little more on the left, so the selected row's Hydro tick never
+       touches the first letter. */
+    padding-inline: 18px 8px;
     font-family: var(--font-mono);
     font-size: 14px;
     line-height: 1;
@@ -613,7 +659,7 @@
   }
   .drum__sub {
     font-size: 9.5px;
-    letter-spacing: 0.06em;
+    letter-spacing: 0.03em;
     color: var(--ink-500);
   }
   .drum__item[data-on] .drum__sub {
@@ -648,12 +694,48 @@
     display: flex;
     flex-direction: column;
     justify-content: center;
+    align-self: stretch;
     min-width: 0;
-    padding: 22px 24px;
+    padding: 20px 18px;
     border-radius: var(--radius-md, 6px);
     border: 1px solid var(--border-strong);
     background: var(--carbon-900);
     box-shadow: inset 0 2px 14px rgb(var(--lo-rgb) / calc(0.6 * var(--lo-k))), var(--edge-top);
+  }
+  @media (min-width: 40rem) {
+    .console__screen {
+      padding: 22px 26px;
+    }
+  }
+  /* The plan, read back in words: the line a buyer would say out loud. */
+  .console__plan {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 4px 12px;
+    margin-top: 10px;
+  }
+  .console__plan-main {
+    font-family: var(--font-mono);
+    font-size: clamp(1.25rem, 2.4vw, 1.75rem);
+    font-weight: 500;
+    line-height: 1.15;
+    letter-spacing: -0.01em;
+    color: var(--ink-100);
+  }
+  .console__plan-sub {
+    font-family: var(--font-mono);
+    font-size: 13px;
+    color: var(--ink-400);
+  }
+  /* Status: Hydro when it runs today, amber while it is on the roadmap. */
+  /* Doubled class: these sit on a .console__val, whose ink colour is
+     declared further down and would otherwise win. */
+  .console__status.console__status {
+    color: var(--hydro);
+  }
+  .console__status--soon.console__status--soon {
+    color: var(--warning);
   }
   .console__eyebrow,
   .console__note,
@@ -688,7 +770,7 @@
     color: var(--ink-500);
   }
   .console__rows {
-    margin-top: 18px;
+    margin-top: 16px;
     border-top: 1px solid var(--border-subtle);
   }
   .console__row {
@@ -696,37 +778,39 @@
     justify-content: space-between;
     align-items: baseline;
     gap: 16px;
-    padding: 9px 0;
+    padding: 8px 0;
     border-bottom: 1px solid var(--border-subtle);
   }
+  .console__row > .console__key {
+    flex: none;
+  }
+  /* Values wrap on a phone rather than run off the screen. */
   .console__val {
+    min-width: 0;
     font-family: var(--font-mono);
-    font-size: 13.5px;
+    font-size: 13px;
+    line-height: 1.45;
+    text-align: right;
     color: var(--ink-100);
-    white-space: nowrap;
   }
   .console__val--dim {
     color: var(--ink-400);
   }
   .console__actions {
     display: flex;
-    flex-direction: column;
+    flex-wrap: wrap;
     align-items: center;
-    gap: 16px;
+    justify-content: space-between;
+    gap: 12px 20px;
     margin-top: 20px;
-    text-align: center;
   }
-  /* While the price readout is commented out the screen holds only the
-     configuration line and the button: fill the row so the panel matches
-     the dials' height, and centre both ways. */
-  .console__screen--cta {
-    align-self: stretch;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
-  }
-  .console__screen--cta .console__actions {
-    margin-top: 16px;
+  /* A phone gets a full-width button under the thumb, the note beneath. */
+  @media (max-width: 39.99rem) {
+    .console__actions {
+      flex-direction: column;
+      align-items: stretch;
+      text-align: center;
+    }
   }
 
   /* Odometer: each digit is a strip of 0–9 that slides to the digit. */
@@ -1131,6 +1215,34 @@
     border-radius: 4px 4px 0 0;
   }
 
+  /* Rack a: every card partitioned. The fill becomes thin vertical slivers
+     with hairline gaps (MIG slices), and the empty part of the cell keeps
+     faint partition lines so the split reads even when the fill is low. */
+  .rack3d__cell--slice {
+    background: repeating-linear-gradient(
+      90deg,
+      transparent 0 2px,
+      rgb(var(--ink-rgb) / 0.08) 2px 3px
+    );
+  }
+  .rack3d__cell--slice .rack__fill {
+    background: repeating-linear-gradient(
+      90deg,
+      rgb(var(--hydro-rgb) / 0.95) 0 2px,
+      transparent 2px 3px
+    );
+  }
+  /* Rack c: reserved for one customer. A dashed Hydro outline stands just
+     off the rack, like a cage around a private row. */
+  .rack3d__rack--reserved::after {
+    content: "";
+    position: absolute;
+    inset: -5px;
+    border: 1px dashed var(--border-hydro);
+    border-radius: 9px;
+    pointer-events: none;
+  }
+
   /* A rack held pulled-out and lit by the pinned story (data-lit on .rack3d):
      the same pose as hover, plus its cells at least half hot, and the row
      turned a little further toward the viewer for each step. */
@@ -1252,21 +1364,11 @@
   }
 
   /* ══ RAIL ════════════════════════════════════════════════════════════════
-     The packet at the end of the progress fill, and the pulse a section's
-     dot gives when the packet lands on it. */
-  .rail__packet {
-    animation: cv-packet 1.6s var(--ease-standard) infinite alternate;
-  }
+     The packet at the end of the progress fill sits still (it used to breathe
+     its glow on a loop — nothing on the site blinks or pulses now), and a
+     section's mark settles once when the packet lands on it. */
   .rail__land {
     animation: cv-land 700ms var(--ease-out) both;
-  }
-  @keyframes cv-packet {
-    from {
-      box-shadow: 0 0 6px 1px rgb(var(--hydro-rgb) / 0.55);
-    }
-    to {
-      box-shadow: 0 0 12px 3px rgb(var(--hydro-rgb) / 0.85);
-    }
   }
   @keyframes cv-land {
     0% {
@@ -1352,20 +1454,8 @@
       opacity: 0.85;
     }
   }
+  /* Steady: the rack's LEDs are lit, never blinking. */
   .rack__led {
     box-shadow: 0 0 6px var(--hydro);
-    animation: cv-led 2.6s steps(1) calc(var(--i, 0) * -0.5s) infinite;
-  }
-  @keyframes cv-led {
-    0%,
-    88% {
-      opacity: 1;
-    }
-    92% {
-      opacity: 0.25;
-    }
-    96% {
-      opacity: 1;
-    }
   }
 }

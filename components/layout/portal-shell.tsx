@@ -18,32 +18,38 @@ const NAV: { heading: string; items: { href: string; label: string; icon: IconNa
   {
     heading: "compute",
     items: [
-      { href: "/portal", label: "overview", icon: "gauge" },
-      { href: "/portal/pods", label: "pods", icon: "slice" },
-      { href: "/portal/jupyter", label: "notebooks", icon: "notebook" },
-      { href: "/portal/models", label: "models", icon: "broadcast" },
-      { href: "/portal/dedicated", label: "dedicated", icon: "node" },
+      { href: "/portal", label: "Overview", icon: "gauge" },
+      { href: "/portal/pods", label: "Pods", icon: "slice" },
+      { href: "/portal/jupyter", label: "Notebooks", icon: "notebook" },
+      { href: "/portal/models", label: "Models", icon: "broadcast" },
+      { href: "/portal/dedicated", label: "Dedicated", icon: "node" },
     ],
   },
   {
     heading: "platform",
     items: [
-      { href: "/portal/clusters", label: "vclusters", icon: "cluster" },
-      { href: "/portal/network", label: "network", icon: "certificate" },
-      { href: "/portal/keys", label: "api keys", icon: "key" },
+      { href: "/portal/clusters", label: "vClusters", icon: "cluster" },
+      { href: "/portal/network", label: "Network", icon: "certificate" },
+      { href: "/portal/keys", label: "API keys", icon: "key" },
     ],
   },
   {
     heading: "account",
     items: [
-      { href: "/portal/usage", label: "usage", icon: "chart" },
-      { href: "/portal/billing", label: "billing", icon: "billing" },
-      { href: "/portal/audit", label: "audit log", icon: "audit" },
-      { href: "/portal/security", label: "security", icon: "compliance" },
-      { href: "/portal/settings", label: "settings", icon: "settings" },
+      { href: "/portal/usage", label: "Usage", icon: "chart" },
+      { href: "/portal/billing", label: "Billing", icon: "billing" },
+      { href: "/portal/audit", label: "Audit log", icon: "audit" },
+      { href: "/portal/security", label: "Security", icon: "compliance" },
+      { href: "/portal/settings", label: "Settings", icon: "settings" },
     ],
   },
 ];
+
+/** The console path as the CLI would print it: "console / pods / new". */
+function crumbs(pathname: string): string[] {
+  const parts = pathname.replace(/\/+$/, "").split("/").filter(Boolean);
+  return parts.map((p, i) => (i === 0 ? "console" : decodeURIComponent(p)));
+}
 
 function isActive(pathname: string, href: string) {
   if (href === "/portal") return pathname === "/portal";
@@ -53,10 +59,51 @@ function isActive(pathname: string, href: string) {
 export function PortalShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const [open, setOpen] = React.useState(false);
+  const menuRef = React.useRef<HTMLButtonElement>(null);
+  const closeRef = React.useRef<HTMLButtonElement>(null);
 
   React.useEffect(() => {
     setOpen(false);
   }, [pathname]);
+
+  /* The drawer only exists below lg. Crossing into the desktop layout closes
+     it, so the content column is never left inert behind a sidebar that is
+     now permanently on screen. */
+  React.useEffect(() => {
+    const mq = window.matchMedia("(min-width: 1024px)");
+    const onChange = () => {
+      if (mq.matches) setOpen(false);
+    };
+    mq.addEventListener("change", onChange);
+    return () => mq.removeEventListener("change", onChange);
+  }, []);
+
+  /* While open: focus moves into the drawer and Escape closes it. Closing by
+     hand returns focus to the menu button — but only once the page behind is
+     no longer inert, so it happens in the effect after the state commits,
+     not in the handler (an inert button silently refuses focus). A close
+     caused by navigation leaves focus to the new page. */
+  const returnFocus = React.useRef(false);
+  React.useEffect(() => {
+    if (!open) {
+      if (returnFocus.current) menuRef.current?.focus();
+      returnFocus.current = false;
+      return;
+    }
+    closeRef.current?.focus();
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key !== "Escape") return;
+      returnFocus.current = true;
+      setOpen(false);
+    };
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [open]);
+
+  const close = () => {
+    returnFocus.current = true;
+    setOpen(false);
+  };
 
   return (
     <div className="flex min-h-dvh bg-carbon-900">
@@ -65,36 +112,46 @@ export function PortalShell({ children }: { children: React.ReactNode }) {
         <button
           type="button"
           aria-label="Close menu"
-          onClick={() => setOpen(false)}
+          onClick={close}
           className="fixed inset-0 z-40 bg-carbon-900/70 backdrop-blur-sm lg:hidden"
         />
       ) : null}
 
+      {/* Closed on a phone, the drawer is `invisible` as well as off-canvas:
+          visibility takes it out of the tab order and the accessibility tree.
+          Closing transitions visibility with the transform, so the slide-out
+          stays visible until it ends; opening does not, so the drawer is
+          visible at once and can take focus in the same frame. */}
       <aside
+        id="portal-nav"
         className={cn(
-          "fixed inset-y-0 left-0 z-50 flex w-[15rem] flex-none flex-col border-r border-line bg-carbon-800/95 px-3.5 py-4",
-          "transition-transform duration-normal ease-standard lg:static lg:translate-x-0",
-          open ? "translate-x-0" : "-translate-x-full",
+          "fixed inset-y-0 left-0 z-50 flex w-[15rem] flex-none flex-col border-r border-line-subtle bg-carbon-700/95 px-3.5 py-4 backdrop-blur-md",
+          "lg:visible lg:sticky lg:top-0 lg:h-dvh",
+          "duration-normal ease-standard lg:translate-x-0",
+          open
+            ? "visible translate-x-0 transition-transform"
+            : "invisible -translate-x-full transition-[transform,visibility]",
         )}
       >
-        <div className="flex items-center justify-between px-2 pb-5">
+        <div className="flex items-center justify-between px-2 pt-1 pb-6">
           <Link href="/" aria-label="CoreValley home">
             <LogoLockup size={17} />
           </Link>
           <button
+            ref={closeRef}
             type="button"
             aria-label="Close menu"
-            onClick={() => setOpen(false)}
-            className="cursor-pointer rounded-md p-1 text-ink-400 hover:bg-carbon-600 lg:hidden"
+            onClick={close}
+            className="-mr-2 flex size-11 cursor-pointer items-center justify-center rounded-md text-ink-400 hover:bg-carbon-600 hover:text-ink-100 lg:hidden"
           >
-            <Icon name="x" size={16} />
+            <Icon name="x" size={18} />
           </button>
         </div>
 
-        <nav className="flex-1 space-y-5 overflow-y-auto">
+        <nav aria-label="Console" className="flex-1 space-y-5 overflow-y-auto">
           {NAV.map((group) => (
             <div key={group.heading}>
-              <p className="mb-1.5 px-2.5 font-mono text-[10px] tracking-label uppercase text-ink-600">
+              <p className="cv-label mb-2 px-2.5 text-[10px] text-ink-500">
                 {group.heading}
               </p>
               <ul className="space-y-0.5">
@@ -105,18 +162,18 @@ export function PortalShell({ children }: { children: React.ReactNode }) {
                       <Link
                         href={item.href}
                         aria-current={on ? "page" : undefined}
+                        data-active={on ? "" : undefined}
                         className={cn(
-                          "flex items-center gap-2.5 rounded-md border px-2.5 py-2 font-mono text-[13px] font-medium",
-                          "transition-colors duration-fast ease-standard",
+                          "pt-nav-link flex items-center gap-2.5 rounded-md px-2.5 py-3 text-[13.5px] lg:py-[7px]",
                           on
-                            ? "border-hydro bg-hydro/10 text-hydro"
-                            : "border-transparent text-ink-400 hover:bg-carbon-600 hover:text-ink-200",
+                            ? "font-semibold"
+                            : "font-medium text-ink-400 hover:bg-carbon-500/60 hover:text-ink-100",
                         )}
                       >
                         <Icon
                           name={item.icon}
                           size={16}
-                          weight={on ? "bold" : "regular"}
+                          weight={on ? "duotone" : "regular"}
                         />
                         {item.label}
                       </Link>
@@ -128,33 +185,63 @@ export function PortalShell({ children }: { children: React.ReactNode }) {
           ))}
         </nav>
 
-        <div className="mt-4 rounded-md border border-line bg-carbon-700 p-3">
+        <div className="pt-card mt-4 p-3.5">
           <div className="flex items-center gap-2">
             <Icon name="region" size={14} className="text-hydro" />
-            <span className="font-mono text-[11px] tracking-wide text-ink-300">
+            <span className="font-mono text-[11.5px] tracking-wide text-ink-200">
               np-ktm-1
             </span>
-            <span className="ml-auto flex items-center gap-1.5">
-              <span className="size-1.5 rounded-pill bg-hydro shadow-[0_0_6px_var(--hydro)]" />
-              <span className="font-mono text-[10px] text-hydro">live</span>
-            </span>
+            <span className="ml-auto font-mono text-[10px] tracking-wide text-hydro">live</span>
           </div>
-          <p className="mt-2 font-body text-[11.5px] font-light leading-snug text-ink-500">
-            Kathmandu · data residency in Nepal
+          <p className="mt-2 text-[12px] leading-snug text-ink-500">
+            Kathmandu · data stays in Nepal
           </p>
         </div>
       </aside>
 
-      <div className="flex min-w-0 flex-1 flex-col">
-        <header className="glass-nav sticky top-0 z-30 flex items-center gap-3 px-4 py-3 md:px-6">
+      {/* With the drawer open on a phone, the page behind it is inert, so
+          focus stays in the drawer until it closes. */}
+      <div inert={open} className="flex min-w-0 flex-1 flex-col">
+        <header className="glass-nav sticky top-0 z-30 flex items-center gap-2 px-4 py-2.5 md:gap-3 md:px-6 lg:py-3">
           <button
+            ref={menuRef}
             type="button"
-            aria-label="Menu"
+            aria-label="Open menu"
+            aria-expanded={open}
+            aria-controls="portal-nav"
             onClick={() => setOpen(true)}
-            className="cursor-pointer rounded-md p-2 text-ink-300 hover:bg-carbon-600 lg:hidden"
+            className="-ml-2 flex size-11 cursor-pointer items-center justify-center rounded-md text-ink-300 hover:bg-carbon-600 hover:text-ink-100 lg:hidden"
           >
-            <Icon name="menu" size={19} />
+            <Icon name="menu" size={20} />
           </button>
+
+          <nav aria-label="Breadcrumb" className="hidden min-w-0 items-center gap-2 font-mono text-[12px] md:flex">
+            <span aria-hidden="true" className="text-hydro">&gt;</span>
+            {crumbs(pathname).map((c, i, all) => (
+              <React.Fragment key={i}>
+                {i > 0 ? (
+                  <span aria-hidden="true" className="text-ink-500">
+                    /
+                  </span>
+                ) : null}
+                <span className={cn("truncate", i === all.length - 1 ? "text-ink-100" : "text-ink-500")}>
+                  {c}
+                </span>
+              </React.Fragment>
+            ))}
+          </nav>
+
+          {/* The console runs on the mock data layer. Say so on every screen,
+              so a visitor never reads the sample organisation, its spend or
+              its capacity as a real account. */}
+          <span
+            title="This console runs on sample data. Nothing here is a live account."
+            className="inline-flex shrink-0 items-center gap-2 font-mono text-[11px] tracking-wide whitespace-nowrap text-warning uppercase"
+          >
+            <span aria-hidden="true" className="h-px w-3 shrink-0 bg-warning" />
+            <span className="sm:hidden">demo data</span>
+            <span className="hidden sm:inline">demo · sample data</span>
+          </span>
 
           <div className="ml-auto hidden w-64 sm:block">
             <Input
@@ -162,27 +249,35 @@ export function PortalShell({ children }: { children: React.ReactNode }) {
               placeholder="search pods, keys, invoices…"
               aria-label="Search"
               prefix={<Icon name="search" size={14} />}
+              suffix={<kbd className="pt-kbd">⌘K</kbd>}
             />
           </div>
 
-          <ThemeToggle />
+          <ThemeToggle className="ml-auto size-11 sm:ml-0 lg:size-7.5" />
 
           <IconButton
             size="sm"
+            className="size-11 lg:size-7.5"
             icon={<Icon name="bell" size={16} />}
             title="Notifications"
           />
 
+          {/* A 44px target around the 32px avatar, so the circle keeps its
+              size on a phone while the tap area meets the touch minimum. */}
           <Link
             href="/portal/settings"
             aria-label="Account settings"
-            className="flex size-8 items-center justify-center rounded-pill border border-line bg-carbon-500 font-mono text-[12px] text-hydro"
+            className="group -mr-1.5 flex size-11 shrink-0 items-center justify-center rounded-pill lg:mr-0 lg:size-8"
           >
-            as
+            <span className="flex size-8 items-center justify-center rounded-pill border border-line-hydro bg-hydro/10 font-mono text-[12px] font-medium text-hydro transition-colors duration-fast group-hover:bg-hydro/15">
+              as
+            </span>
           </Link>
         </header>
 
-        <main className="flex-1 px-4 py-6 md:px-6 md:py-8">{children}</main>
+        <main className="pt-ground flex-1 px-4 py-7 md:px-8 md:py-10">
+          <div className="mx-auto w-full max-w-page-xl">{children}</div>
+        </main>
       </div>
     </div>
   );

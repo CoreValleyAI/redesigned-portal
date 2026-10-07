@@ -34,6 +34,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     entry("/", 1, "weekly"),
     entry("/products", 0.9),
     ...PRODUCTS.map((p) => entry(`/products/${p.slug}`, 0.8)),
+    entry("/platform", 0.8),
     entry("/pricing", 0.9, "weekly"),
     entry("/use-cases", 0.7),
     entry("/company", 0.6),

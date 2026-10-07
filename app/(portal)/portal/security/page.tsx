@@ -1,9 +1,11 @@
-import { Badge, Card, Icon } from "@/components/ui";
+import { Badge, Icon } from "@/components/ui";
 import {
   MetricTile,
+  Panel,
   PortalPageHeader,
   TableScroll,
   Th,
+  Tr,
 } from "@/components/portal/primitives";
 import { getClient } from "@/lib/api/client";
 import { formatDate } from "@/lib/format";
@@ -41,15 +43,17 @@ export default async function SecurityPage() {
   return (
     <>
       <PortalPageHeader
-        title="security"
+        eyebrow="account / security"
+        title="Security"
         description="Control posture, certificate status and tenant network isolation for this organisation."
       />
 
       <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+        {/* A target, not a badge: nothing here has been audited yet. */}
         <MetricTile
-          label="framework"
+          label="compliance target"
           value={compliance.framework}
-          sub={`reviewed ${formatDate(compliance.lastReviewedAt)}`}
+          sub={`not audited · reviewed ${formatDate(compliance.lastReviewedAt)}`}
         />
         <MetricTile
           label="controls implemented"
@@ -70,7 +74,7 @@ export default async function SecurityPage() {
       </div>
 
       {/* The framework claim is easy to overstate. State the limit plainly. */}
-      <Card surface="panel" padding={20} className="mt-3">
+      <Panel padding={20} className="mt-3">
         <div className="flex items-start gap-3">
           <Icon
             name="info"
@@ -80,7 +84,7 @@ export default async function SecurityPage() {
           />
           <div>
             <p className="text-[13.5px] font-semibold text-ink-200">
-              What this attests to
+              What this does and does not mean
             </p>
             <p className="mt-1.5 text-[13px] leading-relaxed text-ink-400">
               {compliance.posture}
@@ -90,13 +94,13 @@ export default async function SecurityPage() {
             </p>
           </div>
         </div>
-      </Card>
+      </Panel>
 
       <section className="mt-8">
-        <h2 className="mb-3 font-mono text-[14px] text-ink-200">controls</h2>
+        <h2 className="mb-3 text-[15px] font-semibold tracking-tight text-ink-100">Controls</h2>
         <div className="grid gap-3 md:grid-cols-2">
           {Object.entries(byCategory).map(([category, controls]) => (
-            <Card key={category} surface="panel" padding={0}>
+            <Panel key={category} padding={0}>
               <p className="cv-label border-b border-line-subtle px-5 py-3 text-[10px]">
                 {category}
               </p>
@@ -118,14 +122,14 @@ export default async function SecurityPage() {
                   </li>
                 ))}
               </ul>
-            </Card>
+            </Panel>
           ))}
         </div>
       </section>
 
       <section className="mt-8">
-        <h2 className="mb-3 font-mono text-[14px] text-ink-200">
-          tls certificates
+        <h2 className="mb-3 text-[15px] font-semibold tracking-tight text-ink-100">
+          TLS certificates
         </h2>
         <TableScroll minWidth="44rem">
           <thead>
@@ -139,10 +143,7 @@ export default async function SecurityPage() {
           </thead>
           <tbody>
             {certificates.map((c, i) => (
-              <tr
-                key={c.id}
-                className={i > 0 ? "border-t border-line-subtle" : ""}
-              >
+              <Tr key={c.id} index={i}>
                 <td className="px-4 py-3.5 font-mono text-[12.5px] text-ink-100">
                   {c.commonName}
                 </td>
@@ -158,7 +159,7 @@ export default async function SecurityPage() {
                 <td className="px-4 py-3.5 text-right">
                   <Badge tone={CERT_TONE[c.status]}>{c.status}</Badge>
                 </td>
-              </tr>
+              </Tr>
             ))}
           </tbody>
         </TableScroll>

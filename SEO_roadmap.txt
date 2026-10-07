@@ -18,7 +18,7 @@ Legend:  [DONE] shipped in the code   [YOU] needs your action
        that is https://corevalley.ai/redesigned-portal; after the cut-over
        in section 1 it becomes https://corevalley.ai with no code change.
 [DONE] Unique titles and descriptions per page, written around the terms
-       people search for (GPU cloud Nepal, H100 Kathmandu, NPR billing…).
+       people search for (GPU cloud Nepal, H200 Kathmandu, NPR billing…).
 [DONE] Open Graph and Twitter cards with a generated 1200×630 image
        (app/opengraph-image.png). Regenerate with `npm run generate:brand`.
 [DONE] /sitemap.xml (app/sitemap.ts) and /robots.txt (app/robots.ts); the
@@ -97,25 +97,36 @@ Web research (September 2026) found these claims in the site copy that the
 public corevalley.ai site does not state. Search engines and prospects will
 read them as facts. Confirm each, or soften/remove it.
 
-3.1  "Green-energy GPU compute, launched on Himalayan hydropower"
-     (home hero, app/(marketing)/page.tsx) and "hydro-powered racks"
-     (components/marketing/spec-ticker.tsx). If the facility has a
-     documented hydropower supply, keep it and consider a one-line source
-     on the company page. If not, replace with a neutral line.
+3.1  [DONE — confirmed 7 Oct 2026] "Green-energy GPU compute, launched on
+     Himalayan hydropower" (home hero) and "hydro-powered racks" (spec
+     ticker). The datacenter runs on hydropower; the claim stays, worded as
+     "hydro-powered" / "low-carbon" — never "100% renewable" or "zero
+     carbon". The company page now says it in its FAQ. Confirmed at the same
+     time: NVIDIA H200 available now (enterprise early access), H100 and
+     RTX PRO 6000 Blackwell coming soon, and latency under 5 ms inside
+     Kathmandu. lib/availability.ts holds all of these for every page.
 3.2  Availability targets 99.5% / 99.9% and service credits (legal terms,
      app/(marketing)/legal/[slug]/page.tsx). Must match the signed SLA.
-3.3  "SOC 2 Type I framework alignment" (home page architecture section and
-     lib/api/mock.ts). Remove unless an audit is under way.
+3.3  [DONE — 7 Oct 2026] "SOC 2 Type I framework alignment" is removed
+     from the public site. The console mock (lib/api/mock.ts) keeps an
+     honest "audit not completed" note. Bring a SOC 2 line back only once
+     an audit is under way, and say which stage it is at.
 3.4  Region name np-ktm-1 and the "Kathmandu Valley" location versus the
      LinkedIn address (Dhobighat, Lalitpur). Pick one public location.
      Structured data currently says Kathmandu, Bagmati Province, NP.
-3.5  Pricing is marked indicative and every rate is a placeholder
-     (lib/catalog.ts). Do not remove the badge until rates are approved;
-     Google can show prices in results and a wrong price is worse than none.
-3.6  Product naming. The public site calls the lines AI Lab, GPU Workspace
-     and Inference & Endpoints; this site calls them JupyterHub, GPU pods,
-     Model endpoints and Dedicated. The company page now maps the two. Pick
-     one vocabulary for the long run and use it in titles, docs and ads.
+3.5  [DONE — 7 Oct 2026] Every rate in lib/catalog.ts is still a
+     placeholder, so public pages no longer show any rate: /pricing explains
+     the billing model and offers a firm NPR quote within one working day.
+     The console mock keeps the rates behind its "indicative" badge. When
+     rates are approved: replace them, set meta.pricingIsPlaceholder to
+     false, fill meta.reviewedAt — Google can show prices in results, and a
+     wrong price is worse than none.
+3.6  [DECIDED — 7 Oct 2026] Product naming: GPU pods, JupyterHub, Model
+     endpoints and Dedicated & bare metal, everywhere. The docs titles and
+     nav now use these names (file slugs unchanged, so links still work);
+     the old public names (AI Lab, GPU Workspace, Inference & Endpoints)
+     appear only once each, as "formerly …", on the company page and the
+     docs. Use the same names in ads and on LinkedIn.
 3.7  Legal pages are marked as not counsel-reviewed. Review before launch
      (privacy policy is also a requirement for Google Ads and for most
      enterprise procurement).
