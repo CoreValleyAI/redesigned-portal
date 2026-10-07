@@ -134,6 +134,27 @@ jobs:
           mkdir -p ../out/valleys
           cp -r dist/. ../out/valleys/
 
+      # The next version of the site, built from the `preview` branch and
+      # served at /preview/ beside the live site, which stays at the root.
+      # To refresh it after pushing to `preview`, re-run this workflow
+      # (Actions → Deploy to GitHub Pages → Run workflow).
+      - name: Checkout preview branch
+        uses: actions/checkout@v5
+        with:
+          ref: preview
+          path: preview-src
+
+      - name: Build /preview
+        working-directory: preview-src
+        env:
+          NEXT_PUBLIC_BASE_PATH: ${{ steps.basepath.outputs.value }}/preview
+          NEXT_PUBLIC_SITE_URL: ${{ steps.basepath.outputs.site_url }}/preview
+        run: |
+          npm ci
+          npm run build
+          mkdir -p ../out/preview
+          cp -r out/. ../out/preview/
+
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v4
         with:
