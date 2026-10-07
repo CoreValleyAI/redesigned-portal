@@ -5,10 +5,14 @@
  *
  * The two share little beyond MIG partitioning and PCIe Gen5, so each card
  * carries its own full profile:
+ *   · STATUS     a pill read from the catalogue: the H200 is available now,
+ *                the RTX PRO 6000 is coming soon. Never hardcoded here.
  *   · MEMORY     capacity counting up, drawn as HBM stacks (H200) or the
  *                GDDR7 bus channels (RTX PRO 6000) around the die.
  *   · BANDWIDTH  a plain metric with a delta pill.
  *   · PLATFORM   interconnect, power, form factor, cores, media engines.
+ *                Behind a "Full specs" disclosure on phones, where the pair
+ *                otherwise runs to three screens; always open from md.
  *   · MIG        on click: the hardware partitions, which differ in count
  *                and size.
  * Under the pair, one expandable chart compares throughput by precision on a
@@ -17,10 +21,22 @@
  */
 
 import * as React from "react";
-import { Icon } from "@/components/ui";
+import { Badge, Icon } from "@/components/ui";
 import { CountUp } from "@/components/fx/count-up";
 import { cn } from "@/lib/cn";
+import { GPU_SKUS } from "@/lib/catalog";
+import { statusLabel } from "@/lib/availability";
 import { GPU_SPECS, PRECISIONS, type GpuSpec } from "@/lib/gpu-specs";
+
+/** What each card is for, in the reader's words. The datasheet tagline is
+    the fallback for any spec added later. */
+const PLAIN: Record<string, string> = {
+  h200: "Train and serve the largest models — 141 GB on one card.",
+  "rtx-pro-6000": "Fast, affordable inference, fine-tuning and visual AI.",
+};
+
+/** The catalogue SKU behind a spec (spec ids are the catalogue short names). */
+const skuFor = (spec: GpuSpec) => GPU_SKUS.find((s) => s.shortName === spec.id);
 
 const SEGMENTS = 28;
 /* Shared log scale: 10 TFLOPS … 4,000 TFLOPS. */
@@ -131,6 +147,10 @@ function Mig({ spec }: { spec: GpuSpec }) {
 function GpuCard({ spec, other }: { spec: GpuSpec; other: GpuSpec }) {
   const memDelta = Math.round((spec.memoryGb / other.memoryGb - 1) * 100);
   const bwRatio = spec.bandwidthTbs / other.bandwidthTbs;
+  const sku = skuFor(spec);
+  const available = sku?.status === "available";
+  const [specsOpen, setSpecsOpen] = React.useState(false);
+  const specsId = React.useId();
 
   const platform: [string, string, string][] = [
     ["interconnect", "Interconnect", spec.interconnect],
@@ -145,19 +165,29 @@ function GpuCard({ spec, other }: { spec: GpuSpec; other: GpuSpec }) {
     <article className="gpu-card cv-spotlight lg lg-hover relative flex h-full flex-col gap-6 rounded-xl p-7 md:p-8">
       <span className="gpu-card__beam" aria-hidden="true" />
 
-      <header className="flex items-start justify-between gap-4">
-        <div>
-          <p className="font-mono text-[11px] tracking-label text-hydro uppercase">
+      <header className="flex flex-col gap-3">
+        <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
+          <p className="font-mono text-[11px] tracking-label text-hydro uppercase light:text-hydro-dark">
             {spec.architecture} · {spec.chip}
           </p>
-          <h3 className="mt-2 text-[clamp(1.5rem,2.4vw,2rem)] font-semibold tracking-tight text-ink-100">
+          {sku ? (
+            available ? (
+              <Badge tone="hydro">
+                {statusLabel(sku)}
+              </Badge>
+            ) : (
+              <Badge tone="neutral">{statusLabel(sku)}</Badge>
+            )
+          ) : null}
+        </div>
+        <div>
+          <h3 className="text-[clamp(1.5rem,2.4vw,2rem)] font-semibold tracking-tight text-ink-100">
             {spec.name}
           </h3>
-          <p className="mt-1.5 text-[14px] leading-relaxed text-ink-400">{spec.tagline}.</p>
+          <p className="mt-1.5 text-[15px] leading-relaxed text-ink-300">
+            {PLAIN[spec.id] ?? `${spec.tagline}.`}
+          </p>
         </div>
-        <span className="inline-flex size-11 shrink-0 items-center justify-center rounded-lg border border-line bg-carbon-600">
-          <Icon name="cpu" size={21} weight="duotone" className="text-hydro" />
-        </span>
       </header>
 
       <Section label="Memory">
@@ -195,7 +225,28 @@ function GpuCard({ spec, other }: { spec: GpuSpec; other: GpuSpec }) {
       </Section>
 
       <Section label="Platform">
-        <dl className="flex flex-col">
+        {/* Phones: the six spec rows wait behind one control. From md the
+            list is always shown and the control is gone. */}
+        <button
+          type="button"
+          aria-expanded={specsOpen}
+          aria-controls={specsId}
+          onClick={() => setSpecsOpen((v) => !v)}
+          className="gpu-specs-toggle md:hidden"
+        >
+          <span className="flex flex-col gap-0.5">
+            <span className="text-[14px] text-ink-200">
+              {specsOpen ? "Hide full specs" : "Full specs"}
+            </span>
+            <span className="font-mono text-[11px] text-ink-500">
+              interconnect · power · form factor · cores
+            </span>
+          </span>
+          <span className="gpu-more__icon" data-open={specsOpen ? "" : undefined}>
+            <Icon name="plus" size={13} />
+          </span>
+        </button>
+        <dl id={specsId} className={cn("flex-col", specsOpen ? "flex" : "hidden md:flex")}>
           {platform.map(([k, label, value]) => (
             <Row key={k} k={k} className="flex items-baseline justify-between gap-4 border-b border-line-subtle py-2.5 last:border-b-0">
               <dt className="shrink-0 text-[13px] text-ink-400">{label}</dt>
@@ -318,7 +369,7 @@ export function GpuCompare() {
             <b>FP4</b> on Blackwell
           </span>
           <span className="gpu-deltas__item">
-            <b>{rtx.migSliceGb} GB</b> vs {h200.migSliceGb} GB per MIG slice
+            <b>{rtx.migSliceGb} GB</b> vs {h200.migSliceGb} GB per hardware slice
           </span>
         </div>
 

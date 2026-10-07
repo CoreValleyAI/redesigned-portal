@@ -1,9 +1,10 @@
-import { Card } from "@/components/ui";
 import {
+  Panel,
   PlaceholderPricingBadge,
   PortalPageHeader,
   TableScroll,
   Th,
+  Tr,
 } from "@/components/portal/primitives";
 import { UsageChart } from "@/components/portal/usage-chart";
 import { getClient } from "@/lib/api/client";
@@ -28,7 +29,8 @@ export default async function UsagePage() {
   return (
     <>
       <PortalPageHeader
-        title="usage"
+        eyebrow="account / usage"
+        title="Usage"
         description="Every GPU-second and token is a metered event. These are the same numbers the invoice is built from — there is no second billing pipeline."
       />
 
@@ -36,7 +38,7 @@ export default async function UsagePage() {
         {series.map((s) => {
           const meter = meters.find((m) => m.id === s.meterId);
           return (
-            <Card key={s.meterId} surface="panel" padding={22}>
+            <Panel key={s.meterId} padding={22}>
               <UsageChart
                 label={`${meter?.displayName ?? s.meterId} · 30 days`}
                 unit={s.unit}
@@ -48,7 +50,7 @@ export default async function UsagePage() {
               <p className="mt-3 border-t border-line-subtle pt-3 font-mono text-[12px] text-ink-400">
                 total {formatCompactNumber(s.total)} {s.unit}
               </p>
-            </Card>
+            </Panel>
           );
         })}
       </div>
@@ -62,7 +64,7 @@ export default async function UsagePage() {
         ).map(([label, rows]) => (
           <section key={label}>
             <div className="mb-3 flex items-center gap-3">
-              <h2 className="font-mono text-[14px] text-ink-200">{label}</h2>
+              <h2 className="text-[15px] font-semibold tracking-tight text-ink-100">{label}</h2>
               <PlaceholderPricingBadge />
             </div>
             <TableScroll minWidth="28rem">
@@ -75,12 +77,12 @@ export default async function UsagePage() {
               </thead>
               <tbody>
                 {rows.map((r, i) => (
-                  <tr key={r.key} className={i > 0 ? "border-t border-line-subtle" : ""}>
+                  <Tr key={r.key} index={i}>
                     <td className="px-4 py-3">
                       <div className="text-[13px] text-ink-200">
                         {r.label}
                       </div>
-                      <div className="mt-0.5 font-mono text-[11px] text-ink-600">
+                      <div className="mt-0.5 font-mono text-[11px] text-ink-500">
                         {formatCompactNumber(r.quantity)} {r.unit}
                       </div>
                     </td>
@@ -100,7 +102,7 @@ export default async function UsagePage() {
                     <td className="px-4 py-3 text-right font-mono text-[12.5px] text-ink-200">
                       {formatNpr(r.costPaisa, { compact: true })}
                     </td>
-                  </tr>
+                  </Tr>
                 ))}
               </tbody>
             </TableScroll>
@@ -109,7 +111,7 @@ export default async function UsagePage() {
       </div>
 
       <section className="mt-8">
-        <h2 className="mb-3 font-mono text-[14px] text-ink-200">recent events</h2>
+        <h2 className="mb-3 text-[15px] font-semibold tracking-tight text-ink-100">Recent events</h2>
         <TableScroll minWidth="46rem">
           <thead>
             <tr>
@@ -122,7 +124,7 @@ export default async function UsagePage() {
           </thead>
           <tbody>
             {events.map((e, i) => (
-              <tr key={e.id} className={i > 0 ? "border-t border-line-subtle" : ""}>
+              <Tr key={e.id} index={i}>
                 <td className="px-4 py-3 font-mono text-[11.5px] text-ink-500">
                   {formatDateTime(e.at)}
                 </td>
@@ -138,7 +140,7 @@ export default async function UsagePage() {
                 <td className="px-4 py-3 text-right font-mono text-[12px] text-ink-200">
                   {formatNpr(e.costPaisa)}
                 </td>
-              </tr>
+              </Tr>
             ))}
           </tbody>
         </TableScroll>

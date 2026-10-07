@@ -1,109 +1,151 @@
 import Link from "next/link";
-import { Button, Card, Icon, StatBlock } from "@/components/ui";
+import { Badge, ButtonLink, Card, Icon, StatBlock } from "@/components/ui";
 import { PageHero, Section } from "@/components/marketing/page-hero";
 import { Reveal, RevealGroup } from "@/components/fx/reveal";
 import { JsonLd, breadcrumbJsonLd, faqJsonLd } from "@/components/seo/json-ld";
 import { pageMetadata } from "@/lib/seo";
 import { FaqList } from "@/components/marketing/faq-list";
+import { EARLY_ACCESS, FACTS } from "@/lib/availability";
 import { ORG } from "@/lib/site";
 import type { IconName } from "@/components/ui";
 
 export const metadata = pageMetadata({
   title: "About CoreValley — Nepal's Sovereign AI Cloud",
   description:
-    "CoreValley builds GPU infrastructure in Kathmandu so researchers, startups, banks and public bodies can train and run AI without foreign clouds, foreign currency or foreign support hours.",
+    "CoreValley runs NVIDIA H200 GPUs in a hydro-powered Kathmandu datacenter, so Nepali teams can build AI without foreign clouds, foreign currency or foreign support hours.",
   path: "/company",
 });
 
 /* Copy rule for this page: every claim is something the public site states
-   or a customer can verify. Positioning and principles are the company's own
-   words; hardware and payment details match the products and pricing pages. */
+   or a customer can verify. Availability, latency and power come from
+   lib/availability.ts, so this page cannot drift from the home page. */
 
 const PRINCIPLES: { icon: IconName; title: string; body: string }[] = [
   {
     icon: "lock",
     title: "Sovereign by default",
-    body: "Infrastructure, data and support stay inside Nepal. Compliance with local regulation is a design requirement, not an add-on we bolt on for enterprise deals.",
+    body: "Your infrastructure, your data and your support stay in Nepal. Local compliance is a design requirement, not an add-on for enterprise deals.",
   },
   {
     icon: "terminal",
     title: "Practical over theoretical",
-    body: "We optimise for real workflows: fast environment spin-up, clear NPR pricing, and support that answers when a training job dies at night.",
+    body: "We optimise for real work: fast setup, firm quotes in rupees, and engineers in Kathmandu who answer in Nepal time.",
   },
   {
     icon: "university",
     title: "Accessible to researchers",
-    body: "University labs, individual researchers and student projects should reach serious GPUs without an enterprise procurement cycle.",
+    body: "University labs and student projects should reach serious GPUs without an enterprise procurement cycle. Enterprise early access comes first; research access is next.",
   },
   {
     icon: "check-circle",
     title: "Honest about constraints",
-    body: "We publish what we actually run. Where a control is in progress or a GPU has not landed yet, we say so rather than implying otherwise.",
+    body: "We publish what we actually run. Today that is the NVIDIA H200. Where a GPU has not landed or a control is still in progress, we say so.",
   },
 ];
 
-const OFFER: { icon: IconName; title: string; body: string; href: string; cta: string }[] = [
-  {
-    icon: "notebook",
-    title: "AI Lab",
-    body: "Managed JupyterHub on GPUs for teams, labs and courses. Collaborative workspaces, GPU monitoring, no infrastructure expertise required.",
-    href: "/products/jupyterhub",
-    cta: "JupyterHub",
-  },
+/* The four products, under the names the rest of the site uses. The old
+   public site's names are kept as a "formerly" line so returning visitors
+   recognise them. */
+const OFFER: {
+  icon: IconName;
+  title: string;
+  formerly: string;
+  body: string;
+  href: string;
+  cta: string;
+}[] = [
   {
     icon: "slice",
-    title: "GPU Workspace",
-    body: "Full GPU environments with root access, custom images and multi-GPU scaling for fine-tuning, full training and computer vision.",
+    title: "GPU pods",
+    formerly: "formerly GPU Workspace",
+    body: "Rent a whole H200 or a slice of one, with root access and your own images. Pay by the second.",
     href: "/products/gpu-pods",
-    cta: "GPU pods and dedicated nodes",
+    cta: "See GPU pods",
+  },
+  {
+    icon: "notebook",
+    title: "JupyterHub",
+    formerly: "formerly AI Lab",
+    body: "Managed GPU notebooks for teams, labs and courses. Nobody has to run a shared server.",
+    href: "/products/jupyterhub",
+    cta: "See JupyterHub",
   },
   {
     icon: "broadcast",
-    title: "Inference & endpoints",
-    body: "Shared or dedicated OpenAI-compatible endpoints with autoscaling, served with low latency from inside Nepal.",
+    title: "Model endpoints",
+    formerly: "formerly Inference & Endpoints",
+    body: "Open-weight models behind an OpenAI-compatible API, served from inside Nepal and billed per token.",
     href: "/products/model-endpoints",
-    cta: "Model endpoints",
+    cta: "See model endpoints",
+  },
+  {
+    icon: "node",
+    title: "Dedicated & bare metal",
+    formerly: "formerly part of GPU Workspace",
+    body: "Whole H200 servers that only you use, reserved by the month, in your own private cluster.",
+    href: "/products/dedicated",
+    cta: "See dedicated servers",
   },
 ];
 
-const AUDIENCES: { icon: IconName; title: string; body: string }[] = [
+const AUDIENCES: {
+  icon: IconName;
+  title: string;
+  body: string;
+  status: { tone: "hydro" | "neutral"; label: string };
+}[] = [
+  {
+    icon: "building",
+    title: "Enterprises and public sector",
+    body: "Isolated environments, data that stays in the country and engineers in Kathmandu — for banks, hospitals, government and any regulated workload that cannot cross a border.",
+    status: { tone: "hydro", label: "Open now · H200" },
+  },
   {
     icon: "university",
     title: "Universities and researchers",
-    body: "Managed notebook environments so students and faculty can work with modern models without administering a cluster or opening a foreign cloud account.",
+    body: "Managed notebooks so students and faculty can work with modern models without running a cluster or opening a foreign cloud account.",
+    status: { tone: "neutral", label: "Coming soon" },
   },
   {
     icon: "launch",
     title: "Startups and ML teams",
-    body: "Full GPU pods with root access, the freedom to install what you need, and the ability to move to endpoints when you ship.",
-  },
-  {
-    icon: "building",
-    title: "Enterprises and public sector",
-    body: "Isolated environments, data-residency guarantees and local support suitable for banks, healthcare, government and any regulated workload that cannot cross borders.",
+    body: "GPU pods with root access, the freedom to install what you need, and a path to endpoints when you ship.",
+    status: { tone: "neutral", label: "Coming soon" },
   },
 ];
 
 const FAQ = [
   {
     q: "Where is CoreValley hosted?",
-    a: "In Kathmandu, Nepal. Compute and storage are physically located in the country, in the region we call np-ktm-1. Nothing is replicated abroad.",
+    a: "In a hydro-powered datacenter in the Kathmandu Valley, Nepal — the region we call np-ktm-1. Compute and storage stay in the country. Nothing is replicated abroad.",
   },
   {
     q: "Which GPUs do you run?",
-    a: "NVIDIA H200 (141 GB HBM3e) and H100 (80 GB HBM3), whole or sliced with MIG and HAMi, are coming online through early access. RTX PRO 6000 Blackwell, L40S and L4 are on the roadmap.",
+    a: "The NVIDIA H200, with 141 GB of memory, is available now through enterprise early access — as a whole card or as a slice. The RTX PRO 6000 Blackwell is coming soon, with the L40S after it.",
   },
   {
     q: "How do you bill?",
-    a: "In Nepali rupees. On-demand usage is metered per second and invoiced monthly; monthly reserved and custom enterprise terms are available. We accept eSewa, Khalti, bank transfer and corporate invoices on net terms.",
+    a: "In Nepali rupees. Usage is metered per second and invoiced monthly, and dedicated servers can be reserved by the month. Pay by eSewa, Khalti, bank transfer or corporate invoice on net terms. Rates are not published yet, so every request gets a firm quote within one working day.",
   },
   {
     q: "Are you open to new customers?",
-    a: "Yes, through early access. Tell us the model, the dataset size and the GPU hours you expect, and we size capacity with you before you commit to anything.",
+    a: "Yes. Early access is open to enterprises on NVIDIA H200 now. Tell us the model, the dataset size and the GPU hours you expect, and we size capacity with you before you commit. Universities, startups and other teams can join the list today — access for more teams is coming soon.",
+  },
+  {
+    q: "What does early access mean?",
+    a: "The H200 platform is live, and we onboard enterprise teams one at a time. You tell us the workload, we send a capacity plan and a firm rupee quote within one working day, and our team sets up your project with you. More GPUs, and access for more teams, are coming soon.",
+  },
+  {
+    q: "Why does it matter that the GPUs are in Kathmandu?",
+    a: "Two reasons. Your data never has to leave the country, and latency inside Kathmandu is under 5 ms — so an app serving users in Nepal does not wait on a round trip overseas.",
+  },
+  {
+    q: "What powers the datacenter?",
+    a: "Hydropower. Our Kathmandu datacenter runs on Nepal's hydroelectricity, so your compute is low-carbon and its power price is not tied to a gas market on another continent.",
   },
   {
     q: "How do I reach the team?",
-    a: "Email info@corevalley.ai or use the contact form. We answer in Nepal Standard Time, usually within one business day.",
+    a: "Email info@corevalley.ai or use the contact form. We reply within one working day, in Nepal time.",
   },
 ];
 
@@ -120,8 +162,16 @@ export default function CompanyPage() {
       <PageHero
         eyebrow="Company"
         title="Nepal's AI infrastructure, built for Nepal."
-        lead="We exist so that researchers, startups and enterprises can develop and run AI without depending on foreign clouds, foreign currencies or foreign support hours."
-      />
+        lead="We exist so that researchers, startups and enterprises can build and run AI without foreign clouds, foreign currency or foreign support hours."
+      >
+        <p className="mt-8 flex items-center gap-3 font-mono text-[11.5px] tracking-label whitespace-nowrap text-ink-300 uppercase">
+          <span aria-hidden="true" className="h-px w-8 shrink-0 bg-hydro" />
+          <span>
+            <span className="text-hydro light:text-hydro-dark">{EARLY_ACCESS.pill}</span> ·{" "}
+            <span className="hidden sm:inline">enterprise&nbsp;</span>early access
+          </span>
+        </p>
+      </PageHero>
 
       <Section>
         <div className="grid gap-12 lg:grid-cols-[1.15fr_0.85fr] lg:items-start">
@@ -131,37 +181,32 @@ export default function CompanyPage() {
             </h2>
             <div className="mt-5 space-y-5 leading-relaxed text-ink-300">
               <p>
-                CoreValley is building sovereign GPU infrastructure in Nepal so
-                that local talent can train models, fine-tune LLMs, run
-                inference and ship AI products without the cost structure or
-                compliance friction of overseas providers.
+                CoreValley is building GPU infrastructure in Nepal, so Nepali
+                teams can train models, fine-tune LLMs, run inference and ship
+                AI products without sending data abroad or paying in dollars.
               </p>
               <p>
-                For too long, serious AI work in Nepal has meant shipping data
-                abroad, paying in USD and waiting for support across time zones.
-                That model does not serve universities, regulated industries, or
-                the next generation of Nepali AI companies.
+                Until now, serious AI work in Nepal has meant three
+                compromises: data shipped overseas, invoices in USD, and
+                support that answers while you sleep. That does not work for
+                universities, for regulated industries, or for the next
+                generation of Nepali AI companies.
               </p>
               <p>
-                The alternative is straightforward: the same class of NVIDIA
-                hardware powering global AI labs, hosted in Kathmandu, billed in
-                rupees, and supported by engineers who understand both the
-                technology and the local context.
+                So we built the alternative: the NVIDIA H200, the same class of
+                GPU the world&rsquo;s AI labs train on, in a hydro-powered
+                datacenter in Kathmandu. Billed in rupees, and run by engineers
+                who understand both the technology and the local context.
               </p>
             </div>
           </div>
 
           <Card padding={32}>
             <div className="grid grid-cols-2 gap-x-6 gap-y-9">
-              <StatBlock
-                value="100%"
-                label="sovereign compute"
-                size="sm"
-                accent
-              />
-              <StatBlock value="NPR" label="local billing" size="sm" />
-              <StatBlock value="NPT" label="support timezone" size="sm" />
-              <StatBlock value="0" label="data leaving nepal" size="sm" />
+              <StatBlock value="H200" label="available now" size="sm" accent />
+              <StatBlock value={FACTS.latency} label={FACTS.latencyLabel} size="sm" />
+              <StatBlock value="NPR" label="billed in rupees" size="sm" />
+              <StatBlock value="100%" label="of your data stays in nepal" size="sm" />
             </div>
           </Card>
         </div>
@@ -169,21 +214,24 @@ export default function CompanyPage() {
 
       <Section
         eyebrow="What we run"
-        title="Three service lines, one platform."
-        lead="Notebooks for teams, full GPU environments for training, and endpoints for serving — on H100 and H200 cards in Kathmandu, sharing projects, storage and keys."
+        title="Four products, one platform."
+        lead="Notebooks for teams, GPU environments for training, endpoints for serving and dedicated servers for steady load. All on NVIDIA H200s in Kathmandu today, with Blackwell coming soon — one account, one rupee invoice."
         alt
       >
-        <RevealGroup step={80} className="grid gap-4 md:grid-cols-3">
+        <RevealGroup step={80} className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {OFFER.map((o) => (
             <Card key={o.title} padding={26} className="flex h-full flex-col">
               <Icon name={o.icon} size={21} weight="duotone" className="text-ink-100" />
               <h3 className="mt-4 text-lg font-semibold tracking-tight text-ink-100">
                 {o.title}
               </h3>
-              <p className="mt-2 flex-1 text-sm leading-relaxed text-ink-400">{o.body}</p>
+              <p className="mt-1 font-mono text-[11.5px] tracking-wide text-ink-500">
+                {o.formerly}
+              </p>
+              <p className="mt-3 flex-1 text-sm leading-relaxed text-ink-400">{o.body}</p>
               <Link
                 href={o.href}
-                className="mt-5 inline-flex items-center gap-1.5 font-mono text-[12px] tracking-wide text-hydro transition-colors duration-normal hover:text-hydro-300"
+                className="mt-5 inline-flex min-h-11 items-center gap-1.5 font-mono text-[12.5px] tracking-wide text-hydro transition-colors duration-normal hover:text-hydro-300"
               >
                 {o.cta}
                 <Icon name="arrow-right" size={13} />
@@ -193,26 +241,34 @@ export default function CompanyPage() {
         </RevealGroup>
 
         <Reveal>
-          <dl className="mt-10 grid gap-x-10 gap-y-6 border-t border-line-subtle pt-8 sm:grid-cols-3">
+          <dl className="mt-10 grid gap-x-10 gap-y-6 border-t border-line-subtle pt-8 sm:grid-cols-2 lg:grid-cols-4">
             <div>
               <dt className="cv-label text-[10px]">Hardware</dt>
-              <dd className="mt-2 text-sm text-ink-300">
-                NVIDIA H200 and H100 today; RTX PRO 6000 Blackwell, L40S and L4 on
-                the roadmap.
+              <dd className="mt-2 text-sm leading-relaxed text-ink-300">
+                NVIDIA H200, available now. RTX PRO 6000 Blackwell coming
+                soon; L40S after it.
               </dd>
             </div>
             <div>
               <dt className="cv-label text-[10px]">Software</dt>
-              <dd className="mt-2 text-sm text-ink-300">
-                CUDA, cuDNN, PyTorch, TensorFlow, Jupyter, vLLM and DeepSpeed from
-                first boot.
+              <dd className="mt-2 text-sm leading-relaxed text-ink-300">
+                Ready from first boot: CUDA, PyTorch, TensorFlow, Jupyter,
+                vLLM and DeepSpeed.
               </dd>
             </div>
             <div>
               <dt className="cv-label text-[10px]">Billing</dt>
-              <dd className="mt-2 text-sm text-ink-300">
-                NPR, metered per second. eSewa, Khalti, bank transfer and
-                corporate invoices.
+              <dd className="mt-2 text-sm leading-relaxed text-ink-300">
+                In rupees, metered per second. eSewa, Khalti, bank transfer or
+                corporate invoice.
+              </dd>
+            </div>
+            <div>
+              <dt className="cv-label text-[10px]">Power and latency</dt>
+              <dd className="mt-2 text-sm leading-relaxed text-ink-300">
+                A hydro-powered datacenter in Kathmandu, with{" "}
+                {FACTS.latencyLong.replace(/(\d) /, "$1 ")} latency inside
+                the city.
               </dd>
             </div>
           </dl>
@@ -243,8 +299,14 @@ export default function CompanyPage() {
       {/* Three equal cards in a row was the same shape as the section above
           it and the section below it. These are three audiences, not three
           products — so they are a list with hanging icons and dividing rules,
-          which also lets each entry be as long as it needs to be. */}
-      <Section eyebrow="Who we serve" title="Who we build for." alt>
+          which also lets each entry be as long as it needs to be. Each says
+          plainly whether it can get in today. */}
+      <Section
+        eyebrow="Who we serve"
+        title="Who we build for."
+        lead={EARLY_ACCESS.line}
+        alt
+      >
         <ul className="flex flex-col">
           {AUDIENCES.map((a, i) => (
             <Reveal as="li" key={a.title} delay={i * 80}>
@@ -257,9 +319,12 @@ export default function CompanyPage() {
                     className="text-ink-100"
                   />
                 </span>
-                <h3 className="self-center text-lg font-semibold tracking-tight text-ink-100">
-                  {a.title}
-                </h3>
+                <div className="flex flex-col items-start gap-2.5 self-center">
+                  <h3 className="text-lg font-semibold tracking-tight text-ink-100">
+                    {a.title}
+                  </h3>
+                  <Badge tone={a.status.tone}>{a.status.label}</Badge>
+                </div>
                 <p className="max-w-[56ch] self-center leading-relaxed text-ink-400">
                   {a.body}
                 </p>
@@ -279,7 +344,9 @@ export default function CompanyPage() {
             <div>
               <dt className="cv-label text-[10px]">Location</dt>
               <dd className="mt-3 text-ink-200">Kathmandu Valley, Nepal</dd>
-              <dd className="mt-1 font-mono text-xs text-ink-500">np-ktm-1</dd>
+              <dd className="mt-1 font-mono text-xs text-ink-500">
+                np-ktm-1 · hydro-powered
+              </dd>
             </div>
             <div>
               <dt className="cv-label text-[10px]">Email</dt>
@@ -292,7 +359,7 @@ export default function CompanyPage() {
                 </a>
               </dd>
               <dd className="mt-1 font-mono text-xs text-ink-500">
-                replies within one business day
+                replies within one working day
               </dd>
             </div>
             <div>
@@ -338,16 +405,18 @@ export default function CompanyPage() {
           </dl>
         </Reveal>
 
-        <div className="mt-8 flex justify-center">
-          <Link href="/contact">
-            <Button
-              variant="primary"
-              size="lg"
-              iconRight={<Icon name="arrow-right" size={17} />}
-            >
-              Get in touch
-            </Button>
-          </Link>
+        <div className="mt-10 flex flex-col items-center gap-3 text-center">
+          <ButtonLink
+            href="/contact"
+            variant="primary"
+            size="lg"
+            iconRight={<Icon name="arrow-right" size={17} />}
+          >
+            Get early access
+          </ButtonLink>
+          <p className="max-w-[46ch] text-[13.5px] leading-relaxed text-ink-400">
+            {EARLY_ACCESS.promise}
+          </p>
         </div>
       </Section>
     </>

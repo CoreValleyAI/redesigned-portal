@@ -10,7 +10,7 @@ How to reach the CoreValley team, what to expect from support, and where service
 | Channel | Use it for | Hours |
 |---|---|---|
 | [info@corevalley.ai](mailto:info@corevalley.ai) | Sales, onboarding, technical questions, billing | Nepal Standard Time (UTC+05:45), business days; urgent platform issues are read outside hours |
-| [Contact form](https://corevalley.ai/contact/) | New workloads and capacity requests | — |
+| [Contact form](https://corevalley.ai/contact/) | Early-access requests, new workloads and capacity | Reply within one working day |
 
 ## What this page will cover
 

@@ -1,9 +1,11 @@
-import { Badge, Card, Icon } from "@/components/ui";
+import { Badge, Icon } from "@/components/ui";
 import {
   MetricTile,
+  Panel,
   PortalPageHeader,
   TableScroll,
   Th,
+  Tr,
 } from "@/components/portal/primitives";
 import { getClient } from "@/lib/api/client";
 import { formatDateTime } from "@/lib/format";
@@ -22,7 +24,8 @@ export default async function AuditPage() {
   return (
     <>
       <PortalPageHeader
-        title="audit log"
+        eyebrow="account / audit-log"
+        title="Audit log"
         description="Append-only record of every control-plane action. Each entry commits to its predecessor's hash, so any edit or deletion breaks the chain and is detectable."
       />
 
@@ -45,7 +48,7 @@ export default async function AuditPage() {
         />
       </div>
 
-      <Card surface="panel" padding={18} className="mt-3">
+      <Panel padding={18} className="mt-3">
         <div className="flex items-start gap-3">
           <Icon
             name={verification.verified ? "check-circle" : "warning"}
@@ -59,7 +62,7 @@ export default async function AuditPage() {
               : `Chain verification failed at entry ${verification.brokenAtEntryId}. Contact support immediately.`}
           </p>
         </div>
-      </Card>
+      </Panel>
 
       <section className="mt-8">
         <TableScroll minWidth="60rem">
@@ -76,7 +79,7 @@ export default async function AuditPage() {
           </thead>
           <tbody>
             {entries.map((e, i) => (
-              <tr key={e.id} className={i > 0 ? "border-t border-line-subtle" : ""}>
+              <Tr key={e.id} index={i}>
                 <td className="px-4 py-3 font-mono text-[11.5px] whitespace-nowrap text-ink-500">
                   {formatDateTime(e.at)}
                 </td>
@@ -90,7 +93,7 @@ export default async function AuditPage() {
                   <span className="font-mono text-[12px] text-ink-300">
                     {e.resourceType}
                   </span>
-                  <span className="ml-2 font-mono text-[11px] text-ink-600">
+                  <span className="ml-2 font-mono text-[11px] text-ink-500">
                     {e.resourceId}
                   </span>
                 </td>
@@ -104,10 +107,10 @@ export default async function AuditPage() {
                     <Badge tone="danger">{e.outcome}</Badge>
                   )}
                 </td>
-                <td className="px-4 py-3 text-right font-mono text-[10.5px] text-ink-700">
+                <td className="px-4 py-3 text-right font-mono text-[10.5px] text-ink-500">
                   {e.hash.slice(0, 10)}…
                 </td>
-              </tr>
+              </Tr>
             ))}
           </tbody>
         </TableScroll>

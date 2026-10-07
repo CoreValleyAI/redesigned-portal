@@ -1,0 +1,514 @@
+/* ══════════════════════════════════════════════════════════════════════════
+   /platform: "The Iceberg" (components/marketing/iceberg-dive.tsx).
+
+   A fixed stage (sky, WebGL canvas, captions, pins, depth gauge) over a tall
+   scroll track. iceberg-engine.ts drives the stage from the track's scroll
+   progress; as the track ends, the stage is clipped at the track's bottom
+   edge, so the footer (raised above the stage below) rises over plain page
+   ground rather than over the berg.
+   Colours are site tokens; --halo (theme.css) keeps captions legible over
+   the points in both themes.
+   ══════════════════════════════════════════════════════════════════════════ */
+
+.ib {
+  --ib-top: #05080d;
+  --ib-glass: rgb(8 14 20 / 0.55);
+  --ib-glass-line: rgb(160 255 220 / 0.14);
+  --ib-teal: #2dd4bf;
+  user-select: none;
+}
+:root[data-theme="light"] .ib,
+:root[data-theme="light"] .ib-gl--preview {
+  --ib-top: #f3f5f7;
+  --ib-glass: rgb(250 252 253 / 0.62);
+  --ib-glass-line: rgb(15 118 110 / 0.2);
+  --ib-teal: #0f766e;
+}
+
+main:has(.ib) + footer {
+  z-index: 20;
+}
+
+.ib-stage {
+  position: fixed;
+  inset: 0;
+  z-index: 10;
+  pointer-events: none;
+  /* --ib-out is the share of the viewport below the end of the scroll track
+     (iceberg-engine.ts). Clipping the stage there ends the scene where the
+     page ends: the footer's glass sits on ordinary ground, not on the berg. */
+  clip-path: inset(0 0 calc(var(--ib-out, 0) * 100%) 0);
+}
+.ib-caps,
+.ib-pins,
+.ib-leader,
+.ib-gauge {
+  opacity: calc(1 - var(--ib-out, 0) * 3);
+}
+.ib-sky {
+  position: absolute;
+  inset: 0;
+  background: var(--ib-top);
+}
+.ib-gl {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+  opacity: 0;
+  transition: opacity 1.2s ease;
+}
+.ib-gl.is-ready {
+  opacity: 1;
+}
+.ib-track {
+  height: 1300vh;
+}
+
+/* ── Captions: one per step ───────────────────────────────────────────── */
+.ib-caps {
+  position: absolute;
+  inset: 0;
+}
+.ib-cap {
+  position: absolute;
+  left: 6vw;
+  top: 50%;
+  width: min(470px, 40vw);
+  opacity: 0;
+  visibility: hidden;
+  transform: translate3d(0, -50%, 0);
+  will-change: transform, opacity;
+  color: var(--ink);
+  text-shadow:
+    0 0 1px rgb(var(--halo) / 0.9),
+    0 0 18px rgb(var(--halo) / 0.85),
+    0 0 36px rgb(var(--halo) / 0.6);
+}
+.ib-cap.is-live {
+  visibility: visible;
+}
+.ib-cap__eyebrow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font: 500 11px/1.4 var(--font-mono);
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--hydro);
+}
+.ib-cap__eyebrow::before {
+  content: "";
+  width: 34px;
+  height: 2px;
+  background: var(--hydro);
+  border-radius: 2px;
+}
+.ib-cap__title {
+  margin: 16px 0 0;
+  font: 800 clamp(34px, 4.2vw, 62px) / 1 var(--font-body);
+  letter-spacing: -0.035em;
+}
+.ib-cap__title em {
+  font-style: normal;
+  color: var(--hydro);
+}
+.ib-cap__body {
+  margin: 18px 0 0;
+  max-width: 44ch;
+  font-size: clamp(15px, 1.15vw, 18px);
+  line-height: 1.6;
+  color: var(--ink-300);
+}
+.ib-cap__tags {
+  margin: 20px 0 0;
+  font: 500 11.5px/1.5 var(--font-mono);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-500);
+}
+.ib-cap__num {
+  position: absolute;
+  left: -0.06em;
+  top: -0.85em;
+  z-index: -1;
+  font: 700 clamp(64px, 8vw, 128px) / 0.8 var(--font-mono);
+  letter-spacing: -0.06em;
+  color: transparent;
+  -webkit-text-stroke: 1px var(--ib-glass-line);
+  text-shadow: none;
+}
+.ib-cap--intro {
+  width: min(640px, 48vw);
+}
+.ib-cap--intro .ib-cap__title {
+  font-size: clamp(44px, 6.4vw, 104px);
+  line-height: 0.92;
+  text-transform: uppercase;
+}
+.ib-cap--intro .ib-cap__title em {
+  display: block;
+}
+.ib-cue {
+  margin-top: 38px;
+  display: inline-flex;
+  align-items: center;
+  gap: 14px;
+  font: 500 11px/1 var(--font-mono);
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--ink-500);
+}
+.ib-cue i {
+  position: relative;
+  width: 1px;
+  height: 46px;
+  background: var(--border-default);
+  overflow: hidden;
+}
+.ib-cue i::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: -40%;
+  width: 1px;
+  height: 40%;
+  background: var(--hydro);
+  animation: ib-cue 1.8s cubic-bezier(0.6, 0, 0.2, 1) infinite;
+}
+@keyframes ib-cue {
+  to {
+    top: 100%;
+  }
+}
+.ib-ctas {
+  margin-top: 30px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  pointer-events: none;
+  text-shadow: none;
+}
+/* What happens after the click, right under the buttons. */
+.ib-promise {
+  margin: 14px 0 0;
+  max-width: 44ch;
+  font-size: 13.5px;
+  line-height: 1.55;
+  color: var(--ink-400);
+}
+
+/* ── Status: what can be rented today ─────────────────────────────────── */
+/* Plain mono caps. No pill, no dot, nothing that blinks — the words carry
+   the status. */
+.ib-status {
+  display: block;
+  margin: 0 0 22px;
+  padding: 0;
+  font: 500 11.5px/1.4 var(--font-mono);
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+  color: var(--ink-200);
+  text-shadow: none;
+}
+
+/* ── Pins glued to points on the berg, and the caption's leader line ──── */
+.ib-pins {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+}
+.ib-leader {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+.ib-leader g {
+  opacity: 0;
+}
+.ib-leader path {
+  fill: none;
+  stroke: var(--hydro);
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  filter: drop-shadow(0 0 4px var(--hydro));
+}
+.ib-leader .ib-leader__halo {
+  stroke: rgb(var(--halo) / 0.85);
+  stroke-width: 6;
+  filter: none;
+}
+.ib-leader circle {
+  fill: var(--hydro);
+}
+.ib-pin {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 0;
+  height: 0;
+  opacity: 0;
+  transition: opacity 0.35s ease;
+}
+/* The anchor point on the berg: a still Hydro point. No ping ring — nothing
+   on the page pulses. */
+.ib-pin::before {
+  content: "";
+  position: absolute;
+  left: -4px;
+  top: -4px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--hydro);
+}
+.ib-pin span {
+  position: absolute;
+  top: -9px;
+  white-space: nowrap;
+  font: 600 12.5px/1 var(--font-body);
+  color: var(--ink);
+  padding: 5px 9px;
+  /* A squared tag on its leader line — never a pill. */
+  border-radius: 3px;
+  background: var(--ib-glass);
+  border: 1px solid var(--ib-glass-line);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+.ib-pin.to-r span {
+  left: 16px;
+}
+.ib-pin.to-l span {
+  right: 16px;
+}
+.ib-pin--quiet::after {
+  animation: none;
+  opacity: 0;
+}
+
+/* ── Depth gauge: progress, position and navigation ───────────────────── */
+.ib-gauge {
+  position: absolute;
+  right: 30px;
+  top: 20vh;
+  bottom: 16vh;
+  width: 150px;
+  pointer-events: auto;
+}
+.ib-gauge__rail,
+.ib-gauge__fill {
+  position: absolute;
+  right: 0;
+  top: 0;
+  width: 1px;
+}
+.ib-gauge__rail {
+  bottom: 0;
+  background: var(--border-default);
+}
+.ib-gauge__fill {
+  height: 0;
+  background: linear-gradient(var(--hydro), var(--ib-teal));
+}
+.ib-gauge__now {
+  position: absolute;
+  right: -4px;
+  width: 9px;
+  height: 9px;
+  margin-top: -4px;
+  border-radius: 50%;
+  background: var(--hydro);
+  box-shadow: 0 0 12px var(--hydro);
+}
+.ib-gauge__read {
+  position: absolute;
+  right: 18px;
+  margin-top: 12px;
+  font: 700 12px/1 var(--font-mono);
+  color: var(--hydro);
+  white-space: nowrap;
+  text-shadow: 0 0 10px rgb(var(--halo));
+}
+.ib-gauge ol {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.ib-gauge li {
+  position: absolute;
+  right: 0;
+  transform: translateY(-50%);
+}
+.ib-gauge button {
+  appearance: none;
+  background: none;
+  border: 0;
+  padding: 4px 14px 4px 0;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  white-space: nowrap;
+  font: 500 10.5px/1 var(--font-mono);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink-500);
+  opacity: 0;
+  text-shadow: 0 0 10px rgb(var(--halo));
+  transition:
+    opacity 0.3s ease,
+    color 0.3s ease;
+}
+.ib-gauge:hover button,
+.ib-gauge button.is-on {
+  opacity: 1;
+}
+.ib-gauge button.is-on {
+  color: var(--ink);
+}
+.ib-gauge button::after {
+  content: "";
+  position: absolute;
+  right: -3px;
+  width: 7px;
+  height: 1px;
+  background: var(--ink-500);
+}
+.ib-gauge button:focus-visible {
+  outline: 2px solid var(--hydro);
+  outline-offset: 2px;
+  opacity: 1;
+}
+
+/* ── Small screens: captions sit at the bottom, the berg above ────────── */
+@media (max-width: 900px) {
+  .ib-gauge,
+  .ib-leader,
+  .ib-cap__num {
+    display: none;
+  }
+  .ib-cap,
+  .ib-cap--intro {
+    left: 16px;
+    right: 16px;
+    top: auto;
+    bottom: 24px;
+    width: auto;
+    padding: 18px;
+    border-radius: 16px;
+    background: var(--ib-glass);
+    border: 1px solid var(--ib-glass-line);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    text-shadow: none;
+    transform: none;
+  }
+  .ib-cap--intro {
+    padding: 0;
+    background: none;
+    border: 0;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    text-shadow:
+      0 0 20px rgb(var(--halo)),
+      0 0 40px rgb(var(--halo));
+  }
+  .ib-cap__title {
+    margin-top: 10px;
+    font-size: clamp(28px, 8vw, 40px);
+  }
+  .ib-cap--intro .ib-cap__title {
+    font-size: clamp(36px, 11vw, 56px);
+  }
+  .ib-cap__body {
+    margin-top: 10px;
+    font-size: 14.5px;
+  }
+  .ib-cap__tags {
+    margin-top: 10px;
+  }
+  .ib-cue {
+    margin-top: 22px;
+  }
+  .ib-status {
+    margin-bottom: 14px;
+    font-size: 12px;
+  }
+  .ib-promise {
+    font-size: 13px;
+  }
+  .ib-pin span {
+    font-size: 11px;
+  }
+}
+
+/* ── No WebGL: the story reads as a plain page ────────────────────────── */
+.ib--nogl .ib-track,
+.ib--nogl .ib-gl,
+.ib--nogl .ib-gauge,
+.ib--nogl .ib-leader,
+.ib--nogl .ib-pins,
+.ib--nogl .ib-sky {
+  display: none;
+}
+.ib--nogl .ib-stage,
+.ib--nogl .ib-caps {
+  position: static;
+  pointer-events: auto;
+}
+.ib--nogl .ib-stage {
+  clip-path: none;
+}
+.ib--nogl .ib-caps {
+  padding: 64px 6vw 32px;
+}
+.ib--nogl .ib-cap {
+  position: static;
+  width: auto;
+  max-width: 640px;
+  margin: 0 0 64px;
+  padding: 0;
+  opacity: 1 !important;
+  visibility: visible;
+  transform: none !important;
+  background: none;
+  border: 0;
+}
+.ib--nogl .ib-ctas {
+  pointer-events: auto !important;
+}
+
+/* ── Homepage teaser: the same scene in a card ────────────────────────── */
+.ib-gl--preview {
+  position: absolute;
+  inset: 0;
+  cursor: crosshair;
+  /* Vertical swipes over the card scroll the page; nothing here traps them. */
+  touch-action: pan-y;
+}
+/* Interaction hint, worded for the input the visitor actually has. */
+.ib-hint {
+  position: absolute;
+  left: 20px;
+  bottom: 16px;
+  margin: 0;
+  pointer-events: none;
+  font: 500 10.5px/1 var(--font-mono);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink-400);
+}
+.ib-hint__coarse {
+  display: none;
+}
+@media (hover: none), (pointer: coarse) {
+  .ib-hint__fine {
+    display: none;
+  }
+  .ib-hint__coarse {
+    display: inline;
+  }
+}

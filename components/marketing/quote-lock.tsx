@@ -1,82 +1,42 @@
 "use client";
 
 /**
- * The quote console: three dials — GPU, count, hours — and a price screen
- * that follows them. Set the three and the number is already there; the
- * only thing to press is the button that carries the plan to the form.
+ * The quote console: three dials — GPU, count, hours — and a screen that
+ * reads the plan back in plain words, says whether it can run today, and
+ * hands it to the contact form.
  *
  * DIALS. Each is a real cylinder in CSS 3D inside a bordered housing: the
  * options sit on a drum that rotates about its horizontal axis behind a
  * recessed window, with knurled grips down both sides and a chevron above
- * and below, the way a rack's setting dial turns. Turn it with the wheel,
- * by dragging, by clicking a chevron or the option above or below, or with
- * the arrow keys (each is a spinbutton). Transforms only, so it costs
- * nothing at rest.
+ * and below, the way a rack's setting dial turns. Transforms only, so it
+ * costs nothing at rest.
  *
- * SCREEN. The price rolls digit by digit — each digit is a 0–9 strip that
- * translates to its value — so a change reads as a meter turning, not a
- * number swapping.
+ * TURNING. Click (or tap, or Tab to) a dial to take hold of it; then the
+ * wheel, a drag, the arrow keys, a chevron or the option above or below all
+ * turn it. A dial that is not held never takes the wheel, so scrolling past
+ * the console scrolls the page — and a held dial at its end lets the wheel
+ * go. Touch never turns a dial by dragging: on a phone the console sits in
+ * the scroll path, so a swipe always scrolls, and a tap on a chevron turns.
  *
- * Rates are the catalogue's on-demand hourly list prices (NPR). Eight full
- * cards is billed as a whole node, which is why that step is cheaper than
- * eight singles. The US-cloud figure is an illustrative multiple.
+ * SCREEN. Rates are not published yet, so there is no price here: the
+ * screen states the plan, its status (H200 is available now; the rest of the
+ * roadmap is "coming soon", read from the catalogue), what comes back, and
+ * the button. The button carries the plan to /contact, where the form reads
+ * it back (components/marketing/quote-plan.ts is the shared vocabulary).
  *
- * FOR NOW the price readout is commented out — the dials, the housing and
- * the intro spin stay, and the screen holds only the configuration line and
- * the request button, centred. Search "commented out" to find the seams.
+ * The Odometer below is kept for when published rates return to the screen.
  */
 
 import * as React from "react";
-import Link from "next/link";
-import { Button, Icon } from "@/components/ui";
+import { ButtonLink, Icon } from "@/components/ui";
+import { EARLY_ACCESS } from "@/lib/availability";
 import { cn } from "@/lib/cn";
+import { QUOTE_COUNTS, QUOTE_GPUS, QUOTE_HOURS, planHref } from "./quote-plan";
 
-interface Gpu {
-  id: string;
-  label: string;
-  sub: string;
-  /** NPR per hour, one unit. */
-  rate: number;
-  /** NPR per hour for a whole node of eight, when that exists. */
-  node?: number;
-  slice?: boolean;
-  /** On the roadmap: quoted on request rather than available now. */
-  soon?: boolean;
-}
-
-/* Ten options, weakest family first and each family's size variants
-   together, small to large: l4, l40s, rtx pro 6000, then the h100 slices up
-   to the full card, then the h200 slices up to the full card. The intro
-   settles on the middle rung. Full-card and h200 MIG rates are the
-   catalogue's list prices; the h100 slices are scaled from them and, like
-   the catalogue's own numbers, are placeholders awaiting approval. */
-const GPUS: Gpu[] = [
-  { id: "l4", label: "l4", sub: "24 gb gddr6", rate: 62 },
-  { id: "l40s", label: "l40s", sub: "48 gb gddr6", rate: 145 },
-  { id: "rtx-pro-6000", label: "rtx pro 6000", sub: "96 gb gddr7", rate: 240 },
-  { id: "h100-1g", label: "h100 · 1g", sub: "mig slice · 10 gb", rate: 55, slice: true },
-  { id: "h100-2g", label: "h100 · 2g", sub: "mig slice · 20 gb", rate: 100, slice: true },
-  { id: "h100", label: "h100", sub: "80 gb hbm2e · full", rate: 315, node: 2420 },
-  { id: "h200-1g", label: "h200 · 1g", sub: "mig slice · 18 gb", rate: 72, slice: true },
-  { id: "h200-2g", label: "h200 · 2g", sub: "mig slice · 35 gb", rate: 132, slice: true },
-  { id: "h200-3g", label: "h200 · 3g", sub: "mig slice · 71 gb", rate: 232, slice: true },
-  { id: "h200", label: "h200", sub: "141 gb hbm3e · full", rate: 415, node: 3180 },
-];
-/** The rung the intro settles on: the middle of the list. */
-const GPU_DEFAULT = Math.floor(GPUS.length / 2) - 1;
-const COUNTS = [1, 2, 4, 8];
-const HOURS: { v: number; label: string; sub: string }[] = [
-  { v: 1, label: "1 h", sub: "a test" },
-  { v: 8, label: "8 h", sub: "a shift" },
-  { v: 24, label: "24 h", sub: "a day" },
-  { v: 72, label: "72 h", sub: "a weekend" },
-  { v: 168, label: "1 wk", sub: "168 h" },
-  { v: 720, label: "1 mo", sub: "720 h" },
-];
-
-/** What the same run costs on a US cloud, as a multiple. Illustrative.
-    Unused while the price readout is commented out. */
-// const US_CLOUD = 1.42;
+/** The rung each dial starts on: a full H200, one card, one day. */
+const GPU_DEFAULT = Math.max(0, QUOTE_GPUS.findIndex((x) => x.id === "h200"));
+const COUNT_DEFAULT = 0;
+const HOURS_DEFAULT = 2;
 
 /** Positions on the drum: at least as many as the longest list, and a few
     more, so the cylinder is round and no two options share an angle. */
@@ -85,6 +45,9 @@ const STEP = 360 / SLOTS;
 /** The intro settle, ms, and the stagger between dials. Matches the CSS. */
 const SPIN_MS = 1700;
 const SPIN_STAGGER = 160;
+/** Wheel travel per step, and drag travel per step, in px. */
+const WHEEL_STEP = 40;
+const DRAG_STEP = 32;
 
 /* ── One dial ────────────────────────────────────────────────────────────── */
 
@@ -130,43 +93,80 @@ function Drum({
   /** Stagger for the intro settle, ms. */
   delay: number;
 }) {
-  const ref = React.useRef<HTMLDivElement>(null);
+  const rootRef = React.useRef<HTMLDivElement>(null);
+  const winRef = React.useRef<HTMLDivElement>(null);
   const idx = React.useRef(index);
   idx.current = index;
+  /** True from the moment a mouse drag starts until just after it ends, so
+      the click that ends a drag does not also pick the option under it. */
+  const dragged = React.useRef(false);
   const clamp = React.useCallback(
     (i: number) => Math.min(items.length - 1, Math.max(0, i)),
     [items.length],
   );
-  const step = (d: number) => onChange(clamp(idx.current + d));
+
+  /** Turn to `i` and take hold of the dial, so the wheel and keys follow. */
+  const pick = (i: number) => {
+    onChange(clamp(i));
+    winRef.current?.focus({ preventScroll: true });
+  };
 
   React.useEffect(() => {
-    const el = ref.current;
-    if (!el) return;
+    const root = rootRef.current;
+    const el = winRef.current;
+    if (!root || !el) return;
     let acc = 0;
-    let dragY: number | null = null;
-    // Wheel: non-passive so the page does not scroll while a dial turns.
+    let startY: number | null = null;
+    let lastY = 0;
+    let moving = false;
+
     const onWheel = (e: WheelEvent) => {
+      // Not held: the wheel belongs to the page.
+      if (!root.contains(document.activeElement)) return;
+      const dir = Math.sign(e.deltaY);
+      // Held but already at the end it is turning toward: let the page go.
+      if (dir === 0 || clamp(idx.current + dir) === idx.current) {
+        acc = 0;
+        return;
+      }
       e.preventDefault();
       acc += e.deltaY;
-      if (Math.abs(acc) >= 40) {
+      if (Math.abs(acc) >= WHEEL_STEP) {
         onChange(clamp(idx.current + Math.sign(acc)));
         acc = 0;
       }
     };
     const onDown = (e: PointerEvent) => {
-      dragY = e.clientY;
-      el.setPointerCapture(e.pointerId);
+      // Touch scrolls the page; tapping a chevron or an option turns.
+      if (e.pointerType === "touch") return;
+      el.focus({ preventScroll: true });
+      startY = e.clientY;
+      lastY = e.clientY;
+      moving = false;
     };
     const onMove = (e: PointerEvent) => {
-      if (dragY === null) return;
-      const dy = dragY - e.clientY;
-      if (Math.abs(dy) >= 32) {
+      if (startY === null) return;
+      if (!moving) {
+        if (Math.abs(e.clientY - startY) < 6) return;
+        // A real drag: hold the pointer so it keeps turning past the edge.
+        moving = true;
+        dragged.current = true;
+        el.setPointerCapture(e.pointerId);
+      }
+      const dy = lastY - e.clientY;
+      if (Math.abs(dy) >= DRAG_STEP) {
         onChange(clamp(idx.current + Math.sign(dy)));
-        dragY = e.clientY;
+        lastY = e.clientY;
       }
     };
     const onUp = () => {
-      dragY = null;
+      startY = null;
+      if (moving) {
+        moving = false;
+        window.setTimeout(() => {
+          dragged.current = false;
+        }, 0);
+      }
     };
     el.addEventListener("wheel", onWheel, { passive: false });
     el.addEventListener("pointerdown", onDown);
@@ -183,8 +183,8 @@ function Drum({
   }, [onChange, clamp]);
 
   const onKey = (e: React.KeyboardEvent) => {
-    if (e.key === "ArrowUp" || e.key === "ArrowLeft") step(-1);
-    else if (e.key === "ArrowDown" || e.key === "ArrowRight") step(1);
+    if (e.key === "ArrowUp" || e.key === "ArrowLeft") onChange(clamp(idx.current - 1));
+    else if (e.key === "ArrowDown" || e.key === "ArrowRight") onChange(clamp(idx.current + 1));
     else if (e.key === "Home") onChange(0);
     else if (e.key === "End") onChange(items.length - 1);
     else return;
@@ -194,11 +194,17 @@ function Drum({
   const current = items[index]!;
 
   return (
-    <div className={cn("drum", className)}>
+    <div ref={rootRef} className={cn("drum", className)}>
       <span className="drum__label">
         <span>{label}</span>
+        {/* The next gesture, for the pointer in hand: "click" to take hold,
+            then "scroll" while held; "tap" on touch. */}
         <span className="drum__hint" aria-hidden="true">
-          turn
+          <span className="drum__hint--fine">
+            <span className="drum__hint-idle">click</span>
+            <span className="drum__hint-held">scroll</span>
+          </span>
+          <span className="drum__hint--coarse">tap ▲▼</span>
         </span>
       </span>
 
@@ -207,21 +213,21 @@ function Drum({
         tabIndex={-1}
         aria-hidden="true"
         disabled={index === 0}
-        onClick={() => step(-1)}
+        onClick={() => pick(idx.current - 1)}
         className="drum__chev"
       >
         <Chevron up />
       </button>
 
       <div
-        ref={ref}
+        ref={winRef}
         role="spinbutton"
         tabIndex={0}
         aria-label={label}
         aria-valuenow={index}
         aria-valuemin={0}
         aria-valuemax={items.length - 1}
-        aria-valuetext={current.text}
+        aria-valuetext={current.sub ? `${current.text}, ${current.sub}` : current.text}
         onKeyDown={onKey}
         className="drum__win outline-none focus-visible:ring-2 focus-visible:ring-hydro/60"
       >
@@ -245,7 +251,10 @@ function Drum({
                 tabIndex={-1}
                 aria-hidden={i !== index}
                 data-on={i === index ? "" : undefined}
-                onClick={() => onChange(i)}
+                onClick={() => {
+                  if (dragged.current) return;
+                  pick(i);
+                }}
                 className="drum__item"
                 style={{ "--a": `${i * STEP}deg` } as React.CSSProperties}
               >
@@ -263,7 +272,7 @@ function Drum({
         tabIndex={-1}
         aria-hidden="true"
         disabled={index === items.length - 1}
-        onClick={() => step(1)}
+        onClick={() => pick(idx.current + 1)}
         className="drum__chev"
       >
         <Chevron />
@@ -274,8 +283,8 @@ function Drum({
 
 /* ── Rolling digits ──────────────────────────────────────────────────────── */
 
-/* Unused while the price readout is commented out (see QuoteLock below).
-   Kept intact so the readout can come back exactly as it was. */
+/* Unused until published rates return to the screen. Kept intact so the
+   readout can come back without re-deriving the rolling-digit layout. */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 
 /**
@@ -355,14 +364,14 @@ function Sep({ ch, late }: { ch: string; late: boolean }) {
 
 export function QuoteLock({ className }: { className?: string }) {
   const [g, setG] = React.useState(GPU_DEFAULT);
-  const [c, setC] = React.useState(2);
-  const [h, setH] = React.useState(2);
+  const [c, setC] = React.useState(COUNT_DEFAULT);
+  const [h, setH] = React.useState(HOURS_DEFAULT);
   const rootRef = React.useRef<HTMLDivElement>(null);
   const [phase, setPhase] = React.useState<Phase>("hold");
 
   // The intro: the dials sit a few turns off until the console is well
-  // into view, then spin home — alternating directions, staggered — and
-  // the price rolls up from zero as they settle. Then the user has them.
+  // into view, then spin home — alternating directions, staggered. Then the
+  // visitor has them.
   React.useEffect(() => {
     const el = rootRef.current;
     if (!el) return;
@@ -387,28 +396,26 @@ export function QuoteLock({ className }: { className?: string }) {
     };
   }, []);
 
-  const gpu = GPUS[g]!;
-  const count = COUNTS[c]!;
-  const hours = HOURS[h]!;
+  const gpu = QUOTE_GPUS[g]!;
+  const count = QUOTE_COUNTS[c]!;
+  const hours = QUOTE_HOURS[h]!;
+  const href = planHref({ gpu, count, hours });
 
-  /* ── Price deduction — commented out for now ──────────────────────────
-     Rate per hour, total for the window, the US-cloud comparison and the
-     capacity line are parked until commercial pricing is approved. The
-     dials still drive the configuration that the button carries to the
-     form; only the price (`&npr=${total}` on the href) is dropped.
-
-  const perHour = count === 8 && gpu.node ? gpu.node : gpu.rate * count;
-  const total = perHour * hours.v;
-  const usTotal = Math.round(total * US_CLOUD);
-  const reserve = hours.v >= 720 || (count >= 8 && !gpu.slice);
-  const status = gpu.soon
-    ? { tone: "warn", text: "on the roadmap · quoted on request" }
-    : reserve
-      ? { tone: "warn", text: "reserved · plan in 1 day" }
-      : { tone: "ok", text: "available now" };
-  ───────────────────────────────────────────────────────────────────── */
-
-  const href = `/contact?gpu=${encodeURIComponent(gpu.id)}&count=${count}&hours=${hours.v}`;
+  /* The count dial reads in the GPU's own unit: slices for a MIG profile,
+     cards (and a whole eight-card server) for a full GPU. */
+  const countItems = QUOTE_COUNTS.map((n) => ({
+    key: String(n),
+    text: `× ${n}`,
+    sub: gpu.slice
+      ? n === 1
+        ? "one slice"
+        : `${n} slices`
+      : n === 8
+        ? "full server"
+        : n === 1
+          ? "one card"
+          : "multi-gpu",
+  }));
 
   return (
     <div ref={rootRef} className={cn("console", className)}>
@@ -421,7 +428,7 @@ export function QuoteLock({ className }: { className?: string }) {
           <span aria-hidden="true" className="size-1.5 rounded-pill bg-hydro shadow-glow-sm" />
           quote console · np-ktm-1
         </span>
-        <span className="hidden sm:inline">on-demand · billed per second · list prices</span>
+        <span className="hidden sm:inline">per-second billing · quoted in NPR</span>
       </div>
 
       <div className="console__body">
@@ -429,7 +436,7 @@ export function QuoteLock({ className }: { className?: string }) {
         <div className="console__drums">
           <Drum
             label="gpu"
-            items={GPUS.map((x) => ({ key: x.id, text: x.label, sub: x.sub }))}
+            items={QUOTE_GPUS.map((x) => ({ key: x.id, text: x.dial, sub: x.sub }))}
             index={g}
             onChange={setG}
             className="drum--gpu"
@@ -439,11 +446,7 @@ export function QuoteLock({ className }: { className?: string }) {
           />
           <Drum
             label="count"
-            items={COUNTS.map((n) => ({
-              key: String(n),
-              text: `× ${n}`,
-              sub: n === 8 ? "whole node" : n === 1 ? "single" : "multi-gpu",
-            }))}
+            items={countItems}
             index={c}
             onChange={setC}
             className="drum--count"
@@ -453,7 +456,7 @@ export function QuoteLock({ className }: { className?: string }) {
           />
           <Drum
             label="hours"
-            items={HOURS.map((x) => ({ key: String(x.v), text: x.label, sub: x.sub }))}
+            items={QUOTE_HOURS.map((x) => ({ key: String(x.v), text: x.dial, sub: x.sub }))}
             index={h}
             onChange={setH}
             className="drum--hours"
@@ -463,59 +466,58 @@ export function QuoteLock({ className }: { className?: string }) {
           />
         </div>
 
-        {/* Screen. Holds the configuration line and the button while the
-            price readout is commented out; --cta centres them. */}
-        <div className="console__screen console__screen--cta">
-          <p className="console__eyebrow">
-            {count}× {gpu.label} · {hours.label} · np-ktm-1
+        {/* Screen: the plan in words, whether it runs today, what comes
+            back, and the button that carries it to the form. */}
+        <div className="console__screen">
+          <p className="console__eyebrow">your plan · np-ktm-1</p>
+          <p className="console__plan">
+            <span className="console__plan-main nums">
+              {count}× {gpu.short}
+            </span>
+            <span className="console__plan-sub">for {hours.long}</span>
           </p>
 
-          {/* ── Price readout — commented out for now ───────────────────
-          <p className="console__price">
-            <span className="console__unit">NPR</span>
-            <Odometer value={perHour} live={phase === "ready"} />
-            <span className="console__per">/ hr</span>
-          </p>
-          <div className="console__rows">
-            <p className="console__row">
-              <span className="console__key">total for {hours.label}</span>
-              <span className="console__val">
-                NPR <Odometer value={total} live={phase === "ready"} />
-              </span>
-            </p>
-            <p className="console__row">
-              <span className="console__key">same run, us cloud est.</span>
-              <span className="console__val console__val--dim">
-                NPR {usTotal.toLocaleString("en-US")}
-              </span>
-            </p>
-            <p className="console__row">
-              <span className="console__key">capacity</span>
-              <span
+          <dl className="console__rows">
+            <div className="console__row">
+              <dt className="console__key">status</dt>
+              <dd
                 className={cn(
-                  "console__val flex items-center gap-1.5",
-                  status.tone === "warn" ? "text-warning" : "text-hydro",
+                  "console__val console__status",
+                  gpu.soon && "console__status--soon",
                 )}
               >
-                <span
-                  aria-hidden="true"
-                  className={cn(
-                    "size-1 rounded-pill",
-                    status.tone === "warn" ? "bg-warning" : "bg-hydro shadow-glow-sm",
-                  )}
-                />
-                {status.text}
-              </span>
-            </p>
-          </div>
-          ──────────────────────────────────────────────────────────── */}
+                {gpu.soon ? "Coming soon · we'll tell you first" : "Available now · enterprise early access"}
+              </dd>
+            </div>
+            <div className="console__row">
+              <dt className="console__key">you get</dt>
+              <dd className="console__val">
+                {gpu.soon
+                  ? "First word when it lands, plus an H200 plan if it fits"
+                  : "A capacity plan and a firm NPR quote"}
+              </dd>
+            </div>
+            <div className="console__row">
+              <dt className="console__key">reply</dt>
+              <dd className="console__val">
+                {EARLY_ACCESS.replyTime.charAt(0).toUpperCase() + EARLY_ACCESS.replyTime.slice(1)}
+              </dd>
+            </div>
+            <div className="console__row">
+              <dt className="console__key">billing</dt>
+              <dd className="console__val">Per second · 60 s minimum · in NPR</dd>
+            </div>
+          </dl>
 
           <div className="console__actions">
-            <Link href={href}>
-              <Button variant="primary" size="lg" iconRight={<Icon name="arrow-right" size={17} />}>
-                Request this plan
-              </Button>
-            </Link>
+            <ButtonLink
+              href={href}
+              variant="primary"
+              size="lg"
+              iconRight={<Icon name="arrow-right" size={17} />}
+            >
+              {gpu.soon ? "Join the waitlist" : "Request this plan"}
+            </ButtonLink>
             <span className="console__note">carries this configuration to the form</span>
           </div>
         </div>

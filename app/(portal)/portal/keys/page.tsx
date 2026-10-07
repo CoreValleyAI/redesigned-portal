@@ -1,8 +1,10 @@
-import { Badge, Card, Icon } from "@/components/ui";
+import { Badge, Icon } from "@/components/ui";
 import {
+  Panel,
   PortalPageHeader,
   TableScroll,
   Th,
+  Tr,
 } from "@/components/portal/primitives";
 import { getClient } from "@/lib/api/client";
 import { formatDateTime } from "@/lib/format";
@@ -19,11 +21,12 @@ export default async function KeysPage() {
   return (
     <>
       <PortalPageHeader
-        title="api keys"
+        eyebrow="platform / api-keys"
+        title="API keys"
         description="Keys authenticate against the model endpoints and the control-plane API. The secret is shown once at creation and never again."
       />
 
-      <Card surface="panel" padding={18} className="mb-5">
+      <Panel padding={18} className="mb-5">
         <div className="flex items-start gap-3">
           <Icon name="lock" size={17} weight="duotone" className="mt-0.5 shrink-0 text-info" />
           <p className="text-[13px] leading-relaxed text-ink-400">
@@ -32,7 +35,7 @@ export default async function KeysPage() {
             revoke it, so a deploy never has to race a credential change.
           </p>
         </div>
-      </Card>
+      </Panel>
 
       <TableScroll minWidth="52rem">
         <thead>
@@ -47,14 +50,14 @@ export default async function KeysPage() {
         </thead>
         <tbody>
           {keys.map((k, i) => (
-            <tr key={k.id} className={i > 0 ? "border-t border-line-subtle" : ""}>
+            <Tr key={k.id} index={i}>
               <td className="px-4 py-3.5 font-mono text-[13px] text-ink-100">
                 {k.name}
               </td>
               <td className="px-4 py-3.5">
                 <span className="font-mono text-[12.5px] text-ink-400">
                   {k.prefix}
-                  <span className="text-ink-700">••••••••••••</span>
+                  <span className="text-ink-500">••••••••••••</span>
                 </span>
               </td>
               <td className="px-4 py-3.5">
@@ -67,7 +70,7 @@ export default async function KeysPage() {
                     {k.scopedEndpointIds.map((id) => (
                       <span
                         key={id}
-                        className="rounded-md border border-line bg-carbon-600 px-2 py-0.5 font-mono text-[10.5px] text-ink-300"
+                        className="rounded-md border border-line bg-carbon-500/60 px-2 py-0.5 font-mono text-[10.5px] text-ink-300"
                       >
                         {endpoints.find((e) => e.id === id)?.displayName ?? id}
                       </span>
@@ -85,12 +88,12 @@ export default async function KeysPage() {
                 {k.revoked ? (
                   <Badge tone="danger">revoked</Badge>
                 ) : (
-                  <Badge tone="success" dot>
+                  <Badge tone="success">
                     active
                   </Badge>
                 )}
               </td>
-            </tr>
+            </Tr>
           ))}
         </tbody>
       </TableScroll>

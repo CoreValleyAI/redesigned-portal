@@ -4,10 +4,15 @@
  * A row of racks in perspective, built from the site's own materials: glass
  * panels, hairline borders, mono labels, Hydro LEDs. No canvas.
  *
- * Three racks stand side by side on a stage rotated a few degrees so their
- * top and side faces show. Each holds node trays whose GPU cells rise and
- * fall like utilisation (the `.rack__fill` animation) with an LED that blinks
- * now and then.
+ * Three H200 racks stand side by side on a stage rotated a few degrees so
+ * their top and side faces show. They are not a fleet diagram — no counts —
+ * but the three ways to rent the same card, in the order the pinned story
+ * tells them:
+ *   · rack a · slices       every card drawn as partitions (MIG slices)
+ *   · rack b · whole cards  every card whole and lit
+ *   · rack c · dedicated    a reserved rack: dashed outline and a lock
+ * Each holds node trays whose GPU cells rise and fall like utilisation (the
+ * `.rack__fill` animation) with an LED that blinks now and then.
  *
  * Hover:
  *  · The stage leans toward the pointer.
@@ -21,13 +26,20 @@
  */
 
 import * as React from "react";
+import { Icon } from "@/components/ui";
 import { cn } from "@/lib/cn";
 
-const RACKS = [
-  { id: "rack a", sku: "h200", trays: 9, gpus: 8, note: "training" },
-  { id: "rack b", sku: "h100", trays: 9, gpus: 8, note: "inference" },
-  { id: "rack c", sku: "h100", trays: 9, gpus: 4, note: "notebooks" },
-] as const;
+type RackKind = "slices" | "cards" | "dedicated";
+
+const RACKS: { id: string; sku: string; kind: RackKind; note: string }[] = [
+  { id: "rack a", sku: "h200", kind: "slices", note: "slices" },
+  { id: "rack b", sku: "h200", kind: "cards", note: "whole cards" },
+  { id: "rack c", sku: "h200", kind: "dedicated", note: "dedicated · reserved" },
+];
+
+/** Node trays per rack and GPU cards per tray — drawing constants only. */
+const TRAYS = 9;
+const CARDS = 8;
 
 /** Radius of the load wave around the pointer, px. */
 const WAVE = 120;
@@ -133,7 +145,11 @@ export function RackRow3D({
         {RACKS.map((rack, i) => (
           <div
             key={rack.id}
-            className="rack3d__rack glass-panel rounded-md"
+            data-kind={rack.kind}
+            className={cn(
+              "rack3d__rack glass-panel rounded-md",
+              rack.kind === "dedicated" && "rack3d__rack--reserved",
+            )}
             // Depth steps are positive — every rack sits in front of the
             // stage's plane. Behind it, the (transparent) stage would win
             // hit-testing in a preserve-3d context and :hover would never
@@ -146,13 +162,17 @@ export function RackRow3D({
             <div className="flex items-center justify-between border-b border-line-subtle px-2.5 py-2 font-mono text-[9.5px] tracking-label text-ink-500 uppercase">
               <span>{rack.id}</span>
               <span className="flex items-center gap-1">
-                <span className="size-1 rounded-pill bg-hydro shadow-[0_0_5px_var(--hydro)]" />
+                {rack.kind === "dedicated" ? (
+                  <Icon name="lock" size={10} className="text-hydro" />
+                ) : (
+                  <span className="size-1 rounded-pill bg-hydro shadow-[0_0_5px_var(--hydro)]" />
+                )}
                 {rack.sku}
               </span>
             </div>
 
             <ul className="rack3d__trays flex flex-col gap-1 p-2">
-              {Array.from({ length: rack.trays }, (_, t) => (
+              {Array.from({ length: TRAYS }, (_, t) => (
                 <li
                   key={t}
                   className="rack3d__tray flex items-center gap-1.5 rounded-[3px] border border-line-subtle bg-carbon-800/80 px-1.5 py-1"
@@ -160,25 +180,21 @@ export function RackRow3D({
                 >
                   <span
                     className="rack__led size-1 shrink-0 rounded-pill bg-hydro"
-                    style={{ "--i": i * 9 + t } as React.CSSProperties}
+                    style={{ "--i": i * TRAYS + t } as React.CSSProperties}
                   />
                   <span className="flex flex-1 items-end gap-[3px]">
-                    {Array.from({ length: 8 }, (_, c) => (
+                    {Array.from({ length: CARDS }, (_, c) => (
                       <span
                         key={c}
-                        data-cell={c < rack.gpus ? "" : undefined}
+                        data-cell=""
                         className={cn(
                           "rack__cell relative h-2.5 flex-1 overflow-hidden rounded-[1px] border border-line-subtle",
-                          c >= rack.gpus && "opacity-20",
+                          rack.kind === "slices" && "rack3d__cell--slice",
                         )}
-                        style={{ "--i": (i * 9 + t) * 8 + c } as React.CSSProperties}
+                        style={{ "--i": (i * TRAYS + t) * CARDS + c } as React.CSSProperties}
                       >
-                        {c < rack.gpus ? (
-                          <>
-                            <span className="rack__fill" />
-                            <span className="rack__hot" />
-                          </>
-                        ) : null}
+                        <span className="rack__fill" />
+                        <span className="rack__hot" />
                       </span>
                     ))}
                   </span>
@@ -186,8 +202,8 @@ export function RackRow3D({
               ))}
             </ul>
 
-            <div className="border-t border-line-subtle px-2.5 py-1.5 font-mono text-[9px] text-ink-600">
-              {rack.trays * rack.gpus} gpus · {rack.note}
+            <div className="border-t border-line-subtle px-2.5 py-1.5 font-mono text-[9px] text-ink-500">
+              {rack.note}
             </div>
           </div>
         ))}

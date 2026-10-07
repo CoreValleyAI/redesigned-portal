@@ -57,7 +57,9 @@ export const GPU_SPECS: GpuSpec[] = [
     short: "H200",
     tagline: "Large-model training and long-context inference",
     architecture: "Hopper",
-    chip: "GH100",
+    // The die's codename is GH100, but on the page that reads as "H100",
+    // a card CoreValley does not offer. Label it by the product instead.
+    chip: "H200",
     formFactor: "SXM5",
     memoryGb: 141,
     memoryType: "HBM3e",

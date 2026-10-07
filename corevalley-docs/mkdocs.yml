@@ -81,22 +81,24 @@ extra:
   homepage: !ENV [DOCS_HOMEPAGE, "https://corevalley.ai"]
   social:
     - icon: fontawesome/brands/github
-      link: https://github.com/corevalley
+      link: https://github.com/CoreValleyAI
     - icon: fontawesome/brands/slack
       link: https://corevalley.slack.com
   generator: false
 
 nav:
   - Home: index.md
+  # Product names match the website (GPU pods, JupyterHub, Model endpoints,
+  # Dedicated). File slugs keep the old names so existing links still work.
   - Platform:
-      - AI Lab: platform/ai-lab.md
-      - GPU Workspace: platform/gpu-workspace.md
-      - Inference API: platform/inference.md
+      - GPU pods & dedicated: platform/gpu-workspace.md
+      - JupyterHub: platform/ai-lab.md
+      - Model endpoints & API: platform/inference.md
   - Hardware:
-      - GPU & Instance Specs: hardware/specs.md
+      - GPU & instance specs: hardware/specs.md
   - Billing:
-      - NPR Payments: billing/npr-payments.md
+      - NPR payments: billing/npr-payments.md
   - Guides:
       - Quickstart: guides/quickstart.md
   - Support:
-      - SLA & Contact: support/sla-and-contact.md
+      - SLA & contact: support/sla-and-contact.md

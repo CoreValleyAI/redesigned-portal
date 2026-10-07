@@ -1,9 +1,11 @@
-import { Badge, Card, Icon } from "@/components/ui";
+import { Badge, Icon } from "@/components/ui";
 import {
   MetricTile,
+  Panel,
   PortalPageHeader,
   TableScroll,
   Th,
+  Tr,
 } from "@/components/portal/primitives";
 import { getClient } from "@/lib/api/client";
 import { formatCompactNumber, formatDateTime } from "@/lib/format";
@@ -33,7 +35,8 @@ export default async function NetworkPage() {
   return (
     <>
       <PortalPageHeader
-        title="network"
+        eyebrow="platform / network"
+        title="Network"
         description="Tenant isolation is enforced with Cilium. Policies compile to CiliumNetworkPolicy resources inside your vCluster, and every flow decision is observable."
       />
 
@@ -58,7 +61,7 @@ export default async function NetworkPage() {
         {policies.map((p) => {
           const vc = clusters.find((c) => c.id === p.vclusterId);
           return (
-            <Card key={p.id} surface="panel" padding={0}>
+            <Panel key={p.id} padding={0}>
               <div className="flex flex-wrap items-center gap-3 border-b border-line-subtle px-5 py-4">
                 <Icon name="certificate" size={17} className="text-hydro" />
                 <div>
@@ -116,7 +119,7 @@ export default async function NetworkPage() {
                             <span className="block text-[13px] text-ink-200">
                               {r.description}
                             </span>
-                            <span className="mt-0.5 block font-mono text-[11px] text-ink-600">
+                            <span className="mt-0.5 block font-mono text-[11px] text-ink-500">
                               {r.selector} · {r.ports}
                             </span>
                           </span>
@@ -127,16 +130,16 @@ export default async function NetworkPage() {
                 ))}
               </div>
 
-              <p className="border-t border-line-subtle px-5 py-3 font-mono text-[11px] text-ink-600">
+              <p className="border-t border-line-subtle px-5 py-3 font-mono text-[11px] text-ink-500">
                 updated {formatDateTime(p.updatedAt)}
               </p>
-            </Card>
+            </Panel>
           );
         })}
       </section>
 
       <section className="mt-8">
-        <h2 className="mb-3 font-mono text-[14px] text-ink-200">top talkers</h2>
+        <h2 className="mb-3 text-[15px] font-semibold tracking-tight text-ink-100">Top talkers</h2>
         <TableScroll minWidth="40rem">
           <thead>
             <tr>
@@ -147,10 +150,7 @@ export default async function NetworkPage() {
           </thead>
           <tbody>
             {flows.topTalkers.map((t, i) => (
-              <tr
-                key={`${t.source}-${t.destination}`}
-                className={i > 0 ? "border-t border-line-subtle" : ""}
-              >
+              <Tr key={`${t.source}-${t.destination}`} index={i}>
                 <td className="px-4 py-3.5 font-mono text-[12.5px] text-ink-200">
                   {t.source}
                 </td>
@@ -160,7 +160,7 @@ export default async function NetworkPage() {
                 <td className="px-4 py-3.5 text-right font-mono text-[12.5px] text-ink-300">
                   {formatCompactNumber(t.flows)}
                 </td>
-              </tr>
+              </Tr>
             ))}
           </tbody>
         </TableScroll>

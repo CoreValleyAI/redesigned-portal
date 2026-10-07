@@ -1,0 +1,207 @@
+/* ══ CONSOLE ════════════════════════════════════════════════════════════════
+   The customer console (/portal), set in the same vocabulary as the site:
+   glass cards at rounded-xl, Hydro ticks for "selected", hairline tables,
+   and motion that only moves what carries information — meters fill, lines
+   draw, live dots breathe. Everything reads tokens, so both themes follow;
+   reduced motion is neutralised globally (globals.css). Unlayered, loaded
+   after theme.css. */
+
+/* ── Ground ──────────────────────────────────────────────────────────────── */
+.pt-ground {
+  position: relative;
+  isolation: isolate;
+}
+.pt-ground::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 420px;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(60% 100% at 30% 0%, rgb(var(--hydro-rgb) / 0.07), transparent 70%),
+    radial-gradient(circle at center, rgb(var(--ink-rgb) / 0.07) 1px, transparent 1.5px) 0 0 / 22px 22px;
+  mask-image: linear-gradient(to bottom, #000, transparent);
+}
+
+/* ── Cards ───────────────────────────────────────────────────────────────── */
+.pt-card {
+  position: relative;
+  border-radius: var(--radius-xl, 14px);
+  border: 1px solid var(--border-default);
+  background-color: var(--carbon-700);
+  background-image: var(--grad-card);
+  box-shadow: var(--edge-top), var(--shadow-sm);
+}
+.pt-card--hover {
+  transition:
+    transform var(--duration-normal) var(--ease-standard),
+    border-color var(--duration-normal) var(--ease-standard),
+    box-shadow var(--duration-normal) var(--ease-standard);
+}
+.pt-card--hover:hover {
+  transform: translateY(-1px);
+  border-color: var(--border-strong);
+  box-shadow: var(--edge-top-strong), var(--shadow-md);
+}
+/* Accent: a Hydro rail across the top edge, the card that matters most. */
+.pt-card--accent::after {
+  content: "";
+  position: absolute;
+  left: 18px;
+  right: 18px;
+  top: -1px;
+  height: 2px;
+  border-radius: 2px;
+  background: linear-gradient(90deg, transparent, var(--hydro), transparent);
+}
+/* A recessed well inside a card: log panes, config lists, code. */
+.pt-well {
+  border-radius: var(--radius-lg, 10px);
+  border: 1px solid var(--border-subtle);
+  background: var(--carbon-800);
+  box-shadow: inset 0 2px 10px rgb(var(--lo-rgb) / calc(0.35 * var(--lo-k)));
+}
+
+/* ── Tables ──────────────────────────────────────────────────────────────── */
+.pt-table thead th {
+  background: color-mix(in srgb, var(--carbon-800) 55%, transparent);
+  border-bottom: 1px solid var(--border-subtle);
+}
+.pt-row {
+  position: relative;
+  transition: background-color var(--duration-fast) var(--ease-standard);
+}
+.pt-row + .pt-row {
+  border-top: 1px solid var(--border-subtle);
+}
+.pt-row > td:first-child {
+  box-shadow: inset 0 0 0 0 transparent;
+  transition: box-shadow var(--duration-normal) var(--ease-standard);
+}
+.pt-row:hover {
+  background: rgb(var(--hydro-rgb) / 0.035);
+}
+.pt-row:hover > td:first-child {
+  box-shadow: inset 2px 0 0 0 rgb(var(--hydro-rgb) / 0.7);
+}
+
+/* ── Navigation ──────────────────────────────────────────────────────────── */
+.pt-nav-link {
+  position: relative;
+  transition:
+    background-color var(--duration-fast) var(--ease-standard),
+    color var(--duration-fast) var(--ease-standard);
+}
+.pt-nav-link::before {
+  content: "";
+  position: absolute;
+  left: -14px;
+  top: 7px;
+  bottom: 7px;
+  width: 2px;
+  border-radius: 2px;
+  background: var(--hydro);
+  transform: scaleY(0);
+  transition: transform var(--duration-normal) var(--ease-out);
+}
+.pt-nav-link[data-active]::before {
+  transform: scaleY(1);
+}
+.pt-nav-link[data-active] {
+  background: rgb(var(--hydro-rgb) / 0.08);
+  color: var(--hydro);
+}
+
+/* Keyboard hint pill (⌘K). */
+.pt-kbd {
+  border: 1px solid var(--border-default);
+  border-bottom-width: 2px;
+  border-radius: 5px;
+  padding: 0 5px;
+  font: 500 10.5px/16px var(--font-mono);
+  color: var(--text-muted);
+  background: var(--carbon-700);
+}
+
+
+/* ── Meters ──────────────────────────────────────────────────────────────── */
+.pt-bar {
+  transform-origin: left center;
+  animation: pt-bar 1.1s var(--ease-out) both;
+  animation-delay: var(--pt-d, 0ms);
+}
+@keyframes pt-bar {
+  from { transform: scaleX(0); }
+}
+.pt-bar--hot {
+  background-image: linear-gradient(90deg, rgb(var(--hydro-rgb) / 0.75), var(--hydro));
+}
+:root:not([data-theme="light"]) .pt-bar--hot {
+  box-shadow: var(--glow-hydro-sm);
+}
+
+/* ── Charts ──────────────────────────────────────────────────────────────── */
+/* The line wipes in left to right. A clip, not a dash offset: the stroke is
+   non-scaling, so dash lengths would be measured in screen pixels. */
+.pt-wipe {
+  animation: pt-wipe 1.5s var(--ease-out) 0.15s both;
+}
+@keyframes pt-wipe {
+  from { clip-path: inset(-10% 100% -10% 0); }
+  to { clip-path: inset(-10% 0 -10% 0); }
+}
+.pt-area {
+  animation: pt-fade-up 1.2s var(--ease-out) 0.35s both;
+}
+
+/* ── Entrances ───────────────────────────────────────────────────────────── */
+.pt-in {
+  animation: pt-fade-up 0.5s var(--ease-out) both;
+  animation-delay: var(--pt-d, 0ms);
+}
+@keyframes pt-fade-up {
+  from { opacity: 0; transform: translateY(6px); }
+}
+
+/* ── Selectable option (launch form) ─────────────────────────────────────── */
+.pt-option {
+  position: relative;
+  border-radius: var(--radius-lg, 10px);
+  border: 1px solid var(--border-default);
+  background: var(--carbon-700);
+  transition:
+    border-color var(--duration-fast) var(--ease-standard),
+    background-color var(--duration-fast) var(--ease-standard),
+    box-shadow var(--duration-normal) var(--ease-standard);
+}
+.pt-option:hover {
+  border-color: var(--border-strong);
+}
+.pt-option[data-on] {
+  border-color: var(--border-hydro);
+  background: rgb(var(--hydro-rgb) / 0.06);
+  box-shadow: inset 3px 0 0 0 var(--hydro);
+}
+
+/* Native select, drawn to match Input. */
+.pt-select {
+  appearance: none;
+  background-image: linear-gradient(45deg, transparent 50%, var(--text-muted) 50%),
+    linear-gradient(135deg, var(--text-muted) 50%, transparent 50%);
+  background-position: calc(100% - 17px) 50%, calc(100% - 12px) 50%;
+  background-size: 5px 5px;
+  background-repeat: no-repeat;
+  padding-right: 34px;
+}
+
+/* Table cells hold identifiers, slices and prices; breaking "NPR 2,493,120"
+   or "maithili-tokenizer" across lines makes them unreadable. Cells stay on
+   one line and the card scrolls sideways instead; prose inside a cell opts
+   back in with .pt-wrap. */
+.pt-table td {
+  white-space: nowrap;
+}
+.pt-table .pt-wrap {
+  white-space: normal;
+}

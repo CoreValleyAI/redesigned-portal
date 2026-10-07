@@ -68,8 +68,9 @@ export function Tabs({
             {t.badge !== undefined ? (
               <span
                 className={cn(
-                  "rounded-pill px-1.75 py-px text-[10px] font-medium",
-                  on ? "bg-hydro/12 text-hydro" : "bg-carbon-600 text-ink-400",
+                  // A count set as type beside the label — never a pill.
+                  "font-mono text-[11px] font-medium",
+                  on ? "text-hydro light:text-hydro-dark" : "text-ink-500",
                 )}
               >
                 {t.badge}

@@ -47,10 +47,8 @@ export interface Project {
 
 export type GpuModelId =
   | "h200-sxm-141"
-  | "h100-sxm-80"
   | "rtx-pro-6000-blackwell-96"
-  | "l40s-48"
-  | "l4-24";
+  | "l40s-48";
 
 export type FleetStatus = "available" | "coming-soon";
 

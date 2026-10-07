@@ -12,8 +12,9 @@
  *     places in a sweep across the image, on the design system's ease-out —
  *     the mark coming online, one column at a time.
  *   · REACT. The pointer pushes nearby dots aside and lights them; they
- *     spring back on the standard curve when it leaves. Coarse pointers and
- *     reduced motion get the finished, static image.
+ *     spring back on the standard curve when it leaves. On touch screens a
+ *     soft light drifts across the mark by itself (a tap also pushes the
+ *     dots); reduced motion gets the finished, static image.
  *
  * RENDERING. WebGL point sprites: every dot is one vertex carrying its
  * position, size and brightness, the whole field is one buffer upload and
@@ -208,8 +209,16 @@ export function DotMatrix({
 
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     const fine = window.matchMedia("(pointer: fine)").matches;
+    /* Touch screens have no cursor to follow, so a soft light drifts across
+       the mark on its own while it is in view — the field stays alive. */
+    const ambient = !fine && !reduced;
+    let tapUntil = 0;
 
     let dots: Dot[] = [];
+    /* The bleed is fly-in margin sized for the desktop canvas. On a small
+       canvas a fixed 90px margin would squeeze the mark to a few dots, so it
+       scales with the canvas instead. */
+    const bleedPx = () => Math.min(bleed, Math.min(width, height) * 0.3);
     let width = 0;
     let height = 0;
     let dpr = 1;
@@ -282,7 +291,7 @@ export function DotMatrix({
       if (!img) return null;
       const ir = img.naturalWidth / img.naturalHeight;
       // The bleed is empty margin: fit the image inside it.
-      const bc = Math.round(bleed / cell);
+      const bc = Math.round(bleedPx() / cell);
       const ic = Math.max(1, cols - bc * 2);
       const irows = Math.max(1, rows - bc * 2);
       let gw = ic;
@@ -329,12 +338,13 @@ export function DotMatrix({
        ever starts (or travels) outside what is drawn. */
     const scatterFrom = (hx: number, hy: number): [number, number] => {
       const ang = Math.random() * Math.PI * 2;
-      const reach = bleed > 0 ? bleed * 0.9 + Math.min(width, height) * 0.15 : Math.max(width, height) * 0.5;
+      const b = bleedPx();
+      const reach = b > 0 ? b * 0.9 + Math.min(width, height) * 0.15 : Math.max(width, height) * 0.5;
       const dist = 30 + Math.random() * reach;
       const m = 6;
       // Left and top keep a larger margin: the footer mark sits near its
       // card's top-left corner, and the card clips what lies beyond it.
-      const lt = bleed > 0 ? bleed * 0.72 : m;
+      const lt = b > 0 ? b * 0.72 : m;
       return [
         Math.min(width - m, Math.max(lt, hx + Math.cos(ang) * dist)),
         Math.min(height - m, Math.max(lt, hy + Math.sin(ang) * dist)),
@@ -513,10 +523,17 @@ export function DotMatrix({
     let idle = 0;
     const loop = (now: number) => {
       frame = requestAnimationFrame(loop);
+      // Touch: once the mark has assembled, a light glides across it on a
+      // slow figure-of-eight, unless a finger has just touched it.
+      if (ambient && assembled && now > tapUntil && width > 0) {
+        const t = now / 1000;
+        px = width * (0.5 + 0.36 * Math.sin(t * 0.55));
+        py = height * (0.5 + 0.22 * Math.sin(t * 1.1 + 0.6));
+      }
       const moving = draw(now);
       const near = px > -radius && py > -radius && px < width + radius && py < height + radius;
       idle = !moving && assembled && !near ? idle + 1 : 0;
-      if (idle > 12) stop();
+      if (idle > 12 && !ambient) stop();
     };
     const start = () => {
       if (running || reduced || !inView || document.hidden || !gl) return;
@@ -580,6 +597,7 @@ export function DotMatrix({
     let tapTimer = 0;
     const onTap = (e: PointerEvent) => {
       if (fine) return;
+      tapUntil = performance.now() + 1400;
       onPointer(e);
       window.clearTimeout(tapTimer);
       tapTimer = window.setTimeout(onLeave, 700);

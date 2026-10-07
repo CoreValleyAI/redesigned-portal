@@ -5,6 +5,11 @@
  *
  * Client component: the toggles are real state and every figure recomputes
  * from lib/catalog. Nothing here hardcodes a price.
+ *
+ * PUBLISHED ONLY WHEN APPROVED. While CATALOG.meta.pricingIsPlaceholder is
+ * true, <PricingTables /> renders nothing, wherever it is placed: the rates
+ * in lib/catalog.ts are engineering placeholders and must never reach a
+ * public page. The pricing page explains how billing works instead.
  */
 import * as React from "react";
 import { Badge, Card, Icon, Switch, Tabs } from "@/components/ui";
@@ -26,19 +31,19 @@ type Term = keyof typeof TERM_DISCOUNT_PERCENT;
 
 const ISOLATION_COPY: Record<string, { label: string; tone: "hydro" | "info" | "neutral"; note: string }> = {
   exclusive: {
-    label: "exclusive",
+    label: "whole card",
     tone: "hydro",
-    note: "A whole card. Full bandwidth, no neighbours.",
+    note: "The entire GPU. Full speed, no neighbours.",
   },
   mig: {
     label: "mig",
     tone: "info",
-    note: "Hardware-partitioned. Tenants are fault-isolated.",
+    note: "A hardware slice with its own memory and compute. A neighbour's crash can't reach you.",
   },
   hami: {
     label: "hami",
     tone: "neutral",
-    note: "Software-sliced on a shared card. Not fault-isolated.",
+    note: "A shared, software slice. The cheapest option, but not fault-isolated.",
   },
 };
 
@@ -96,6 +101,11 @@ function CurrencyToggle({
 }
 
 export function PricingTables() {
+  if (CATALOG.meta.pricingIsPlaceholder) return null;
+  return <RateTables />;
+}
+
+function RateTables() {
   const [currency, setCurrency] = React.useState<Currency>("NPR");
   const [monthly, setMonthly] = React.useState(false);
   const [term, setTerm] = React.useState<Term>("reserved-12mo");
@@ -378,7 +388,7 @@ export function PricingTables() {
                     <div className="mt-1 font-mono text-[11px] text-ink-500">
                       per month
                       {discount > 0 ? (
-                        <span className="ml-2 line-through opacity-60">
+                        <span className="ml-2 text-ink-500 line-through">
                           {price(node.paisaPerMonth)}
                         </span>
                       ) : null}
@@ -386,7 +396,7 @@ export function PricingTables() {
                   </div>
                   <p className="mt-4 border-t border-line-subtle pt-4 text-[12.5px] text-ink-400">
                     {node.form === "bare-metal"
-                      ? "Bare metal with IPMI access and the full NVLink fabric."
+                      ? "Bare metal with hardware-level access (IPMI) and the full NVLink fabric."
                       : "KVM virtual machine with snapshots and fast rebuilds."}
                   </p>
                 </Card>
