@@ -1,43 +1,59 @@
 // Server component. No "use client": hover, press and focus are pure CSS.
 //
-// The action button: a pill with a nested circular icon. The colours come
-// from --btn-* tokens (app/theme.css), so the same variant is a black pill
-// with an emerald orb on paper and a white pill with a zinc orb inside a
-// dark island. The whole pill scales to 105% on hover; the orb shifts tone.
+// Ported from design_system/components/actions/Button.jsx, which drove those
+// states through useState. Moving them to CSS keeps this out of the client
+// bundle, makes hover work for keyboard users, stops it latching on touch,
+// and adds the :focus-visible ring the original lacked.
 import * as React from "react";
 import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/cn";
 
+/* Sizes land on the design-system 4px grid via --spacing:
+   h-7.5=30 h-9.5=38 h-11.5=46 · px-3=12 px-4=16 px-5.5=22 · gap 6/8/9.
+   text-[14px] is the one arbitrary value: the design system's `md` button is
+   14px, which is NOT on its own type scale (13/15). Preserved verbatim rather
+   than silently re-tuned — see README "Design-system values carried over". */
 const buttonVariants = cva(
   [
-    "group/btn items-center justify-center whitespace-nowrap select-none",
-    "rounded-full border leading-none font-medium tracking-[-0.01em]",
-    "transition-[transform,background-color,border-color,box-shadow,color] duration-300 ease-[cubic-bezier(0.16,1,0.3,1)]",
-    "hover:scale-105 active:scale-[1.02]",
-    "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--focus-ring)]",
-    "disabled:cursor-not-allowed disabled:pointer-events-none disabled:opacity-45 disabled:scale-100",
+    "items-center justify-center whitespace-nowrap select-none",
+    "rounded-md border leading-none",
+    "transition-[background-color,transform,box-shadow] duration-fast ease-standard",
+    "active:translate-y-[0.5px]",
+    "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-hydro",
+    // Last, so disabled beats every variant's hover/active.
+    "disabled:cursor-not-allowed disabled:pointer-events-none",
+    "disabled:bg-carbon-600 disabled:text-ink-600 disabled:border-line-subtle",
+    "disabled:shadow-none disabled:translate-y-0",
   ],
   {
     variants: {
       variant: {
-        primary:
-          "border-transparent bg-[var(--btn-bg)] text-[var(--btn-fg)] hover:shadow-[0_12px_32px_-12px_rgb(0_0_0/0.45)]",
+        /* Hydro is the action colour — one primary per view. Hover steps to
+           Hydro Dark, press to hydro-700, exactly as the design system's
+           palette table specifies. */
+        primary: [
+          "bg-hydro text-on-hydro border-transparent",
+          "hover:bg-hydro-dark active:bg-hydro-700",
+          // 0.30 alpha here; --glow-hydro-md is 0.40. Not the same token —
+          // kept literal to match the design system exactly.
+          "hover:shadow-[0_0_20px_rgb(var(--hydro-rgb)/0.30)] light:hover:shadow-md",
+        ],
         secondary:
-          "border-[var(--btn2-border)] bg-[var(--btn2-bg)] text-[var(--btn2-fg)] backdrop-blur-md hover:bg-[var(--btn2-hover)]",
+          "bg-carbon-600 text-ink-200 border-line hover:bg-carbon-500 active:bg-carbon-400",
         ghost:
-          "border-transparent bg-transparent text-ink-300 hover:bg-[var(--btn2-hover)] hover:text-ink-100",
+          "bg-transparent text-ink-300 border-transparent hover:bg-carbon-600 active:bg-carbon-500",
         danger:
-          "border-line bg-transparent text-danger hover:bg-danger/10",
+          "bg-transparent text-danger border-line hover:bg-danger/12 active:bg-danger/20",
       },
       size: {
-        sm: "h-9 gap-2 px-4 text-[13px]",
-        md: "h-11 gap-2.5 px-5 text-[14px]",
-        lg: "h-14 gap-3 px-6 text-[15px]",
+        sm: "h-7.5 gap-1.5 px-3 text-xs",
+        md: "h-9.5 gap-2 px-4 text-[14px]",
+        lg: "h-11.5 gap-2.25 px-5.5 text-base",
       },
-      /** Kept for API compatibility; the redesign is Inter throughout. */
+      /** JetBrains Mono instead of Manrope, for CLI-flavoured actions. */
       mono: {
-        true: "",
-        false: "",
+        true: "font-mono font-medium tracking-[0.01em]",
+        false: "font-body font-semibold tracking-normal",
       },
       fullWidth: {
         true: "flex w-full",
@@ -53,68 +69,7 @@ const buttonVariants = cva(
   },
 );
 
-type Size = "sm" | "md" | "lg";
-
-/* With a trailing icon the pill becomes pl-6 pr-2 py-2 and the icon sits in
-   its own circle. */
-const ORB_PAD: Record<Size, string> = {
-  sm: "pl-4 pr-1.5",
-  md: "pl-5 pr-1.5",
-  lg: "pl-6 pr-2",
-};
-const ORB_SIZE: Record<Size, string> = {
-  sm: "size-6",
-  md: "size-8",
-  lg: "size-10",
-};
-const ICON_SLOT: Record<Size, string> = { sm: "size-3.5", md: "size-4", lg: "size-4.5" };
-
-const orbTone: Record<string, string> = {
-  primary:
-    "bg-[var(--btn-orb)] text-[var(--btn-orb-fg)] group-hover/btn:bg-[var(--btn-orb-hover)]",
-  secondary: "bg-[var(--btn-bg)] text-[var(--btn-fg)]",
-  ghost: "bg-[var(--btn2-hover)] text-ink-100",
-  danger: "bg-danger/10 text-danger",
-};
-
-export function buttonParts({
-  variant,
-  size,
-  iconLeft,
-  iconRight,
-  children,
-}: {
-  variant?: string | null;
-  size?: Size | null;
-  iconLeft?: React.ReactNode;
-  iconRight?: React.ReactNode;
-  children?: React.ReactNode;
-}) {
-  const s = size ?? "md";
-  const v = variant ?? "primary";
-  return {
-    pad: iconRight ? ORB_PAD[s] : "",
-    content: (
-      <>
-        {iconLeft ? (
-          <span className={cn("inline-flex shrink-0 items-center", ICON_SLOT[s])}>{iconLeft}</span>
-        ) : null}
-        {children}
-        {iconRight ? (
-          <span
-            className={cn(
-              "inline-flex shrink-0 items-center justify-center rounded-full transition-colors duration-300",
-              ORB_SIZE[s],
-              orbTone[v],
-            )}
-          >
-            {iconRight}
-          </span>
-        ) : null}
-      </>
-    ),
-  };
-}
+const ICON_SLOT = { sm: "size-3.5", md: "size-4", lg: "size-4.5" } as const;
 
 export interface ButtonProps
   extends Omit<React.ComponentPropsWithRef<"button">, "color">,
@@ -135,14 +90,25 @@ export function Button({
   type = "button",
   ...rest
 }: ButtonProps) {
-  const { pad, content } = buttonParts({ variant, size, iconLeft, iconRight, children });
+  const slot = ICON_SLOT[size ?? "md"];
   return (
+    // React 19: `ref` is a normal prop, no forwardRef needed.
     <button
       type={type}
-      className={cn(buttonVariants({ variant, size, mono, fullWidth }), pad, className)}
+      className={cn(buttonVariants({ variant, size, mono, fullWidth }), className)}
       {...rest}
     >
-      {content}
+      {iconLeft ? (
+        <span className={cn("inline-flex shrink-0 items-center", slot)}>
+          {iconLeft}
+        </span>
+      ) : null}
+      {children}
+      {iconRight ? (
+        <span className={cn("inline-flex shrink-0 items-center", slot)}>
+          {iconRight}
+        </span>
+      ) : null}
     </button>
   );
 }

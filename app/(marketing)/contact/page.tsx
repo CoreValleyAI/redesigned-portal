@@ -128,7 +128,7 @@ export default function ContactPage() {
         </div>
       </Section>
 
-      <Section eyebrow="Quick answers" title="Before you write.">
+      <Section eyebrow="Quick answers" title="Before you write." alt>
         <div className="grid gap-4 md:grid-cols-2">
           {FAQ.map((f) => (
             <Card key={f.q} surface="solid" padding={22} className="h-full">

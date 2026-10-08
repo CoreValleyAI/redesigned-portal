@@ -49,13 +49,10 @@
 /* 4f — The customer console (/portal): cards, tables, meters, live dots. */
 @import "./portal.css";
 
-/* 4g — 2026-10-08 redesign: zinc + emerald, glass, grain, 40px slabs. */
-@import "./redesign.css";
-
 /* The `light:` variant, for the rare one-off a token cannot express. The
    tokens themselves flip in theme.css; reach for this only when a rule must
    differ in KIND between themes, not in colour. */
-@custom-variant light (&:where([data-theme="light"], [data-theme="light"] *):not(:where(.cv-dark, .cv-dark *)));
+@custom-variant light (&:where([data-theme="light"], [data-theme="light"] *));
 
 /* 5 — Explicit class sources. */
 @source "../app";
@@ -68,8 +65,8 @@
    and the page would silently render in the fallback. Unlayered so it beats
    layer(theme). Verify: getComputedStyle(document.body).fontFamily. */
 :root {
-  --font-body: var(--font-inter);
-  --font-mono: var(--font-inter);
+  --font-body: var(--font-manrope);
+  --font-mono: var(--font-jetbrains-mono);
 }
 
 /* ══ THEME BRIDGE ══════════════════════════════════════════════════════════

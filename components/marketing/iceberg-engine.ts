@@ -20,7 +20,7 @@
  * Returns a cleanup function that releases every GPU resource and listener.
  */
 import * as THREE from "three";
-import { subscribeTheme } from "@/lib/theme";
+import { readTheme, subscribeTheme } from "@/lib/theme";
 import { DIVE_STEPS, PLATFORM_LAYERS } from "@/lib/platform-layers";
 
 export interface DiveElements {
@@ -88,10 +88,10 @@ interface Palette {
 }
 const PALETTES: Record<"dark" | "light", Palette> = {
   dark: {
-    add: true, bgTop: [24, 24, 27], bgBot: [0, 0, 0],
-    iceTop: [0.9, 0.9, 0.92], iceSub: [0.2, 0.83, 0.6], deep: [0.06, 0.45, 0.36],
-    hot: [0.82, 1.0, 0.9], rack: [0.32, 0.32, 0.36], lit: [0.2, 0.83, 0.6],
-    water: [0.2, 0.83, 0.6], snow: [0.7, 0.95, 0.85], ring: 0x6ee7b7, gain: 1.0,
+    add: true, bgTop: [5, 8, 13], bgBot: [2, 26, 30],
+    iceTop: [0.88, 0.96, 0.95], iceSub: [0.4, 0.92, 0.72], deep: [0.06, 0.52, 0.62],
+    hot: [0.78, 1.0, 0.88], rack: [0.3, 0.36, 0.44], lit: [0.29, 0.95, 0.52],
+    water: [0.2, 0.85, 0.76], snow: [0.55, 0.95, 0.85], ring: 0x6ee7b7, gain: 1.0,
   },
   light: {
     add: false, bgTop: [243, 245, 247], bgBot: [207, 233, 228],
@@ -100,8 +100,7 @@ const PALETTES: Record<"dark" | "light", Palette> = {
     water: [0.05, 0.44, 0.42], snow: [0.06, 0.4, 0.4], ring: 0x047857, gain: 1.0,
   },
 };
-/* The scene always sits in a dark slab, whatever the page theme. */
-const pal = () => PALETTES.dark;
+const pal = () => PALETTES[readTheme()];
 
 const COMMON = /* glsl */ `
   uniform float uTime, uPR, uSize, uIntro, uMouseK, uActive, uAll, uCamY, uGain, uMotion;

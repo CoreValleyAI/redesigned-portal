@@ -55,9 +55,9 @@ export default function ProductsPage() {
           </ButtonLink>
           <Link
             href="/pricing"
-            className="group inline-flex min-h-11 items-center gap-2 text-[14px] font-medium text-ink-300 transition-colors duration-300 hover:text-ink-100"
+            className="group inline-flex min-h-11 items-center gap-2 font-mono text-[13px] tracking-wide text-ink-300 transition-colors duration-normal hover:text-ink-100"
           >
-            How billing works
+            how billing works
             <Icon
               name="arrow-right"
               size={14}
@@ -88,8 +88,8 @@ export default function ProductsPage() {
                     <span className="font-mono text-[11.5px] tracking-wide text-ink-500">
                       {p.meta}
                     </span>
-                    <span className="inline-flex shrink-0 items-center gap-1.5 text-[13px] font-medium text-ink-300 transition-colors duration-300 group-hover:text-ink-100">
-                      Learn more
+                    <span className="inline-flex shrink-0 items-center gap-1.5 font-mono text-[11.5px] tracking-wide text-ink-300 transition-colors duration-normal group-hover:text-ink-100">
+                      learn more
                       <Icon
                         name="arrow-right"
                         size={14}
@@ -109,6 +109,7 @@ export default function ProductsPage() {
         eyebrow="Hardware"
         title="What the pods and servers run on."
         lead={`${NOW} today. ${SOON} coming soon.`}
+        alt
       >
         {/* Phones: a card per GPU, so nothing scrolls sideways. */}
         <ul className="flex flex-col gap-3 md:hidden">

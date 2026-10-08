@@ -102,7 +102,7 @@ export function IcebergDive() {
   }, []);
 
   return (
-    <div ref={root} className={cn("ib cv-dark", noGl && "ib--nogl")}>
+    <div ref={root} className={cn("ib", noGl && "ib--nogl")}>
       <div className="ib-stage">
         <div className="ib-sky" aria-hidden="true" />
         <canvas className="ib-gl" aria-hidden="true" />

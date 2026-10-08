@@ -242,8 +242,8 @@ export default function UseCasesPage() {
                 </span>
                 <Badge tone="neutral">{c.sector}</Badge>
                 {c.soon ? (
-                  <span className="label ml-auto">
-                    Access coming soon
+                  <span className="ml-auto font-mono text-[11.5px] tracking-wide text-ink-500">
+                    access coming soon
                   </span>
                 ) : null}
               </div>

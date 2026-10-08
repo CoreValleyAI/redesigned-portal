@@ -198,9 +198,9 @@ export default function PricingPage() {
           </ButtonLink>
           <a
             href="#billing"
-            className="group inline-flex min-h-11 items-center gap-2 text-[14px] font-medium text-ink-300 transition-colors duration-300 hover:text-ink-100"
+            className="group inline-flex min-h-11 items-center gap-2 font-mono text-[13px] tracking-wide text-ink-300 transition-colors duration-normal hover:text-ink-100"
           >
-            How billing works
+            how billing works
             <Icon
               name="arrow-right"
               size={14}

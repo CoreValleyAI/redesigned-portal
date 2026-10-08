@@ -24,11 +24,11 @@ export default function DocsLayout({ children }: { children: React.ReactNode }) 
   const search = getSearchDocs();
 
   return (
-    <div className="mx-auto max-w-[1600px] px-8 pt-28 pb-12 md:px-[4.25rem] md:pt-32">
+    <div className="mx-auto max-w-page-xl px-5 py-12 md:px-10">
       {DOCS_URL ? (
         <>
           <script dangerouslySetInnerHTML={{ __html: REDIRECT }} />
-          <p className="mb-8 rounded-2xl border border-line bg-carbon-700 px-4 py-3 text-sm text-ink-300">
+          <p className="mb-8 rounded-md border border-line bg-carbon-700 px-4 py-3 text-sm text-ink-300">
             The documentation has moved to{" "}
             <a href={`${DOCS_URL}/`} className="text-hydro underline underline-offset-4">
               {DOCS_URL.replace(/^https?:\/\//, "")}
@@ -38,7 +38,7 @@ export default function DocsLayout({ children }: { children: React.ReactNode }) 
         </>
       ) : null}
       <div className="grid gap-10 lg:grid-cols-[13.5rem_minmax(0,1fr)] lg:gap-14">
-        <aside className="lg:sticky lg:top-28 lg:max-h-[calc(100dvh-8rem)] lg:self-start lg:overflow-y-auto">
+        <aside className="lg:sticky lg:top-24 lg:max-h-[calc(100dvh-7rem)] lg:self-start lg:overflow-y-auto">
           <p className="cv-label mb-4">Documentation</p>
           <DocsSearch docs={search} />
           <DocsNav groups={nav} />

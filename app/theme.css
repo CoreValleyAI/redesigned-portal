@@ -1,272 +1,365 @@
 /* ══════════════════════════════════════════════════════════════════════════
-   CoreValley — 2026-10-08 redesign: monochrome zinc with an emerald accent.
+   CoreValley — light theme, and the dark islands inside it.
 
-   The page itself is light (zinc-100 #F4F4F5, white cards). Dark sections are
-   islands — `cv-dark` on any wrapper — that flip every token back to black
-   and zinc, so the same components render correctly on both grounds.
+   design_system/tokens/colors.css is dark-first and read-only. This file
+   layers a second, light value set over the SAME token names, keyed on
+   <html data-theme="light"> (stamped before paint by lib/theme.ts). Nothing
+   else in the app knows the theme: every surface, hairline, text role and
+   glow is a token, so flipping the tokens flips the site.
 
-   THE RAMPS INVERT, not just the aliases. Components reach for
-   `bg-carbon-700`, `text-ink-100`, `bg-hydro-900` and so on, and those names
-   encode elevation and emphasis rather than lightness:
+   THE RAMPS INVERT, not just the aliases. Components reach past the aliases
+   for `bg-carbon-700`, `text-ink-100`, `bg-hydro-900` and so on, and those
+   names encode elevation and emphasis rather than lightness:
 
-     carbon-900 … carbon-400   ground → most raised
-     ink-100    … ink-700      loudest → faintest text
-     hydro-100  … hydro-900    strongest → faintest tint
+     carbon-900 … carbon-400   ground → most raised      (paper → grey)
+     ink-100    … ink-700      loudest → faintest text   (near-black → grey)
+     hydro-100  … hydro-900    strongest → faintest tint (deep → mint)
 
-   Emerald #34D399 is the highlight on dark. On the light page it is too pale
-   to carry text, so accent TEXT there uses emerald-700 (#047857, 5.5:1 on
-   zinc-100) while fills and dots keep the bright emerald.
+   So `text-ink-100` on a `bg-carbon-700` card stays "loudest text on a
+   card" in both themes, and no component needs a `light:` variant.
+
+   Hydro itself moves from #4ADE80 to #15803D (4.6:1 on paper) so accent
+   text and links pass AA; buttons keep dark-on-green in dark mode and go
+   white-on-green in light mode through --text-on-hydro.
 
    Unlayered on purpose: glass.css declares its elevation helpers on an
-   unlayered :root, and an unlayered rule beats a layered one.
+   unlayered :root, and an unlayered rule beats a layered one whatever the
+   specificity — so this file must be unlayered to override them.
    ══════════════════════════════════════════════════════════════════════════ */
 
+/* ── RGB triplets ──────────────────────────────────────────────────────────
+   For the `rgb(R G B / a)` literals in globals.css, glass.css, prose.css and
+   the Tailwind arbitrary values: hairlines, highlights, glows and shadows
+   that need an alpha. Dark values here; light overrides below. */
 :root {
-  color-scheme: light;
+  color-scheme: dark;
 
-  --ink-rgb: 9 9 11;
-  --hydro-rgb: 4 120 87;
-  --hydro-hot-rgb: 52 211 153;
-  --emerald-rgb: 52 211 153;
-  --danger-rgb: 220 38 38;
-  --hi-rgb: 255 255 255;
-  --lo-rgb: 9 9 11;
-  --lo-k: 0.35;
-  /* Glow behind text that sits on busy imagery: the ground colour. */
-  --halo: 244 244 245;
+  --ink-rgb: 232 236 239; /*  --ink                          */
+  --hydro-rgb: 74 222 128; /* --hydro                        */
+  --hydro-hot-rgb: 167 243 203; /* --hydro-200, the "hot" tip */
+  --danger-rgb: 248 113 113;
+  --hi-rgb: 255 255 255; /*   specular highlight              */
+  --lo-rgb: 0 0 0; /*         cast shadow                     */
+  --lo-k: 1; /*               shadow alpha multiplier         */
 }
 
-/* ── Light page ─────────────────────────────────────────────────────────── */
-:root,
+/* ── Dark text ramp, lifted for AA ─────────────────────────────────────────
+   The design system's dark --ink-500 (#6B7280, 4.1:1 on Carbon) and
+   --ink-600 (#4B515C, 2.5:1) carry real text — meta lines, captions, form
+   hints — so both are raised until they pass WCAG AA (4.5:1) on Carbon and
+   on the raised card surfaces. Ordering is kept: ink-400 > ink-500 > ink-600,
+   and ink-700 stays the faint decorative step. Verified ratios:
+     ink-500 #868D9A  6.0 ground · 5.4 card (carbon-600) · 5.0 hover (500)
+     ink-600 #778090  5.0 ground · 4.6 card (carbon-600)
+   --mute is the design system's alias of ink-500 and follows it.
+   The light block below overrides all three (higher specificity). */
+:root {
+  --ink-500: #868d9a;
+  --ink-600: #778090;
+  --mute: #868d9a;
+}
+
+/* ── Light ─────────────────────────────────────────────────────────────── */
 :root[data-theme="light"] {
-  --hydro: #047857;
-  --hydro-dark: #065f46;
-  --emerald: #34d399;
-  --carbon: #f4f4f5;
-  --ink: #18181b;
-  --mute: #71717a;
+  color-scheme: light;
 
-  --hydro-100: #022c22;
-  --hydro-200: #064e3b;
-  --hydro-300: #065f46;
-  --hydro-400: #047857;
-  --hydro-500: #059669;
-  --hydro-600: #10b981;
-  --hydro-700: #34d399;
-  --hydro-800: #a7f3d0;
-  --hydro-900: #d1fae5;
-  --hydro-glow: rgba(52, 211, 153, 0.35);
+  /* Brand base. Hydro is held a step darker than green-700 (#15803D, 4.6:1
+     on paper but only 4.1:1 on the pale Hydro tints that pills and badges
+     sit on): #12773A is 5.2:1 on paper and 4.65:1 on a 10% Hydro tint, so
+     small accent text stays AA wherever it lands. */
+  --hydro: #12773a;
+  --hydro-dark: #166534;
+  --carbon: #f3f5f7;
+  --ink: #161c26;
+  --mute: #5b6472;
 
-  --carbon-900: #f4f4f5;
-  --carbon-800: #ececef;
-  --carbon-700: #ffffff;
+  /* Hydro scale — inverted: 100 is the deepest green, 900 the palest tint */
+  --hydro-100: #0b2e1a;
+  --hydro-200: #14532d;
+  --hydro-300: #15803d;
+  --hydro-400: #16a34a;
+  --hydro-500: #22c55e;
+  --hydro-600: #4ade80;
+  --hydro-700: #6ee7a8;
+  --hydro-800: #a7f3cb;
+  --hydro-900: #d6fbe5;
+  --hydro-glow: rgba(21, 128, 61, 0.3);
+
+  /* Carbon scale — paper elevations: ground is a cool grey, cards are white,
+     the pressed/hover steps go slightly darker than the card */
+  --carbon-900: #f3f5f7;
+  --carbon-800: #eaeef2;
+  --carbon-700: #fbfcfd;
   --carbon-600: #ffffff;
-  --carbon-500: #f4f4f5;
-  --carbon-400: #e4e4e7;
+  --carbon-500: #e6eaef;
+  --carbon-400: #d9dee5;
 
-  --ink-100: #09090b;
-  --ink-200: #18181b;
-  --ink-300: #3f3f46;
-  --ink-400: #52525b;
-  --ink-500: #71717a;
-  --ink-600: #6b6b74;
-  --ink-700: #d4d4d8;
+  /* Ink scale — inverted: 100 is the darkest text, 700 the faintest.
+     ink-600 carries small text (meta lines, captions, hints, placeholders),
+     so it is held at AA: #606B7A is 4.95:1 on the ground (#F3F5F7) and
+     4.64:1 on carbon-800 bars. ink-500 is 5.47:1; ink-700 is decorative. */
+  --ink-100: #0b0f17;
+  --ink-200: #161c26;
+  --ink-300: #2b3340;
+  --ink-400: #4b5563;
+  --ink-500: #5b6472;
+  --ink-600: #606b7a;
+  --ink-700: #c5cbd3;
 
-  --border-subtle: rgba(9, 9, 11, 0.06);
-  --border-default: rgba(9, 9, 11, 0.1);
-  --border-strong: rgba(9, 9, 11, 0.18);
-  --border-hydro: rgba(4, 120, 87, 0.35);
+  /* Hairlines — ink on paper */
+  --border-subtle: rgba(11, 15, 23, 0.08);
+  --border-default: rgba(11, 15, 23, 0.13);
+  --border-strong: rgba(11, 15, 23, 0.22);
+  --border-hydro: rgba(21, 128, 61, 0.4);
 
-  --success: #047857;
+  /* Status — each darkened until it reads as text on paper */
+  --success: #12773a;
   --warning: #b45309;
   --danger: #dc2626;
   --info: #0369a1;
 
+  /* Aliases that must not follow the inversion */
   --text-on-hydro: #ffffff;
-  --action: #18181b;
-  --action-hover: #27272a;
-  --action-press: #3f3f46;
-  --link: #047857;
-  --link-hover: #065f46;
-  --focus-ring: #10b981;
+  --action: #12773a;
+  --action-hover: #166534;
+  --action-press: #14532d;
+  --link: #12773a;
+  --link-hover: #14532d;
+  --focus-ring: #12773a;
 
-  --shadow-sm: 0 1px 2px rgba(9, 9, 11, 0.05);
-  --shadow-md: 0 8px 24px -8px rgba(9, 9, 11, 0.1);
-  --shadow-lg: 0 24px 48px -16px rgba(9, 9, 11, 0.16);
-  --shadow-xl: 0 40px 80px -24px rgba(9, 9, 11, 0.25);
+  /* Shadows on paper: soft and cool instead of deep and black */
+  --shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.08);
+  --shadow-md: 0 4px 16px rgba(15, 23, 42, 0.1);
+  --shadow-lg: 0 12px 40px rgba(15, 23, 42, 0.14);
+  --shadow-xl: 0 24px 70px rgba(15, 23, 42, 0.18);
 
-  --glow-hydro-sm: 0 0 8px rgba(52, 211, 153, 0.35);
-  --glow-hydro-md: 0 0 20px rgba(52, 211, 153, 0.35);
-  --glow-hydro-lg: 0 0 48px rgba(52, 211, 153, 0.3);
+  /* Hydro glow, held lower: a bloom on white spreads further than on black */
+  --glow-hydro-sm: 0 0 8px rgba(21, 128, 61, 0.25);
+  --glow-hydro-md: 0 0 20px rgba(21, 128, 61, 0.28);
+  --glow-hydro-lg: 0 0 48px rgba(21, 128, 61, 0.22);
 
-  --grad-card: none;
-  --grad-raised: none;
+  /* RGB triplets */
+  --ink-rgb: 11 15 23;
+  --hydro-rgb: 21 128 61;
+  --hydro-hot-rgb: 20 83 45;
+  --danger-rgb: 220 38 38;
+  --hi-rgb: 255 255 255;
+  --lo-rgb: 15 23 42;
+  --lo-k: 0.35;
+
+  /* Glass elevation helpers (declared for dark in glass.css). On paper a
+     pane is lit from the top with white, not with ink. */
+  --grad-card: linear-gradient(
+    177deg,
+    rgb(255 255 255 / 0.75) 0%,
+    rgb(255 255 255 / 0.35) 40%,
+    rgb(255 255 255 / 0) 80%
+  );
+  --grad-raised: linear-gradient(
+    177deg,
+    rgb(255 255 255 / 0.9) 0%,
+    rgb(255 255 255 / 0.5) 46%,
+    rgb(255 255 255 / 0) 88%
+  );
   --edge-top: inset 0 1px 0 rgb(255 255 255 / 0.9);
   --edge-top-strong: inset 0 1px 0 rgb(255 255 255 / 1);
-
-  /* The action button (see components/ui/button.tsx): a black pill with an
-     emerald orb on paper; a white pill with a zinc orb on dark. */
-  --btn-bg: #18181b;
-  --btn-fg: #ffffff;
-  --btn-orb: #34d399;
-  --btn-orb-fg: #022c22;
-  --btn-orb-hover: #6ee7b7;
-  --btn2-bg: #ffffff;
-  --btn2-fg: #18181b;
-  --btn2-border: rgba(9, 9, 11, 0.1);
-  --btn2-hover: #f4f4f5;
 }
 
 /* ── Dark islands ──────────────────────────────────────────────────────────
-   Black and zinc, emerald highlight, white/10 hairlines. */
-.cv-dark,
+   A subtree that stays Carbon whatever the page theme. Opt in with
+   `cv-dark`. Nothing ships with it today: terminals have their own light
+   surface (`cv-terminal`, below) and the quote console follows the page.
+
+   This restates design_system/tokens/colors.css + spacing.css for the
+   subtree. Keep it in sync with those files when they change. */
 :root[data-theme="light"] .cv-dark {
   color-scheme: dark;
-  color: var(--text-primary);
 
-  --hydro: #34d399;
-  --hydro-dark: #10b981;
-  --carbon: #000000;
-  --ink: #fafafa;
-  --mute: #a1a1aa;
+  --hydro: #4ade80;
+  --hydro-dark: #16a34a;
+  --carbon: #05080d;
+  --ink: #e8ecef;
+  --mute: #868d9a;
 
-  --hydro-100: #d1fae5;
-  --hydro-200: #a7f3d0;
-  --hydro-300: #6ee7b7;
-  --hydro-400: #34d399;
-  --hydro-500: #10b981;
-  --hydro-600: #059669;
-  --hydro-700: #047857;
-  --hydro-800: #064e3b;
-  --hydro-900: #022c22;
-  --hydro-glow: rgba(52, 211, 153, 0.45);
+  --hydro-100: #d6fbe5;
+  --hydro-200: #a7f3cb;
+  --hydro-300: #6ee7a8;
+  --hydro-400: #4ade80;
+  --hydro-500: #22c55e;
+  --hydro-600: #16a34a;
+  --hydro-700: #15803d;
+  --hydro-800: #14532d;
+  --hydro-900: #0b2e1a;
+  --hydro-glow: rgba(74, 222, 128, 0.45);
 
-  --carbon-900: #000000;
-  --carbon-800: #09090b;
-  --carbon-700: #18181b;
-  --carbon-600: #1f1f23;
-  --carbon-500: #27272a;
-  --carbon-400: #3f3f46;
+  --carbon-900: #05080d;
+  --carbon-800: #080c13;
+  --carbon-700: #0b0f17;
+  --carbon-600: #11161f;
+  --carbon-500: #181e29;
+  --carbon-400: #232b38;
 
-  --ink-100: #ffffff;
-  --ink-200: #f4f4f5;
-  --ink-300: #d4d4d8;
-  --ink-400: #a1a1aa;
-  --ink-500: #8e8e98;
-  --ink-600: #7c7c86;
-  --ink-700: #3f3f46;
+  --ink-100: #f7f9fa;
+  --ink-200: #e8ecef;
+  --ink-300: #c2c8cf;
+  --ink-400: #9aa2ad;
+  --ink-500: #868d9a;
+  --ink-600: #778090;
+  --ink-700: #333944;
 
-  --border-subtle: rgba(255, 255, 255, 0.06);
-  --border-default: rgba(255, 255, 255, 0.1);
-  --border-strong: rgba(255, 255, 255, 0.18);
-  --border-hydro: rgba(52, 211, 153, 0.35);
+  --border-subtle: rgba(232, 236, 239, 0.07);
+  --border-default: rgba(232, 236, 239, 0.12);
+  --border-strong: rgba(232, 236, 239, 0.2);
+  --border-hydro: rgba(74, 222, 128, 0.35);
 
-  --success: #34d399;
+  --success: #4ade80;
   --warning: #fbbf24;
   --danger: #f87171;
   --info: #38bdf8;
 
-  --text-on-hydro: #022c22;
-  --action: #ffffff;
-  --action-hover: #e4e4e7;
-  --action-press: #d4d4d8;
-  --link: #34d399;
-  --link-hover: #6ee7b7;
-  --focus-ring: #34d399;
+  --text-on-hydro: var(--carbon-900);
+  --action: var(--hydro);
+  --action-hover: var(--hydro-dark);
+  --action-press: var(--hydro-700);
+  --link: var(--hydro);
+  --link-hover: var(--hydro-300);
+  --focus-ring: var(--hydro);
 
   --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.6);
-  --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.45);
-  --shadow-lg: 0 24px 48px rgba(0, 0, 0, 0.55);
-  --shadow-xl: 0 40px 80px rgba(0, 0, 0, 0.65);
+  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.55);
+  --shadow-lg: 0 12px 40px rgba(0, 0, 0, 0.6);
+  --shadow-xl: 0 24px 70px rgba(0, 0, 0, 0.7);
 
-  --glow-hydro-sm: 0 0 8px rgba(52, 211, 153, 0.4);
-  --glow-hydro-md: 0 0 20px rgba(52, 211, 153, 0.4);
-  --glow-hydro-lg: 0 0 48px rgba(52, 211, 153, 0.35);
+  --glow-hydro-sm: 0 0 8px rgba(74, 222, 128, 0.35);
+  --glow-hydro-md: 0 0 20px rgba(74, 222, 128, 0.4);
+  --glow-hydro-lg: 0 0 48px rgba(74, 222, 128, 0.35);
 
-  --ink-rgb: 255 255 255;
-  --hydro-rgb: 52 211 153;
-  --hydro-hot-rgb: 167 243 208;
+  --ink-rgb: 232 236 239;
+  --hydro-rgb: 74 222 128;
+  --hydro-hot-rgb: 167 243 203;
   --danger-rgb: 248 113 113;
   --hi-rgb: 255 255 255;
   --lo-rgb: 0 0 0;
   --lo-k: 1;
-  --halo: 0 0 0;
 
-  --grad-card: none;
-  --grad-raised: none;
-  --edge-top: inset 0 1px 0 rgb(255 255 255 / 0.06);
-  --edge-top-strong: inset 0 1px 0 rgb(255 255 255 / 0.12);
-
-  --btn-bg: #ffffff;
-  --btn-fg: #18181b;
-  --btn-orb: #18181b;
-  --btn-orb-fg: #ffffff;
-  --btn-orb-hover: #3f3f46;
-  --btn2-bg: rgba(255, 255, 255, 0.05);
-  --btn2-fg: #ffffff;
-  --btn2-border: rgba(255, 255, 255, 0.1);
-  --btn2-hover: rgba(255, 255, 255, 0.1);
-
-  /* The semantic aliases are var() references resolved where they are
-     declared (:root), so an island must restate them to pick up its own
-     ramps. */
-  --bg-base: var(--carbon-900);
-  --bg-sunken: var(--carbon-800);
-  --surface-card: var(--carbon-700);
-  --surface-raised: var(--carbon-600);
-  --surface-input: var(--carbon-500);
-  --surface-hover: var(--carbon-500);
-  --surface-active: var(--carbon-400);
-  --text-primary: var(--ink-200);
-  --text-secondary: var(--ink-400);
-  --text-muted: var(--mute);
-  --text-accent: var(--hydro);
+  --grad-card: linear-gradient(
+    177deg,
+    rgb(232 236 239 / 0.045) 0%,
+    rgb(232 236 239 / 0.012) 40%,
+    rgb(232 236 239 / 0) 80%
+  );
+  --grad-raised: linear-gradient(
+    177deg,
+    rgb(232 236 239 / 0.07) 0%,
+    rgb(232 236 239 / 0.02) 46%,
+    rgb(232 236 239 / 0) 88%
+  );
+  --edge-top: inset 0 1px 0 rgb(232 236 239 / 0.08);
+  --edge-top-strong: inset 0 1px 0 rgb(232 236 239 / 0.14);
 }
 
-/* ── No cursor light on paper ────────────────────────────────────────────── */
+/* The island's own text and selection: the tokens above re-colour every
+   child, but the element itself inherits `color` from the light page. */
+:root[data-theme="light"] .cv-dark {
+  color: var(--text-primary);
+}
+
+/* ── No cursor light on paper ──────────────────────────────────────────────
+   The card spotlight is a Hydro bloom that follows the pointer. On Carbon it
+   reads as a light; on paper the same bloom reads as a shadow, so it is off
+   in light mode. The canvases make the same call in code (grid-floor pool,
+   terrain pointer light) via canvasPalette().subtractive. */
 :root[data-theme="light"] .cv-spotlight::before,
 :root[data-theme="light"] .cv-spotlight::after {
   display: none;
 }
 
-/* ── Terminals on paper ──────────────────────────────────────────────────────
-   Terminals and docs code blocks are always dark glass-on-zinc. */
-.cv-terminal {
-  --carbon-900: #09090b;
-  --carbon-800: #18181b;
-  --carbon-700: #1f1f23;
-  --carbon-600: #27272a;
-  --carbon-500: #3f3f46;
-  --carbon-400: #52525b;
-  --ink-100: #ffffff;
-  --ink-200: #f4f4f5;
-  --ink-300: #d4d4d8;
-  --ink-400: #a1a1aa;
-  --ink-500: #8e8e98;
-  --ink-600: #7c7c86;
-  --ink-700: #3f3f46;
-  --text-muted: #a1a1aa;
-  --hydro: #34d399;
-  --hydro-rgb: 52 211 153;
-  --ink-rgb: 255 255 255;
-  --border-subtle: rgba(255, 255, 255, 0.06);
-  --border-default: rgba(255, 255, 255, 0.1);
-  --border-strong: rgba(255, 255, 255, 0.18);
-  --edge-top: inset 0 1px 0 rgb(255 255 255 / 0.06);
-  --bg-base: var(--carbon-900);
-  --bg-sunken: var(--carbon-800);
-  --surface-card: var(--carbon-700);
-  --surface-raised: var(--carbon-600);
-  --surface-input: var(--carbon-500);
-  --surface-hover: var(--carbon-500);
-  --surface-active: var(--carbon-400);
-  --text-primary: var(--ink-200);
-  --text-secondary: var(--ink-400);
-  color-scheme: dark;
+/* ── Terminals on paper ────────────────────────────────────────────────────
+   The Terminal primitive and the docs code blocks (`cv-terminal`). A dark
+   pane on a light page reads as a screenshot; a pale teal one reads as part
+   of the page and still says "console". The Carbon elevation steps the
+   component uses are remapped to a teal-tinted ramp for this subtree; text
+   roles keep ink, the prompt and cursor keep Hydro. */
+:root[data-theme="light"] .cv-terminal {
+  --carbon-900: #d3ebe6; /* recessed */
+  --carbon-800: #e4f3f0; /* body      */
+  --carbon-700: #d8ede8; /* title bar */
+  --carbon-600: #cfe7e1;
+  --carbon-500: #c3ded7;
+  --carbon-400: #b4d3cb;
+
+  /* Text steps held at AA on both the body (#E4F3F0) and the title bar
+     (#D8EDE8): output 6.4:1, title/muted 5.4:1, comments 4.6:1. */
+  --ink-200: #143c36; /* command text   */
+  --ink-400: #335953; /* output         */
+  --ink-500: #47635e; /* title, muted   */
+  --ink-600: #536d69; /* comments       */
+  --ink-700: #9dbbb5; /* window dots    */
+  --text-muted: #47635e;
+
+  --border-subtle: rgba(15, 118, 110, 0.12);
+  --border-default: rgba(15, 118, 110, 0.22);
+  --border-strong: rgba(15, 118, 110, 0.34);
+
+  --shadow-lg: 0 12px 40px rgba(15, 118, 110, 0.12);
+  --edge-top: inset 0 1px 0 rgb(255 255 255 / 0.9);
 }
+
+/* ── Hero copy over the range ───────────────────────────────────────────────
+   The headline column sits directly on the dot terrain. Two layers keep it
+   readable without moving the mountains: a broad soft glow of the ground
+   colour behind the column (white on paper, Carbon on Carbon), and a tight
+   halo around the glyphs themselves. */
+:root { --halo: 5 8 13; }
+:root[data-theme="light"] { --halo: 255 255 255; }
 
 .hero-copy {
   position: relative;
+}
+.hero-copy::before {
+  content: "";
+  position: absolute;
+  inset: -12% -22% -26%;
+  z-index: -1;
+  pointer-events: none;
+  background: radial-gradient(
+    closest-side,
+    rgb(var(--halo) / 0.9),
+    rgb(var(--halo) / 0.72) 42%,
+    rgb(var(--halo) / 0.32) 70%,
+    rgb(var(--halo) / 0) 100%
+  );
+  filter: blur(6px);
+}
+.hero-copy h1,
+.hero-copy p,
+.hero-copy li {
+  text-shadow:
+    0 0 1px rgb(var(--halo) / 0.9),
+    0 0 12px rgb(var(--halo) / 0.85),
+    0 0 28px rgb(var(--halo) / 0.6);
+}
+
+/* The chip row under the hero button sits lowest on the range, where the
+   river runs. It gets its own wide, flat glow so each label reads cleanly. */
+.hero-chips {
+  position: relative;
+  isolation: isolate;
+}
+.hero-chips::before {
+  content: "";
+  position: absolute;
+  inset: -22px -48px;
+  z-index: -1;
+  pointer-events: none;
+  border-radius: 999px;
+  background: radial-gradient(
+    closest-side,
+    rgb(var(--halo) / 0.95),
+    rgb(var(--halo) / 0.85) 55%,
+    rgb(var(--halo) / 0) 100%
+  );
+  filter: blur(8px);
 }
 
 /* ── Click-to-open questions (use cases) ──────────────────────────────────
@@ -311,7 +404,7 @@
 .faq summary:focus-visible {
   outline: var(--ring-width) solid var(--focus-ring);
   outline-offset: -2px;
-  border-radius: 1rem;
+  border-radius: 12px;
 }
 @media (prefers-reduced-motion: reduce) {
   .faq::details-content,
@@ -320,11 +413,20 @@
   }
 }
 
-/* ── 404 ────────────────────────────────────────────────────────────────── */
+/* ── 404 ──────────────────────────────────────────────────────────────────
+   The status code as a lit figure: Hydro to teal, with a soft glow in the
+   theme's own ground colour behind it (hero-copy halo). */
 .nf-code {
-  background: linear-gradient(180deg, #ffffff 10%, var(--emerald, #34d399) 95%);
+  background: linear-gradient(180deg, var(--hydro) 10%, color-mix(in srgb, var(--hydro) 55%, #14b8a6) 90%);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
+  text-shadow: none;
+  filter: drop-shadow(0 0 28px rgb(var(--hydro-rgb) / 0.28));
+}
+.hero-copy .nf-code {
+  text-shadow: none;
+}
+.nf-exit .block {
   text-shadow: none;
 }

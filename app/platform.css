@@ -11,30 +11,33 @@
    ══════════════════════════════════════════════════════════════════════════ */
 
 .ib {
-  --ib-top: #18181b;
-  --ib-glass: rgb(255 255 255 / 0.05);
-  --ib-glass-line: rgb(255 255 255 / 0.1);
-  --ib-teal: #34d399;
+  --ib-top: #05080d;
+  --ib-glass: rgb(8 14 20 / 0.55);
+  --ib-glass-line: rgb(160 255 220 / 0.14);
+  --ib-teal: #2dd4bf;
   user-select: none;
+}
+:root[data-theme="light"] .ib,
+:root[data-theme="light"] .ib-gl--preview {
+  --ib-top: #f3f5f7;
+  --ib-glass: rgb(250 252 253 / 0.62);
+  --ib-glass-line: rgb(15 118 110 / 0.2);
+  --ib-teal: #0f766e;
 }
 
 main:has(.ib) + footer {
   z-index: 20;
 }
 
-/* The scene is a dark slab: inset from the viewport edge, 2.5rem corners,
-   grain over the points. */
 .ib-stage {
   position: fixed;
-  inset: 0.5rem;
+  inset: 0;
   z-index: 10;
   pointer-events: none;
-  overflow: hidden;
-  border-radius: 2.5rem;
   /* --ib-out is the share of the viewport below the end of the scroll track
      (iceberg-engine.ts). Clipping the stage there ends the scene where the
      page ends: the footer's glass sits on ordinary ground, not on the berg. */
-  clip-path: inset(0 0 calc(var(--ib-out, 0) * 100%) 0 round 2.5rem);
+  clip-path: inset(0 0 calc(var(--ib-out, 0) * 100%) 0);
 }
 .ib-caps,
 .ib-pins,
@@ -42,25 +45,10 @@ main:has(.ib) + footer {
 .ib-gauge {
   opacity: calc(1 - var(--ib-out, 0) * 3);
 }
-@media (min-width: 48rem) {
-  .ib-stage {
-    inset: 0.75rem;
-  }
-}
-.ib-stage::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  background-image: var(--grain);
-  background-size: 220px 220px;
-  opacity: 0.15;
-  mix-blend-mode: overlay;
-}
 .ib-sky {
   position: absolute;
   inset: 0;
-  background: linear-gradient(180deg, #18181b, #000);
+  background: var(--ib-top);
 }
 .ib-gl {
   position: absolute;
