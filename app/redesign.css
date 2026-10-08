@@ -1,0 +1,259 @@
+/* ══════════════════════════════════════════════════════════════════════════
+   CoreValley — 2026-10-08 redesign layer.
+
+   Glass, grain and depth on a monochrome zinc palette with emerald
+   highlights. Imported last and unlayered, so it wins over glass.css and the
+   design-system tokens without touching them.
+   ══════════════════════════════════════════════════════════════════════════ */
+
+/* ── Type ──────────────────────────────────────────────────────────────────
+   Inter everywhere. `font-mono` utilities resolve to Inter too, so labels and
+   figures stay in one family; real code re-binds --font-mono to JetBrains
+   Mono below. */
+:root {
+  --font-body: var(--font-inter);
+  --font-display: var(--font-inter);
+  --font-mono: var(--font-inter);
+  --font-code: var(--font-jetbrains-mono);
+  --type-display-family: var(--font-inter);
+  --type-label-family: var(--font-inter);
+  --type-heading-family: var(--font-inter);
+  --type-heading-weight: 600;
+  --type-heading-tracking: -0.05em;
+  --tracking-label: 0.2em;
+  --leading-tight: 1.05;
+
+  /* Radii: 16–24px inside, 40px for section wrappers. */
+  --radius-xs: 4px;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+  --radius-2xl: 32px;
+  --radius-section: 2.5rem;
+
+  /* Motion */
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-standard: cubic-bezier(0.16, 1, 0.3, 1);
+  --duration-normal: 300ms;
+  --duration-slow: 800ms;
+
+  --container-xl: 1600px;
+
+  /* Noise for the grain overlay. */
+  --grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0.9 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+pre,
+code,
+kbd,
+samp,
+.cv-terminal,
+.font-code {
+  --font-mono: var(--font-code);
+}
+.font-code {
+  font-family: var(--font-code);
+}
+
+@layer components {
+body {
+  font-family: var(--font-inter), system-ui, sans-serif;
+  color: var(--ink-200);
+  background: var(--bg-base);
+}
+
+.display {
+  font-family: var(--font-inter);
+  font-weight: 600;
+  letter-spacing: -0.05em;
+  line-height: 1.05;
+}
+
+/* Labels: Inter 700, 10px, 0.2em, uppercase. */
+.cv-label,
+.label {
+  font-family: var(--font-inter);
+  font-weight: 700;
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+}
+.label {
+  color: var(--ink-500);
+}
+
+/* ── Section wrappers ──────────────────────────────────────────────────────
+   Every major block is a rounded 2.5rem slab inside a 1600px frame. */
+.shell {
+  width: 100%;
+  max-width: 1600px;
+  margin-inline: auto;
+  padding-inline: 0.5rem;
+}
+@media (min-width: 48rem) {
+  .shell {
+    padding-inline: 0.75rem;
+  }
+}
+.rounded-section {
+  border-radius: var(--radius-section);
+}
+
+/* A dark slab: never flat — bottom-heavy gradient, grain on top. */
+.surface-dark {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  border-radius: var(--radius-section);
+  background:
+    radial-gradient(120% 70% at 85% -10%, rgb(52 211 153 / 0.08), transparent 60%),
+    linear-gradient(180deg, #18181b 0%, #0c0c0e 45%, #000000 100%);
+  color: #fafafa;
+}
+.surface-zinc {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  border-radius: var(--radius-section);
+  background: linear-gradient(180deg, #1c1c20 0%, #18181b 50%, #0e0e10 100%);
+  color: #fafafa;
+}
+.grain::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 50;
+  pointer-events: none;
+  border-radius: inherit;
+  background-image: var(--grain);
+  background-size: 220px 220px;
+  background-attachment: fixed;
+  opacity: 0.15;
+  mix-blend-mode: overlay;
+}
+
+/* Grayscale grid lineart, for the dark productivity block. */
+.lineart {
+  background-image:
+    linear-gradient(to right, rgb(255 255 255 / 0.05) 1px, transparent 1px),
+    linear-gradient(to bottom, rgb(255 255 255 / 0.05) 1px, transparent 1px);
+  background-size: 64px 64px;
+  -webkit-mask-image: radial-gradient(90% 80% at 50% 40%, #000 30%, transparent 85%);
+  mask-image: radial-gradient(90% 80% at 50% 40%, #000 30%, transparent 85%);
+  filter: grayscale(1);
+}
+
+/* ── Glass ─────────────────────────────────────────────────────────────── */
+.glass {
+  background: rgb(255 255 255 / 0.05);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgb(255 255 255 / 0.1);
+}
+.glass-strong {
+  background: rgb(9 9 11 / 0.84);
+  -webkit-backdrop-filter: blur(20px) saturate(140%);
+  backdrop-filter: blur(20px) saturate(140%);
+  border: 1px solid rgb(255 255 255 / 0.1);
+}
+
+/* The shared glass recipes from glass.css, re-cut for the new look: white
+   cards on paper, true glass inside dark islands. */
+.lg,
+.glass-card,
+.glass-panel,
+.glass-modal {
+  background-color: #ffffff;
+  background-image: none;
+  border: 1px solid #f4f4f5;
+  border-color: rgb(9 9 11 / 0.07);
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  box-shadow: 0 1px 2px rgb(9 9 11 / 0.04);
+}
+.glass-modal {
+  box-shadow: var(--shadow-xl);
+}
+.lg-hover {
+  transition:
+    transform 300ms var(--ease-out),
+    box-shadow 300ms var(--ease-out),
+    border-color 300ms var(--ease-out),
+    background-color 300ms var(--ease-out);
+}
+.lg-hover:hover,
+.lg-hover.glass-card:hover,
+.lg-liquid.lg-hover:hover {
+  transform: translateY(-2px);
+  border-color: rgb(9 9 11 / 0.12);
+  box-shadow: var(--shadow-lg);
+}
+.cv-dark .lg,
+.cv-dark .glass-card,
+.cv-dark .glass-panel,
+.cv-dark .glass-modal,
+.cv-dark .lg.lg-clear.lg-liquid {
+  background-color: rgb(255 255 255 / 0.05);
+  background-image: none;
+  border: 1px solid rgb(255 255 255 / 0.1);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+  box-shadow: none;
+}
+.cv-dark .lg-hover:hover {
+  background-color: rgb(255 255 255 / 0.08);
+  border-color: rgb(255 255 255 / 0.18);
+  box-shadow: none;
+}
+.lg-refract,
+.lg-refract.lg--nav {
+  -webkit-backdrop-filter: blur(20px);
+  backdrop-filter: blur(20px);
+}
+
+/* Paper consoles and terminals keep their own dark recipe. */
+.cv-terminal {
+  border-radius: 1.5rem;
+}
+
+/* ── Motion ────────────────────────────────────────────────────────────────
+   fade-in-up: 20px → 0, 0 → 1, over 0.8s on cubic-bezier(0.16, 1, 0.3, 1). */
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 20px, 0);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.animate-fade-in-up {
+  animation: fade-in-up 0.8s cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation-delay: var(--d, 0ms);
+}
+html.cv-js [data-reveal] {
+  --reveal-y: 20px;
+  transition:
+    opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1) var(--d, 0ms),
+    transform 0.8s cubic-bezier(0.16, 1, 0.3, 1) var(--d, 0ms);
+}
+
+/* Hover zoom for display imagery. */
+.zoom-media {
+  transition: transform 700ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+.group:hover .zoom-media {
+  transform: scale(1.05);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-fade-in-up {
+    animation: none;
+  }
+  .zoom-media {
+    transition: none;
+  }
+}
+}

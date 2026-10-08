@@ -12,7 +12,6 @@ import { Icon, IconButton, Input } from "@/components/ui";
 import type { IconName } from "@/components/ui";
 import { cn } from "@/lib/cn";
 import { LogoLockup } from "./logo";
-import { ThemeToggle } from "./theme-toggle";
 
 const NAV: { heading: string; items: { href: string; label: string; icon: IconName }[] }[] = [
   {
@@ -106,7 +105,7 @@ export function PortalShell({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <div className="flex min-h-dvh bg-carbon-900">
+    <div className="flex min-h-dvh bg-carbon-900 lg:gap-3 lg:p-3">
       {/* Scrim behind the mobile drawer. */}
       {open ? (
         <button
@@ -125,8 +124,8 @@ export function PortalShell({ children }: { children: React.ReactNode }) {
       <aside
         id="portal-nav"
         className={cn(
-          "fixed inset-y-0 left-0 z-50 flex w-[15rem] flex-none flex-col border-r border-line-subtle bg-carbon-700/95 px-3.5 py-4 backdrop-blur-md",
-          "lg:visible lg:sticky lg:top-0 lg:h-dvh",
+          "cv-dark surface-dark grain fixed inset-y-2 left-2 z-50 flex w-[15rem] flex-none flex-col !rounded-[2rem] px-3.5 py-5 lg:!rounded-[2.5rem]",
+          "lg:visible lg:sticky lg:top-3 lg:h-[calc(100dvh-1.5rem)]",
           "duration-normal ease-standard lg:translate-x-0",
           open
             ? "visible translate-x-0 transition-transform"
@@ -202,7 +201,7 @@ export function PortalShell({ children }: { children: React.ReactNode }) {
       {/* With the drawer open on a phone, the page behind it is inert, so
           focus stays in the drawer until it closes. */}
       <div inert={open} className="flex min-w-0 flex-1 flex-col">
-        <header className="glass-nav sticky top-0 z-30 flex items-center gap-2 px-4 py-2.5 md:gap-3 md:px-6 lg:py-3">
+        <header className="cv-dark glass-strong sticky top-2 z-30 mx-2 mt-2 flex items-center gap-2 rounded-full py-1.5 pr-2 pl-4 md:gap-3 lg:top-3 lg:mx-0 lg:mt-0 lg:pl-5">
           <button
             ref={menuRef}
             type="button"
@@ -243,7 +242,7 @@ export function PortalShell({ children }: { children: React.ReactNode }) {
             <span className="hidden sm:inline">demo · sample data</span>
           </span>
 
-          <div className="ml-auto hidden w-64 sm:block">
+          <div className="ml-auto hidden w-64 sm:block [&_input]:rounded-full">
             <Input
               size="sm"
               placeholder="search pods, keys, invoices…"
@@ -253,11 +252,9 @@ export function PortalShell({ children }: { children: React.ReactNode }) {
             />
           </div>
 
-          <ThemeToggle className="ml-auto size-11 sm:ml-0 lg:size-7.5" />
-
           <IconButton
             size="sm"
-            className="size-11 lg:size-7.5"
+            className="ml-auto size-11 rounded-full sm:ml-0 lg:size-9"
             icon={<Icon name="bell" size={16} />}
             title="Notifications"
           />

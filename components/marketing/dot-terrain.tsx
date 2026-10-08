@@ -40,7 +40,7 @@
  */
 
 import * as React from "react";
-import { canvasPalette, subscribeTheme } from "@/lib/theme";
+import { canvasPalette, subscribeTheme, type Theme } from "@/lib/theme";
 
 /* ── Tunables ────────────────────────────────────────────────────────────── */
 
@@ -557,7 +557,14 @@ function compile(gl: WebGLRenderingContext, type: number, src: string) {
 
 /* ── Component ───────────────────────────────────────────────────────────── */
 
-export function DotTerrain({ className }: { className?: string }) {
+export function DotTerrain({
+  className,
+  theme,
+}: {
+  className?: string;
+  /** Force a palette, e.g. "dark" inside a dark island on the light page. */
+  theme?: Theme;
+}) {
   const canvasRef = React.useRef<HTMLCanvasElement>(null);
 
   React.useEffect(() => {
@@ -658,7 +665,7 @@ export function DotTerrain({ className }: { className?: string }) {
     // from the ground (uSign = -1) and the sprite blend flips to match, so
     // one shader serves both themes.
     const applyPalette = () => {
-      const pal = canvasPalette();
+      const pal = canvasPalette(theme);
       gl.uniform3f(u.carbon, ...pal.ground);
       gl.uniform3f(u.color, ...pal.hydroVec);
       gl.uniform3f(u.hot, ...pal.hotVec);
@@ -943,7 +950,7 @@ export function DotTerrain({ className }: { className?: string }) {
       gl.deleteShader(vs);
       gl.deleteShader(fs);
     };
-  }, []);
+  }, [theme]);
 
   return (
     <canvas

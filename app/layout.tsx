@@ -1,24 +1,17 @@
 import type { Metadata, Viewport } from "next";
-import { JetBrains_Mono, Manrope } from "next/font/google";
-import { LiquidFilters } from "@/components/fx/liquid-filter";
+import { Inter, JetBrains_Mono } from "next/font/google";
 import { JsonLd, organizationJsonLd, webSiteJsonLd } from "@/components/seo/json-ld";
 import { ORG, SITE_DESCRIPTION, SITE_NAME, SITE_TITLE, SITE_URL } from "@/lib/site";
 import { SOCIAL_IMAGE } from "@/lib/seo";
 import { THEME_BOOTSTRAP, THEME_COLOR } from "@/lib/theme";
 import "./globals.css";
 
-/* Both faces are variable fonts: omitting `weight` ships one woff2 per family
-   covering the whole range instead of N static instances. `fallback` carries
-   the stack tokens/typography.css declares; next/font prepends a
-   metric-adjusted local fallback to keep CLS at zero.
-
-   Manrope and JetBrains Mono are the brand faces (Brand Guidelines v1.0,
-   08 / Typography). They are rebound onto the design-system variable names in
-   globals.css. */
-const manrope = Manrope({
+/* Inter carries the whole interface; JetBrains Mono is kept for code only
+   (terminals, docs code blocks), rebound in globals.css. */
+const inter = Inter({
   subsets: ["latin"],
   display: "swap",
-  variable: "--font-manrope",
+  variable: "--font-inter",
   fallback: ["system-ui", "-apple-system", "Segoe UI", "sans-serif"],
 });
 
@@ -108,7 +101,8 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${manrope.variable} ${jetbrainsMono.variable}`}
+      data-theme="light"
+      className={`${inter.variable} ${jetbrainsMono.variable}`}
       suppressHydrationWarning
     >
       {/* No bg/text utilities needed: design_system/tokens/base.css (imported
@@ -130,7 +124,7 @@ export default function RootLayout({
             that stays invisible when focused is worse than none. */}
         <a
           href="#main"
-          className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[9999] focus:rounded-md focus:bg-hydro focus:px-4 focus:py-2.5 focus:font-mono focus:text-xs focus:tracking-label focus:text-on-hydro focus:uppercase"
+          className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[9999] focus:rounded-full focus:bg-zinc-900 focus:px-5 focus:py-2.5 focus:text-[10px] focus:font-bold focus:tracking-[0.2em] focus:text-white focus:uppercase"
         >
           Skip to content
         </a>
@@ -142,9 +136,6 @@ export default function RootLayout({
         <noscript>
           <style>{`[data-reveal]{opacity:1!important;transform:none!important}`}</style>
         </noscript>
-
-        {/* Definitions-only SVG for the glass refraction pass. */}
-        <LiquidFilters />
 
         {children}
       </body>

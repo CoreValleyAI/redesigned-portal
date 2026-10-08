@@ -21,20 +21,17 @@ export const THEME_STORAGE_KEY = "cv-theme";
 
 /** The browser-chrome colour per theme: --bg-base from each token set. */
 export const THEME_COLOR: Record<Theme, string> = {
-  dark: "#05080D",
-  light: "#F3F5F7",
+  dark: "#000000",
+  light: "#F4F4F5",
 };
 
 /* Inlined as the first child of <body>. Dependency-free ES5 so it runs
    anywhere, and wrapped in try/catch because localStorage throws in some
    private modes. */
+/* The redesign is one light page with dark islands, so the root is always
+   light; a stored choice from the old toggle is ignored. */
 export const THEME_BOOTSTRAP =
-  `(function(){var d=document.documentElement,t="light";` +
-  `try{var s=localStorage.getItem("${THEME_STORAGE_KEY}");` +
-  `if(s==="light"||s==="dark")t=s}catch(e){}` +
-  `d.setAttribute("data-theme",t);` +
-  `var m=document.querySelector('meta[name="theme-color"]');` +
-  `if(m)m.setAttribute("content",t==="light"?"${THEME_COLOR.light}":"${THEME_COLOR.dark}")})();`;
+  `document.documentElement.setAttribute("data-theme","light");`;
 
 const isTheme = (v: unknown): v is Theme => v === "dark" || v === "light";
 
@@ -147,35 +144,35 @@ const sub = (ground: Vec3, target: Vec3): Vec3 => [
   ground[2] - target[2],
 ];
 
-const PAPER = v(243, 245, 247); //  --bg-base, light
+const PAPER = v(244, 244, 245); //  --bg-base, light (zinc-100)
 
 export const CANVAS_PALETTES: Record<Theme, CanvasPalette> = {
   dark: {
     subtractive: false,
-    hydro: "74, 222, 128", //  --hydro
-    hot: "167, 243, 203", //   --hydro-200
-    ink: "232, 236, 239", //   --ink
+    hydro: "52, 211, 153", //  --hydro (emerald-400)
+    hot: "167, 243, 208", //   --hydro-200
+    ink: "250, 250, 250", //   --ink
     info: "56, 189, 248", //   --info
     danger: "248, 113, 113", // --danger
-    surface: "17, 22, 31", //  --carbon-600
-    ground: v(5, 8, 13), //    --carbon-900
-    hydroVec: v(74, 222, 128),
-    hotVec: v(167, 243, 203),
-    riverVec: v(103, 232, 249), // cyan-300
+    surface: "24, 24, 27", //  zinc-900
+    ground: v(0, 0, 0), //     black
+    hydroVec: v(52, 211, 153),
+    hotVec: v(167, 243, 208),
+    riverVec: v(167, 243, 208), // emerald-200
     dot: 0.15,
     fill: 0.08,
     balance: [1.9, 0.75],
-    hydroPlain: v(74, 222, 128),
+    hydroPlain: v(52, 211, 153),
     gain: 1,
     riverGain: 1.3,
     mouseLight: 1,
-    tealVec: v(45, 212, 191), // teal-400
+    tealVec: v(212, 212, 216), // zinc-300: monochrome peaks
   },
   light: {
     subtractive: true,
-    hydro: "21, 128, 61", //   --hydro (light)
-    hot: "20, 83, 45", //      --hydro-200 (light)
-    ink: "11, 15, 23", //      --ink-100 (light)
+    hydro: "4, 120, 87", //    --hydro (light)
+    hot: "6, 78, 59", //       --hydro-200 (light)
+    ink: "9, 9, 11", //        --ink-100 (light)
     info: "3, 105, 161", //    --info (light)
     danger: "220, 38, 38", //  --danger (light)
     surface: "255, 255, 255", // --carbon-600 (light)
@@ -188,7 +185,7 @@ export const CANVAS_PALETTES: Record<Theme, CanvasPalette> = {
     dot: 0.2,
     fill: 0.1,
     balance: [2.3, 0.7],
-    hydroPlain: v(21, 128, 61),
+    hydroPlain: v(4, 120, 87),
     gain: 3.4,
     riverGain: 3,
     mouseLight: 0.5,
@@ -197,6 +194,6 @@ export const CANVAS_PALETTES: Record<Theme, CanvasPalette> = {
 };
 
 /** The palette for the theme currently on <html>. Cheap: call it per frame. */
-export function canvasPalette(): CanvasPalette {
-  return CANVAS_PALETTES[readTheme()];
+export function canvasPalette(theme?: Theme): CanvasPalette {
+  return CANVAS_PALETTES[theme ?? readTheme()];
 }
