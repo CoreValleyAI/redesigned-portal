@@ -11,9 +11,8 @@ import * as React from "react";
 import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/cn";
 
-/* `rounded-lg` is the design system's --radius-lg (10px), which is what
-   Card.jsx uses. Corners stay tight; inner controls use md/sm. */
-const cardVariants = cva("relative overflow-hidden rounded-lg", {
+/* Internal cards sit at 24px; section wrappers carry the 40px radius. */
+const cardVariants = cva("relative overflow-hidden rounded-3xl", {
   variants: {
     surface: {
       glass: "glass-card",

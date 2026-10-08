@@ -131,7 +131,7 @@ export default async function ProductPage({
         </Reveal>
       </Section>
 
-      <Section alt eyebrow="Other products" title="Keep exploring.">
+      <Section eyebrow="Other products" title="Keep exploring.">
         <div className="flex flex-wrap gap-3">
           {PRODUCTS.filter((p) => p.slug !== product.slug).map((p) => (
             <Link key={p.slug} href={`/products/${p.slug}`} className="group">

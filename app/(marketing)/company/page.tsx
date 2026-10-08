@@ -338,7 +338,7 @@ export default function CompanyPage() {
         <FaqList items={FAQ} />
       </Section>
 
-      <Section eyebrow="Contact" title="Where to find us." alt>
+      <Section eyebrow="Contact" title="Where to find us.">
         <Reveal>
           <dl className="grid gap-x-10 gap-y-8 border-t border-line-subtle pt-10 sm:grid-cols-2 lg:grid-cols-4">
             <div>

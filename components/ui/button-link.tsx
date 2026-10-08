@@ -1,16 +1,10 @@
-// A link that looks like a Button.
-//
-// `<Link><Button/></Link>` nests a <button> inside an <a>: invalid HTML, two
-// tab stops per call to action, and a screen reader announces it twice. This
-// renders ONE element, the anchor, with the Button's classes, so a CTA is a
-// single focusable link.
+// A link that looks like a Button: ONE element, the anchor, with the Button's
+// classes, so a call to action is a single focusable link.
 import * as React from "react";
 import Link from "next/link";
 import type { VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/cn";
-import { buttonVariants } from "./button";
-
-const ICON_SLOT = { sm: "size-3.5", md: "size-4", lg: "size-4.5" } as const;
+import { buttonParts, buttonVariants } from "./button";
 
 export interface ButtonLinkProps
   extends Omit<React.ComponentPropsWithRef<typeof Link>, "color">,
@@ -30,19 +24,13 @@ export function ButtonLink({
   children,
   ...rest
 }: ButtonLinkProps) {
-  const slot = ICON_SLOT[size ?? "md"];
+  const { pad, content } = buttonParts({ variant, size, iconLeft, iconRight, children });
   return (
     <Link
-      className={cn(buttonVariants({ variant, size, mono, fullWidth }), className)}
+      className={cn(buttonVariants({ variant, size, mono, fullWidth }), pad, className)}
       {...rest}
     >
-      {iconLeft ? (
-        <span className={cn("inline-flex shrink-0 items-center", slot)}>{iconLeft}</span>
-      ) : null}
-      {children}
-      {iconRight ? (
-        <span className={cn("inline-flex shrink-0 items-center", slot)}>{iconRight}</span>
-      ) : null}
+      {content}
     </Link>
   );
 }
