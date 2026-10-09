@@ -36,45 +36,83 @@ interface LegalPage {
 const PAGES: Record<string, LegalPage> = {
   privacy: {
     title: "Privacy",
-    lead: "What CoreValley collects, where it is stored, and who can reach it.",
-    updated: "7 October 2026",
+    lead: "What CoreValley collects when you visit this website or use the platform, where it is kept, and who can see it.",
+    updated: "9 October 2026",
     sections: [
       {
-        heading: "What we hold",
+        heading: "Who we are",
         paragraphs: [
-          "Two categories, kept separate. Account data is what identifies your organisation: names, work email addresses, billing contacts, tax registration and payment references. Platform data is what your workloads produce: container images, datasets you upload, model checkpoints, logs and inference traffic.",
-          "Account data is retained for as long as the account is open and for seven years afterwards, which is what Nepali company and tax law requires of us. Platform data is yours, and is deleted on request or within 30 days of account closure.",
+          "CoreValley AI Pvt. Ltd., Kathmandu, Nepal, is responsible for the personal data described on this page. For anything about it, write to info@corevalley.ai.",
         ],
       },
       {
-        heading: "Where it lives",
+        heading: "This website",
         paragraphs: [
-          "Both categories are stored in np-ktm-1, in Kathmandu. Neither is replicated outside Nepal. We do not operate a foreign disaster-recovery region, because a DR region abroad would defeat the reason customers choose this platform.",
+          "This covers corevalley.ai, docs.corevalley.ai and status.corevalley.ai. They are static sites hosted on GitHub Pages, run by GitHub, Inc. in the United States. Like any web host, GitHub receives your IP address and browser details in order to serve each page, and keeps them in its server logs for security. We do not receive those logs.",
+          "Beyond that, visiting these sites collects nothing about you:",
         ],
         bullets: [
-          "Object storage and block volumes are encrypted at rest with AES-256.",
-          "Traffic to and from the control plane is TLS 1.3 only.",
-          "Tenant networks are default-deny between customers, enforced by Cilium.",
+          "No analytics, advertising or tracking scripts.",
+          "No cookies.",
+          "Fonts and images come from our own sites, not from third-party servers.",
+          "One setting is stored in your browser: cv-theme, which remembers whether you chose the light or dark theme. It stays on your device and is never sent to us.",
         ],
       },
       {
-        heading: "Who can read your data",
+        heading: "The contact form and email",
         paragraphs: [
-          "Nobody at CoreValley reads the contents of your volumes, notebooks or inference requests as a matter of course. Engineers can access a tenant's storage only through a break-glass procedure that requires a named approver, is time-boxed, and writes an entry to the append-only audit log you can export.",
-          "We do not sell data, and we do not use customer workloads or prompts to train anything.",
+          "The contact form sends what you enter: your name, work email, organisation, what you are interested in, estimated GPU hours, your message and, if you came from the pricing page, the configuration you chose. It is delivered to our mailbox by FormSubmit (formsubmit.co), a third-party form service with servers outside Nepal.",
+          "Email to and from any @corevalley.ai address, including enquiries from the form, is hosted by Zoho Mail, outside Nepal.",
+          "We use an enquiry only to answer it and follow up. We keep it for up to two years after our last contact with you and then delete it, unless you become a customer, in which case it becomes part of your account record. Please keep confidential details out of the form; we will set up a secure channel for them.",
         ],
       },
       {
-        heading: "Third parties",
+        heading: "Customer accounts",
         paragraphs: [
-          "Payment processing is handled by eSewa, Khalti or your bank, depending on the method you choose; those providers see the transaction, not your workloads. Identity is handled by Keycloak, which we host ourselves in the same region. Product analytics are first-party and aggregate — we do not embed third-party tracking scripts on the portal.",
-          "The contact form on this website is delivered by FormSubmit (formsubmit.co), a third-party form service with servers outside Nepal. It carries what you type into the form — your name, work email, organisation and message — to our inbox, and nothing from your account or your workloads. Keep confidential details out of the form; we will set up a secure channel for them.",
+          "If your organisation uses the platform, we hold two kinds of data, kept separate. Account data identifies your organisation: names, work email addresses, billing contacts, tax registration and payment references. Platform data is what your workloads produce: container images, datasets you upload, model checkpoints, logs and inference traffic.",
+          "Both are stored in np-ktm-1, in Kathmandu, and are not replicated outside Nepal. Account data is kept while the account is open and afterwards for as long as Nepali law requires. Platform data is yours: we delete it when you ask, or when your account closes, as set out in your agreement.",
+          "Payments are handled by the payment provider or bank you choose. They see the transaction, not your workloads.",
         ],
       },
       {
-        heading: "Your requests",
+        heading: "Who can see your data",
         paragraphs: [
-          "Write to privacy@corevalley.ai to get a copy of what we hold on your organisation, to correct it, or to have platform data deleted. We answer within 30 days, usually much sooner.",
+          "We do not sell data, and we do not use customer workloads or prompts to train anything. Our staff look at the contents of your workloads only when you ask us to for support, or when the law requires it.",
+        ],
+      },
+      {
+        heading: "Data that leaves Nepal",
+        paragraphs: [
+          "Customer workload data stays in Nepal. These services, used for the website and for email, are outside the country:",
+        ],
+        bullets: [
+          "GitHub Pages (United States): hosts the websites and sees visitors' IP addresses.",
+          "FormSubmit: delivers contact-form enquiries.",
+          "Zoho Mail: hosts email for @corevalley.ai addresses.",
+        ],
+      },
+      {
+        heading: "Security incidents",
+        paragraphs: [
+          "If a security incident affects your personal data or your platform data, we will tell you within 72 hours of confirming it: what happened, what data was involved, and what we are doing about it.",
+        ],
+      },
+      {
+        heading: "Your rights",
+        paragraphs: [
+          "Under Nepal's Privacy Act, 2075 (2018), you can ask for a copy of the personal data we hold about you or your organisation, have it corrected, or have it deleted where we are not required to keep it. Write to info@corevalley.ai; we answer within 30 days, usually much sooner.",
+        ],
+      },
+      {
+        heading: "Children",
+        paragraphs: [
+          "CoreValley is a service for organisations. It is not meant for anyone under 18, and we do not knowingly collect their data.",
+        ],
+      },
+      {
+        heading: "Changes to this page",
+        paragraphs: [
+          "When this page changes, the date at the top changes with it. If a change affects how we handle customer data, we will email the account's contacts before it takes effect.",
         ],
       },
     ],
@@ -136,7 +174,7 @@ const PAGES: Record<string, LegalPage> = {
   "data-residency": {
     title: "Data residency",
     lead: "The specific, checkable commitments behind the word sovereign.",
-    updated: "12 August 2026",
+    updated: "9 October 2026",
     sections: [
       {
         heading: "The commitment",
@@ -160,19 +198,14 @@ const PAGES: Record<string, LegalPage> = {
         ],
       },
       {
-        heading: "Egress",
-        paragraphs: [
-          "Tenant networks are default-deny outbound on regulated projects. Nothing leaves your vCluster unless you write a policy that lets it, and every allowed destination is visible in the flow log. On standard projects egress is open by default, because most teams need to pull packages — it can be locked down per project from the portal at any time.",
-        ],
-      },
-      {
         heading: "Where we are not sovereign",
         paragraphs: [
-          "Being specific about the edges is the point. Four things do cross the border, and none of them carry customer workload data:",
+          "Being specific about the edges is the point. These do cross the border, and none of them carry customer workload data:",
         ],
         bullets: [
+          "This website, docs.corevalley.ai and status.corevalley.ai are hosted on GitHub Pages in the United States, which sees visitors' IP addresses. No customer data is on them.",
           "Enquiries sent through the contact form on this website are delivered to our inbox by FormSubmit, a third-party form service with servers outside Nepal. They carry what you type into the form, so keep confidential details for a secure channel.",
-          "Outbound email — invoices and system notifications — is relayed through a provider with servers outside Nepal. It contains billing metadata, not workload content.",
+          "Email to and from @corevalley.ai addresses, including invoices and notifications, is hosted by Zoho Mail, outside Nepal. It carries what is written in the email, not workload content.",
           "Public container and package registries you choose to pull from are outside our control and outside the country; the pull is your egress, under your policy.",
           "If you call a third-party model API from inside a pod, that request leaves Nepal. The platform cannot make someone else's endpoint sovereign.",
         ],
@@ -180,7 +213,7 @@ const PAGES: Record<string, LegalPage> = {
       {
         heading: "Evidence",
         paragraphs: [
-          "The append-only audit log records every control-plane action against your tenant, hash-chained so gaps are detectable, and exportable as JSON from the portal. For regulated deployments we will also provide a written data-flow description and a network policy review as part of onboarding. Ask your account contact, or write to compliance@corevalley.ai.",
+          "For regulated deployments we provide a written description of how your data flows as part of onboarding. Ask your account contact, or write to info@corevalley.ai.",
         ],
       },
     ],
@@ -286,10 +319,10 @@ export default async function LegalPage({
                 operates. For a contract that binds — an MSA, a DPA, or a
                 signed SLA — write to{" "}
                 <a
-                  href="mailto:legal@corevalley.ai"
+                  href="mailto:info@corevalley.ai"
                   className="text-hydro underline decoration-hydro/40 underline-offset-4 transition-colors duration-normal hover:text-hydro-300"
                 >
-                  legal@corevalley.ai
+                  info@corevalley.ai
                 </a>{" "}
                 and we will send the current executed version.
               </p>
