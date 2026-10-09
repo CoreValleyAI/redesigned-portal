@@ -10,9 +10,12 @@
     <meta name="theme-color" content="#050608" />
     <meta name="color-scheme" content="dark" />
     <link rel="icon" href="./brand/cv-brandmark.svg" type="image/svg+xml" />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Geist:wght@300..700&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet" />
+    <!-- Geist and Geist Mono, self-hosted (Latin subset, variable weight; SIL
+         Open Font License) so the page makes no third-party requests. -->
+    <style>
+      @font-face { font-family: "Geist"; font-style: normal; font-weight: 100 900; font-display: swap; src: url("fonts/geist-latin.woff2") format("woff2"); }
+      @font-face { font-family: "Geist Mono"; font-style: normal; font-weight: 100 900; font-display: swap; src: url("fonts/geist-mono-latin.woff2") format("woff2"); }
+    </style>
   </head>
   <body>
     <div id="root"></div>
