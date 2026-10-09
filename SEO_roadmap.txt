@@ -12,16 +12,17 @@ Status, 9 Oct 2026
 [DONE] Section 1: corevalley.ai serves this site (cut over 24 Sep 2026),
        canonicals and the sitemap read https://corevalley.ai/…, http→https
        and www→apex are 301s (Cloudflare), the old .html URLs forward.
-[DONE] Section 9: docs.corevalley.ai (the docs build of this repository,
-       own sitemap, robots and WebSite structured data) and
-       status.corevalley.ai (robots.txt, sitemap.xml, social card) are live
-       on HTTPS. corevalley.ai has no /docs/ pages; old links forward.
+[DONE] Section 9: docs.corevalley.ai and status.corevalley.ai are live on
+       HTTPS. corevalley.ai has no /docs/ pages; old links forward. By
+       decision (9 Oct 2026) SEO work covers corevalley.ai only: docs,
+       status and /preview get no SEO work.
 [DONE] /preview/ (the redesign) is noindex on every page; it was a full,
        indexable second copy of the site competing with the real one.
 [DONE] /.well-known/security.txt is published (actions/upload-pages-artifact
        v4 dropped every dot-path; deploy.yml packages the site itself).
-[DONE] IndexNow: every deploy sends the sitemap's URLs to Bing, Yandex,
-       Seznam and Naver (key file public/33ff8a51559595949e0134533bfcd08b.txt).
+[DONE] IndexNow: every deploy of corevalley.ai sends its sitemap's URLs to
+       Bing, Yandex, Seznam and Naver (key file
+       public/33ff8a51559595949e0134533bfcd08b.txt).
 [YOU]  Still open: section 2 (Search Console / Bing: needs your Google
        account and a DNS TXT record in Cloudflare), 3.2/3.4/3.7, 4, 5, 6,
        7 and 8. Section 1 and 9 below are kept for reference.
