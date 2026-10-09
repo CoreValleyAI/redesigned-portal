@@ -2,7 +2,7 @@ import Link from "next/link";
 import { ButtonLink, Icon } from "@/components/ui";
 import { EARLY_ACCESS } from "@/lib/availability";
 import { docsHref } from "@/lib/docs/href";
-import { SHOW_STATUS, STATUS_URL } from "@/lib/site";
+import { SHOW_STATUS, siteHref, STATUS_URL } from "@/lib/site";
 import { LogoLockup } from "./logo";
 
 const BASE = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
@@ -11,12 +11,12 @@ const GROUPS = [
   {
     heading: "Platform",
     links: [
-      { href: "/platform", label: "Platform overview" },
-      { href: "/products/gpu-pods", label: "GPU pods" },
-      { href: "/products/jupyterhub", label: "JupyterHub" },
-      { href: "/products/model-endpoints", label: "Model endpoints" },
-      { href: "/products/dedicated", label: "Dedicated & bare metal" },
-      { href: "/pricing", label: "Pricing" },
+      { href: siteHref("/platform"), label: "Platform overview" },
+      { href: siteHref("/products/gpu-pods"), label: "GPU pods" },
+      { href: siteHref("/products/jupyterhub"), label: "JupyterHub" },
+      { href: siteHref("/products/model-endpoints"), label: "Model endpoints" },
+      { href: siteHref("/products/dedicated"), label: "Dedicated & bare metal" },
+      { href: siteHref("/pricing"), label: "Pricing" },
     ],
   },
   {
@@ -24,15 +24,15 @@ const GROUPS = [
     links: [
       { href: docsHref(), label: "Documentation" },
       { href: docsHref("guides/quickstart"), label: "Getting started" },
-      { href: "/products#hardware", label: "Hardware & availability" },
-      { href: "/use-cases", label: "Use cases" },
+      { href: siteHref("/products#hardware"), label: "Hardware & availability" },
+      { href: siteHref("/use-cases"), label: "Use cases" },
     ],
   },
   {
     heading: "Company",
     links: [
-      { href: "/company", label: "About CoreValley" },
-      { href: "/contact", label: "Contact" },
+      { href: siteHref("/company"), label: "About CoreValley" },
+      { href: siteHref("/contact"), label: "Contact" },
       ...(SHOW_STATUS ? [{ href: STATUS_URL, label: "System status", external: true }] : []),
       {
         href: "https://www.linkedin.com/company/corevalleyai/jobs/",
@@ -44,9 +44,9 @@ const GROUPS = [
 ] as const;
 
 const LEGAL = [
-  { href: "/legal/privacy", label: "Privacy" },
-  { href: "/legal/terms", label: "Terms" },
-  { href: "/legal/data-residency", label: "Data residency" },
+  { href: siteHref("/legal/privacy"), label: "Privacy" },
+  { href: siteHref("/legal/terms"), label: "Terms" },
+  { href: siteHref("/legal/data-residency"), label: "Data residency" },
 ] as const;
 
 const linkClass =
@@ -81,7 +81,7 @@ export function SiteFooter() {
             </p>
             <div className="mt-8 flex flex-wrap items-center gap-3">
               <ButtonLink
-                href="/contact"
+                href={siteHref("/contact")}
                 size="lg"
                 iconRight={<Icon name="arrow-right" size={17} />}
               >
@@ -138,7 +138,7 @@ export function SiteFooter() {
                 {l.label}
               </Link>
             ))}
-            <a href={`${BASE}/.well-known/security.txt`} className={smallLinkClass}>
+            <a href={siteHref(`${BASE}/.well-known/security.txt`)} className={smallLinkClass}>
               Security
             </a>
             <a href="mailto:info@corevalley.ai" className={smallLinkClass}>

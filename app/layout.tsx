@@ -1,26 +1,10 @@
 import type { Metadata, Viewport } from "next";
-import { Inter, JetBrains_Mono } from "next/font/google";
 import { JsonLd, organizationJsonLd, webSiteJsonLd } from "@/components/seo/json-ld";
 import { ORG, SITE_DESCRIPTION, SITE_NAME, SITE_TITLE, SITE_URL } from "@/lib/site";
 import { SOCIAL_IMAGE } from "@/lib/seo";
 import { THEME_BOOTSTRAP, THEME_COLOR } from "@/lib/theme";
+import { inter, jetbrainsMono } from "./fonts";
 import "./globals.css";
-
-/* Inter carries the whole interface; JetBrains Mono is kept for code only
-   (terminals, docs code blocks), rebound in globals.css. */
-const inter = Inter({
-  subsets: ["latin"],
-  display: "swap",
-  variable: "--font-inter",
-  fallback: ["system-ui", "-apple-system", "Segoe UI", "sans-serif"],
-});
-
-const jetbrainsMono = JetBrains_Mono({
-  subsets: ["latin"],
-  display: "swap",
-  variable: "--font-jetbrains-mono",
-  fallback: ["ui-monospace", "SFMono-Regular", "Menlo", "monospace"],
-});
 
 /* Search-console verification tokens are read from the environment so the
    repo never carries them. See SEO_roadmap.txt for where to get each one. */

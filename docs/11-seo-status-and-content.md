@@ -18,7 +18,7 @@ are declared. Everything below reads from it.
 |---|---|---|
 | `SITE_URL` | `NEXT_PUBLIC_SITE_URL` or `https://corevalley.ai`, no trailing slash | metadata base, canonicals, sitemap, robots, JSON-LD |
 | `STATUS_URL` | `NEXT_PUBLIC_STATUS_URL` or `https://status.corevalley.ai` | header and footer links |
-| `DOCS_URL` | `NEXT_PUBLIC_DOCS_URL` or empty | `docsHref()` and the sitemap |
+| `DOCS_URL` | `NEXT_PUBLIC_DOCS_URL` or `https://docs.corevalley.ai` | `docsHref()` |
 | `ORG` | legal name, email, locality, LinkedIn, GitHub | Organization JSON-LD, company page |
 | `absoluteUrl(path)` | `SITE_URL` + path with the export's trailing slash | all of the above |
 
@@ -48,7 +48,7 @@ repository becomes the organisation site it is `https://corevalley.ai`.
 
 | File | Output | Notes |
 |---|---|---|
-| `app/sitemap.ts` | `/sitemap.xml` | Core routes, the four products, three legal pages, docs pages from the MkDocs nav (omitted when `DOCS_URL` is set). `lastModified` is build time. |
+| `app/sitemap.ts` | `/sitemap.xml` | Core routes, the four products, three legal pages. The docs host has its own (written by `npm run build:docs`). `lastModified` is build time. |
 | `app/robots.ts` | `/robots.txt` | Allow all, disallow `/portal/`, sitemap URL. |
 | `app/manifest.ts` | `/manifest.webmanifest` | Name, colours, icons, base-path aware. |
 | `public/.well-known/security.txt` | same path | RFC 9116; renew `Expires` yearly. |
@@ -85,12 +85,12 @@ the header (external link) and the footer.
 
 ## 6. Docs host switch
 
-`docsHref()` in `lib/docs/href.ts` returns in-app paths by default. With
-`NEXT_PUBLIC_DOCS_URL` set it returns URLs on that host (`/docs/x/` →
-`https://docs.corevalley.ai/x/`), and `app/sitemap.ts` stops listing the
-in-app docs. The in-app routes keep building for local preview.
-`doc_cname_readme.txt` is the operator's tutorial for the GitHub Pages +
-CNAME setup.
+The docs live only at docs.corevalley.ai, the docs build of this codebase
+(`npm run build:docs`, `NEXT_PUBLIC_BUILD_TARGET=docs`), which owns their
+canonical URLs and sitemap. In the marketing build `docsHref()` in
+`lib/docs/href.ts` returns URLs on that host; in the docs build it returns
+root paths. The marketing site has no `/docs/` routes; its 404 page forwards
+`/docs/x/` to `https://docs.corevalley.ai/x/`.
 
 ## 7. Content sources and claims
 
@@ -104,7 +104,7 @@ alignment, the region name — are unchanged in the code and listed in
 
 ```bash
 NEXT_PUBLIC_BASE_PATH=/redesigned-portal NEXT_PUBLIC_SITE_URL=https://example.test/redesigned-portal npm run build
-grep -c "<loc>" out/sitemap.xml          # 8 core + 4 products + 3 legal + 8 docs = 23 (docs omitted with DOCS_URL)
+grep -c "<loc>" out/sitemap.xml          # 7 core + 4 products + 3 legal = 14
 grep -o 'rel="canonical" href="[^"]*"' out/pricing/index.html
 grep -c 'application/ld+json' out/products/gpu-pods/index.html   # 2: org+site graph, service+breadcrumb graph
 ```

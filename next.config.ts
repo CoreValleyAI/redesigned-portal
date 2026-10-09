@@ -1,8 +1,16 @@
 import type { NextConfig } from "next";
 
+/* Two sites from one codebase. NEXT_PUBLIC_BUILD_TARGET=docs builds the
+   documentation site for docs.corevalley.ai: only the `*.docs.tsx` /
+   `*.docs.ts` files in app/ are routes (layout.docs.tsx, page.docs.tsx…), so
+   the docs sit at the root and none of the marketing pages are exported. The
+   default build ignores those files, since `page.docs.tsx` is not `page.tsx`. */
+const docsBuild = process.env.NEXT_PUBLIC_BUILD_TARGET === "docs";
+
 const nextConfig: NextConfig = {
   reactStrictMode: true,
   poweredByHeader: false,
+  pageExtensions: docsBuild ? ["docs.tsx", "docs.ts"] : ["tsx", "ts"],
 
   // Static export for GitHub Pages (output to /out).
   output: "export",

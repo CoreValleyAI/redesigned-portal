@@ -1,8 +1,8 @@
 name: Verify
 
 # Builds every branch and pull request exactly as the Pages deploy does
-# (typecheck, lint, static export under the project base path, docs export
-# check) without deploying, so documentation and site changes are validated
+# (typecheck, lint, static export under the project base path, the docs
+# site build) without deploying, so documentation and site changes are validated
 # before they reach main. The export is kept as a downloadable artifact.
 on:
   push:
@@ -49,8 +49,8 @@ jobs:
       - name: Build static export
         run: npm run build
 
-      - name: Check docs export
-        run: npm run docs:check
+      - name: Build docs site
+        run: npm run build:docs
 
       - name: Upload export for preview
         uses: actions/upload-artifact@v4

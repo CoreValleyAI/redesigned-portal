@@ -20,16 +20,16 @@ import { ButtonLink, Icon } from "@/components/ui";
 import { EARLY_ACCESS } from "@/lib/availability";
 import { cn } from "@/lib/cn";
 import { docsHref } from "@/lib/docs/href";
-import { SHOW_STATUS, STATUS_URL } from "@/lib/site";
+import { IS_DOCS_BUILD, SHOW_STATUS, siteHref, STATUS_URL } from "@/lib/site";
 import { LogoLockup } from "./logo";
 
 const NAV = [
-  { href: "/products", label: "Products" },
-  { href: "/pricing", label: "Pricing" },
-  { href: "/platform", label: "Platform" },
-  { href: "/use-cases", label: "Use cases" },
+  { href: siteHref("/products"), label: "Products" },
+  { href: siteHref("/pricing"), label: "Pricing" },
+  { href: siteHref("/platform"), label: "Platform" },
+  { href: siteHref("/use-cases"), label: "Use cases" },
   { href: docsHref(), label: "Docs" },
-  { href: "/company", label: "Company" },
+  { href: siteHref("/company"), label: "Company" },
   { href: STATUS_URL, label: "Status", external: true },
 ] as const;
 
@@ -81,7 +81,10 @@ export function SiteHeader() {
     };
   }, []);
 
-  const isActive = (href: string) => pathname.startsWith(href.replace(/\/$/, ""));
+  /* On the docs site every page is a docs page, and the docs link is the
+     site root ("/"), which a prefix test would match everywhere anyway. */
+  const isActive = (href: string) =>
+    IS_DOCS_BUILD ? href === docsHref() : pathname.startsWith(href.replace(/\/$/, ""));
 
   return (
     <header className="cv-dark pointer-events-none fixed inset-x-0 top-0 z-50 !bg-transparent">
@@ -93,7 +96,7 @@ export function SiteHeader() {
           )}
         >
           <Link
-            href="/"
+            href={siteHref("/")}
             aria-label="CoreValley home"
             className="flex h-10 shrink-0 items-center rounded-full pr-3 pl-3.5 transition-colors duration-300 hover:bg-white/10"
           >
@@ -133,7 +136,7 @@ export function SiteHeader() {
 
           <div className="ml-auto flex items-center gap-1 lg:ml-0">
             <ButtonLink
-              href="/contact"
+              href={siteHref("/contact")}
               variant="primary"
               size="sm"
               className="h-10 max-[359px]:hidden"
@@ -197,7 +200,7 @@ export function SiteHeader() {
                 ),
               )}
               <ButtonLink
-                href="/contact"
+                href={siteHref("/contact")}
                 variant="primary"
                 size="lg"
                 fullWidth
