@@ -148,16 +148,28 @@ jobs:
         env:
           NEXT_PUBLIC_BASE_PATH: ${{ steps.basepath.outputs.value }}/preview
           NEXT_PUBLIC_SITE_URL: ${{ steps.basepath.outputs.site_url }}/preview
+          # noindex on every page: /preview is a full second copy of the site
+          # and must not compete with it in search.
+          NEXT_PUBLIC_NOINDEX: "1"
         run: |
           npm ci
           npm run build
           mkdir -p ../out/preview
           cp -r out/. ../out/preview/
 
+      # Packaged here rather than with actions/upload-pages-artifact, whose v4
+      # drops every dot-path and with it /.well-known/security.txt. Same
+      # tarball and artifact name ("github-pages") that deploy-pages expects.
+      - name: Package site
+        run: tar --dereference --hard-dereference --directory out -cf "$RUNNER_TEMP/artifact.tar" --exclude=.git --exclude=.github .
+
       - name: Upload artifact
-        uses: actions/upload-pages-artifact@v4
+        uses: actions/upload-artifact@v4
         with:
-          path: ./out
+          name: github-pages
+          path: ${{ runner.temp }}/artifact.tar
+          retention-days: 1
+          if-no-files-found: error
 
   deploy:
     environment:
@@ -169,3 +181,19 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
+
+      # Tell IndexNow engines (Bing, Yandex, Seznam, Naver…) every URL in the
+      # sitemap may have changed. The key is public by design: it is the file
+      # public/<key>.txt, which proves the site owns it. Google does not take
+      # IndexNow; it reads the sitemap from Search Console.
+      - name: Notify search engines (IndexNow)
+        continue-on-error: true
+        env:
+          PAGE_URL: ${{ steps.deployment.outputs.page_url }}
+          INDEXNOW_KEY: 33ff8a51559595949e0134533bfcd08b
+        run: |
+          site="${PAGE_URL%/}"
+          host="$(echo "$site" | sed -E 's#^https?://##; s#/.*##')"
+          urls="$(curl -fsS "$site/sitemap.xml" | grep -o '<loc>[^<]*' | sed 's/<loc>//' | jq -R . | jq -sc .)"
+          body="$(jq -nc --arg host "$host" --arg key "$INDEXNOW_KEY" --arg loc "$site/$INDEXNOW_KEY.txt" --argjson urls "$urls" '{host: $host, key: $key, keyLocation: $loc, urlList: $urls}')"
+          curl -sS -o /dev/null -w 'IndexNow: HTTP %{http_code}\n' -X POST https://api.indexnow.org/indexnow -H 'content-type: application/json; charset=utf-8' --data "$body"
