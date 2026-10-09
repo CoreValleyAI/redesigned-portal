@@ -7,15 +7,18 @@ import { getNav, getSearchDocs } from "@/lib/docs/content";
  * The documentation shell: sticky sidebar (search, nav from mkdocs.yml,
  * feedback) beside the page. Content comes from corevalley-docs/docs/ via
  * lib/docs/content.ts and is rendered by the design system, not MkDocs.
+ *
+ * The site header is sticky and takes its own 64px, so the shell starts a
+ * short step below it and the sidebar sticks 2rem under it (top-24).
  */
 export function DocsShell({ children }: { children: React.ReactNode }) {
   const nav = getNav();
   const search = getSearchDocs();
 
   return (
-    <div className="mx-auto max-w-[1600px] px-8 pt-28 pb-12 md:px-[4.25rem] md:pt-32">
+    <div className="mx-auto max-w-[1600px] px-8 pt-8 pb-12 md:px-[4.25rem] md:pt-10">
       <div className="grid gap-10 lg:grid-cols-[13.5rem_minmax(0,1fr)] lg:gap-14">
-        <aside className="lg:sticky lg:top-28 lg:max-h-[calc(100dvh-8rem)] lg:self-start lg:overflow-y-auto">
+        <aside className="lg:sticky lg:top-24 lg:max-h-[calc(100dvh-7rem)] lg:self-start lg:overflow-y-auto">
           <p className="cv-label mb-4">Documentation</p>
           <DocsSearch docs={search} />
           <DocsNav groups={nav} />

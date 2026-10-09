@@ -43,7 +43,7 @@ export function DocsToc({ headings }: { headings: DocHeading[] }) {
   }, [headings]);
 
   return (
-    <nav aria-label="On this page" className="hidden xl:sticky xl:top-28 xl:block xl:self-start">
+    <nav aria-label="On this page" className="hidden xl:sticky xl:top-24 xl:block xl:self-start">
       <p className="cv-label text-[10px]">On this page</p>
       <ul className="mt-4 flex flex-col border-l border-line-subtle">
         {headings.map((h) => {
