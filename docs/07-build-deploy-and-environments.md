@@ -12,8 +12,9 @@ target, and no hosted server deployment.
 > route handler and no middleware. `.github/workflows/deploy.yml` runs on
 > push to `main` and on manual dispatch: it reads the Pages base path with
 > `actions/configure-pages` (so `/redesigned-portal` for the project site, `""`
-> for a custom domain on this repository), typechecks, lints, builds, checks
-> the docs export (`npm run docs:check`) and uploads `out/`.
+> for a custom domain on this repository), typechecks, lints, builds, builds
+> the docs site (`npm run build:docs`) and publishes it to CoreValleyAI/docs
+> (docs.corevalley.ai), and uploads `out/`.
 > `.github/workflows/verify.yml` runs the same steps without deploying on
 > every other branch and on pull requests. The repository's Pages source must
 > be set to *GitHub Actions*. Section 5 describes these workflows; the other
@@ -302,8 +303,9 @@ jobs:
       - run: npm run lint
       - run: npm run build
         env: { NEXT_PUBLIC_BASE_PATH: "${{ steps.basepath.outputs.value }}" }
-      - run: npm run docs:check          # every nav page exported, links prefixed
-        env: { NEXT_PUBLIC_BASE_PATH: "${{ steps.basepath.outputs.value }}" }
+      - run: npm run build:docs          # docs site → out-docs/, every nav page exported
+      - uses: peaceiris/actions-gh-pages@v4   # out-docs/ → CoreValleyAI/docs gh-pages
+        with: { deploy_key: "${{ secrets.DOCS_DEPLOY_KEY }}", external_repository: CoreValleyAI/docs, publish_branch: gh-pages, publish_dir: ./out-docs }
       - uses: actions/upload-pages-artifact@v4
         with: { path: ./out }
 
@@ -329,21 +331,18 @@ custom-domain site, which is why the workflow tests the step outcome instead.
 
 Runs on push to every branch except `main` and on pull requests targeting
 `main`: `npm ci`, typecheck, lint, `npm run build` with
-`NEXT_PUBLIC_BASE_PATH=/redesigned-portal`, `npm run docs:check`, then uploads
+`NEXT_PUBLIC_BASE_PATH=/redesigned-portal`, `npm run build:docs`, then uploads
 `out/` as a workflow artifact (`static-export-<sha>`, kept 7 days) for
 preview. Nothing is deployed.
 
-### 5.3 `npm run docs:check` (`scripts/check-docs-export.mjs`)
+### 5.3 `npm run build:docs` (`scripts/build-docs-site.mjs`)
 
-Reads the `nav` in `corevalley-docs/mkdocs.yml`, asserts each entry exported
-to `out/docs/<slug>/index.html`, and asserts the docs landing page links
-under `NEXT_PUBLIC_BASE_PATH`. Exits 1 on a missing page, a missing export or
-a base-path mismatch. Locally:
-
-```bash
-MSYS_NO_PATHCONV=1 NEXT_PUBLIC_BASE_PATH=/redesigned-portal npm run build
-MSYS_NO_PATHCONV=1 NEXT_PUBLIC_BASE_PATH=/redesigned-portal npm run docs:check
-```
+Builds the docs site for docs.corevalley.ai: `next build` with
+`NEXT_PUBLIC_BUILD_TARGET=docs` (only the `*.docs.tsx` files in `app/` are
+routes, see `next.config.ts`) into `.next-docs/`, copied to `out-docs/`.
+Reads the `nav` in `corevalley-docs/mkdocs.yml` and exits 1 if any entry did
+not export to `out-docs/<slug>/index.html`, then writes `robots.txt`,
+`sitemap.xml`, `CNAME` and `.nojekyll` for GitHub Pages.
 
 ### ❌ Remaining CI gaps
 
@@ -373,7 +372,7 @@ npm run dev                  # http://localhost:3000
 | `start` | `next start` |
 | `lint` | `eslint .` |
 | `typecheck` | `tsc --noEmit` |
-| `docs:check` | `node scripts/check-docs-export.mjs` |
+| `build:docs` | `node scripts/build-docs-site.mjs` |
 | `generate:basemap` | `node scripts/generate-basemap.mjs` |
 | `keycloak:up` | `docker compose up -d` |
 | `keycloak:down` | `docker compose down` |

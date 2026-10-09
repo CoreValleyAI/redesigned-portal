@@ -60,7 +60,7 @@ npm run dev            # http://localhost:3000
 | `npm run build` | Production build: a static export in `out/`. |
 | `npm run typecheck` | `tsc --noEmit` |
 | `npm run lint` | ESLint |
-| `npm run docs:check` | After a build: every docs page in the MkDocs nav exported, links under the right base path. |
+| `npm run build:docs` | Builds the docs site (docs.corevalley.ai) into `out-docs/` and checks every page in the MkDocs nav exported. |
 | `npm run generate:brand` | Regenerate the Open Graph image and app icons from the SVG marks (needs a local Chrome). |
 | `npm run generate:basemap` | Regenerate the map data in `lib/mesh-basemap.ts`. |
 | `npm run docs:mkdocs` | Optional standalone MkDocs build of the same docs (Python). |
@@ -75,7 +75,7 @@ build, or stop the dev server first.
 
 ```
 app/
-  (marketing)/        public pages: home, products, pricing, use cases, company, contact, legal, docs
+  (marketing)/        public pages: home, products, pricing, use cases, company, contact, legal
   (portal)/           customer console (mock data, noindex)
   layout.tsx          fonts, site-wide metadata, theme bootstrap, organisation JSON-LD
   sitemap.ts · robots.ts · manifest.ts   generated /sitemap.xml, /robots.txt, /manifest.webmanifest
@@ -105,7 +105,7 @@ status/               the standalone status page for status.corevalley.ai
 public/               brand SVGs, icons, security.txt, redirect stubs for the old site
 design_system/        read-only design tokens and reference components (do not import)
 docs/                 engineering notes (architecture, identity, billing, deploy…)
-scripts/              generators (brand images, basemap, docs export check)
+scripts/              generators (brand images, basemap), the docs site build
 ```
 
 ---
@@ -129,7 +129,12 @@ export const metadata = pageMetadata({
 and labels come from the `nav` in `corevalley-docs/mkdocs.yml`. Add a page by
 creating the `.md` file and listing it in `nav`; the route, search index and
 sitemap entry follow. The Markdown is MkDocs Material compatible (admonitions,
-grid cards, tabs, icon shortcodes) and is rendered by the site itself. Pages
+grid cards, tabs, icon shortcodes) and is rendered by this codebase as its own
+site, docs.corevalley.ai: `npm run build:docs` builds it with
+`NEXT_PUBLIC_BUILD_TARGET=docs`, where only the `*.docs.tsx` files in `app/`
+are routes (see `next.config.ts`), so the docs sit at the root with the same
+header, footer and theme as the marketing site. The marketing site has no
+`/docs/` pages; its 404 page forwards old `/docs/…` links to the docs host. Pages
 are currently professional placeholders with an "in progress" notice; replace
 the body of each as the content is written.
 
@@ -198,7 +203,7 @@ deployed to GitHub Pages by two workflows:
 
 | Workflow | Runs on | Does |
 |---|---|---|
-| `deploy.yml` | push to `main` that touches the site; manual dispatch | reads the Pages base path and origin, typechecks, lints, builds, runs `docs:check`, uploads `out/`, deploys |
+| `deploy.yml` | push to `main` that touches the site; manual dispatch | reads the Pages base path and origin, typechecks, lints, builds, builds the docs site and publishes it to the `gh-pages` branch of CoreValleyAI/docs (deploy key in the `DOCS_DEPLOY_KEY` secret), uploads `out/`, deploys |
 | `verify.yml` | push to any other branch; pull requests to `main` | the same checks without deploying; keeps the export as an artifact for 7 days |
 
 Pages must be set to deploy from **GitHub Actions**. Environment variables
@@ -208,7 +213,8 @@ the build understands:
 |---|---|---|
 | `NEXT_PUBLIC_BASE_PATH` | `""` | Subpath for a project site (`/redesigned-portal`). Set by the workflow. |
 | `NEXT_PUBLIC_SITE_URL` | `https://corevalley.ai` | Canonical origin (+ base path) for metadata, sitemap and JSON-LD. Set by the workflow. |
-| `NEXT_PUBLIC_DOCS_URL` | unset | Set to `https://docs.corevalley.ai` once that host is live: all docs links point there, in-app docs redirect (path preserved), go noindex and leave the sitemap. Repository variable `DOCS_URL`. |
+| `NEXT_PUBLIC_DOCS_URL` | `https://docs.corevalley.ai` | Where every docs link points. Repository variable `DOCS_URL`. |
+| `NEXT_PUBLIC_BUILD_TARGET` | unset | `docs` builds the docs site instead of the marketing site. Set by `npm run build:docs`. |
 | `NEXT_PUBLIC_STATUS_URL` | `https://status.corevalley.ai` | The status page link. Repository variable `STATUS_URL`. |
 | `NEXT_PUBLIC_GSC_VERIFICATION`, `NEXT_PUBLIC_BING_VERIFICATION` | unset | Search-console verification tags. Repository variables. |
 | `NEXT_PUBLIC_API_MODE` | `mock` | `http` selects the real-backend client. |
@@ -216,7 +222,7 @@ the build understands:
 To check the export locally the way CI builds it:
 
 ```bash
-NEXT_PUBLIC_BASE_PATH=/redesigned-portal npm run build && npm run docs:check
+NEXT_PUBLIC_BASE_PATH=/redesigned-portal npm run build && npm run build:docs
 # Git Bash: prefix with MSYS_NO_PATHCONV=1 so the path is not rewritten
 ```
 
@@ -228,9 +234,10 @@ NEXT_PUBLIC_BASE_PATH=/redesigned-portal npm run build && npm run docs:check
   brand SVGs) for `status.corevalley.ai`. Upload the folder to any static
   host; a monitor updates it by rewriting `status.json`. See
   `status/README.md`. The header and footer link to it.
-- **Docs on a subdomain** — `doc_cname_readme.txt` walks through publishing
-  `corevalley-docs/` as a MkDocs site at `docs.corevalley.ai` with a CNAME,
-  and switching the main site's links with `DOCS_URL`.
+- **Docs host** — docs.corevalley.ai is the docs build of this codebase
+  (`npm run build:docs`), published by `deploy.yml` to the `gh-pages` branch
+  of CoreValleyAI/docs, whose Pages site carries the custom domain. Edit the
+  docs here, in `corevalley-docs/`, never in that repository.
 
 ---
 
@@ -238,14 +245,14 @@ NEXT_PUBLIC_BASE_PATH=/redesigned-portal npm run build && npm run docs:check
 
 ```bash
 npm run typecheck && npm run lint
-NEXT_PUBLIC_BASE_PATH=/redesigned-portal npm run build && npm run docs:check
+NEXT_PUBLIC_BASE_PATH=/redesigned-portal npm run build && npm run build:docs
 ```
 
 Every `(marketing)` route must build as static; `/portal` must be excluded
 from `out/sitemap.xml`. Before a release also check: no emoji in `app/`,
 `components/`, `lib/` (brand rule); glass panels stay readable with
 `backdrop-filter` disabled; the hero renders one static frame under
-reduce-motion; both themes on `/`, `/pricing/`, `/docs/`, `/portal/`.
+reduce-motion; both themes on `/`, `/pricing/`, `/portal/` and the docs site.
 
 ---
 
@@ -259,7 +266,7 @@ reduce-motion; both themes on `/`, `/pricing/`, `/docs/`, `/portal/`.
 | `docs/07-build-deploy-and-environments.md` | Build targets, environment variables, CI |
 | `docs/11-seo-status-and-content.md` | How SEO, the status page and the docs host fit together |
 | `SEO_roadmap.txt` | Launch checklist for search, domains and claims to confirm |
-| `doc_cname_readme.txt` | Tutorial: docs.corevalley.ai on GitHub Pages |
+| `doc_cname_readme.txt` | Superseded MkDocs plan for docs.corevalley.ai (kept for the DNS steps) |
 
 Brand assets in `public/brand/` and `design_system/` are proprietary to
 CoreValley AI Pvt. Ltd. Country outlines are Natural Earth (public domain),

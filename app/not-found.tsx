@@ -4,17 +4,19 @@ import type { IconName } from "@/components/ui";
 import { SiteHeader } from "@/components/layout/site-header";
 import { DotTerrain } from "@/components/marketing/dot-terrain";
 import { docsHref } from "@/lib/docs/href";
+import { DOCS_URL } from "@/lib/site";
 
 export const metadata = {
   title: "Page not found",
   robots: { index: false, follow: false },
 };
 
-/* The site used to be previewed under /redesigned-portal/. Links from that
-   period (bookmarks, open tabs, shared URLs) land here; forward them to the
-   same page at the root before anything renders. GitHub Pages serves this
-   page as 404.html for every unknown path, so this runs for all of them. */
-const LEGACY_REDIRECT = `(function(){var p=location.pathname,b="/redesigned-portal";if(p===b||p.indexOf(b+"/")===0){location.replace((p.slice(b.length)||"/")+location.search+location.hash)}})();`;
+/* Old addresses land here, and are forwarded before anything renders.
+   GitHub Pages serves this page as 404.html for every unknown path, so this
+   runs for all of them:
+   - /redesigned-portal/… (the site's preview period) → the same page at the root;
+   - /docs/… (the docs before they moved) → the same page on the docs host. */
+const LEGACY_REDIRECT = `(function(){var p=location.pathname,q=location.search+location.hash,b="/redesigned-portal";if(p===b||p.indexOf(b+"/")===0){location.replace((p.slice(b.length)||"/")+q);return}if(p==="/docs"||p.indexOf("/docs/")===0)location.replace(${JSON.stringify(DOCS_URL)}+(p.slice(5)||"/")+q)})();`;
 
 /* Where the visitor most likely meant to go, in that order. */
 const EXITS: { href: string; label: string; meta: string; icon: IconName }[] = [

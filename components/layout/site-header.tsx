@@ -35,17 +35,17 @@ import { ButtonLink, Icon } from "@/components/ui";
 import { EARLY_ACCESS } from "@/lib/availability";
 import { cn } from "@/lib/cn";
 import { docsHref } from "@/lib/docs/href";
-import { SHOW_STATUS, STATUS_URL } from "@/lib/site";
+import { IS_DOCS_BUILD, SHOW_STATUS, siteHref, STATUS_URL } from "@/lib/site";
 import { LogoLockup } from "./logo";
 import { ThemeToggle } from "./theme-toggle";
 
 const NAV = [
-  { href: "/products", label: "Products" },
-  { href: "/pricing", label: "Pricing" },
-  { href: "/platform", label: "Platform" },
-  { href: "/use-cases", label: "Use cases" },
+  { href: siteHref("/products"), label: "Products" },
+  { href: siteHref("/pricing"), label: "Pricing" },
+  { href: siteHref("/platform"), label: "Platform" },
+  { href: siteHref("/use-cases"), label: "Use cases" },
   { href: docsHref(), label: "Docs" },
-  { href: "/company", label: "Company" },
+  { href: siteHref("/company"), label: "Company" },
   // The status page is its own static site on a separate host (see /status
   // in the repo), so this one is a plain external link.
   { href: STATUS_URL, label: "Status", external: true },
@@ -125,7 +125,10 @@ export function SiteHeader() {
     return () => window.removeEventListener("resize", measure);
   }, [pathname]);
 
-  const isActive = (href: string) => pathname.startsWith(href.replace(/\/$/, ""));
+  /* On the docs site every page is a docs page, and the docs link is the
+     site root ("/"), which a prefix test would match everywhere anyway. */
+  const isActive = (href: string) =>
+    IS_DOCS_BUILD ? href === docsHref() : pathname.startsWith(href.replace(/\/$/, ""));
 
   return (
     <header
@@ -137,7 +140,7 @@ export function SiteHeader() {
       )}
     >
       <div className="mx-auto flex h-16 max-w-page-xl items-center gap-2 px-4 sm:px-5 md:gap-8 md:px-10">
-        <Link href="/" aria-label="CoreValley home" className="shrink-0 rounded-md">
+        <Link href={siteHref("/")} aria-label="CoreValley home" className="shrink-0 rounded-md">
           {/* Two sizes rather than a transform: a scaled lockup would still
               take its full width in the bar, which is what a phone is short of. */}
           <LogoLockup size={16} className="md:hidden" />
@@ -194,14 +197,14 @@ export function SiteHeader() {
               travels with the reader. Very narrow phones (<360px) get it in
               the drawer only. */}
           <ButtonLink
-            href="/contact"
+            href={siteHref("/contact")}
             variant="primary"
             size="sm"
             className="h-11 px-3.5 text-[13px] max-[359px]:hidden md:hidden"
           >
             Early access
           </ButtonLink>
-          <ButtonLink href="/contact" variant="primary" size="sm" className="hidden md:inline-flex">
+          <ButtonLink href={siteHref("/contact")} variant="primary" size="sm" className="hidden md:inline-flex">
             Get early access
           </ButtonLink>
 
@@ -273,7 +276,7 @@ export function SiteHeader() {
             <ThemeToggle labelled className={cn(drawerRow, "md:hidden")} />
 
             <ButtonLink
-              href="/contact"
+              href={siteHref("/contact")}
               variant="primary"
               size="lg"
               fullWidth

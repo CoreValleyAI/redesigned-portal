@@ -2,7 +2,7 @@ import Link from "next/link";
 import { Icon } from "@/components/ui";
 import { DotMatrix } from "@/components/marketing/dot-matrix";
 import { docsHref } from "@/lib/docs/href";
-import { SHOW_STATUS, STATUS_URL } from "@/lib/site";
+import { SHOW_STATUS, siteHref, STATUS_URL } from "@/lib/site";
 
 const BASE = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
 
@@ -16,12 +16,12 @@ const GROUPS = [
   {
     heading: "platform",
     links: [
-      { href: "/platform", label: "Platform overview" },
-      { href: "/products/gpu-pods", label: "GPU pods" },
-      { href: "/products/jupyterhub", label: "JupyterHub" },
-      { href: "/products/model-endpoints", label: "Model endpoints" },
-      { href: "/products/dedicated", label: "Dedicated & bare metal" },
-      { href: "/pricing", label: "Pricing" },
+      { href: siteHref("/platform"), label: "Platform overview" },
+      { href: siteHref("/products/gpu-pods"), label: "GPU pods" },
+      { href: siteHref("/products/jupyterhub"), label: "JupyterHub" },
+      { href: siteHref("/products/model-endpoints"), label: "Model endpoints" },
+      { href: siteHref("/products/dedicated"), label: "Dedicated & bare metal" },
+      { href: siteHref("/pricing"), label: "Pricing" },
     ],
   },
   {
@@ -29,15 +29,15 @@ const GROUPS = [
     links: [
       { href: docsHref(), label: "Documentation" },
       { href: docsHref("guides/quickstart"), label: "Getting started" },
-      { href: "/products#hardware", label: "Hardware & availability" },
-      { href: "/use-cases", label: "Use cases" },
+      { href: siteHref("/products#hardware"), label: "Hardware & availability" },
+      { href: siteHref("/use-cases"), label: "Use cases" },
     ],
   },
   {
     heading: "company",
     links: [
-      { href: "/company", label: "About CoreValley" },
-      { href: "/contact", label: "Contact" },
+      { href: siteHref("/company"), label: "About CoreValley" },
+      { href: siteHref("/contact"), label: "Contact" },
       // Hidden until status monitoring is integrated (SHOW_STATUS in lib/site.ts).
       ...(SHOW_STATUS ? [{ href: STATUS_URL, label: "System status", external: true }] : []),
       {
@@ -50,9 +50,9 @@ const GROUPS = [
 ] as const;
 
 const LEGAL = [
-  { href: "/legal/privacy", label: "Privacy" },
-  { href: "/legal/terms", label: "Terms" },
-  { href: "/legal/data-residency", label: "Data residency" },
+  { href: siteHref("/legal/privacy"), label: "Privacy" },
+  { href: siteHref("/legal/terms"), label: "Terms" },
+  { href: siteHref("/legal/data-residency"), label: "Data residency" },
 ] as const;
 
 /* min-h-8: every row is a 32px target on a phone, not an 18px line of text. */
@@ -146,7 +146,7 @@ export function SiteFooter() {
             ))}
             {/* RFC 9116 contact file: a plain anchor, since it is a static
                 file rather than a route. */}
-            <a href={`${BASE}/.well-known/security.txt`} className={smallLinkClass}>
+            <a href={siteHref(`${BASE}/.well-known/security.txt`)} className={smallLinkClass}>
               Security
             </a>
             <a href="mailto:info@corevalley.ai" className={smallLinkClass}>

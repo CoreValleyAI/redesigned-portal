@@ -1,3 +1,8 @@
+SUPERSEDED (Oct 2026): docs.corevalley.ai is no longer a MkDocs site. It is
+the docs build of this codebase (`npm run build:docs`), published by
+.github/workflows/deploy.yml to the gh-pages branch of CoreValleyAI/docs. See
+README.md, "Status page and docs host". The DNS part below still applies.
+
 CoreValley — moving the documentation to docs.corevalley.ai
 =============================================================
 

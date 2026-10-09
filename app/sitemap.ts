@@ -1,13 +1,11 @@
 import type { MetadataRoute } from "next";
 import { PRODUCTS } from "@/lib/products";
-import { getPages } from "@/lib/docs/content";
-import { absoluteUrl, DOCS_URL } from "@/lib/site";
+import { absoluteUrl } from "@/lib/site";
 
 /**
  * /sitemap.xml — every public marketing route. The console (/portal) is
- * excluded and marked noindex in its layout. Documentation pages are listed
- * only while the docs are served by this site; once NEXT_PUBLIC_DOCS_URL
- * points at a separate host, that host owns them.
+ * excluded and marked noindex in its layout. The documentation is its own
+ * site at docs.corevalley.ai, with its own sitemap (app/sitemap.docs.ts).
  *
  * `lastModified` is the build time: the export is regenerated on every
  * deploy, and there is no per-page edit history to draw on.
@@ -42,7 +40,5 @@ export default function sitemap(): MetadataRoute.Sitemap {
     ...LEGAL.map((slug) => entry(`/legal/${slug}`, 0.2, "yearly")),
   ];
 
-  const docs = DOCS_URL ? [] : getPages().map((p) => entry(p.url, p.slug === "" ? 0.7 : 0.5));
-
-  return [...core, ...docs];
+  return core;
 }

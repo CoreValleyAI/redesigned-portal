@@ -1,33 +1,11 @@
 import type { Metadata, Viewport } from "next";
-import { JetBrains_Mono, Manrope } from "next/font/google";
 import { LiquidFilters } from "@/components/fx/liquid-filter";
 import { JsonLd, organizationJsonLd, webSiteJsonLd } from "@/components/seo/json-ld";
 import { ORG, SITE_DESCRIPTION, SITE_NAME, SITE_TITLE, SITE_URL } from "@/lib/site";
 import { SOCIAL_IMAGE } from "@/lib/seo";
 import { THEME_BOOTSTRAP, THEME_COLOR } from "@/lib/theme";
+import { jetbrainsMono, manrope } from "./fonts";
 import "./globals.css";
-
-/* Both faces are variable fonts: omitting `weight` ships one woff2 per family
-   covering the whole range instead of N static instances. `fallback` carries
-   the stack tokens/typography.css declares; next/font prepends a
-   metric-adjusted local fallback to keep CLS at zero.
-
-   Manrope and JetBrains Mono are the brand faces (Brand Guidelines v1.0,
-   08 / Typography). They are rebound onto the design-system variable names in
-   globals.css. */
-const manrope = Manrope({
-  subsets: ["latin"],
-  display: "swap",
-  variable: "--font-manrope",
-  fallback: ["system-ui", "-apple-system", "Segoe UI", "sans-serif"],
-});
-
-const jetbrainsMono = JetBrains_Mono({
-  subsets: ["latin"],
-  display: "swap",
-  variable: "--font-jetbrains-mono",
-  fallback: ["ui-monospace", "SFMono-Regular", "Menlo", "monospace"],
-});
 
 /* Search-console verification tokens are read from the environment so the
    repo never carries them. See SEO_roadmap.txt for where to get each one. */

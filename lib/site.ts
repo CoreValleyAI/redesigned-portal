@@ -11,7 +11,13 @@
  */
 export const SITE_NAME = "CoreValley";
 
-export const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL || "https://corevalley.ai").replace(
+/** True in the docs-site build, where the docs are served from the root. */
+export const IS_DOCS_BUILD = process.env.NEXT_PUBLIC_BUILD_TARGET === "docs";
+
+export const SITE_URL = (
+  process.env.NEXT_PUBLIC_SITE_URL ||
+  (IS_DOCS_BUILD ? "https://docs.corevalley.ai" : "https://corevalley.ai")
+).replace(
   /\/+$/,
   "",
 );
@@ -27,12 +33,35 @@ export const STATUS_URL = (process.env.NEXT_PUBLIC_STATUS_URL || "https://status
 );
 
 /**
- * Where the documentation is served. Empty (the default) means the docs are
- * routes of this site at /docs/. Set to e.g. https://docs.corevalley.ai once
- * the docs move to their own host (see doc_cname_readme.txt): every docs
- * link then points there and the in-app copies drop out of the sitemap.
+ * The documentation is its own site at docs.corevalley.ai, built from this
+ * repository with NEXT_PUBLIC_BUILD_TARGET=docs (see next.config.ts and the
+ * `*.docs.tsx` routes in app/). The marketing site has no /docs/ pages; every
+ * docs link points at DOCS_URL.
  */
-export const DOCS_URL = (process.env.NEXT_PUBLIC_DOCS_URL || "").replace(/\/+$/, "");
+export const DOCS_URL = (process.env.NEXT_PUBLIC_DOCS_URL || "https://docs.corevalley.ai").replace(
+  /\/+$/,
+  "",
+);
+
+/** The marketing site, which the docs site's header and footer link back to. */
+export const MAIN_URL = (process.env.NEXT_PUBLIC_MAIN_URL || "https://corevalley.ai").replace(
+  /\/+$/,
+  "",
+);
+
+/**
+ * A link to a marketing page. In the main build it is the path itself (for
+ * <Link>, which adds the base path); in the docs build it is absolute on
+ * MAIN_URL, since those pages do not exist on the docs host.
+ */
+export function siteHref(path: string): string {
+  if (!IS_DOCS_BUILD) return path;
+  // The trailing slash <Link> would add for a route, so GitHub Pages serves
+  // the page instead of redirecting to it: /products#x → /products/#x.
+  const [p = "/", hash] = path.split("#");
+  const slashed = p.endsWith("/") || /\.[a-z0-9]+$/i.test(p) ? p : `${p}/`;
+  return `${MAIN_URL}${slashed}${hash !== undefined ? `#${hash}` : ""}`;
+}
 
 export const SITE_TITLE = "CoreValley — Nepal's GPU cloud, NVIDIA H200 in Kathmandu";
 
