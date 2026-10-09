@@ -22,6 +22,11 @@ export const SITE_URL = (
   "",
 );
 
+/** Keep the whole build out of search engines (noindex, nofollow on every
+    page). The deploy sets it for the /preview build, which would otherwise be
+    a second, competing copy of the site. */
+export const NOINDEX = process.env.NEXT_PUBLIC_NOINDEX === "1";
+
 /** Show the Status link in the header and footer. Off until status monitoring
     is integrated; flip to true to bring the links back. */
 export const SHOW_STATUS = false;

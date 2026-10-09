@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { absoluteUrl, SITE_NAME } from "./site";
+import { absoluteUrl, NOINDEX, SITE_NAME } from "./site";
 
 /** The generated social card (app/opengraph-image.png, `npm run generate:brand`).
     Listed explicitly: a page-level openGraph block replaces the layout's, which
@@ -48,6 +48,6 @@ export function pageMetadata(opts: {
       description: opts.description,
       images: [SOCIAL_IMAGE.url],
     },
-    ...(opts.noindex ? { robots: { index: false, follow: false } } : {}),
+    ...(opts.noindex || NOINDEX ? { robots: { index: false, follow: false } } : {}),
   };
 }

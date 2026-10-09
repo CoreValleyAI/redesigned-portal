@@ -1,6 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { JsonLd, organizationJsonLd, webSiteJsonLd } from "@/components/seo/json-ld";
-import { ORG, SITE_DESCRIPTION, SITE_NAME, SITE_TITLE, SITE_URL } from "@/lib/site";
+import { NOINDEX, ORG, SITE_DESCRIPTION, SITE_NAME, SITE_TITLE, SITE_URL } from "@/lib/site";
 import { SOCIAL_IMAGE } from "@/lib/seo";
 import { THEME_BOOTSTRAP, THEME_COLOR } from "@/lib/theme";
 import { inter, jetbrainsMono } from "./fonts";
@@ -63,11 +63,14 @@ export const metadata: Metadata = {
     description: SITE_DESCRIPTION,
     images: [SOCIAL_IMAGE.url],
   },
-  robots: {
-    index: true,
-    follow: true,
-    googleBot: { index: true, follow: true, "max-image-preview": "large", "max-snippet": -1 },
-  },
+  // The /preview build is a full copy of the site: keep it out of search.
+  robots: NOINDEX
+    ? { index: false, follow: false }
+    : {
+        index: true,
+        follow: true,
+        googleBot: { index: true, follow: true, "max-image-preview": "large", "max-snippet": -1 },
+      },
   ...(Object.keys(verification).length ? { verification } : {}),
 };
 
