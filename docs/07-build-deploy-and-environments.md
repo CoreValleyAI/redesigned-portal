@@ -13,8 +13,8 @@ target, and no hosted server deployment.
 > push to `main` and on manual dispatch: it reads the Pages base path with
 > `actions/configure-pages` (so `/redesigned-portal` for the project site, `""`
 > for a custom domain on this repository), typechecks, lints, builds, builds
-> the docs site (`npm run build:docs`) and publishes it to CoreValleyAI/docs
-> (docs.corevalley.ai), and uploads `out/`.
+> the docs site as a check (`npm run build:docs`; CoreValleyAI/docs builds and
+> publishes docs.corevalley.ai from `main` itself), and uploads `out/`.
 > `.github/workflows/verify.yml` runs the same steps without deploying on
 > every other branch and on pull requests. The repository's Pages source must
 > be set to *GitHub Actions*. Section 5 describes these workflows; the other
@@ -304,8 +304,6 @@ jobs:
       - run: npm run build
         env: { NEXT_PUBLIC_BASE_PATH: "${{ steps.basepath.outputs.value }}" }
       - run: npm run build:docs          # docs site → out-docs/, every nav page exported
-      - uses: peaceiris/actions-gh-pages@v4   # out-docs/ → CoreValleyAI/docs gh-pages
-        with: { deploy_key: "${{ secrets.DOCS_DEPLOY_KEY }}", external_repository: CoreValleyAI/docs, publish_branch: gh-pages, publish_dir: ./out-docs }
       - uses: actions/upload-pages-artifact@v4
         with: { path: ./out }
 
@@ -343,6 +341,14 @@ routes, see `next.config.ts`) into `.next-docs/`, copied to `out-docs/`.
 Reads the `nav` in `corevalley-docs/mkdocs.yml` and exits 1 if any entry did
 not export to `out-docs/<slug>/index.html`, then writes `robots.txt`,
 `sitemap.xml`, `CNAME` and `.nojekyll` for GitHub Pages.
+
+CoreValleyAI/docs publishes the result: its workflow polls this repository's
+`main` every 15 minutes (and runs on manual dispatch), and when the head has
+moved since the last deploy (`build-sha.txt` on the live site) it checks this
+repository out, runs `npm run build:docs` and deploys `out-docs/` with
+`actions/deploy-pages`. No secret is involved because this repository is
+public; the organisation does not allow deploy keys, so pushing from here is
+not an option.
 
 ### ❌ Remaining CI gaps
 

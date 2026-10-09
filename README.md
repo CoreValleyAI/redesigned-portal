@@ -203,7 +203,7 @@ deployed to GitHub Pages by two workflows:
 
 | Workflow | Runs on | Does |
 |---|---|---|
-| `deploy.yml` | push to `main` that touches the site; manual dispatch | reads the Pages base path and origin, typechecks, lints, builds, builds the docs site and publishes it to the `gh-pages` branch of CoreValleyAI/docs (deploy key in the `DOCS_DEPLOY_KEY` secret), uploads `out/`, deploys |
+| `deploy.yml` | push to `main` that touches the site; manual dispatch | reads the Pages base path and origin, typechecks, lints, builds, builds the docs site as a check, uploads `out/`, deploys |
 | `verify.yml` | push to any other branch; pull requests to `main` | the same checks without deploying; keeps the export as an artifact for 7 days |
 
 Pages must be set to deploy from **GitHub Actions**. Environment variables
@@ -235,8 +235,10 @@ NEXT_PUBLIC_BASE_PATH=/redesigned-portal npm run build && npm run build:docs
   host; a monitor updates it by rewriting `status.json`. See
   `status/README.md`. The header and footer link to it.
 - **Docs host** — docs.corevalley.ai is the docs build of this codebase
-  (`npm run build:docs`), published by `deploy.yml` to the `gh-pages` branch
-  of CoreValleyAI/docs, whose Pages site carries the custom domain. Edit the
+  (`npm run build:docs`). CoreValleyAI/docs carries the custom domain and a
+  workflow that checks this repository's `main` every 15 minutes and, when it
+  has moved, checks it out, runs `npm run build:docs` and deploys `out-docs/`
+  (run it by hand from that repo's Actions tab to publish at once). Edit the
   docs here, in `corevalley-docs/`, never in that repository.
 
 ---
