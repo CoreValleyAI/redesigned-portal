@@ -4,8 +4,8 @@ on:
   push:
     branches: [main]
     # Pushes that touch nothing the site ships from do not redeploy. The
-    # documentation lives in corevalley-docs/ (built into docs.corevalley.ai
-    # below); the root docs/ folder is internal engineering notes.
+    # documentation lives in corevalley-docs/ (docs.corevalley.ai, see the
+    # "Build docs site" step); the root docs/ folder is internal engineering notes.
     paths-ignore:
       - "docs/**"
       - "reference/**"
@@ -115,26 +115,13 @@ jobs:
           NEXT_PUBLIC_DOCS_URL: ${{ vars.DOCS_URL }}
           NEXT_PUBLIC_STATUS_URL: ${{ vars.STATUS_URL }}
 
-      # The documentation site, docs.corevalley.ai: this codebase built with
-      # NEXT_PUBLIC_BUILD_TARGET=docs into out-docs/ (scripts/build-docs-site.mjs
-      # fails if any page in the corevalley-docs nav did not export).
+      # The documentation site, docs.corevalley.ai, is this codebase built
+      # with NEXT_PUBLIC_BUILD_TARGET=docs. CoreValleyAI/docs builds and
+      # publishes it from this repository's main branch on its own (its
+      # workflow checks for a new commit every 15 minutes); building it here
+      # too keeps a change that breaks the docs from reaching main.
       - name: Build docs site
         run: npm run build:docs
-
-      # Published to the gh-pages branch of CoreValleyAI/docs, which Pages
-      # serves at docs.corevalley.ai. DOCS_DEPLOY_KEY is the private half of
-      # a deploy key with write access on that repository only.
-      - name: Publish docs site
-        uses: peaceiris/actions-gh-pages@v4
-        with:
-          deploy_key: ${{ secrets.DOCS_DEPLOY_KEY }}
-          external_repository: CoreValleyAI/docs
-          publish_branch: gh-pages
-          publish_dir: ./out-docs
-          force_orphan: true
-          user_name: github-actions[bot]
-          user_email: 41898282+github-actions[bot]@users.noreply.github.com
-          full_commit_message: Docs from CoreValleyAI/redesigned-portal@${{ github.sha }}
 
       # Valleys 3D is a separate Vite app, served unlisted at /valleys/. Its
       # build uses a relative base, so it works under any site base path.

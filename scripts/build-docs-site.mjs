@@ -11,8 +11,8 @@
  *    .nojekyll (without it Pages drops `_next/`), and removes the marketing
  *    site's legacy redirect files from public/, which mean nothing here.
  *
- * The deploy workflow runs this and publishes `out-docs/` to the gh-pages
- * branch of CoreValleyAI/docs.
+ * CoreValleyAI/docs runs this on a checkout of this repository's main and
+ * deploys `out-docs/`; deploy.yml and verify.yml run it as a check.
  */
 import { spawnSync } from "node:child_process";
 import fs from "node:fs";
