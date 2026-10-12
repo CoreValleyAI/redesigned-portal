@@ -233,8 +233,8 @@ export const PRODUCTS: ProductDef[] = [
         body: "When you don't need hardware isolation, take a share of a card instead (HAMi). It costs less, and we label the difference rather than hide it.",
       },
       {
-        title: "Notebooks for a whole class",
-        body: "Hand each student or researcher a slice in managed JupyterHub, with per-person limits and notebooks that stop billing when left idle.",
+        title: "Sized to the job",
+        body: "Run notebooks, small fine-tunes and light inference on a slice that fits, so a whole card never sits half idle.",
       },
       {
         title: "Grow without moving",
@@ -346,8 +346,8 @@ export const PRODUCTS: ProductDef[] = [
         body: "Put your model behind an API with keys, limits and monitoring, on shared or dedicated capacity.",
       },
       {
-        title: "Courses and labs",
-        body: "Managed JupyterHub for a cohort or a department: profiles, per-person limits and idle shutdown, set up for you.",
+        title: "GPUs for teaching and research",
+        body: "We set up GPU access for a class, a lab or a department, with per-person limits, so nobody has to run a server.",
       },
       {
         title: "A named engineer",

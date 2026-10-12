@@ -20,7 +20,7 @@ const LEGACY_REDIRECT = `(function(){var p=location.pathname,q=location.search+l
 
 /* Where the visitor most likely meant to go, in that order. */
 const EXITS: { href: string; label: string; meta: string; icon: IconName }[] = [
-  { href: "/products", label: "Products", meta: "gpu pods · notebooks · endpoints", icon: "slice" },
+  { href: "/products", label: "Products", meta: "reserved · on-demand · inferencing", icon: "slice" },
   { href: "/pricing", label: "Pricing", meta: "billed per second, in rupees", icon: "cost" },
   { href: docsHref(), label: "Documentation", meta: "guides · platform · billing", icon: "docs" },
   { href: "/contact", label: "Get early access", meta: "h200 available now", icon: "send" },

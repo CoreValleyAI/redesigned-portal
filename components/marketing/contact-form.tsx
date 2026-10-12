@@ -31,10 +31,12 @@ const GROUPS: { label: string; options: string[] }[] = [
   {
     label: "Open now — enterprise early access on H200",
     options: [
-      "GPU pods for training or fine-tuning",
-      "Model endpoints (an OpenAI-compatible API)",
-      "Dedicated H200 servers",
-      "JupyterHub for a team",
+      "Reserved GPUs (whole H200 servers)",
+      "On-demand GPUs, billed by the second",
+      "Inferencing (an OpenAI-compatible API)",
+      "MIG slicing (a slice of an H200)",
+      "Storage",
+      "Services & engineering",
     ],
   },
   {
