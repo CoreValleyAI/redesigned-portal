@@ -19,7 +19,25 @@ on:
       - "drafts/**"
       - "Kathmandu_Core/**"
       - "report_0903.txt"
+  # Manual runs, and the CMS: after it commits published content to
+  # CoreValleyAI/content it dispatches this workflow with content_only=true.
   workflow_dispatch:
+    inputs:
+      reason:
+        description: Why this run was started
+        required: false
+        default: manual
+      content_only:
+        description: Content changed, code did not (skips the docs check and IndexNow)
+        type: boolean
+        required: false
+        default: false
+  # Every 15 minutes, off the top of the hour (GitHub drops or delays runs
+  # scheduled on the hour). The gate job below makes this cheap: it rebuilds
+  # only when something visible would change — a scheduled post going live,
+  # a job reaching its closing time, or a push to `preview`.
+  schedule:
+    - cron: "7,22,37,52 * * * *"
 
 # Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
 permissions:
@@ -27,17 +45,85 @@ permissions:
   pages: write
   id-token: write
 
-# Allow only one concurrent deployment
-concurrency:
-  group: pages
-  cancel-in-progress: true
-
 env:
   NEXT_TELEMETRY_DISABLED: "1"
+  # Where the published content lives. Read with the cv-site-deployer GitHub
+  # App (vars.DEPLOYER_APP_ID + secrets.DEPLOYER_APP_KEY). Until the App is
+  # set up, the site builds exactly as before, with no CMS content.
+  CONTENT_OWNER: CoreValleyAI
+  CONTENT_REPO: content
 
 jobs:
-  build:
+  # Decides whether this run needs to build at all, and pins the content
+  # commit and the clock the build will use. No concurrency group here, so a
+  # scheduled run that decides to skip never cancels a real deploy.
+  gate:
     runs-on: ubuntu-latest
+    outputs:
+      build: ${{ steps.decide.outputs.build }}
+      fingerprint: ${{ steps.decide.outputs.fingerprint }}
+      content_sha: ${{ steps.decide.outputs.content_sha }}
+      now: ${{ steps.decide.outputs.now }}
+    steps:
+      - name: Content access token
+        id: token
+        if: vars.DEPLOYER_APP_ID != ''
+        uses: actions/create-github-app-token@v2
+        with:
+          app-id: ${{ vars.DEPLOYER_APP_ID }}
+          private-key: ${{ secrets.DEPLOYER_APP_KEY }}
+          owner: ${{ env.CONTENT_OWNER }}
+          repositories: ${{ env.CONTENT_REPO }}
+
+      - name: Checkout content
+        if: steps.token.outcome == 'success'
+        uses: actions/checkout@v5
+        with:
+          repository: ${{ env.CONTENT_OWNER }}/${{ env.CONTENT_REPO }}
+          token: ${{ steps.token.outputs.token }}
+          path: content
+          fetch-depth: 1
+
+      - name: Decide
+        id: decide
+        env:
+          EVENT: ${{ github.event_name }}
+          SITE_URL: ${{ vars.SITE_URL || 'https://corevalley.ai' }}
+          REPO: ${{ github.repository }}
+          MAIN_SHA: ${{ github.sha }}
+        run: |
+          now="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+          content_sha=""
+          visible=""
+          if [ -f content/manifest.json ]; then
+            content_sha="$(git -C content rev-parse HEAD)"
+            # Items whose visibility depends on the clock: which are live now?
+            visible="$(jq -r --arg now "$now" '.schedule[] | select((.from == null or .from <= $now) and (.until == null or .until > $now)) | .path' content/manifest.json | sort | tr '\n' ' ')"
+          fi
+          preview_sha="$(git ls-remote "https://github.com/$REPO" refs/heads/preview | cut -f1)"
+          fingerprint="$(printf '%s|%s|%s|%s' "$MAIN_SHA" "$preview_sha" "$content_sha" "$visible" | sha256sum | cut -d' ' -f1)"
+
+          build=true
+          if [ "$EVENT" = "schedule" ]; then
+            deployed="$(curl -fsS "${SITE_URL%/}/_build.json?t=$(date +%s)" | jq -r '.fingerprint // empty' || true)"
+            if [ "$deployed" = "$fingerprint" ]; then build=false; fi
+          fi
+          echo "event=$EVENT build=$build content=${content_sha:-none} preview=$preview_sha"
+          {
+            echo "build=$build"
+            echo "fingerprint=$fingerprint"
+            echo "content_sha=$content_sha"
+            echo "now=$now"
+          } >> "$GITHUB_OUTPUT"
+
+  build:
+    needs: gate
+    if: needs.gate.outputs.build == 'true'
+    runs-on: ubuntu-latest
+    # A newer build supersedes an older one that hasn't finished.
+    concurrency:
+      group: pages-build
+      cancel-in-progress: true
     steps:
       - name: Checkout
         uses: actions/checkout@v5
@@ -94,6 +180,28 @@ jobs:
           echo "value=${base}" >> "$GITHUB_OUTPUT"
           echo "site_url=${origin}${base}" >> "$GITHUB_OUTPUT"
 
+      # The published content (jobs, posts) at the commit the gate pinned, so
+      # a publish that lands mid-build waits for the next run instead of
+      # half-appearing in this one.
+      - name: Content access token
+        id: token
+        if: needs.gate.outputs.content_sha != ''
+        uses: actions/create-github-app-token@v2
+        with:
+          app-id: ${{ vars.DEPLOYER_APP_ID }}
+          private-key: ${{ secrets.DEPLOYER_APP_KEY }}
+          owner: ${{ env.CONTENT_OWNER }}
+          repositories: ${{ env.CONTENT_REPO }}
+
+      - name: Checkout content
+        if: needs.gate.outputs.content_sha != ''
+        uses: actions/checkout@v5
+        with:
+          repository: ${{ env.CONTENT_OWNER }}/${{ env.CONTENT_REPO }}
+          ref: ${{ needs.gate.outputs.content_sha }}
+          token: ${{ steps.token.outputs.token }}
+          path: content-src
+
       - name: Install dependencies
         run: npm ci
 
@@ -114,13 +222,18 @@ jobs:
           NEXT_PUBLIC_BING_VERIFICATION: ${{ vars.BING_VERIFICATION }}
           NEXT_PUBLIC_DOCS_URL: ${{ vars.DOCS_URL }}
           NEXT_PUBLIC_STATUS_URL: ${{ vars.STATUS_URL }}
+          CONTENT_DIR: ${{ needs.gate.outputs.content_sha != '' && format('{0}/content-src', github.workspace) || '' }}
+          CONTENT_REQUIRED: ${{ needs.gate.outputs.content_sha != '' && '1' || '' }}
+          CONTENT_NOW: ${{ needs.gate.outputs.now }}
 
       # The documentation site, docs.corevalley.ai, is this codebase built
       # with NEXT_PUBLIC_BUILD_TARGET=docs. CoreValleyAI/docs builds and
       # publishes it from this repository's main branch on its own (its
       # workflow checks for a new commit every 15 minutes); building it here
-      # too keeps a change that breaks the docs from reaching main.
+      # too keeps a change that breaks the docs from reaching main. Content
+      # and scheduled runs change no code, so they skip it.
       - name: Build docs site
+        if: github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && !inputs.content_only)
         run: npm run build:docs
 
       # Valleys 3D is a separate Vite app, served unlisted at /valleys/. Its
@@ -135,8 +248,8 @@ jobs:
 
       # The next version of the site, built from the `preview` branch and
       # served at /preview/ beside the live site, which stays at the root.
-      # To refresh it after pushing to `preview`, re-run this workflow
-      # (Actions → Deploy to GitHub Pages → Run workflow).
+      # A push to `preview` shows up within about 15 minutes (the scheduled
+      # gate notices the new commit), or straight away with a manual run.
       - name: Checkout preview branch
         uses: actions/checkout@v5
         with:
@@ -151,11 +264,28 @@ jobs:
           # noindex on every page: /preview is a full second copy of the site
           # and must not compete with it in search.
           NEXT_PUBLIC_NOINDEX: "1"
+          CONTENT_DIR: ${{ needs.gate.outputs.content_sha != '' && format('{0}/content-src', github.workspace) || '' }}
+          CONTENT_REQUIRED: ${{ needs.gate.outputs.content_sha != '' && '1' || '' }}
+          CONTENT_NOW: ${{ needs.gate.outputs.now }}
         run: |
           npm ci
           npm run build
           mkdir -p ../out/preview
           cp -r out/. ../out/preview/
+
+      # What this deploy contains. The next scheduled gate compares its
+      # fingerprint with this file to decide whether to rebuild.
+      - name: Write build record
+        env:
+          FINGERPRINT: ${{ needs.gate.outputs.fingerprint }}
+          CONTENT_SHA: ${{ needs.gate.outputs.content_sha }}
+          NOW: ${{ needs.gate.outputs.now }}
+          REASON: ${{ inputs.reason || github.event_name }}
+        run: |
+          jq -n --arg fp "$FINGERPRINT" --arg content "$CONTENT_SHA" --arg main "$GITHUB_SHA" \
+            --arg preview "$(git -C preview-src rev-parse HEAD)" --arg at "$NOW" --arg reason "$REASON" \
+            '{fingerprint: $fp, content: $content, main: $main, preview: $preview, builtAt: $at, reason: $reason}' > out/_build.json
+          cat out/_build.json
 
       # Packaged here rather than with actions/upload-pages-artifact, whose v4
       # drops every dot-path and with it /.well-known/security.txt. Same
@@ -176,7 +306,11 @@ jobs:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
-    needs: build
+    needs: [gate, build]
+    # One deploy at a time, and never cancel one that has started.
+    concurrency:
+      group: pages-deploy
+      cancel-in-progress: false
     steps:
       - name: Deploy to GitHub Pages
         id: deployment
@@ -185,8 +319,11 @@ jobs:
       # Tell IndexNow engines (Bing, Yandex, Seznam, Naver…) every URL in the
       # sitemap may have changed. The key is public by design: it is the file
       # public/<key>.txt, which proves the site owns it. Google does not take
-      # IndexNow; it reads the sitemap from Search Console.
+      # IndexNow; it reads the sitemap from Search Console. Content and
+      # scheduled runs skip it: CMS content is only on the noindexed /preview
+      # until the redesign is live (then ping the changed job and post URLs).
       - name: Notify search engines (IndexNow)
+        if: github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && !inputs.content_only)
         continue-on-error: true
         env:
           PAGE_URL: ${{ steps.deployment.outputs.page_url }}

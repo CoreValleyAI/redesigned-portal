@@ -48,6 +48,10 @@ jobs:
 
       - name: Build static export
         run: npm run build
+        env:
+          # Sample jobs and posts (content-fixtures/), so the job board and
+          # blog pages are built and checked on every branch.
+          CONTENT_FIXTURES: "1"
 
       - name: Build docs site
         run: npm run build:docs
