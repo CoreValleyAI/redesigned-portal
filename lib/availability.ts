@@ -7,8 +7,8 @@
  * lib/catalog.ts; this module only words it.
  *
  * Confirmed facts (October 2026):
- *  · NVIDIA H200 is available now, through enterprise early access.
- *  · RTX PRO 6000 Blackwell is coming soon; L40S after it.
+ *  · NVIDIA H200 is coming soon; the enterprise early-access list is open.
+ *  · RTX PRO 6000 Blackwell follows it; L40S after that.
  *  · Network latency inside Kathmandu is under 5 ms.
  *  · The datacenter runs on hydropower.
  *  · Rates are not published yet; every request gets a firm NPR quote.
@@ -24,11 +24,11 @@ export const SOON_GPUS: GpuSku[] = GPU_SKUS.filter((s) => s.status === "coming-s
 
 export const EARLY_ACCESS = {
   /** Shortest form, for pills and eyebrows. */
-  pill: "H200 available now",
+  pill: "H200 coming soon",
   /** Who can get in today. */
   audience: "enterprises",
   /** One sentence for near a call to action. */
-  line: "Early access is open to enterprises on NVIDIA H200. More GPUs, and access for more teams, are coming soon.",
+  line: "NVIDIA H200 is coming soon, with more GPUs after it. Join the enterprise early-access list and we'll tell you first.",
   /** What the next step is, said plainly. */
   promise: "Tell us what you want to run. We reply within one working day with a capacity plan and a firm rupee quote.",
   /** The reply-time commitment on its own. */

@@ -5,14 +5,14 @@ import { Reveal, RevealGroup } from "@/components/fx/reveal";
 import { FaqList } from "@/components/marketing/faq-list";
 import { PricingTables } from "@/components/marketing/pricing-tables";
 import { CATALOG } from "@/lib/catalog";
-import { AVAILABLE_GPUS, EARLY_ACCESS, SOON_GPUS } from "@/lib/availability";
+import { EARLY_ACCESS, SOON_GPUS } from "@/lib/availability";
 import { pageMetadata } from "@/lib/seo";
 import { JsonLd, faqJsonLd } from "@/components/seo/json-ld";
 
 export const metadata = pageMetadata({
   title: "Pricing — Per-Second GPU Billing in Nepali Rupees",
   description:
-    "How CoreValley bills GPU compute in Nepal: per second with a 60-second minimum, invoiced in NPR and paid by eSewa, Khalti, bank transfer or invoice. Enterprise early access on NVIDIA H200 is open now, with a firm quote within one working day.",
+    "How CoreValley bills GPU compute in Nepal: per second with a 60-second minimum, invoiced in NPR and paid by eSewa, Khalti, bank transfer or invoice. NVIDIA H200 is coming soon; join the enterprise early-access list for a firm quote within one working day.",
   path: "/pricing",
 });
 
@@ -25,7 +25,6 @@ const SHOW_RATES = !CATALOG.meta.pricingIsPlaceholder;
 
 const list = new Intl.ListFormat("en-GB", { style: "long", type: "conjunction" });
 const short = (name: string) => name.replace(/^NVIDIA /, "");
-const NOW = list.format(AVAILABLE_GPUS.map((s) => s.name));
 const SOON = list.format(SOON_GPUS.map((s) => short(s.name)));
 
 const METERS: { icon: IconName; title: string; unit: string; body: string }[] = [
@@ -153,8 +152,8 @@ const FAQ = [
     a: "Soon. We're finalising rates for general availability. Until then, every early-access customer gets a firm NPR quote within one working day, based on the workload you describe.",
   },
   {
-    q: "Which GPUs can I get today?",
-    a: `${NOW}, through enterprise early access. ${SOON} are coming soon.`,
+    q: "Which GPUs are coming?",
+    a: `${SOON} are all coming soon, through enterprise early access. Join the list and we'll tell you first.`,
   },
   {
     q: "Can I pay in NPR?",
@@ -185,7 +184,7 @@ export default function PricingPage() {
       <PageHero
         eyebrow="Pricing"
         title="Billed by the second, in rupees."
-        lead="Rates for general availability are being finalised. Enterprise early access on NVIDIA H200 is open now — tell us your workload and we'll send a firm NPR quote within one working day."
+        lead="Rates for general availability are being finalised. NVIDIA H200 is coming soon. Join the enterprise early-access list — tell us your workload and we'll send a firm NPR quote within one working day."
       >
         <div className="mt-8 flex flex-wrap items-center gap-x-7 gap-y-4">
           <ButtonLink
@@ -214,7 +213,7 @@ export default function PricingPage() {
             className="mt-[7px] size-1.5 shrink-0 rounded-pill bg-hydro shadow-glow-sm"
           />
           <span>
-            {NOW} available now. {SOON} coming soon.
+            {SOON} coming soon.
           </span>
         </p>
       </PageHero>

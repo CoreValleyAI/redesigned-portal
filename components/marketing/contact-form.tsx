@@ -25,11 +25,11 @@ const INBOX = "info@corevalley.ai";
 const ENDPOINT = `https://formsubmit.co/ajax/${INBOX}`;
 const BASE = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
 
-/* Grouped by what is open today. Each value is the readable label with its
+/* Grouped by what comes first. Each value is the readable label with its
    group, because FormSubmit mails the raw value to the inbox. */
 const GROUPS: { label: string; options: string[] }[] = [
   {
-    label: "Open now — enterprise early access on H200",
+    label: "Early access — H200 coming soon",
     options: [
       "Reserved GPUs (whole H200 servers)",
       "On-demand GPUs, billed by the second",
@@ -49,7 +49,7 @@ const GROUPS: { label: string; options: string[] }[] = [
   },
 ];
 const value = (group: string, option: string) =>
-  `${group.startsWith("Open") ? "Early access" : "Join the list"}: ${option}`;
+  `${group.startsWith("Early") ? "Early access" : "Join the list"}: ${option}`;
 const DEFAULT_INTEREST = value(GROUPS[0]!.label, GROUPS[0]!.options[1]!);
 const WAITLIST_GPU = value(GROUPS[1]!.label, GROUPS[1]!.options[0]!);
 const RESERVED = value(GROUPS[0]!.label, GROUPS[0]!.options[0]!);
@@ -57,7 +57,7 @@ const EXPLORING = "Just exploring";
 
 /** The interest a console plan implies. */
 function interestFor(plan: QuotePlan): string {
-  if (plan.gpu.soon) return WAITLIST_GPU;
+  if (!plan.gpu.id.startsWith("h200")) return WAITLIST_GPU;
   // A whole eight-card server held for a week or more is a reserved node.
   if (!plan.gpu.slice && plan.count === 8 && (plan.hours?.v ?? 0) >= 168) return RESERVED;
   return DEFAULT_INTEREST;

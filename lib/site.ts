@@ -74,7 +74,7 @@ export const SITE_TITLE = "CoreValley — Nepal's GPU cloud, NVIDIA H200 in Kath
    Every clause is a confirmed fact (see lib/availability.ts); keep it under
    ~160 characters so search results show it whole. */
 export const SITE_DESCRIPTION =
-  "NVIDIA H200 GPUs in a hydro-powered Kathmandu datacenter, open now for enterprise early access. Billed in NPR, <5 ms latency in Kathmandu, data kept in Nepal.";
+  "NVIDIA H200 GPUs in a hydro-powered Kathmandu datacenter, coming soon for enterprise early access. Billed in NPR, <5 ms latency in Kathmandu, data kept in Nepal.";
 
 /* Only facts that are stated on the public site or verifiable. Nothing here
    is guessed; see SEO_roadmap.txt for the items awaiting confirmation. */

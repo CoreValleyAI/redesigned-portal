@@ -40,7 +40,7 @@ const PRINCIPLES: { icon: IconName; title: string; body: string }[] = [
   {
     icon: "check-circle",
     title: "Honest about constraints",
-    body: "We publish what we actually run. Today that is the NVIDIA H200. Where a GPU has not landed or a control is still in progress, we say so.",
+    body: "We say what we will actually run. First up is the NVIDIA H200. Where a GPU has not landed or a control is still in progress, we say so.",
   },
 ];
 
@@ -54,7 +54,7 @@ const AUDIENCES: {
     icon: "building",
     title: "Enterprises and public sector",
     body: "Isolated environments, data that stays in the country and engineers in Kathmandu — for banks, hospitals, government and any regulated workload that cannot cross a border.",
-    status: { tone: "hydro", label: "Open now · H200" },
+    status: { tone: "hydro", label: "Early-access list · H200" },
   },
   {
     icon: "university",
@@ -77,7 +77,7 @@ const FAQ = [
   },
   {
     q: "Which GPUs do you run?",
-    a: "The NVIDIA H200, with 141 GB of memory, is available now through enterprise early access — as a whole card or as a slice. The RTX PRO 6000 Blackwell is coming soon, with the L40S after it.",
+    a: "The NVIDIA H200, with 141 GB of memory, is coming soon through enterprise early access — as a whole card or as a slice. The RTX PRO 6000 Blackwell follows, with the L40S after it.",
   },
   {
     q: "How do you bill?",
@@ -85,11 +85,11 @@ const FAQ = [
   },
   {
     q: "Are you open to new customers?",
-    a: "Yes. Early access is open to enterprises on NVIDIA H200 now. Tell us the model, the dataset size and the GPU hours you expect, and we size capacity with you before you commit. Universities, startups and other teams can join the list today — access for more teams is coming soon.",
+    a: "Yes. Enterprises can join the early-access list for NVIDIA H200 now. Tell us the model, the dataset size and the GPU hours you expect, and we size capacity with you before you commit. Universities, startups and other teams can join the list today — access for more teams is coming soon.",
   },
   {
     q: "What does early access mean?",
-    a: "The H200 platform is live, and we onboard enterprise teams one at a time. You tell us the workload, we send a capacity plan and a firm rupee quote within one working day, and our team sets up your project with you. More GPUs, and access for more teams, are coming soon.",
+    a: "The H200 platform is coming online, and we will onboard enterprise teams one at a time. You tell us the workload, we send a capacity plan and a firm rupee quote within one working day, and our team sets up your project with you. More GPUs, and access for more teams, are coming soon.",
   },
   {
     q: "Why does it matter that the GPUs are in Kathmandu?",
@@ -159,7 +159,7 @@ export default function CompanyPage() {
 
           <Card padding={32}>
             <div className="grid grid-cols-2 gap-x-6 gap-y-9">
-              <StatBlock value="H200" label="available now" size="sm" accent />
+              <StatBlock value="H200" label="coming soon" size="sm" accent />
               <StatBlock value={FACTS.latency} label={FACTS.latencyLabel} size="sm" />
               <StatBlock value="NPR" label="billed in rupees" size="sm" />
               <StatBlock value="100%" label="of your data stays in nepal" size="sm" />
@@ -171,7 +171,7 @@ export default function CompanyPage() {
       <Section
         eyebrow="What we run"
         title="Six products, one platform."
-        lead="Reserved and on-demand GPUs, hardware slices, inferencing, storage and engineering help. All on NVIDIA H200s in Kathmandu today, with Blackwell coming soon — one account, one rupee invoice."
+        lead="Reserved and on-demand GPUs, hardware slices, inferencing, storage and engineering help. All on NVIDIA H200s in Kathmandu, coming soon, with Blackwell after them — one account, one rupee invoice."
         alt
       >
         <RevealGroup step={80} className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -198,8 +198,8 @@ export default function CompanyPage() {
             <div>
               <dt className="cv-label text-[10px]">Hardware</dt>
               <dd className="mt-2 text-sm leading-relaxed text-ink-300">
-                NVIDIA H200, available now. RTX PRO 6000 Blackwell coming
-                soon; L40S after it.
+                NVIDIA H200, coming soon. RTX PRO 6000 Blackwell after it;
+                L40S after that.
               </dd>
             </div>
             <div>

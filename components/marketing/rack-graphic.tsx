@@ -9,7 +9,7 @@
  */
 import { cn } from "@/lib/cn";
 
-/* Illustrative node rows, not an inventory. Only the H200 is live today
+/* Illustrative node rows, not an inventory. The H200 comes first
    (see lib/availability.ts), so every row is an H200 node. */
 const NODES = [
   { id: "ktm-a-01", gpus: 8, sku: "h200", cool: "dtc" },

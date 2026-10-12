@@ -182,8 +182,8 @@ const LIFECYCLE: { step: string; title: string; body: string }[] = [
 
 const FAQ = [
   {
-    q: "Who can get access today?",
-    a: "Enterprises, on NVIDIA H200, through early access. More GPUs — starting with the RTX PRO 6000 Blackwell — and access for more teams, including universities and startups, are coming soon. You can join the list now.",
+    q: "When can I get access?",
+    a: "The NVIDIA H200 is coming soon, through enterprise early access. More GPUs — starting with the RTX PRO 6000 Blackwell — and access for more teams, including universities and startups, follow. You can join the list now.",
   },
   {
     q: "Does my data ever leave Nepal?",

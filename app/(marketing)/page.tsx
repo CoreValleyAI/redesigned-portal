@@ -6,8 +6,8 @@ import { GpuCompare } from "@/components/marketing/gpu-compare";
 import { QuoteLock } from "@/components/marketing/quote-lock";
 import { CountUp } from "@/components/fx/count-up";
 import { Reveal, RevealGroup } from "@/components/fx/reveal";
+import { GPU_SKUS } from "@/lib/catalog";
 import {
-  AVAILABLE_GPUS,
   EARLY_ACCESS,
   FACTS,
   SOON_GPUS,
@@ -19,7 +19,7 @@ export const metadata = pageMetadata({
   title: "CoreValley — Nepal's GPU cloud: NVIDIA H200 in Kathmandu",
   absoluteTitle: true,
   description:
-    "Nepal's GPU cloud: NVIDIA H200s available now for enterprise early access. Hydro-powered, under 5 ms latency in Kathmandu, billed in NPR, data kept in Nepal.",
+    "Nepal's GPU cloud: NVIDIA H200s coming soon for enterprise early access. Hydro-powered, under 5 ms latency in Kathmandu, billed in NPR, data kept in Nepal.",
   path: "/",
 });
 
@@ -29,7 +29,7 @@ const BASE = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
    Every claim is a number, a component name, or a thing a customer can
    check. Status, latency and power all come from lib/availability.ts. */
 
-const GPU = AVAILABLE_GPUS[0]!;
+const GPU = GPU_SKUS[0]!;
 
 const HERO_STATS = [
   {
@@ -121,7 +121,7 @@ const HOW: { title: string; when: string; body: string }[] = [
   {
     title: "Launch on H200",
     when: "billed by the second",
-    body: "Start on a slice or on whole cards. The meter starts when your job runs and stops the moment you stop it.",
+    body: "When capacity opens, start on a slice or on whole cards. The meter starts when your job runs and stops the moment you stop it.",
   },
 ];
 
@@ -129,7 +129,7 @@ const textLink =
   "group inline-flex items-center gap-2 text-[14px] font-medium text-ink-400 transition-colors duration-300 hover:text-ink-100";
 
 export default function HomePage() {
-  const soon = SOON_GPUS.filter((s) => !s.id.startsWith("rtx-pro-6000"));
+  const soon = SOON_GPUS.filter((s) => !s.id.startsWith("rtx-pro-6000") && !s.id.startsWith("h200"));
 
   return (
     <>
@@ -155,7 +155,7 @@ export default function HomePage() {
                 <h1 className="display text-[clamp(3.25rem,8vw,8rem)] !leading-[0.95] text-white">
                   The valley
                   <br />
-                  is <span className="text-hydro">online.</span>
+                  is <span className="text-hydro">coming online.</span>
                 </h1>
               </Reveal>
 
@@ -287,7 +287,7 @@ export default function HomePage() {
                   </p>
                   <p className="flex items-center gap-2 text-[12.5px] text-white/60">
                     <span aria-hidden="true" className="h-px w-5 bg-hydro" />
-                    Available now
+                    Coming soon
                   </p>
                 </div>
                 <p className="mt-4 flex items-baseline gap-2.5">
@@ -517,11 +517,11 @@ export default function HomePage() {
                 <div>
                   <p className="label !text-white/50">Early access</p>
                   <h3 className="display mt-4 max-w-[18ch] text-3xl text-white md:text-4xl">
-                    H200s are available now for enterprises.
+                    H200s are coming soon.
                   </h3>
                   <p className="mt-4 max-w-[44ch] text-[15px] leading-relaxed text-white/55">
-                    More GPUs, and access for more teams, are coming soon. Tell
-                    us what you want to run.
+                    Join the enterprise early-access list and we&rsquo;ll tell
+                    you first. Tell us what you want to run.
                   </p>
                 </div>
                 <div className="mt-8 flex flex-wrap items-center gap-3">
@@ -551,18 +551,18 @@ export default function HomePage() {
             </Reveal>
             <Reveal delay={80}>
               <h2 className="display mt-5 text-4xl text-zinc-900 md:text-5xl">
-                The H200 today.{" "}
+                The H200 first.{" "}
                 <span className="text-zinc-400">Blackwell next.</span>
               </h2>
             </Reveal>
             <Reveal delay={160}>
               <p className="mt-6 text-[1.0625rem] leading-relaxed font-light text-zinc-500">
                 <span className="font-medium text-zinc-900">
-                  Available now:
+                  Coming first:
                 </span>{" "}
                 the NVIDIA H200 — 141 GB on one card, built for training and
                 serving the largest models.{" "}
-                <span className="font-medium text-zinc-900">Coming soon:</span>{" "}
+                <span className="font-medium text-zinc-900">Then:</span>{" "}
                 the RTX PRO 6000 Blackwell for fast, affordable inference and
                 visual AI.
               </p>

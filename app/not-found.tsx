@@ -23,7 +23,7 @@ const EXITS: { href: string; label: string; meta: string; icon: IconName }[] = [
   { href: "/products", label: "Products", meta: "reserved · on-demand · inferencing", icon: "slice" },
   { href: "/pricing", label: "Pricing", meta: "billed per second, in rupees", icon: "cost" },
   { href: docsHref(), label: "Documentation", meta: "guides · platform · billing", icon: "docs" },
-  { href: "/contact", label: "Get early access", meta: "h200 available now", icon: "send" },
+  { href: "/contact", label: "Get early access", meta: "h200 coming soon", icon: "send" },
 ];
 
 export default function NotFound() {

@@ -79,7 +79,7 @@ export const PRODUCTS: ProductDef[] = [
       { prompt: "$", text: "" },
     ],
     specs: [
-      { label: "GPU", value: "H200 · available now" },
+      { label: "GPU", value: "H200 · coming soon" },
       { label: "Sizes", value: "4 or 8 GPUs per server" },
       { label: "Form", value: "bare metal · KVM VM" },
       { label: "Terms", value: "monthly · 6 · 12 · 36 months" },
@@ -136,7 +136,7 @@ export const PRODUCTS: ProductDef[] = [
       { prompt: "$", text: "" },
     ],
     specs: [
-      { label: "GPU", value: "H200 · 141 GB · available now" },
+      { label: "GPU", value: "H200 · 141 GB · coming soon" },
       { label: "Coming soon", value: "RTX PRO 6000 · 96 GB" },
       { label: "Sizes", value: "1x · 8x NVLink" },
       { label: "Billing", value: "per second, 60 s minimum" },
@@ -251,7 +251,7 @@ export const PRODUCTS: ProductDef[] = [
       { prompt: "$", text: "" },
     ],
     specs: [
-      { label: "GPU", value: "H200 · available now" },
+      { label: "GPU", value: "H200 · coming soon" },
       { label: "MIG slices", value: "1g.18gb · 2g.35gb · 3g.71gb · 7g" },
       { label: "Shared slices", value: "HAMi · not fault-isolated" },
       { label: "Billing", value: "per second, 60 s minimum" },

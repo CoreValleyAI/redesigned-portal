@@ -19,7 +19,7 @@
  * the scroll path, so a swipe always scrolls, and a tap on a chevron turns.
  *
  * SCREEN. Rates are not published yet, so there is no price here: the
- * screen states the plan, its status (H200 is available now; the rest of the
+ * screen states the plan, its status (every GPU is coming soon for now; the
  * roadmap is "coming soon", read from the catalogue), what comes back, and
  * the button. The button carries the plan to /contact, where the form reads
  * it back (components/marketing/quote-plan.ts is the shared vocabulary).
@@ -493,7 +493,7 @@ export function QuoteLock({ className }: { className?: string }) {
               <dt className="console__key">you get</dt>
               <dd className="console__val">
                 {gpu.soon
-                  ? "First word when it lands, plus an H200 plan if it fits"
+                  ? "First word when it lands, with a capacity plan and a firm NPR quote"
                   : "A capacity plan and a firm NPR quote"}
               </dd>
             </div>

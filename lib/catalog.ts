@@ -56,7 +56,7 @@ export const GPU_SKUS: GpuSku[] = [
     bandwidth: "4.8 TB/s",
     fp8Tflops: 3958,
     bestFor: "Large-model training and long-context inference",
-    status: "available",
+    status: "coming-soon",
     migCapable: true,
   },
   {

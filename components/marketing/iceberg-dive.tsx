@@ -138,11 +138,11 @@ export function IcebergDive() {
             <p className="ib-cap__eyebrow">What you see</p>
             <h2 className="ib-cap__title">The GPU.</h2>
             <p className="ib-cap__body">
-              An NVIDIA H200 with 141 GB of memory, available now and billed
+              An NVIDIA H200 with 141 GB of memory, coming soon and billed
               by the second in rupees. It&apos;s the part everyone compares,
               and the smallest part of the job.
             </p>
-            <p className="ib-cap__tags">h200 · available now — rtx pro 6000 blackwell · coming soon</p>
+            <p className="ib-cap__tags">h200 · rtx pro 6000 blackwell · coming soon</p>
           </section>
 
           <section className="ib-cap">
@@ -177,7 +177,7 @@ export function IcebergDive() {
             </h2>
             <p className="ib-cap__body">
               We run all nine layers in Kathmandu, so you only think about
-              your model. H200s are available now through enterprise early
+              your model. H200s are coming soon through enterprise early
               access.
             </p>
             <div className="ib-ctas">

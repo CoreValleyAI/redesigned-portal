@@ -5,7 +5,7 @@
  *
  * The two share little beyond MIG partitioning and PCIe Gen5, so each card
  * carries its own full profile:
- *   · STATUS     a pill read from the catalogue: the H200 is available now,
+ *   · STATUS     a pill read from the catalogue: "available now" or
  *                the RTX PRO 6000 is coming soon. Never hardcoded here.
  *   · MEMORY     capacity counting up, drawn as HBM stacks (H200) or the
  *                GDDR7 bus channels (RTX PRO 6000) around the die.

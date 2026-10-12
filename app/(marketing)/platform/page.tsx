@@ -6,7 +6,7 @@ import { pageMetadata } from "@/lib/seo";
 
 const TITLE = "The Platform Under the GPU — Networking, Storage, Security, NPR Billing";
 const DESCRIPTION =
-  "You rent the GPU; CoreValley runs the rest. Nine layers under every NVIDIA H200 in Kathmandu, available now for enterprises (RTX PRO 6000 Blackwell coming soon): networking, storage, hydropower and cooling, scheduling, monitoring, security, data residency, NPR billing and local support.";
+  "You rent the GPU; CoreValley runs the rest. Nine layers under every NVIDIA H200 in Kathmandu, coming soon for enterprises (RTX PRO 6000 Blackwell after it): networking, storage, hydropower and cooling, scheduling, monitoring, security, data residency, NPR billing and local support.";
 
 export const metadata = pageMetadata({ title: TITLE, description: DESCRIPTION, path: "/platform" });
 

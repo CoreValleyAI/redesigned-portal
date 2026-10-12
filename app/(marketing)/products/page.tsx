@@ -3,7 +3,7 @@ import { Badge, ButtonLink, Card, Icon } from "@/components/ui";
 import { PageHero, Section } from "@/components/marketing/page-hero";
 import { PRODUCTS, type ProductDef } from "@/lib/products";
 import { GPU_SKUS } from "@/lib/catalog";
-import { AVAILABLE_GPUS, EARLY_ACCESS, SOON_GPUS, statusLabel } from "@/lib/availability";
+import { EARLY_ACCESS, SOON_GPUS, statusLabel } from "@/lib/availability";
 import { RevealGroup } from "@/components/fx/reveal";
 import { pageMetadata } from "@/lib/seo";
 import type { GpuSku } from "@/lib/api/types";
@@ -16,7 +16,6 @@ export const metadata = pageMetadata({
 });
 
 const list = new Intl.ListFormat("en-GB", { style: "long", type: "conjunction" });
-const NOW = list.format(AVAILABLE_GPUS.map((s) => s.name));
 const SOON = list.format(SOON_GPUS.map((s) => s.name.replace(/^NVIDIA /, "")));
 
 const COMPARE_COLUMNS: { key: keyof ProductDef["compare"]; label: string }[] = [
@@ -178,7 +177,7 @@ export default function ProductsPage() {
         id="hardware"
         eyebrow="Hardware"
         title="What it all runs on."
-        lead={`${NOW} today. ${SOON} coming soon.`}
+        lead={`${SOON} — all coming soon.`}
       >
         {/* Phones: a card per GPU, so nothing scrolls sideways. */}
         <ul className="flex flex-col gap-3 md:hidden">

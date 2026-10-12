@@ -45,8 +45,8 @@ const DETAILS: { icon: IconName; title: string; body: React.ReactNode }[] = [
 
 const FAQ = [
   {
-    q: "Who can get access today?",
-    a: "Enterprises, on NVIDIA H200. The RTX PRO 6000 Blackwell is coming soon, and so is access for more teams. Ask now and we will tell you first.",
+    q: "When can I get access?",
+    a: "The NVIDIA H200 is coming soon, with the RTX PRO 6000 Blackwell after it. Enterprises can join the early-access list now, and we will tell you first when capacity opens.",
   },
   {
     q: "What should I include?",
@@ -54,7 +54,7 @@ const FAQ = [
   },
   {
     q: "How quickly will I hear back?",
-    a: "Within one working day, with a capacity plan and a firm price in NPR. Once you accept it and your account is set up, you launch on H200 and pay by the second.",
+    a: "Within one working day, with a capacity plan and a firm price in NPR. When H200 capacity opens and your account is set up, you launch and pay by the second.",
   },
   {
     q: "Do you support universities?",
