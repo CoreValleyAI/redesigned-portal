@@ -1,0 +1,54 @@
+[
+  {
+    "alt": "Rows of server racks in a datacenter",
+    "caption": "SAMPLE image",
+    "focalX": 50,
+    "focalY": 50,
+    "height": 720,
+    "id": 1,
+    "sizes": {
+      "card": {
+        "file": "files/1-card.webp",
+        "height": 576,
+        "width": 960
+      },
+      "original": {
+        "file": "files/1-original.webp",
+        "height": 720,
+        "width": 1200
+      },
+      "thumb": {
+        "file": "files/1-thumb.webp",
+        "height": 288,
+        "width": 480
+      }
+    },
+    "width": 1200
+  },
+  {
+    "alt": "Close-up of a GPU fan",
+    "caption": "SAMPLE image",
+    "focalX": 50,
+    "focalY": 50,
+    "height": 1500,
+    "id": 2,
+    "sizes": {
+      "card": {
+        "file": "files/2-card.webp",
+        "height": 1200,
+        "width": 960
+      },
+      "original": {
+        "file": "files/2-original.webp",
+        "height": 1500,
+        "width": 1200
+      },
+      "thumb": {
+        "file": "files/2-thumb.webp",
+        "height": 600,
+        "width": 480
+      }
+    },
+    "width": 1200
+  }
+]

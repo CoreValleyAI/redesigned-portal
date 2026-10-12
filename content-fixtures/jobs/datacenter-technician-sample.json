@@ -1,0 +1,27 @@
+{
+  "applyMode": "form",
+  "body": null,
+  "closesAt": "2026-11-11T17:14:00Z",
+  "employmentType": "full-time",
+  "featured": false,
+  "id": 3,
+  "locations": [
+    1,
+    2
+  ],
+  "niceToHave": [],
+  "postedAt": "2026-10-12T17:14:00Z",
+  "requirements": [
+    "Hands-on server hardware experience"
+  ],
+  "responsibilities": [
+    "Rack, cable and replace hardware",
+    "Run maintenance on power and cooling"
+  ],
+  "slug": "datacenter-technician-sample",
+  "summary": "SAMPLE ROLE. Keep the racks, power and cooling of our Kathmandu datacenter in shape.",
+  "team": 2,
+  "title": "Datacenter Technician (SAMPLE)",
+  "updatedAt": "2026-10-12T17:14:00Z",
+  "workMode": "onsite"
+}

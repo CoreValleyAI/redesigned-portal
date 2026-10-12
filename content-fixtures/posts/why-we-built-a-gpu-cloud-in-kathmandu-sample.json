@@ -1,0 +1,105 @@
+{
+  "authors": [
+    1
+  ],
+  "body": {
+    "root": {
+      "children": [
+        {
+          "children": [
+            {
+              "detail": 0,
+              "format": 0,
+              "mode": "normal",
+              "style": "",
+              "text": "SAMPLE POST — replace before launch.",
+              "type": "text",
+              "version": 1
+            }
+          ],
+          "direction": "ltr",
+          "format": "",
+          "indent": 0,
+          "textFormat": 0,
+          "type": "paragraph",
+          "version": 1
+        },
+        {
+          "children": [
+            {
+              "detail": 0,
+              "format": 0,
+              "mode": "normal",
+              "style": "",
+              "text": "Data stays in Nepal",
+              "type": "text",
+              "version": 1
+            }
+          ],
+          "direction": "ltr",
+          "format": "",
+          "indent": 0,
+          "tag": "h2",
+          "type": "heading",
+          "version": 1
+        },
+        {
+          "children": [
+            {
+              "detail": 0,
+              "format": 0,
+              "mode": "normal",
+              "style": "",
+              "text": "Everything runs in our Kathmandu region.",
+              "type": "text",
+              "version": 1
+            }
+          ],
+          "direction": "ltr",
+          "format": "",
+          "indent": 0,
+          "textFormat": 0,
+          "type": "paragraph",
+          "version": 1
+        },
+        {
+          "fields": {
+            "blockName": "",
+            "blockType": "cta",
+            "body": "Tell us what you want to run.",
+            "heading": "Run your model here",
+            "href": "/contact/",
+            "id": "e97dd1a0e15a",
+            "label": "Get early access"
+          },
+          "format": "",
+          "type": "block",
+          "version": 2
+        }
+      ],
+      "direction": "ltr",
+      "format": "",
+      "indent": 0,
+      "type": "root",
+      "version": 1
+    }
+  },
+  "category": 2,
+  "cover": 1,
+  "excerpt": "SAMPLE POST. Data residency, rupee billing and hydropower.",
+  "featured": false,
+  "id": 13,
+  "publishAt": "2026-10-12T17:15:51Z",
+  "relatedPosts": [
+    1
+  ],
+  "seo": {
+    "noindex": false
+  },
+  "slug": "why-we-built-a-gpu-cloud-in-kathmandu-sample",
+  "tags": [
+    1
+  ],
+  "title": "Why we built a GPU cloud in Kathmandu (SAMPLE)",
+  "updatedAt": "2026-10-12T17:15:51Z"
+}

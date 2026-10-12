@@ -1,0 +1,302 @@
+{
+  "authors": [
+    1
+  ],
+  "body": {
+    "root": {
+      "children": [
+        {
+          "children": [
+            {
+              "detail": 0,
+              "format": 0,
+              "mode": "normal",
+              "style": "",
+              "text": "SAMPLE POST — replace before launch. An H200 has 141 GB of memory. Most jobs need a fraction of that.",
+              "type": "text",
+              "version": 1
+            }
+          ],
+          "direction": "ltr",
+          "format": "",
+          "indent": 0,
+          "textFormat": 0,
+          "type": "paragraph",
+          "version": 1
+        },
+        {
+          "children": [
+            {
+              "detail": 0,
+              "format": 0,
+              "mode": "normal",
+              "style": "",
+              "text": "What MIG does",
+              "type": "text",
+              "version": 1
+            }
+          ],
+          "direction": "ltr",
+          "format": "",
+          "indent": 0,
+          "tag": "h2",
+          "type": "heading",
+          "version": 1
+        },
+        {
+          "children": [
+            {
+              "detail": 0,
+              "format": 0,
+              "mode": "normal",
+              "style": "",
+              "text": "Multi-Instance GPU splits one card into isolated parts, each with its own memory and compute. Read more in the ",
+              "type": "text",
+              "version": 1
+            },
+            {
+              "children": [
+                {
+                  "detail": 0,
+                  "format": 0,
+                  "mode": "normal",
+                  "style": "",
+                  "text": "NVIDIA guide",
+                  "type": "text",
+                  "version": 1
+                }
+              ],
+              "direction": "ltr",
+              "fields": {
+                "linkType": "custom",
+                "newTab": false,
+                "url": "https://docs.nvidia.com/datacenter/tesla/mig-user-guide/"
+              },
+              "format": "",
+              "indent": 0,
+              "type": "link",
+              "version": 3
+            },
+            {
+              "detail": 0,
+              "format": 0,
+              "mode": "normal",
+              "style": "",
+              "text": ".",
+              "type": "text",
+              "version": 1
+            }
+          ],
+          "direction": "ltr",
+          "format": "",
+          "indent": 0,
+          "textFormat": 0,
+          "type": "paragraph",
+          "version": 1
+        },
+        {
+          "children": [
+            {
+              "children": [
+                {
+                  "detail": 0,
+                  "format": 0,
+                  "mode": "normal",
+                  "style": "",
+                  "text": "Up to seven instances per card",
+                  "type": "text",
+                  "version": 1
+                }
+              ],
+              "direction": "ltr",
+              "format": "",
+              "indent": 0,
+              "type": "listitem",
+              "value": 1,
+              "version": 1
+            },
+            {
+              "children": [
+                {
+                  "detail": 0,
+                  "format": 0,
+                  "mode": "normal",
+                  "style": "",
+                  "text": "Faults stay inside one instance",
+                  "type": "text",
+                  "version": 1
+                }
+              ],
+              "direction": "ltr",
+              "format": "",
+              "indent": 0,
+              "type": "listitem",
+              "value": 2,
+              "version": 1
+            },
+            {
+              "children": [
+                {
+                  "detail": 0,
+                  "format": 0,
+                  "mode": "normal",
+                  "style": "",
+                  "text": "Billed per second",
+                  "type": "text",
+                  "version": 1
+                }
+              ],
+              "direction": "ltr",
+              "format": "",
+              "indent": 0,
+              "type": "listitem",
+              "value": 3,
+              "version": 1
+            }
+          ],
+          "direction": "ltr",
+          "format": "",
+          "indent": 0,
+          "listType": "bullet",
+          "start": 1,
+          "tag": "ul",
+          "type": "list",
+          "version": 1
+        },
+        {
+          "fields": {
+            "blockName": "",
+            "blockType": "callout",
+            "body": "Pick a 2g.35gb slice for most 7B fine-tunes.",
+            "id": "42c2de73f991",
+            "title": "Try it",
+            "tone": "tip"
+          },
+          "format": "",
+          "type": "block",
+          "version": 2
+        },
+        {
+          "children": [
+            {
+              "detail": 0,
+              "format": 0,
+              "mode": "normal",
+              "style": "",
+              "text": "Launching a slice",
+              "type": "text",
+              "version": 1
+            }
+          ],
+          "direction": "ltr",
+          "format": "",
+          "indent": 0,
+          "tag": "h3",
+          "type": "heading",
+          "version": 1
+        },
+        {
+          "fields": {
+            "blockName": "",
+            "blockType": "code",
+            "code": "corevalley pods launch --gpu h200 --slice 2g.35gb",
+            "filename": "launch.sh",
+            "id": "01af12e96bf3",
+            "language": "bash"
+          },
+          "format": "",
+          "type": "block",
+          "version": 2
+        },
+        {
+          "fields": {
+            "caption": "Our racks in Kathmandu (SAMPLE)"
+          },
+          "relationTo": "media",
+          "type": "upload",
+          "value": 1,
+          "version": 3
+        },
+        {
+          "children": [
+            {
+              "detail": 0,
+              "format": 0,
+              "mode": "normal",
+              "style": "",
+              "text": "Isolation in hardware is what lets us share a card safely.",
+              "type": "text",
+              "version": 1
+            }
+          ],
+          "direction": "ltr",
+          "format": "",
+          "indent": 0,
+          "type": "quote",
+          "version": 1
+        },
+        {
+          "children": [
+            {
+              "detail": 0,
+              "format": 0,
+              "mode": "normal",
+              "style": "",
+              "text": "What it costs",
+              "type": "text",
+              "version": 1
+            }
+          ],
+          "direction": "ltr",
+          "format": "",
+          "indent": 0,
+          "tag": "h2",
+          "type": "heading",
+          "version": 1
+        },
+        {
+          "children": [
+            {
+              "detail": 0,
+              "format": 0,
+              "mode": "normal",
+              "style": "",
+              "text": "You pay for the slice, not the card.",
+              "type": "text",
+              "version": 1
+            }
+          ],
+          "direction": "ltr",
+          "format": "",
+          "indent": 0,
+          "textFormat": 0,
+          "type": "paragraph",
+          "version": 1
+        }
+      ],
+      "direction": "ltr",
+      "format": "",
+      "indent": 0,
+      "type": "root",
+      "version": 1
+    }
+  },
+  "category": 1,
+  "cover": 2,
+  "excerpt": "SAMPLE POST. What NVIDIA MIG does, why we use it, and what it means for your bill.",
+  "featured": true,
+  "featuredRank": 1,
+  "id": 1,
+  "publishAt": "2026-10-12T17:14:01Z",
+  "relatedPosts": [],
+  "seo": {
+    "noindex": false
+  },
+  "slug": "how-we-slice-an-h200-into-seven-gpus-sample",
+  "tags": [
+    1,
+    2
+  ],
+  "title": "How we slice an H200 into seven GPUs (SAMPLE)",
+  "updatedAt": "2026-10-12T17:14:01Z"
+}

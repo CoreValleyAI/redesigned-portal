@@ -1,0 +1,12 @@
+[
+  {
+    "id": 1,
+    "name": "GPUs",
+    "slug": "gpus"
+  },
+  {
+    "id": 2,
+    "name": "Kubernetes",
+    "slug": "kubernetes"
+  }
+]

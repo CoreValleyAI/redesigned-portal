@@ -119,3 +119,106 @@ export function serviceJsonLd(opts: {
     audience: { "@type": "Audience", audienceType: opts.audience },
   };
 }
+
+const EMPLOYMENT_TYPE: Record<string, string> = {
+  "full-time": "FULL_TIME",
+  "part-time": "PART_TIME",
+  contract: "CONTRACTOR",
+  internship: "INTERN",
+};
+
+/**
+ * A job listing, for Google's job search. Only for open roles: a closed role
+ * keeps its page but drops this markup. `TELECOMMUTE` only when the role is
+ * fully remote, with the country applicants must be in.
+ */
+export function jobPostingJsonLd(opts: {
+  path: string;
+  title: string;
+  descriptionHtml: string;
+  datePosted: string;
+  validThrough: string | null;
+  employmentType: string;
+  remote: boolean;
+  locations: { city: string; region?: string; country: string }[];
+  team?: string;
+}): Graph {
+  const places = opts.locations.length ? opts.locations : [{ city: ORG.locality, region: ORG.region, country: ORG.country }];
+  return {
+    "@type": "JobPosting",
+    "@id": `${absoluteUrl(opts.path)}#job`,
+    title: opts.title,
+    description: opts.descriptionHtml,
+    datePosted: opts.datePosted,
+    ...(opts.validThrough ? { validThrough: opts.validThrough } : {}),
+    employmentType: EMPLOYMENT_TYPE[opts.employmentType] ?? "OTHER",
+    hiringOrganization: {
+      "@type": "Organization",
+      "@id": `${SITE_URL}/#organization`,
+      name: ORG.name,
+      sameAs: `${SITE_URL}/`,
+      logo: logoUrl(),
+    },
+    jobLocation: places.map((l) => ({
+      "@type": "Place",
+      address: {
+        "@type": "PostalAddress",
+        addressLocality: l.city,
+        ...(l.region ? { addressRegion: l.region } : {}),
+        addressCountry: l.country,
+      },
+    })),
+    ...(opts.remote
+      ? {
+          jobLocationType: "TELECOMMUTE",
+          applicantLocationRequirements: { "@type": "Country", name: ORG.countryName },
+        }
+      : {}),
+    ...(opts.team ? { occupationalCategory: opts.team } : {}),
+    directApply: true,
+    url: absoluteUrl(opts.path),
+  };
+}
+
+export function personJsonLd(opts: { path: string; name: string; jobTitle?: string; sameAs?: string[] }): Graph {
+  return {
+    "@type": "Person",
+    "@id": `${absoluteUrl(opts.path)}#person`,
+    name: opts.name,
+    url: absoluteUrl(opts.path),
+    ...(opts.jobTitle ? { jobTitle: opts.jobTitle } : {}),
+    ...(opts.sameAs?.length ? { sameAs: opts.sameAs } : {}),
+    worksFor: { "@id": `${SITE_URL}/#organization` },
+  };
+}
+
+export function blogPostingJsonLd(opts: {
+  path: string;
+  title: string;
+  description: string;
+  datePublished: string;
+  dateModified: string;
+  image?: string;
+  authors: { name: string; path: string }[];
+  section?: string;
+  keywords?: string[];
+  wordCount?: number;
+}): Graph {
+  return {
+    "@type": "BlogPosting",
+    "@id": `${absoluteUrl(opts.path)}#article`,
+    headline: opts.title,
+    description: opts.description,
+    datePublished: opts.datePublished,
+    dateModified: opts.dateModified,
+    ...(opts.image ? { image: [opts.image] } : {}),
+    author: opts.authors.map((a) => ({ "@type": "Person", name: a.name, url: absoluteUrl(a.path) })),
+    publisher: { "@id": `${SITE_URL}/#organization` },
+    mainEntityOfPage: { "@type": "WebPage", "@id": absoluteUrl(opts.path) },
+    ...(opts.section ? { articleSection: opts.section } : {}),
+    ...(opts.keywords?.length ? { keywords: opts.keywords.join(", ") } : {}),
+    ...(opts.wordCount ? { wordCount: opts.wordCount } : {}),
+    inLanguage: "en",
+    isPartOf: { "@id": `${SITE_URL}/#website` },
+  };
+}

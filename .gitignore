@@ -51,3 +51,8 @@ skills-lock.json
 .aider*
 .continue/
 .codex/
+
+# Published content (a checkout of CoreValleyAI/content) and the images
+# prepare-content copies out of it. Never committed here.
+/content/
+/public/media/

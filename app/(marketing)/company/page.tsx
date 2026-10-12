@@ -7,6 +7,7 @@ import { pageMetadata } from "@/lib/seo";
 import { FaqList } from "@/components/marketing/faq-list";
 import { EARLY_ACCESS, FACTS } from "@/lib/availability";
 import { ORG } from "@/lib/site";
+import { openJobs } from "@/lib/content/jobs";
 import { PRODUCTS } from "@/lib/products";
 import type { IconName } from "@/components/ui";
 
@@ -106,6 +107,7 @@ const FAQ = [
 ];
 
 export default function CompanyPage() {
+  const openRoles = openJobs().length;
   return (
     <>
       <JsonLd
@@ -318,15 +320,13 @@ export default function CompanyPage() {
             <div>
               <dt className="cv-label text-[10px]">Careers</dt>
               <dd className="mt-3">
-                <a
-                  href="https://www.linkedin.com/company/corevalleyai/jobs/"
-                  target="_blank"
-                  rel="noreferrer noopener"
+                <Link
+                  href="/jobs/"
                   className="inline-flex items-center gap-1.5 text-hydro underline decoration-hydro/40 underline-offset-4 transition-colors duration-normal hover:text-hydro-300"
                 >
-                  Open roles
-                  <Icon name="external" size={13} className="text-ink-500" />
-                </a>
+                  {openRoles ? `${openRoles} open ${openRoles === 1 ? "role" : "roles"}` : "Careers"}
+                  <Icon name="arrow-right" size={13} className="text-ink-500" />
+                </Link>
               </dd>
               <dd className="mt-1 font-mono text-xs text-ink-500">
                 hiring in kathmandu

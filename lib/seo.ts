@@ -28,25 +28,50 @@ export function pageMetadata(opts: {
   /** Absolute canonical to use instead of the page's own URL (e.g. the docs
       host once the documentation lives there). */
   canonical?: string;
+  /** A page-specific share image (absolute URL), e.g. a blog post's cover. */
+  image?: { url: string; width: number; height: number; alt: string };
+  /** Articles (blog posts) carry dates and authors in Open Graph. */
+  article?: { publishedTime: string; modifiedTime: string; authors: string[]; section?: string; tags?: string[] };
+  /** Extra <link rel="alternate"> feeds, e.g. the blog's RSS. */
+  feeds?: { url: string; title: string }[];
 }): Metadata {
   const url = opts.canonical ?? absoluteUrl(opts.path);
   const ogTitle = opts.absoluteTitle ? opts.title : `${opts.title} · ${SITE_NAME}`;
+  const image = opts.image ?? SOCIAL_IMAGE;
   return {
     title: opts.absoluteTitle ? { absolute: opts.title } : opts.title,
     description: opts.description,
-    alternates: { canonical: url },
-    openGraph: {
-      type: "website",
-      url,
-      title: ogTitle,
-      description: opts.description,
-      images: [SOCIAL_IMAGE],
+    alternates: {
+      canonical: url,
+      ...(opts.feeds?.length
+        ? { types: { "application/rss+xml": opts.feeds.map((f) => ({ url: f.url, title: f.title })) } }
+        : {}),
     },
+    openGraph: opts.article
+      ? {
+          type: "article",
+          url,
+          title: ogTitle,
+          description: opts.description,
+          images: [image],
+          publishedTime: opts.article.publishedTime,
+          modifiedTime: opts.article.modifiedTime,
+          authors: opts.article.authors,
+          section: opts.article.section,
+          tags: opts.article.tags,
+        }
+      : {
+          type: "website",
+          url,
+          title: ogTitle,
+          description: opts.description,
+          images: [image],
+        },
     twitter: {
       card: "summary_large_image",
       title: ogTitle,
       description: opts.description,
-      images: [SOCIAL_IMAGE.url],
+      images: [image.url],
     },
     ...(opts.noindex || NOINDEX ? { robots: { index: false, follow: false } } : {}),
   };

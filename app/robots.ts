@@ -14,7 +14,7 @@ export default function robots(): MetadataRoute.Robots {
       {
         userAgent: "*",
         allow: "/",
-        disallow: ["/portal/", "/portal"],
+        disallow: ["/portal/", "/portal", "/cms-preview/"],
       },
     ],
     sitemap: absoluteUrl("/sitemap.xml"),

@@ -29,6 +29,8 @@ const NAV = [
   { href: siteHref("/platform"), label: "Platform" },
   { href: siteHref("/use-cases"), label: "Use cases" },
   { href: docsHref(), label: "Docs" },
+  { href: siteHref("/blog"), label: "Blog" },
+  { href: siteHref("/jobs"), label: "Careers" },
   { href: siteHref("/company"), label: "Company" },
   { href: STATUS_URL, label: "Status", external: true },
 ] as const;
@@ -104,7 +106,7 @@ export function SiteHeader() {
             <LogoLockup size={17} className="hidden md:inline-flex" />
           </Link>
 
-          <nav aria-label="Main" className="mx-auto hidden items-center gap-0.5 lg:flex">
+          <nav aria-label="Main" className="mx-auto hidden items-center gap-0.5 xl:flex">
             {VISIBLE_NAV.map((item) => {
               if (isExternal(item)) {
                 return (
@@ -134,7 +136,7 @@ export function SiteHeader() {
             })}
           </nav>
 
-          <div className="ml-auto flex items-center gap-1 lg:ml-0">
+          <div className="ml-auto flex items-center gap-1 xl:ml-0">
             <ButtonLink
               href={siteHref("/contact")}
               variant="primary"
@@ -153,7 +155,7 @@ export function SiteHeader() {
               aria-expanded={drawerOpen}
               aria-controls="site-drawer"
               onClick={() => setDrawerOpen((v) => !v)}
-              className="inline-flex size-10 items-center justify-center rounded-full text-white/80 transition-colors duration-300 hover:bg-white/10 hover:text-white lg:hidden"
+              className="inline-flex size-10 items-center justify-center rounded-full text-white/80 transition-colors duration-300 hover:bg-white/10 hover:text-white xl:hidden"
             >
               <Icon name={drawerOpen ? "x" : "menu"} size={20} />
             </button>
@@ -164,7 +166,7 @@ export function SiteHeader() {
           id="site-drawer"
           inert={!drawerOpen}
           className={cn(
-            "pointer-events-auto mt-2 grid transition-[grid-template-rows,opacity] duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] lg:hidden",
+            "pointer-events-auto mt-2 grid transition-[grid-template-rows,opacity] duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] xl:hidden",
             drawerOpen ? "grid-rows-[1fr] opacity-100" : "pointer-events-none grid-rows-[0fr] opacity-0",
           )}
         >

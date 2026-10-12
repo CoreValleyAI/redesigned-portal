@@ -1,0 +1,29 @@
+[
+  {
+    "id": 1,
+    "name": "Platform Engineering",
+    "order": 10,
+    "slug": "platform-engineering"
+  },
+  {
+    "description": "Racks, power, cooling, networking and the GPU fleet in Kathmandu.",
+    "id": 2,
+    "name": "Infrastructure",
+    "order": 20,
+    "slug": "infrastructure"
+  },
+  {
+    "description": "Helping teams move workloads to CoreValley and run them well.",
+    "id": 3,
+    "name": "Customer Engineering",
+    "order": 30,
+    "slug": "customer-engineering"
+  },
+  {
+    "description": "Finance, people and everything that keeps the company running.",
+    "id": 4,
+    "name": "Operations",
+    "order": 40,
+    "slug": "operations"
+  }
+]

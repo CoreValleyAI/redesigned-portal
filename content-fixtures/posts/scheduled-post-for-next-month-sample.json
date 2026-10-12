@@ -1,0 +1,48 @@
+{
+  "authors": [
+    1
+  ],
+  "body": {
+    "root": {
+      "children": [
+        {
+          "children": [
+            {
+              "detail": 0,
+              "format": 0,
+              "mode": "normal",
+              "style": "",
+              "text": "SAMPLE scheduled post.",
+              "type": "text",
+              "version": 1
+            }
+          ],
+          "direction": "ltr",
+          "format": "",
+          "indent": 0,
+          "textFormat": 0,
+          "type": "paragraph",
+          "version": 1
+        }
+      ],
+      "direction": "ltr",
+      "format": "",
+      "indent": 0,
+      "type": "root",
+      "version": 1
+    }
+  },
+  "category": 1,
+  "excerpt": "SAMPLE POST that should not appear until its publish time.",
+  "featured": false,
+  "id": 14,
+  "publishAt": "2026-11-11T17:15:51Z",
+  "relatedPosts": [],
+  "seo": {
+    "noindex": false
+  },
+  "slug": "scheduled-post-for-next-month-sample",
+  "tags": [],
+  "title": "Scheduled post for next month (SAMPLE)",
+  "updatedAt": "2026-10-12T17:15:51Z"
+}

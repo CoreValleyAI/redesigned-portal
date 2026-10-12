@@ -1,0 +1,15 @@
+[
+  {
+    "description": "How we build CoreValley.",
+    "id": 1,
+    "name": "Engineering",
+    "order": 10,
+    "slug": "engineering"
+  },
+  {
+    "id": 2,
+    "name": "Company",
+    "order": 20,
+    "slug": "company"
+  }
+]

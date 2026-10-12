@@ -1,5 +1,7 @@
 import type { MetadataRoute } from "next";
 import { PRODUCTS } from "@/lib/products";
+import { GENERAL_APPLICATION, openJobs } from "@/lib/content/jobs";
+import { authorsInUse, blogIndex, categoriesInUse, livePosts } from "@/lib/content/posts";
 import { absoluteUrl } from "@/lib/site";
 
 /**
@@ -40,5 +42,24 @@ export default function sitemap(): MetadataRoute.Sitemap {
     ...LEGAL.map((slug) => entry(`/legal/${slug}`, 0.2, "yearly")),
   ];
 
-  return core;
+  /* Content from the CMS: open roles and live posts, dated by their last edit. */
+  const dated = (path: string, updated: string, priority: number): MetadataRoute.Sitemap[number] => ({
+    url: absoluteUrl(path),
+    lastModified: new Date(updated),
+    changeFrequency: "weekly",
+    priority,
+  });
+  const posts = livePosts();
+  const content = [
+    entry("/jobs", 0.8, "weekly"),
+    entry(`/jobs/${GENERAL_APPLICATION}`, 0.4),
+    ...openJobs().map((j) => dated(`/jobs/${j.slug}`, j.updatedAt, 0.7)),
+    entry("/blog", 0.7, "weekly"),
+    ...Array.from({ length: blogIndex(1).pages - 1 }, (_, i) => entry(`/blog/page/${i + 2}`, 0.3, "weekly")),
+    ...posts.filter((p) => !p.seo.noindex && !p.seo.canonical).map((p) => dated(`/blog/${p.slug}`, p.updatedAt, 0.6)),
+    ...categoriesInUse().map((c) => entry(`/blog/category/${c.slug}`, 0.4, "weekly")),
+    ...authorsInUse().map((a) => entry(`/blog/author/${a.slug}`, 0.3, "weekly")),
+  ];
+
+  return [...core, ...content];
 }

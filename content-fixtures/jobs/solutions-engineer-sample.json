@@ -1,0 +1,27 @@
+{
+  "applyMode": "form",
+  "body": null,
+  "closesAt": null,
+  "employmentType": "full-time",
+  "featured": false,
+  "id": 4,
+  "locations": [
+    1
+  ],
+  "niceToHave": [],
+  "postedAt": "2026-10-12T17:14:00Z",
+  "requirements": [
+    "Python and ML tooling",
+    "Clear writing in English and Nepali"
+  ],
+  "responsibilities": [
+    "Plan migrations with customers",
+    "Write guides and examples"
+  ],
+  "slug": "solutions-engineer-sample",
+  "summary": "SAMPLE ROLE. Help banks, universities and startups move their AI work to CoreValley.",
+  "team": 3,
+  "title": "Solutions Engineer (SAMPLE)",
+  "updatedAt": "2026-10-12T17:14:00Z",
+  "workMode": "remote"
+}

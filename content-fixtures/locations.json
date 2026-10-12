@@ -1,0 +1,20 @@
+[
+  {
+    "city": "Lalitpur",
+    "country": "NP",
+    "id": 2,
+    "name": "Lalitpur",
+    "order": 20,
+    "region": "Bagmati",
+    "slug": "lalitpur"
+  },
+  {
+    "city": "Kathmandu",
+    "country": "NP",
+    "id": 1,
+    "name": "Kathmandu",
+    "order": 100,
+    "region": "Bagmati",
+    "slug": "kathmandu"
+  }
+]

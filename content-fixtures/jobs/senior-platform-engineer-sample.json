@@ -1,0 +1,98 @@
+{
+  "applyMode": "form",
+  "body": {
+    "root": {
+      "children": [
+        {
+          "children": [
+            {
+              "detail": 0,
+              "format": 0,
+              "mode": "normal",
+              "style": "",
+              "text": "SAMPLE ROLE — replace before launch. You will own the services that turn a request for a GPU into a running container in seconds.",
+              "type": "text",
+              "version": 1
+            }
+          ],
+          "direction": "ltr",
+          "format": "",
+          "indent": 0,
+          "textFormat": 0,
+          "type": "paragraph",
+          "version": 1
+        },
+        {
+          "children": [
+            {
+              "detail": 0,
+              "format": 0,
+              "mode": "normal",
+              "style": "",
+              "text": "The team",
+              "type": "text",
+              "version": 1
+            }
+          ],
+          "direction": "ltr",
+          "format": "",
+          "indent": 0,
+          "tag": "h2",
+          "type": "heading",
+          "version": 1
+        },
+        {
+          "children": [
+            {
+              "detail": 0,
+              "format": 0,
+              "mode": "normal",
+              "style": "",
+              "text": "A small group that writes the control plane in TypeScript and Go, and runs it on Kubernetes in our own datacenter.",
+              "type": "text",
+              "version": 1
+            }
+          ],
+          "direction": "ltr",
+          "format": "",
+          "indent": 0,
+          "textFormat": 0,
+          "type": "paragraph",
+          "version": 1
+        }
+      ],
+      "direction": "ltr",
+      "format": "",
+      "indent": 0,
+      "type": "root",
+      "version": 1
+    }
+  },
+  "closesAt": null,
+  "employmentType": "full-time",
+  "featured": true,
+  "id": 2,
+  "locations": [
+    1
+  ],
+  "niceToHave": [
+    "Experience with NVIDIA MIG or GPU scheduling"
+  ],
+  "postedAt": "2026-10-12T17:14:00Z",
+  "requirements": [
+    "5+ years building production backend systems",
+    "Kubernetes and Linux in depth"
+  ],
+  "responsibilities": [
+    "Design and build scheduling and metering services",
+    "Own reliability for the public API",
+    "Work with customers to shape the platform"
+  ],
+  "seniority": "Senior",
+  "slug": "senior-platform-engineer-sample",
+  "summary": "SAMPLE ROLE. Build the scheduler and APIs that hand out H200 GPUs by the second.",
+  "team": 1,
+  "title": "Senior Platform Engineer (SAMPLE)",
+  "updatedAt": "2026-10-12T17:14:00Z",
+  "workMode": "hybrid"
+}

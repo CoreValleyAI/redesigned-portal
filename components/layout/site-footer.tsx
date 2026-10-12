@@ -37,11 +37,8 @@ const GROUPS = [
       { href: siteHref("/company"), label: "About CoreValley" },
       { href: siteHref("/contact"), label: "Contact" },
       ...(SHOW_STATUS ? [{ href: STATUS_URL, label: "System status", external: true }] : []),
-      {
-        href: "https://www.linkedin.com/company/corevalleyai/jobs/",
-        label: "Careers",
-        external: true,
-      },
+      { href: siteHref("/jobs"), label: "Careers" },
+      { href: siteHref("/blog"), label: "Blog" },
     ],
   },
 ] as const;

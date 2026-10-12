@@ -1,0 +1,28 @@
+{
+  "generatedAt": "2026-10-12T17:16:00Z",
+  "generator": "corevalley-cms@0.1.0",
+  "payload": "3.90.2",
+  "schedule": [
+    {
+      "from": null,
+      "path": "jobs/datacenter-technician-sample.json",
+      "until": "2026-11-11T17:14:00Z"
+    },
+    {
+      "from": "2026-10-12T17:14:01Z",
+      "path": "posts/how-we-slice-an-h200-into-seven-gpus-sample.json",
+      "until": null
+    },
+    {
+      "from": "2026-11-11T17:15:51Z",
+      "path": "posts/scheduled-post-for-next-month-sample.json",
+      "until": null
+    },
+    {
+      "from": "2026-10-12T17:15:51Z",
+      "path": "posts/why-we-built-a-gpu-cloud-in-kathmandu-sample.json",
+      "until": null
+    }
+  ],
+  "schemaVersion": 1
+}

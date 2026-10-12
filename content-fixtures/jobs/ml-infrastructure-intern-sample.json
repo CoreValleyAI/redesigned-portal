@@ -1,0 +1,25 @@
+{
+  "applyMode": "form",
+  "body": null,
+  "closesAt": null,
+  "employmentType": "internship",
+  "featured": false,
+  "id": 5,
+  "locations": [
+    1
+  ],
+  "niceToHave": [],
+  "postedAt": "2026-10-12T17:14:00Z",
+  "requirements": [
+    "Studying computer science or similar"
+  ],
+  "responsibilities": [
+    "Benchmark training workloads"
+  ],
+  "slug": "ml-infrastructure-intern-sample",
+  "summary": "SAMPLE ROLE. A six-month internship on the tools that run training jobs on our GPUs.",
+  "team": 1,
+  "title": "ML Infrastructure Intern (SAMPLE)",
+  "updatedAt": "2026-10-12T17:14:00Z",
+  "workMode": "onsite"
+}

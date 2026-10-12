@@ -1,0 +1,97 @@
+{
+  "generalApplication": {
+    "enabled": true,
+    "summary": "Don’t see your role? Tell us what you’d like to work on and send your CV.",
+    "title": "General application"
+  },
+  "hero": {
+    "eyebrow": "Careers",
+    "lead": "SAMPLE TEXT. We are a small team in Kathmandu building the country’s own GPU cloud. Come and build it with us.",
+    "title": "Build Nepal’s AI infrastructure."
+  },
+  "layout": [
+    {
+      "blockType": "valuesGrid",
+      "heading": "How we work",
+      "id": "6acd15c743c63c88301015c8",
+      "items": [
+        {
+          "body": "We publish what we actually run.",
+          "title": "Say what is true"
+        },
+        {
+          "body": "From racks to the API.",
+          "title": "Own the whole thing"
+        },
+        {
+          "body": "Rupees, local data, local support.",
+          "title": "Build for Nepal"
+        }
+      ]
+    },
+    {
+      "blockType": "benefitsList",
+      "heading": "What we offer",
+      "id": "6acd15c743c63c88301015cd",
+      "items": [
+        {
+          "title": "Competitive pay in NPR"
+        },
+        {
+          "title": "Health insurance"
+        },
+        {
+          "title": "GPU time for your own projects"
+        },
+        {
+          "title": "Learning budget"
+        }
+      ]
+    },
+    {
+      "blockType": "processSteps",
+      "heading": "How hiring works",
+      "id": "6acd15c743c63c88301015d2",
+      "steps": [
+        {
+          "body": "Send your CV and a short note.",
+          "duration": "5 minutes",
+          "title": "Apply"
+        },
+        {
+          "body": "A conversation about the role.",
+          "duration": "30 minutes",
+          "title": "Intro call"
+        },
+        {
+          "body": "Real problems, no puzzles.",
+          "duration": "1 hour",
+          "title": "Technical conversation"
+        },
+        {
+          "body": "We decide within a week.",
+          "title": "Offer"
+        }
+      ]
+    },
+    {
+      "blockType": "faq",
+      "heading": "Questions",
+      "id": "6acd15c743c63c88301015d5",
+      "items": [
+        {
+          "answer": "Some roles are remote within Nepal. Each listing says so.",
+          "question": "Do you hire outside Kathmandu?"
+        },
+        {
+          "answer": "Not at the moment.",
+          "question": "Do you sponsor visas?"
+        }
+      ]
+    }
+  ],
+  "seo": {
+    "noindex": false
+  },
+  "updatedAt": "2026-10-12T17:15:51Z"
+}

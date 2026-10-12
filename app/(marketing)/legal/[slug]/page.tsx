@@ -37,7 +37,7 @@ const PAGES: Record<string, LegalPage> = {
   privacy: {
     title: "Privacy",
     lead: "What CoreValley collects when you visit this website or use the platform, where it is kept, and who can see it.",
-    updated: "9 October 2026",
+    updated: "12 October 2026",
     sections: [
       {
         heading: "Who we are",
@@ -67,6 +67,13 @@ const PAGES: Record<string, LegalPage> = {
         ],
       },
       {
+        heading: "Job applications",
+        paragraphs: [
+          "When you apply for a role at corevalley.ai/jobs, the form sends what you enter — your name, email, phone number, where you are based, links you add, your CV and your note — together with the role you applied for. Like the contact form, it is delivered to our mailbox by FormSubmit (formsubmit.co), a third-party form service with servers outside Nepal, and it is held in our Zoho Mail inbox.",
+          "Only the people involved in hiring read applications. We keep an application for up to 12 months to consider you for that role and similar ones, then delete it, unless you join us. You can ask us to delete it sooner by writing to info@corevalley.ai.",
+        ],
+      },
+      {
         heading: "Customer accounts",
         paragraphs: [
           "If your organisation uses the platform, we hold two kinds of data, kept separate. Account data identifies your organisation: names, work email addresses, billing contacts, tax registration and payment references. Platform data is what your workloads produce: container images, datasets you upload, model checkpoints, logs and inference traffic.",
@@ -87,7 +94,7 @@ const PAGES: Record<string, LegalPage> = {
         ],
         bullets: [
           "GitHub Pages (United States): hosts the websites and sees visitors' IP addresses.",
-          "FormSubmit: delivers contact-form enquiries.",
+          "FormSubmit: delivers contact-form enquiries and job applications.",
           "Zoho Mail: hosts email for @corevalley.ai addresses.",
         ],
       },
@@ -174,7 +181,7 @@ const PAGES: Record<string, LegalPage> = {
   "data-residency": {
     title: "Data residency",
     lead: "The specific, checkable commitments behind the word sovereign.",
-    updated: "9 October 2026",
+    updated: "12 October 2026",
     sections: [
       {
         heading: "The commitment",
@@ -204,7 +211,7 @@ const PAGES: Record<string, LegalPage> = {
         ],
         bullets: [
           "This website, docs.corevalley.ai and status.corevalley.ai are hosted on GitHub Pages in the United States, which sees visitors' IP addresses. No customer data is on them.",
-          "Enquiries sent through the contact form on this website are delivered to our inbox by FormSubmit, a third-party form service with servers outside Nepal. They carry what you type into the form, so keep confidential details for a secure channel.",
+          "Enquiries and job applications sent through the forms on this website are delivered to our inbox by FormSubmit, a third-party form service with servers outside Nepal. They carry what you type and attach, so keep confidential details for a secure channel.",
           "Email to and from @corevalley.ai addresses, including invoices and notifications, is hosted by Zoho Mail, outside Nepal. It carries what is written in the email, not workload content.",
           "Public container and package registries you choose to pull from are outside our control and outside the country; the pull is your egress, under your policy.",
           "If you call a third-party model API from inside a pod, that request leaves Nepal. The platform cannot make someone else's endpoint sovereign.",
