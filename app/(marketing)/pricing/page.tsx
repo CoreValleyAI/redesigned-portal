@@ -33,17 +33,17 @@ const METERS: { icon: IconName; title: string; unit: string; body: string }[] = 
     icon: "slice",
     title: "GPU time",
     unit: "per second",
-    body: "Pods and notebooks are metered from the moment they're running, with a 60-second minimum. Whole cards and slices each have their own rate.",
+    body: "On-demand GPUs and MIG slices are metered from the moment they're running, with a 60-second minimum. Whole cards and slices each have their own rate.",
   },
   {
     icon: "broadcast",
-    title: "Model endpoints",
+    title: "Inferencing",
     unit: "per token",
     body: "Input and output tokens are priced separately, and repeated prompt prefixes cost less.",
   },
   {
     icon: "node",
-    title: "Dedicated servers",
+    title: "Reserved GPUs",
     unit: "per month",
     body: "Reserved by the month, with lower rates for 6, 12 and 36-month terms.",
   },
@@ -51,7 +51,7 @@ const METERS: { icon: IconName; title: string; unit: string; body: string }[] = 
     icon: "storage",
     title: "Storage",
     unit: "per GB-month",
-    body: "Volumes that outlive a pod, billed for the space you keep.",
+    body: "Volumes that outlive the job, billed for the space you keep.",
   },
 ];
 
@@ -174,7 +174,7 @@ const FAQ = [
   },
   {
     q: "Is there a minimum commitment?",
-    a: "No commitment for pods, notebooks or model endpoints: you pay for what you use. Dedicated servers are reserved for a term, and longer terms cost less.",
+    a: "No commitment for on-demand GPUs, MIG slices, inferencing or storage: you pay for what you use. Reserved GPUs are held for a term, and longer terms cost less.",
   },
 ];
 

@@ -128,8 +128,8 @@ function RateTables() {
           onChange={setTab}
           tabs={[
             { id: "compute", label: "gpu compute" },
-            { id: "tokens", label: "model endpoints" },
-            { id: "dedicated", label: "dedicated" },
+            { id: "tokens", label: "inferencing" },
+            { id: "dedicated", label: "reserved" },
             { id: "storage", label: "storage" },
           ]}
         />
@@ -247,7 +247,7 @@ function RateTables() {
           </p>
 
           <h3 className="mt-10 text-lg font-semibold tracking-tight text-ink-100">
-            JupyterHub
+            Notebooks
           </h3>
           <div className="mt-4 overflow-x-auto rounded-lg border border-line">
             <table className="w-full min-w-[34rem] border-collapse">

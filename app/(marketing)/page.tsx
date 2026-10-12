@@ -90,8 +90,8 @@ const STEPS = [
   {
     n: "03",
     title: "Reserve the rack.",
-    body: "Dedicated H200 servers that nobody else touches, reserved by the month — with the same meter and audit log.",
-    cmd: "corevalley dedicated reserve --nodes 4 --term 1m",
+    body: "Reserved H200 servers that nobody else touches, held by the month — with the same meter and audit log.",
+    cmd: "corevalley nodes reserve --nodes 4 --term 1m",
     out: "reservation r-04 · 4 nodes · confirmed",
   },
 ];
@@ -341,7 +341,7 @@ export default function HomePage() {
               <Reveal delay={160}>
                 <p className="mt-6 max-w-[48ch] text-[1.0625rem] leading-relaxed font-light text-white/60">
                   One account, one rupee invoice and one country the whole way —
-                  from a slice of an H200 to dedicated servers.
+                  from a slice of an H200 to reserved servers.
                 </p>
               </Reveal>
 

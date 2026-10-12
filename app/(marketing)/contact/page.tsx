@@ -50,7 +50,7 @@ const FAQ = [
   },
   {
     q: "What should I include?",
-    a: "The model and its size, roughly how much data, the GPU hours you expect each month, and whether you need pods, notebooks, an API for a model or dedicated servers. A rough guess is fine.",
+    a: "The model and its size, roughly how much data, the GPU hours you expect each month, and which products you need: reserved or on-demand GPUs, MIG slices, inferencing, storage or engineering help. A rough guess is fine.",
   },
   {
     q: "How quickly will I hear back?",
@@ -58,7 +58,7 @@ const FAQ = [
   },
   {
     q: "Do you support universities?",
-    a: "Yes. Access for universities and labs is coming soon, with JupyterHub built for teaching. Join the list now and we will be in touch when it opens.",
+    a: "Yes. Access for universities and labs is coming soon, with MIG slices sized for teaching. Join the list now and we will be in touch when it opens.",
   },
   {
     q: "How will I pay?",

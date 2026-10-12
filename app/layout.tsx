@@ -39,7 +39,7 @@ export const metadata: Metadata = {
     "NPR GPU billing",
     "data residency Nepal",
     "hydro-powered GPU cloud",
-    "JupyterHub GPU",
+    "MIG GPU slicing",
     "LLM inference Nepal",
   ],
   authors: [{ name: ORG.name, url: `${SITE_URL}/` }],

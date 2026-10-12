@@ -40,7 +40,7 @@ const CASES: {
       "Tokenizer work",
     ],
     why: "Text corpora often carry personal data from local sources. Training in-country keeps where the data came from defensible.",
-    setup: "H200 pods for training, then a model endpoint to serve the result.",
+    setup: "On-demand H200s for training, then inferencing to serve the result.",
   },
   {
     icon: "building",
@@ -53,8 +53,8 @@ const CASES: {
       "Credit scoring",
       "Churn models",
     ],
-    why: "Customer data cannot cross the border. Dedicated servers and private networking, where nothing leaves unless you allow it, make the security review answerable.",
-    setup: "Dedicated H200 servers in your own private cluster, with outbound traffic blocked by default.",
+    why: "Customer data cannot cross the border. Reserved servers and private networking, where nothing leaves unless you allow it, make the security review answerable.",
+    setup: "Reserved H200 servers in your own private cluster, with outbound traffic blocked by default.",
   },
   {
     icon: "health",
@@ -68,7 +68,7 @@ const CASES: {
       "Triage models",
     ],
     why: "Patient data is the least portable data there is. Where the compute sits is the whole argument.",
-    setup: "GPU pods with persistent storage; dedicated capacity for production.",
+    setup: "On-demand GPUs with persistent storage; reserved capacity for production.",
   },
   {
     icon: "certificate",
@@ -82,7 +82,7 @@ const CASES: {
       "Chat assistants",
     ],
     why: "Sovereignty is a procurement requirement, not a preference. The infrastructure is inside Nepal.",
-    setup: "Dedicated servers, plus model endpoints for public-facing assistants.",
+    setup: "Reserved servers, plus inferencing for public-facing assistants.",
   },
   {
     icon: "university",
@@ -95,8 +95,8 @@ const CASES: {
       "Climate and PINN work",
       "Workshops",
     ],
-    why: "JupyterHub shuts idle notebooks down on its own, so a department can give forty students a GPU without forty invoices.",
-    setup: "JupyterHub with a hardware slice of an H200 (MIG) for each student.",
+    why: "Idle notebooks shut down on their own, so a department can give forty students a GPU without forty invoices.",
+    setup: "MIG slicing: a hardware slice of an H200 for each student, set up by our engineers.",
     soon: true,
   },
   {
@@ -107,11 +107,11 @@ const CASES: {
     workloads: [
       "Fine-tuning",
       "RAG pipelines",
-      "Inference endpoints",
+      "Inferencing",
       "Batch jobs",
     ],
     why: "Per-second billing and per-token endpoints mean the bill follows your traction instead of running ahead of it.",
-    setup: "GPU pods for fine-tuning, per-token model endpoints in production.",
+    setup: "On-demand GPUs for fine-tuning, per-token inferencing in production.",
     soon: true,
   },
 ];
@@ -128,7 +128,7 @@ const WORKLOADS: { icon: IconName; title: string; body: string; href: string }[]
   {
     icon: "node",
     title: "Full training runs",
-    body: "Eight H200s joined by NVLink in one server, and reserved dedicated capacity.",
+    body: "Eight H200s joined by NVLink in one server, on demand or reserved.",
     href: "/products/reserved",
   },
   {
@@ -161,7 +161,7 @@ const LIFECYCLE: { step: string; title: string; body: string }[] = [
   {
     step: "01",
     title: "Explore on a slice",
-    body: "Start in JupyterHub on a slice of an H200 — a hardware slice (MIG) or a cheaper shared one (HAMi). Cheap enough to leave running while you find out whether the idea holds.",
+    body: "Start on a slice of an H200 — a hardware slice (MIG) or a cheaper shared one (HAMi). Cheap enough to leave running while you find out whether the idea holds.",
   },
   {
     step: "02",
@@ -171,12 +171,12 @@ const LIFECYCLE: { step: string; title: string; body: string }[] = [
   {
     step: "03",
     title: "Serve behind an endpoint",
-    body: "Deploy to a model endpoint with an OpenAI-compatible API, or keep a dedicated pod running. Billed per token or per second.",
+    body: "Serve it through inferencing with an OpenAI-compatible API, or on GPUs of its own. Billed per token or per second.",
   },
   {
     step: "04",
     title: "Reserve capacity",
-    body: "When load is steady, move to a reserved dedicated server and take the discount that comes with a longer term.",
+    body: "When load is steady, move to reserved GPUs and take the discount that comes with a longer term.",
   },
 ];
 
@@ -191,15 +191,15 @@ const FAQ = [
   },
   {
     q: "Can a university give a whole class GPU access?",
-    a: "Yes — that is what JupyterHub is for: per-user limits, automatic idle shutdown and shared GPU slices, on one invoice. Access for universities is coming soon; join the list and we will tell you first.",
+    a: "Yes — MIG slicing is built for it: a slice per student, per-user limits and automatic idle shutdown, on one invoice. Access for universities is coming soon; join the list and we will tell you first.",
   },
   {
     q: "What does a regulated workload look like on CoreValley?",
-    a: "Dedicated servers in your own private Kubernetes cluster, private networking with outbound traffic blocked by default, an append-only audit log and invoices in NPR — the pieces a bank or public body needs for a security review.",
+    a: "Reserved servers in your own private Kubernetes cluster, private networking with outbound traffic blocked by default, an append-only audit log and invoices in NPR — the pieces a bank or public body needs for a security review.",
   },
   {
     q: "How do I move from experiment to production?",
-    a: "Inside one project: from a notebook slice, to whole cards, to a model endpoint or a reserved server. Same account, same rupee invoice, same country.",
+    a: "Inside one project: from a MIG slice, to on-demand cards, to inferencing or reserved servers. Same account, same rupee invoice, same country.",
   },
 ];
 
@@ -326,7 +326,7 @@ export default function UseCasesPage() {
       <Section
         eyebrow="From lab to production"
         title="One platform across the lifecycle."
-        lead="The same project grows from a shared notebook to a dedicated server — without switching clouds, currencies or countries."
+        lead="The same project grows from a MIG slice to reserved servers — without switching clouds, currencies or countries."
       >
         <div className="grid items-start gap-8 lg:grid-cols-[1fr_0.9fr]">
           <ol className="flex flex-col gap-4">
@@ -357,15 +357,15 @@ export default function UseCasesPage() {
             lines={[
               {
                 prompt: "$",
-                text: "corevalley jupyter start --profile h200-1g",
+                text: "corevalley pods launch --gpu h200 --slice 1g.18gb",
               },
-              { out: "→ notebook ready · h200 1g.18gb slice" },
+              { out: "→ h200 1g.18gb slice · running" },
               {
                 prompt: "$",
                 text: "corevalley pods launch --gpu h200 --count 8",
               },
               { out: "→ 8× h200 · nvlink · billed per second" },
-              { prompt: "$", text: "corevalley endpoints deploy nepali-7b" },
+              { prompt: "$", text: "corevalley inference deploy nepali-7b" },
               { out: "→ live · billed per token" },
               { comment: "same project · same private cluster · same rupee invoice" },
               { prompt: "$", text: "" },

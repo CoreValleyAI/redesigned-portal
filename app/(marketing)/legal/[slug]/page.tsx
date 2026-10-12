@@ -144,7 +144,7 @@ const PAGES: Record<string, LegalPage> = {
       {
         heading: "Billing",
         paragraphs: [
-          "GPU pods are metered per second of running time; endpoints are metered per token. Metered usage for a calendar month is invoiced in Nepalese rupees on the first working day of the next month, payable within 30 days. VAT is applied at the statutory rate.",
+          "On-demand GPUs and MIG slices are metered per second of running time; inferencing is metered per token. Metered usage for a calendar month is invoiced in Nepalese rupees on the first working day of the next month, payable within 30 days. VAT is applied at the statutory rate.",
           "Reserved and dedicated terms are billed in advance for the committed period. Committed capacity is not refundable mid-term, but it can be moved between SKUs of equal or greater value.",
           "An invoice unpaid after 45 days suspends new launches. Running workloads are given 7 days' written notice before suspension, so a production endpoint is never cut off without warning.",
         ],
@@ -192,8 +192,8 @@ const PAGES: Record<string, LegalPage> = {
           "Datasets and files on block or object storage.",
           "Model weights, checkpoints and adapters.",
           "Container images you push to the registry.",
-          "Prompts, completions and embeddings passing through model endpoints.",
-          "Notebook state and JupyterHub home directories.",
+          "Prompts, completions and embeddings passing through inferencing.",
+          "Notebook state and home directories.",
           "Pod stdout, stderr and application logs.",
         ],
       },

@@ -65,7 +65,7 @@ const AUDIENCES: {
   {
     icon: "launch",
     title: "Startups and ML teams",
-    body: "GPU pods with root access, the freedom to install what you need, and a path to endpoints when you ship.",
+    body: "On-demand GPUs with root access, the freedom to install what you need, and inferencing when you ship.",
     status: { tone: "neutral", label: "Coming soon" },
   },
 ];
@@ -81,7 +81,7 @@ const FAQ = [
   },
   {
     q: "How do you bill?",
-    a: "In Nepali rupees. Usage is metered per second and invoiced monthly, and dedicated servers can be reserved by the month. Pay by eSewa, Khalti, bank transfer or corporate invoice on net terms. Rates are not published yet, so every request gets a firm quote within one working day.",
+    a: "In Nepali rupees. Usage is metered per second and invoiced monthly, and GPUs can be reserved by the month. Pay by eSewa, Khalti, bank transfer or corporate invoice on net terms. Rates are not published yet, so every request gets a firm quote within one working day.",
   },
   {
     q: "Are you open to new customers?",
