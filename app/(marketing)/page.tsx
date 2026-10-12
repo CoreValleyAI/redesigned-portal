@@ -99,10 +99,12 @@ const STEPS = [
 /* Free Unsplash photos, greyscaled and cropped at download
    (public/images/home). */
 const PRODUCT_PHOTOS: Record<string, { src: string; position?: string }> = {
-  "gpu-pods": { src: "gpu-pair.webp" }, // Nana Dua, unsplash.com/photos/nqCEPrvnLKQ
-  jupyterhub: { src: "classroom.webp", position: "65% 40%" }, // Poddar Group of Institutions, unsplash.com/photos/ereEoYDIl20
-  "model-endpoints": { src: "fiber-switch.webp" }, // Lightsaber Collection, unsplash.com/photos/T-IN5o3kxyA
-  dedicated: { src: "server-racks.webp", position: "35% 50%" }, // Taylor Vick, unsplash.com/photos/M5tzZtFCOfs
+  reserved: { src: "server-racks.webp", position: "35% 50%" }, // Taylor Vick, unsplash.com/photos/M5tzZtFCOfs
+  "on-demand": { src: "gpu-pair.webp" }, // Nana Dua, unsplash.com/photos/nqCEPrvnLKQ
+  inferencing: { src: "fiber-switch.webp" }, // Lightsaber Collection, unsplash.com/photos/T-IN5o3kxyA
+  "mig-slicing": { src: "gpu-closeup.webp" },
+  storage: { src: "server-racks.webp", position: "85% 50%" },
+  services: { src: "classroom.webp", position: "65% 40%" }, // Poddar Group of Institutions, unsplash.com/photos/ereEoYDIl20
 };
 
 const HOW: { title: string; when: string; body: string }[] = [
@@ -424,7 +426,7 @@ export default function HomePage() {
               </Reveal>
               <Reveal delay={80}>
                 <h2 className="display mt-5 text-4xl text-zinc-900 md:text-5xl">
-                  Four ways in. One H200 fleet.
+                  Six products. One H200 fleet.
                 </h2>
               </Reveal>
             </div>
@@ -509,7 +511,7 @@ export default function HomePage() {
 
             <Reveal
               delay={PRODUCTS.length * 90}
-              className="min-w-0 md:col-span-2"
+              className="min-w-0 md:col-span-2 lg:col-span-3"
             >
               <article className="cv-dark surface-dark grain flex h-full min-h-[22rem] flex-col justify-between !rounded-[2rem] p-8 md:p-10">
                 <div>

@@ -90,8 +90,10 @@ export default async function ProductPage({
           </div>
 
           <div className="min-w-0 lg:sticky lg:top-24">
-            <Terminal title="np-ktm-1.corevalley.ai" lines={product.terminal} />
-            <Card surface="solid" padding={0} className="mt-4">
+            {product.terminal ? (
+              <Terminal title="np-ktm-1.corevalley.ai" lines={product.terminal} />
+            ) : null}
+            <Card surface="solid" padding={0} className={product.terminal ? "mt-4" : undefined}>
               <dl>
                 {product.specs.map((s, i) => (
                   <div

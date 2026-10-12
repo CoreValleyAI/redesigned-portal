@@ -7,6 +7,7 @@ import { pageMetadata } from "@/lib/seo";
 import { FaqList } from "@/components/marketing/faq-list";
 import { EARLY_ACCESS, FACTS } from "@/lib/availability";
 import { ORG } from "@/lib/site";
+import { PRODUCTS } from "@/lib/products";
 import type { IconName } from "@/components/ui";
 
 export const metadata = pageMetadata({
@@ -40,51 +41,6 @@ const PRINCIPLES: { icon: IconName; title: string; body: string }[] = [
     icon: "check-circle",
     title: "Honest about constraints",
     body: "We publish what we actually run. Today that is the NVIDIA H200. Where a GPU has not landed or a control is still in progress, we say so.",
-  },
-];
-
-/* The four products, under the names the rest of the site uses. The old
-   public site's names are kept as a "formerly" line so returning visitors
-   recognise them. */
-const OFFER: {
-  icon: IconName;
-  title: string;
-  formerly: string;
-  body: string;
-  href: string;
-  cta: string;
-}[] = [
-  {
-    icon: "slice",
-    title: "GPU pods",
-    formerly: "formerly GPU Workspace",
-    body: "Rent a whole H200 or a slice of one, with root access and your own images. Pay by the second.",
-    href: "/products/gpu-pods",
-    cta: "See GPU pods",
-  },
-  {
-    icon: "notebook",
-    title: "JupyterHub",
-    formerly: "formerly AI Lab",
-    body: "Managed GPU notebooks for teams, labs and courses. Nobody has to run a shared server.",
-    href: "/products/jupyterhub",
-    cta: "See JupyterHub",
-  },
-  {
-    icon: "broadcast",
-    title: "Model endpoints",
-    formerly: "formerly Inference & Endpoints",
-    body: "Open-weight models behind an OpenAI-compatible API, served from inside Nepal and billed per token.",
-    href: "/products/model-endpoints",
-    cta: "See model endpoints",
-  },
-  {
-    icon: "node",
-    title: "Dedicated & bare metal",
-    formerly: "formerly part of GPU Workspace",
-    body: "Whole H200 servers that only you use, reserved by the month, in your own private cluster.",
-    href: "/products/dedicated",
-    cta: "See dedicated servers",
   },
 ];
 
@@ -214,26 +170,23 @@ export default function CompanyPage() {
 
       <Section
         eyebrow="What we run"
-        title="Four products, one platform."
-        lead="Notebooks for teams, GPU environments for training, endpoints for serving and dedicated servers for steady load. All on NVIDIA H200s in Kathmandu today, with Blackwell coming soon — one account, one rupee invoice."
+        title="Six products, one platform."
+        lead="Reserved and on-demand GPUs, hardware slices, inferencing, storage and engineering help. All on NVIDIA H200s in Kathmandu today, with Blackwell coming soon — one account, one rupee invoice."
         alt
       >
-        <RevealGroup step={80} className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {OFFER.map((o) => (
-            <Card key={o.title} padding={26} className="flex h-full flex-col">
+        <RevealGroup step={80} className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {PRODUCTS.map((o) => (
+            <Card key={o.slug} padding={26} className="flex h-full flex-col">
               <Icon name={o.icon} size={21} weight="duotone" className="text-ink-100" />
               <h3 className="mt-4 text-lg font-semibold tracking-tight text-ink-100">
-                {o.title}
+                {o.name}
               </h3>
-              <p className="mt-1 font-mono text-[11.5px] tracking-wide text-ink-500">
-                {o.formerly}
-              </p>
-              <p className="mt-3 flex-1 text-sm leading-relaxed text-ink-400">{o.body}</p>
+              <p className="mt-3 flex-1 text-sm leading-relaxed text-ink-400">{o.tagline}</p>
               <Link
-                href={o.href}
+                href={`/products/${o.slug}`}
                 className="mt-5 inline-flex min-h-11 items-center gap-1.5 font-mono text-[12.5px] tracking-wide text-hydro transition-colors duration-normal hover:text-hydro-300"
               >
-                {o.cta}
+                See {o.name}
                 <Icon name="arrow-right" size={13} />
               </Link>
             </Card>

@@ -123,37 +123,37 @@ const WORKLOADS: { icon: IconName; title: string; body: string; href: string }[]
     icon: "slice",
     title: "LLM fine-tuning",
     body: "LoRA, QLoRA and full fine-tunes on whole H200 cards or slices of one.",
-    href: "/products/gpu-pods",
+    href: "/products/on-demand",
   },
   {
     icon: "node",
     title: "Full training runs",
     body: "Eight H200s joined by NVLink in one server, and reserved dedicated capacity.",
-    href: "/products/dedicated",
+    href: "/products/reserved",
   },
   {
     icon: "broadcast",
     title: "Production serving",
     body: "OpenAI-compatible endpoints, shared or dedicated, that scale with your traffic.",
-    href: "/products/model-endpoints",
+    href: "/products/inferencing",
   },
   {
     icon: "eye",
     title: "Computer vision and multimodal",
     body: "Imaging, OCR and video models, with fast local NVMe scratch space.",
-    href: "/products/gpu-pods",
+    href: "/products/on-demand",
   },
   {
     icon: "lab",
     title: "Scientific research",
     body: "Simulation, physics-informed networks and climate work.",
-    href: "/products/jupyterhub",
+    href: "/products/mig-slicing",
   },
   {
     icon: "university",
     title: "Courses and teaching",
     body: "Notebooks for a whole cohort, with per-user limits and automatic idle shutdown.",
-    href: "/products/jupyterhub",
+    href: "/products/mig-slicing",
   },
 ];
 

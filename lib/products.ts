@@ -1,7 +1,8 @@
 import type { IconName, TerminalLine } from "@/components/ui";
 
 /**
- * The four ways to buy compute. Drives /products, its detail pages and nav.
+ * The six things we sell. Drives /products, its detail pages, the homepage
+ * bento and the sitemap.
  *
  * Copy rule: the tagline, summary and feature titles say what the reader
  * gets, in plain words. The engineering names (MIG, HAMi, vLLM, Cilium…)
@@ -20,147 +21,166 @@ export interface ProductDef {
   summary: string;
   meta: string;
   audience: string;
+  /** One line each for the "which one fits" table on /products. */
+  compare: { billing: string; commitment: string; bestFor: string };
   features: { title: string; body: string }[];
-  terminal: TerminalLine[];
+  /** Products with nothing to type (services) leave this out. */
+  terminal?: TerminalLine[];
   specs: { label: string; value: string }[];
 }
 
 export const PRODUCTS: ProductDef[] = [
   {
-    slug: "gpu-pods",
-    icon: "slice",
-    name: "GPU pods",
-    tagline: "A whole H200, or just the slice you need.",
+    slug: "reserved",
+    icon: "node",
+    name: "Reserved GPUs",
+    tagline: "Whole servers, held for you alone.",
     summary:
-      "Run your own containers on NVIDIA H200 GPUs. Take a whole card, a hardware slice or a cheaper shared slice, and pay by the second either way.",
-    meta: "mig · hami · per-second billing",
-    audience: "ML engineers, startups and research teams",
+      "Reserve H200 servers by the month or for a fixed term, as bare metal or a virtual machine. The capacity is yours for the whole term, at a lower rate than on-demand, and nobody else runs on it.",
+    meta: "bare metal · kvm · reserved terms · ipmi",
+    audience: "Banks, government and teams with steady workloads",
+    compare: {
+      billing: "Monthly rate",
+      commitment: "1 month to 36 months",
+      bestFor: "Steady training, regulated data",
+    },
     features: [
       {
-        title: "Hardware slices (MIG)",
-        body: "Split an H200 into as many as seven isolated parts, each with its own memory and compute. If a neighbour's job crashes or runs out of memory, yours keeps running.",
+        title: "Capacity that is always there",
+        body: "Your servers are held for the whole term. No queue, no waiting for cards to free up, no chance of being outbid.",
       },
       {
-        title: "Shared slices (HAMi)",
-        body: "When you don't need hardware isolation, take a share of a card's memory and compute instead. It packs more work onto each GPU, so it costs less, and we label the difference rather than hide it.",
+        title: "Nobody else on your server",
+        body: "All eight GPUs, the NVLink connections between them and the local NVMe are yours. Nothing else runs on the machine.",
       },
+      {
+        title: "Lower rates for longer terms",
+        body: "Reserve by the month, or commit for 6, 12 or 36 months for a lower rate. Your quote shows the rate for each term up front.",
+      },
+      {
+        title: "Bare metal or a VM",
+        body: "Bare metal for full performance and hardware-level access (IPMI), or a virtual machine (KVM) if you'd rather have snapshots and faster rebuilds.",
+      },
+      {
+        title: "A private network",
+        body: "Your servers sit on a private network that blocks everything by default (Cilium). You choose what may reach them, and you can peer it with your own network.",
+      },
+      {
+        title: "Easier security reviews",
+        body: "Dedicated hardware in Nepal makes the data-residency and tenancy questions on a security review simple to answer.",
+      },
+    ],
+    terminal: [
+      { prompt: "$", text: "corevalley nodes list" },
+      { out: "  train-01 · 8x h200 · bare metal" },
+      { out: "  term: 12 months · active" },
+      { out: "  network: private · allow-list" },
+      { comment: "reserved capacity · np-ktm-1" },
+      { prompt: "$", text: "" },
+    ],
+    specs: [
+      { label: "GPU", value: "H200 · available now" },
+      { label: "Sizes", value: "4 or 8 GPUs per server" },
+      { label: "Form", value: "bare metal · KVM VM" },
+      { label: "Terms", value: "monthly · 6 · 12 · 36 months" },
+      { label: "Network", value: "private, default-deny (Cilium)" },
+    ],
+  },
+  {
+    slug: "on-demand",
+    icon: "zap",
+    name: "On-demand GPUs",
+    tagline: "Whole H200s, by the second.",
+    summary:
+      "Start a GPU container when you need one and stop it when you're done. Take one H200 or eight joined by NVLink, with root access and your own images, and pay only for the seconds it runs.",
+    meta: "containers · ssh · per-second billing",
+    audience: "ML engineers, startups and research teams",
+    compare: {
+      billing: "Per second, 60 s minimum",
+      commitment: "None",
+      bestFor: "Experiments, bursts, fine-tunes",
+    },
+    features: [
       {
         title: "Billed by the second",
-        body: "You pay for GPU-seconds, with a 60-second minimum. Stop a pod and the meter stops with it: no rounding up to the hour, no charges after it ends.",
+        body: "You pay for GPU-seconds, with a 60-second minimum. Stop a pod and the meter stops with it: no rounding up to the hour.",
+      },
+      {
+        title: "One card or eight",
+        body: "Start on a single H200, or take a full server of eight joined by NVLink for distributed training.",
       },
       {
         title: "Ready-made images",
         body: "CUDA, PyTorch, TensorFlow, vLLM, DeepSpeed and the usual fine-tuning tools are installed from first boot. Or bring your own image.",
       },
       {
-        title: "Storage that outlives the pod",
-        body: "Attach a replicated network volume that survives restarts, or use fast local NVMe for scratch. Mount the same volume in every pod in a project.",
-      },
-      {
         title: "SSH and open ports",
         body: "Root inside your container, SSH with your own key, and open ports for TensorBoard, Jupyter or your own service.",
+      },
+      {
+        title: "Your data stays put",
+        body: "Attach a storage volume that outlives the pod, so you upload a dataset once, not every run.",
+      },
+      {
+        title: "No commitment",
+        body: "Nothing to reserve and no contract. When the work grows steady, move it to reserved servers for a lower rate.",
       },
     ],
     terminal: [
       { prompt: "$", text: "corevalley pods launch \\" },
-      { out: "    --gpu h200 --slice 2g.35gb \\" },
+      { out: "    --gpu h200 --count 1 \\" },
       { out: "    --image pytorch:2.5-cu124 \\" },
       { out: "    --volume datasets:/data" },
-      { out: "→ h200 · mig 2g.35gb · 35 GB" },
+      { out: "→ 1x h200 · 141 GB" },
       { comment: "running in np-ktm-1 · per second" },
       { prompt: "$", text: "" },
     ],
     specs: [
       { label: "GPU", value: "H200 · 141 GB · available now" },
       { label: "Coming soon", value: "RTX PRO 6000 · 96 GB" },
-      { label: "Ways to rent", value: "whole card · MIG · HAMi" },
+      { label: "Sizes", value: "1x · 8x NVLink" },
       { label: "Billing", value: "per second, 60 s minimum" },
       { label: "Region", value: "np-ktm-1 (Kathmandu)" },
     ],
   },
   {
-    slug: "jupyterhub",
-    icon: "notebook",
-    name: "JupyterHub",
-    tagline: "Notebooks for a whole department.",
-    summary:
-      "Managed GPU notebooks for a whole class or lab. Everyone gets a real slice of an H200, nobody has to administer a server, and notebooks left idle stop billing.",
-    meta: "multi-user · spawner profiles · idle culling",
-    audience: "Universities, bootcamps and R&D teams",
-    features: [
-      {
-        title: "Pick-a-size profiles",
-        body: "Offer a CPU-only profile for data prep and H200 slices for training. Users choose from a list; they never see a node or a scheduler.",
-      },
-      {
-        title: "Idle notebooks shut down",
-        body: "Notebooks left open overnight stop billing. You set the idle limit per organisation; by default a server stops after 60 idle minutes.",
-      },
-      {
-        title: "Fair limits per person",
-        body: "Cap servers, memory and GPU share per user, so one runaway notebook can't use up a department's quota.",
-      },
-      {
-        title: "Shared and personal storage",
-        body: "A private volume per user plus a shared, read-only dataset mount, so a class of forty works from one copy of the data, not forty.",
-      },
-      {
-        title: "Course-ready access",
-        body: "Invite a whole cohort at once, hand out a profile, and remove access when term ends. No cloud accounts, no credit cards, no foreign billing.",
-      },
-      {
-        title: "Know where the budget went",
-        body: "Every notebook-hour is metered to the user and the project, so a department can see exactly where its money went.",
-      },
-    ],
-    terminal: [
-      { prompt: "$", text: "corevalley jupyter profiles" },
-      { out: "  cpu only       4 vcpu · 16 gb" },
-      { out: "  h200 1g.18gb   mig · 18 gb" },
-      { out: "  h200 2g.35gb   mig · 35 gb" },
-      { comment: "idle notebooks stop after 60 min" },
-      { prompt: "$", text: "" },
-    ],
-    specs: [
-      { label: "Hub version", value: "JupyterHub 5.2" },
-      { label: "Profiles", value: "CPU · H200 MIG 1g · MIG 2g" },
-      { label: "Billing", value: "per user-hour, metered per second" },
-      { label: "Idle shutdown", value: "configurable, 60 min default" },
-    ],
-  },
-  {
-    slug: "model-endpoints",
+    slug: "inferencing",
     icon: "broadcast",
-    name: "Model endpoints",
-    tagline: "Open models, per token, in-country.",
+    name: "Inferencing",
+    tagline: "Open models behind an API, in-country.",
     summary:
-      "Use open AI models through an OpenAI-compatible API. Pay per token, keep every request inside Nepal, and never manage a GPU.",
+      "Call open AI models through an OpenAI-compatible API and pay per token, or have us serve your own model on capacity of its own. Every request stays inside Nepal, and you never manage a GPU.",
     meta: "vllm · litellm · openai-compatible",
     audience: "Product teams shipping AI features",
+    compare: {
+      billing: "Per million tokens",
+      commitment: "None, or a dedicated endpoint",
+      bestFor: "AI features in production",
+    },
     features: [
-      {
-        title: "Steady under real load",
-        body: "The serving engine (vLLM) batches requests continuously, so response times hold steady when many users arrive at once, not just in a benchmark.",
-      },
       {
         title: "Works with the OpenAI SDK",
         body: "One OpenAI-compatible base URL for every model (a LiteLLM gateway). Point your existing SDK at it, change the model name, and you're done.",
       },
       {
         title: "Pay per token",
-        body: "Input and output are priced separately, and repeated prompt prefixes cost less. Usage appears on the same rupee invoice as your GPU time.",
+        body: "Input and output are priced separately, and repeated prompt prefixes cost less. Usage appears on the same rupee invoice as everything else.",
+      },
+      {
+        title: "Steady under real load",
+        body: "The serving engine (vLLM) batches requests continuously, so response times hold steady when many users arrive at once.",
+      },
+      {
+        title: "Your own model, dedicated",
+        body: "Bring fine-tuned weights and we serve them on GPUs reserved for your endpoint, behind the same API.",
       },
       {
         title: "Keys you control",
-        body: "Issue a key per service, limit it to specific models, rotate it without downtime and revoke it instantly. A key is shown once, when you create it.",
+        body: "Issue a key per service, limit it to specific models, rotate it without downtime and revoke it instantly.",
       },
       {
         title: "Your prompts stay in Nepal",
-        body: "Prompts and responses are processed and logged inside Nepal. Nothing goes to a foreign model provider, because there isn't one.",
-      },
-      {
-        title: "Tools and images",
-        body: "Function calling across the catalogue, and image input on the models that support it.",
+        body: "Prompts and responses are processed and logged inside Nepal. Nothing goes to a foreign model provider.",
       },
     ],
     terminal: [
@@ -178,58 +198,167 @@ export const PRODUCTS: ProductDef[] = [
       { label: "Engines", value: "vLLM · SGLang" },
       { label: "Billing", value: "per million tokens, in and out" },
       { label: "Models", value: "Llama · Qwen · DeepSeek · Mistral" },
+      { label: "Endpoints", value: "shared · dedicated" },
     ],
   },
   {
-    slug: "dedicated",
-    icon: "node",
-    name: "Dedicated & bare metal",
-    tagline: "A whole server, and no neighbours.",
+    slug: "mig-slicing",
+    icon: "slice",
+    name: "MIG slicing",
+    tagline: "A slice of an H200, isolated in hardware.",
     summary:
-      "Whole H200 servers reserved for you alone, as bare metal or a virtual machine. For banks, government and anyone whose security review needs hardware that nobody else touches.",
-    meta: "bare metal · reserved terms · ipmi",
-    audience: "Banks, government and regulated enterprises",
+      "Most jobs don't need 141 GB. Rent a hardware slice of an H200 — as little as a seventh — with its own memory and compute, and pay for that slice alone, by the second.",
+    meta: "nvidia mig · hami · per-second billing",
+    audience: "Fine-tuning, notebooks, classes and light inference",
+    compare: {
+      billing: "Per second, per slice",
+      commitment: "None",
+      bestFor: "Small models, notebooks, teaching",
+    },
     features: [
       {
-        title: "Nobody else on your server",
-        body: "The whole server is yours: all eight GPUs, the NVLink connections between them and the local NVMe. Nothing else runs on it for the length of your term.",
+        title: "Up to seven slices per card",
+        body: "An H200 splits into as many as seven isolated parts (NVIDIA MIG). Pick the size that fits the model, from 18 GB to the whole card.",
       },
       {
-        title: "Bare metal or a VM",
-        body: "Bare metal for maximum performance and hardware-level access (IPMI), or a virtual machine (KVM) if you'd rather have snapshots and faster rebuilds.",
+        title: "Isolated in hardware",
+        body: "Each slice has its own memory and compute. If a neighbour's job crashes or runs out of memory, yours keeps running.",
       },
       {
-        title: "Reserved terms",
-        body: "Reserve by the month, or commit for 6, 12 or 36 months for a lower rate. Your quote shows the rate for each term up front.",
+        title: "Pay for the slice, not the card",
+        body: "A slice costs a fraction of a whole H200, billed by the second like everything else.",
       },
       {
-        title: "A private network",
-        body: "Your server sits on a private network that blocks everything by default (Cilium). You choose what may reach it, and you can peer it with your own network.",
+        title: "Cheaper shared slices",
+        body: "When you don't need hardware isolation, take a share of a card instead (HAMi). It costs less, and we label the difference rather than hide it.",
       },
       {
-        title: "Easier security reviews",
-        body: "Dedicated hardware in Nepal makes the data-residency and tenancy questions on a bank's security review simple to answer.",
+        title: "Notebooks for a whole class",
+        body: "Hand each student or researcher a slice in managed JupyterHub, with per-person limits and notebooks that stop billing when left idle.",
       },
       {
-        title: "A named engineer",
-        body: "A named engineer in Kathmandu, reachable in Nepal business hours, who knows your deployment.",
+        title: "Grow without moving",
+        body: "Start on a slice, then move the same image and volumes to whole cards when the job outgrows it.",
       },
     ],
     terminal: [
-      { prompt: "$", text: "corevalley nodes list" },
-      { out: "  kyc-dedicated-01 · 8x h200" },
-      { out: "  bare metal · active" },
-      { out: "  term: 12 months · renews in 225d" },
-      { out: "  network: private · allow-list" },
-      { comment: "hardware access (ipmi) · np-ktm-1" },
+      { prompt: "$", text: "corevalley slices list --gpu h200" },
+      { out: "  1g.18gb   mig · 18 GB" },
+      { out: "  2g.35gb   mig · 35 GB" },
+      { out: "  3g.71gb   mig · 71 GB" },
+      { out: "  7g.141gb  mig · 141 GB" },
+      { comment: "hardware-isolated · per second" },
       { prompt: "$", text: "" },
     ],
     specs: [
       { label: "GPU", value: "H200 · available now" },
-      { label: "Form", value: "bare metal · KVM VM" },
-      { label: "Sizes", value: "4 or 8 GPUs per server" },
-      { label: "Terms", value: "monthly · 6 · 12 · 36 months" },
-      { label: "Network", value: "private, default-deny (Cilium)" },
+      { label: "MIG slices", value: "1g.18gb · 2g.35gb · 3g.71gb · 7g" },
+      { label: "Shared slices", value: "HAMi · not fault-isolated" },
+      { label: "Billing", value: "per second, 60 s minimum" },
+    ],
+  },
+  {
+    slug: "storage",
+    icon: "storage",
+    name: "Storage",
+    tagline: "Your data, next to the GPUs, in Nepal.",
+    summary:
+      "Replicated volumes that outlive the job, fast local disks for scratch, and object storage for datasets and checkpoints. All of it in Kathmandu, beside the GPUs that read it.",
+    meta: "block · object · nvme scratch",
+    audience: "Anyone training, fine-tuning or serving",
+    compare: {
+      billing: "Per GB-month",
+      commitment: "None",
+      bestFor: "Datasets, checkpoints, weights",
+    },
+    features: [
+      {
+        title: "Volumes that outlive the pod",
+        body: "Replicated network volumes survive restarts and pod shutdowns. Upload a dataset once and mount it in every run.",
+      },
+      {
+        title: "Share across a project",
+        body: "Mount the same volume in several pods at once, so a team works from one copy of the data.",
+      },
+      {
+        title: "Fast local scratch",
+        body: "Local NVMe on the node for temporary files and shuffles. It is cleared when the pod stops, and it costs less.",
+      },
+      {
+        title: "Object storage",
+        body: "Keep datasets, checkpoints and model weights in buckets, and pull them into any pod or endpoint.",
+      },
+      {
+        title: "Close to the GPUs",
+        body: "Storage sits in the same Kathmandu datacenter as the compute, so loading data doesn't cross a border or an ocean.",
+      },
+      {
+        title: "Data stays in Nepal",
+        body: "Nothing is copied abroad. The jurisdiction for your data is Nepal.",
+      },
+    ],
+    terminal: [
+      { prompt: "$", text: "corevalley volumes create \\" },
+      { out: "    --name datasets --size 500gb" },
+      { out: "→ network ssd · replicated" },
+      { prompt: "$", text: "corevalley volumes list" },
+      { out: "  datasets   500 GB · 2 pods" },
+      { comment: "stored in np-ktm-1 · per GB-month" },
+      { prompt: "$", text: "" },
+    ],
+    specs: [
+      { label: "Volumes", value: "network SSD, replicated" },
+      { label: "Scratch", value: "local NVMe, ephemeral" },
+      { label: "Objects", value: "buckets for data and weights" },
+      { label: "Billing", value: "per GB-month" },
+      { label: "Location", value: "np-ktm-1 (Kathmandu)" },
+    ],
+  },
+  {
+    slug: "services",
+    icon: "team",
+    name: "Services & engineering",
+    tagline: "Engineers in Kathmandu, on your project.",
+    summary:
+      "Help from the people who run the racks: planning capacity, moving workloads from another cloud, getting a model trained and into production, and setting up GPUs for a class or a lab.",
+    meta: "architecture · migration · mlops · training",
+    audience: "Enterprises, public sector and universities",
+    compare: {
+      billing: "Scoped and quoted in NPR",
+      commitment: "Per engagement",
+      bestFor: "Migrations, first deployments",
+    },
+    features: [
+      {
+        title: "Capacity planning",
+        body: "Tell us the model, the data and the deadline. We size the GPUs, storage and term, and give you a firm rupee quote.",
+      },
+      {
+        title: "Migration from another cloud",
+        body: "We help move training jobs, data and endpoints from a foreign provider to Kathmandu, and check they run the same here.",
+      },
+      {
+        title: "Training and fine-tuning help",
+        body: "Hands-on help to get a fine-tune or training run working on our GPUs, from the container image to the first checkpoint.",
+      },
+      {
+        title: "Deployment to production",
+        body: "Put your model behind an API with keys, limits and monitoring, on shared or dedicated capacity.",
+      },
+      {
+        title: "Courses and labs",
+        body: "Managed JupyterHub for a cohort or a department: profiles, per-person limits and idle shutdown, set up for you.",
+      },
+      {
+        title: "A named engineer",
+        body: "One engineer in Kathmandu who knows your deployment, reachable in Nepal business hours.",
+      },
+    ],
+    specs: [
+      { label: "Team", value: "engineers in Kathmandu" },
+      { label: "Hours", value: "Nepal business hours" },
+      { label: "Engagements", value: "planning · migration · mlops" },
+      { label: "Billing", value: "scoped, quoted in NPR" },
     ],
   },
 ];

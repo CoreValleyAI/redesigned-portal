@@ -21,7 +21,7 @@ export const SOCIAL_IMAGE = {
 export function pageMetadata(opts: {
   title: string;
   description: string;
-  /** Site path, e.g. "/pricing" or "/products/gpu-pods". */
+  /** Site path, e.g. "/pricing" or "/products/on-demand". */
   path: string;
   absoluteTitle?: boolean;
   noindex?: boolean;

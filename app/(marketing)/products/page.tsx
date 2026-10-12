@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { Badge, ButtonLink, Card, Icon } from "@/components/ui";
 import { PageHero, Section } from "@/components/marketing/page-hero";
-import { PRODUCTS } from "@/lib/products";
+import { PRODUCTS, type ProductDef } from "@/lib/products";
 import { GPU_SKUS } from "@/lib/catalog";
 import { AVAILABLE_GPUS, EARLY_ACCESS, SOON_GPUS, statusLabel } from "@/lib/availability";
 import { RevealGroup } from "@/components/fx/reveal";
@@ -9,15 +9,21 @@ import { pageMetadata } from "@/lib/seo";
 import type { GpuSku } from "@/lib/api/types";
 
 export const metadata = pageMetadata({
-  title: "GPU Cloud Products — GPU Pods, JupyterHub, Model Endpoints, Dedicated Servers",
+  title: "GPU Cloud Products — Reserved, On-demand, Inferencing, MIG Slicing, Storage, Services",
   description:
-    "Four ways to use NVIDIA H200 GPUs in Kathmandu: per-second GPU pods, managed JupyterHub notebooks, OpenAI-compatible model endpoints and dedicated servers. Billed in NPR, with data that stays in Nepal. Blackwell coming soon.",
+    "NVIDIA H200 GPUs in Kathmandu: reserved servers, on-demand GPUs by the second, OpenAI-compatible inferencing, MIG slices, in-country storage and engineering services. Billed in NPR, with data that stays in Nepal. Blackwell coming soon.",
   path: "/products",
 });
 
 const list = new Intl.ListFormat("en-GB", { style: "long", type: "conjunction" });
 const NOW = list.format(AVAILABLE_GPUS.map((s) => s.name));
 const SOON = list.format(SOON_GPUS.map((s) => s.name.replace(/^NVIDIA /, "")));
+
+const COMPARE_COLUMNS: { key: keyof ProductDef["compare"]; label: string }[] = [
+  { key: "billing", label: "Billing" },
+  { key: "commitment", label: "Commitment" },
+  { key: "bestFor", label: "Best for" },
+];
 
 /** How a card can be rented, in plain words. */
 const waysToRent = (s: GpuSku) => (s.migCapable ? "whole card or slices" : "whole card");
@@ -37,8 +43,8 @@ export default function ProductsPage() {
     <>
       <PageHero
         eyebrow="Products"
-        title="Four ways to use a GPU."
-        lead="One account and one rupee invoice for all of them. Start on a slice of an H200, move to whole cards, serve your model as an API or reserve a server of your own — without changing provider, currency or country."
+        title="Everything to run AI in Nepal."
+        lead="Reserve servers or rent GPUs by the second, slice a card, serve a model as an API and keep the data beside it — with engineers in Kathmandu to help. One account and one rupee invoice for all of it."
       >
         {/* What is on offer, read before the button that acts on it. */}
         <p className="mt-6 max-w-[62ch] text-[14px] leading-relaxed text-ink-300">
@@ -68,7 +74,7 @@ export default function ProductsPage() {
       </PageHero>
 
       <Section>
-        <RevealGroup step={90} className="grid gap-4 md:grid-cols-2">
+        <RevealGroup step={70} className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {PRODUCTS.map((p) => (
             <Link key={p.slug} href={`/products/${p.slug}`} className="group">
               <Card
@@ -105,9 +111,73 @@ export default function ProductsPage() {
       </Section>
 
       <Section
+        id="compare"
+        eyebrow="Compare"
+        title="Which one fits."
+        lead="Most teams use more than one: a slice to explore, on-demand cards for bursts, reserved servers once the work is steady."
+      >
+        {/* Phones: a card per product, so nothing scrolls sideways. */}
+        <ul className="flex flex-col gap-3 md:hidden">
+          {PRODUCTS.map((p) => (
+            <li key={p.slug} className="rounded-lg border border-line bg-surface-card px-5 py-4">
+              <Link
+                href={`/products/${p.slug}`}
+                className="flex items-center gap-2.5 text-[15px] font-semibold text-ink-100"
+              >
+                <Icon name={p.icon} size={17} className="text-ink-300" />
+                {p.name}
+              </Link>
+              <dl className="mt-3 grid grid-cols-2 gap-x-4 gap-y-2.5">
+                {COMPARE_COLUMNS.map((c) => (
+                  <div key={c.key} className={c.key === "bestFor" ? "col-span-2" : undefined}>
+                    <dt className="text-[12px] text-ink-500">{c.label}</dt>
+                    <dd className="text-[13.5px] text-ink-300">{p.compare[c.key]}</dd>
+                  </div>
+                ))}
+              </dl>
+            </li>
+          ))}
+        </ul>
+
+        <div className="hidden overflow-x-auto rounded-lg border border-line md:block">
+          <table className="w-full border-collapse">
+            <thead>
+              <tr className="bg-carbon-800/60">
+                {["Product", ...COMPARE_COLUMNS.map((c) => c.label)].map((h) => (
+                  <th key={h} className="cv-label px-4 py-3 text-left text-[10px]">
+                    {h}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {PRODUCTS.map((p) => (
+                <tr key={p.slug} className="border-t border-line-subtle">
+                  <th scope="row" className="px-4 py-3.5 text-left">
+                    <Link
+                      href={`/products/${p.slug}`}
+                      className="inline-flex items-center gap-2.5 text-sm font-semibold text-ink-100 hover:underline"
+                    >
+                      <Icon name={p.icon} size={16} className="text-ink-300" />
+                      {p.name}
+                    </Link>
+                  </th>
+                  {COMPARE_COLUMNS.map((c) => (
+                    <td key={c.key} className="px-4 py-3.5 text-[13.5px] text-ink-400">
+                      {p.compare[c.key]}
+                    </td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </Section>
+
+      <Section
         id="hardware"
         eyebrow="Hardware"
-        title="What the pods and servers run on."
+        title="What it all runs on."
         lead={`${NOW} today. ${SOON} coming soon.`}
       >
         {/* Phones: a card per GPU, so nothing scrolls sideways. */}
