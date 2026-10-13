@@ -190,3 +190,111 @@
 :root[data-motion="reduce"] .cluster-flow {
   animation: none;
 }
+
+/* ── The stack, in detail (technical drawing) ── */
+.stack-plate__inset {
+  fill: none;
+  stroke: var(--line);
+  stroke-width: 0.6;
+}
+.stack-plate__num {
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.stack-plate__spec {
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  letter-spacing: 0.04em;
+  fill: var(--ink-3);
+}
+.stack-leader {
+  stroke: var(--ink-4);
+  stroke-width: 0.7;
+}
+.stack-leader__dot {
+  fill: var(--ink-3);
+}
+.stack-plate.is-active :is(.stack-leader, .stack-leader__dot) {
+  stroke: var(--hydro);
+  fill: var(--hydro);
+}
+.stack-box__top {
+  fill: var(--bg-raised);
+  stroke: var(--line-strong);
+  stroke-width: 0.7;
+  stroke-linejoin: round;
+}
+.stack-box__front {
+  fill: color-mix(in oklch, var(--bg-sunken) 70%, var(--line));
+  stroke: var(--line-strong);
+  stroke-width: 0.7;
+  stroke-linejoin: round;
+}
+.stack-box__side {
+  fill: color-mix(in oklch, var(--bg-sunken) 45%, var(--line));
+  stroke: var(--line-strong);
+  stroke-width: 0.7;
+  stroke-linejoin: round;
+}
+.stack-grid {
+  stroke: var(--line);
+  stroke-width: 0.5;
+}
+.stack-rack-line {
+  stroke: var(--ink-4);
+  stroke-width: 0.6;
+}
+.stack-port {
+  fill: var(--bg);
+  stroke: var(--hydro);
+  stroke-width: 0.5;
+}
+.stack-bay {
+  stroke: var(--ink-4);
+  stroke-width: 1.4;
+  stroke-linecap: round;
+}
+.stack-fan {
+  fill: none;
+  stroke: var(--ink-4);
+  stroke-width: 0.6;
+}
+.stack-lane {
+  fill: none;
+}
+.stack-window {
+  fill: var(--bg-raised);
+  stroke: var(--line-strong);
+  stroke-width: 0.7;
+}
+.stack-window__bar {
+  fill: var(--bg-sunken);
+}
+.stack-window__dot {
+  fill: var(--ink-4);
+}
+.stack-title {
+  fill: none;
+  stroke: var(--line-strong);
+  stroke-width: 0.8;
+}
+.stack-title__rule {
+  stroke: var(--line-strong);
+  stroke-width: 0.6;
+}
+.stack-title__head {
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  fill: var(--ink-2);
+}
+.stack-title__sub {
+  font-family: var(--font-mono);
+  font-size: 8px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  fill: var(--ink-3);
+}

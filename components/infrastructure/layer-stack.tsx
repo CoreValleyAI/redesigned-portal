@@ -20,19 +20,70 @@ import { LAYERS, type LayerId } from "@/copy/en/stack";
 import { cn } from "@/lib/cn";
 import { trackScroll } from "@/lib/motion/scroll";
 
-/* Isometric geometry, in viewBox units. */
-const VB = { w: 560, h: 560 };
-const CX = 280;
-const W = 168; // plate half-width
-const H = 84; // plate half-height (2:1 isometric)
-const T = 13; // plate thickness
-const BASE = 452; // the bottom plate's centre
+/* Isometric geometry, in viewBox units. Plates on the left, callouts to the
+   right, a title block below: an exploded technical drawing. */
+const VB = { w: 720, h: 600 };
+const CX = 250;
+const W = 172; // plate half-width
+const H = 86; // plate half-height (2:1 isometric)
+const T = 9; // plate thickness
+const BASE = 470; // the bottom plate's centre
 const GAP_CLOSED = 30;
-const GAP_OPEN = 86;
+const GAP_OPEN = 88;
 
+type P = readonly [number, number];
 /** A point on a plate's top face: u along the right edge, v along the left, both −1…1. */
-const iso = (u: number, v: number, cy: number) => [CX + ((u - v) * W) / 2, cy + ((u + v) * H) / 2] as const;
-const pts = (list: (readonly [number, number])[]) => list.map(([x, y]) => `${x.toFixed(1)},${y.toFixed(1)}`).join(" ");
+const iso = (u: number, v: number, cy: number, z = 0): P => [CX + ((u - v) * W) / 2, cy + ((u + v) * H) / 2 - z];
+const pts = (list: P[]) => list.map(([x, y]) => `${x.toFixed(1)},${y.toFixed(1)}`).join(" ");
+
+/** An upright box standing on a plate: the footprint u0…u1 × v0…v1, h tall. */
+function Box({
+  u0,
+  u1,
+  v0,
+  v1,
+  h,
+  cy,
+  top = "stack-box__top",
+  children,
+}: {
+  u0: number;
+  u1: number;
+  v0: number;
+  v1: number;
+  h: number;
+  cy: number;
+  top?: string;
+  /** Drawn on the front (u1) face: receives a mapper from (s along v, t up) to the face. */
+  children?: (face: (s: number, t: number) => P) => React.ReactNode;
+}) {
+  const front = (s: number, t: number): P => iso(u1, v0 + (v1 - v0) * s, cy, h * t);
+  return (
+    <g>
+      <polygon
+        points={pts([iso(u0, v1, cy), iso(u1, v1, cy), iso(u1, v1, cy, h), iso(u0, v1, cy, h)])}
+        className="stack-box__side"
+      />
+      <polygon
+        points={pts([iso(u1, v0, cy), iso(u1, v1, cy), iso(u1, v1, cy, h), iso(u1, v0, cy, h)])}
+        className="stack-box__front"
+      />
+      <polygon
+        points={pts([iso(u0, v0, cy, h), iso(u1, v0, cy, h), iso(u1, v1, cy, h), iso(u0, v1, cy, h)])}
+        className={top}
+      />
+      {children?.(front)}
+    </g>
+  );
+}
+
+const CALLOUT: Record<LayerId, string> = {
+  work: "HPE AI Essentials · JupyterLab · Kubeflow",
+  software: "NVIDIA AI Enterprise · NIM",
+  compute: "2 × DL380a Gen12 · 8 × H200 NVL",
+  fabric: "400 Gb/s Spectrum · 62 TB all-flash",
+  facility: "Kathmandu Valley · hydropower",
+};
 
 function Plate({ index, id, active }: { index: number; id: LayerId; active: boolean }) {
   // Drawn at the closed position; CSS moves it up as the stack opens.
@@ -56,6 +107,7 @@ function Plate({ index, id, active }: { index: number; id: LayerId; active: bool
     [CX + W, cy + T],
     [CX, cy + H + T],
   ]);
+  const lx = CX + W + 22;
   return (
     <g
       className={cn("stack-plate", active && "is-active")}
@@ -64,108 +116,171 @@ function Plate({ index, id, active }: { index: number; id: LayerId; active: bool
       <polygon points={left} className="stack-plate__side" />
       <polygon points={right} className="stack-plate__side stack-plate__side--r" />
       <polygon points={top} className="stack-plate__top" />
+      {/* A fine border inset on the plate, like a machined edge. */}
+      <polygon
+        points={pts([iso(-0.94, -0.94, cy), iso(0.94, -0.94, cy), iso(0.94, 0.94, cy), iso(-0.94, 0.94, cy)])}
+        className="stack-plate__inset"
+      />
       <Details id={id} cy={cy} />
-      <text x={CX - W - 14} y={cy + 4} textAnchor="end" className="stack-plate__num">
-        {String(index + 1).padStart(2, "0")}
+      {/* Callout: from the plate's right corner to its label. */}
+      <line x1={CX + W + 3} y1={cy} x2={lx - 4} y2={cy} className="stack-leader" />
+      <circle cx={CX + W + 3} cy={cy} r="1.6" className="stack-leader__dot" />
+      <text x={lx} y={cy - 3} className="stack-plate__num">
+        {String(index + 1).padStart(2, "0")} · {LAYERS[index]!.name}
+      </text>
+      <text x={lx} y={cy + 11} className="stack-plate__spec">
+        {CALLOUT[id]}
       </text>
     </g>
   );
 }
 
-/** What is drawn on each plate's top face. */
+/** What stands on each plate. */
 function Details({ id, cy }: { id: LayerId; cy: number }) {
   if (id === "facility") {
-    // The floor grid, and the power feed running in.
-    const dots: React.ReactNode[] = [];
-    for (let i = -3; i <= 3; i++)
-      for (let j = -3; j <= 3; j++) {
-        const [x, y] = iso(i / 4, j / 4, cy);
-        dots.push(<circle key={`${i}${j}`} cx={x} cy={y} r={1.6} className="stack-dot" />);
-      }
-    const [ax, ay] = iso(-0.95, 0.62, cy);
-    const [bx, by] = iso(0.75, 0.62, cy);
+    // A raised floor of tiles, two rows of racks across a cold aisle, and
+    // the power feed coming in.
+    const tiles: React.ReactNode[] = [];
+    for (let i = -6; i <= 6; i++) {
+      const [a1, a2] = [iso(i / 7, -0.9, cy), iso(i / 7, 0.9, cy)];
+      const [b1, b2] = [iso(-0.9, i / 7, cy), iso(0.9, i / 7, cy)];
+      tiles.push(<line key={`a${i}`} x1={a1[0]} y1={a1[1]} x2={a2[0]} y2={a2[1]} className="stack-grid" />);
+      tiles.push(<line key={`b${i}`} x1={b1[0]} y1={b1[1]} x2={b2[0]} y2={b2[1]} className="stack-grid" />);
+    }
+    const racks = [-0.62, -0.38, -0.14, 0.1, 0.34].flatMap((v) => [
+      { u0: -0.55, u1: -0.3, v },
+      { u0: 0.1, u1: 0.35, v },
+    ]);
+    const [p0, p1] = [iso(-0.92, 0.75, cy), iso(0.75, 0.75, cy)];
     return (
       <g>
-        {dots}
-        <line x1={ax} y1={ay} x2={bx} y2={by} className="stack-feed" pathLength={1} />
+        {tiles}
+        {racks.map((r, i) => (
+          <Box key={i} u0={r.u0} u1={r.u1} v0={r.v} v1={r.v + 0.2} h={22} cy={cy}>
+            {(face) =>
+              [0.25, 0.45, 0.65, 0.85].map((t) => {
+                const [a, b] = [face(0.12, t), face(0.88, t)];
+                return <line key={t} x1={a[0]} y1={a[1]} x2={b[0]} y2={b[1]} className="stack-rack-line" />;
+              })
+            }
+          </Box>
+        ))}
+        <line x1={p0[0]} y1={p0[1]} x2={p1[0]} y2={p1[1]} className="stack-feed" pathLength={1} />
       </g>
     );
   }
   if (id === "fabric") {
-    // Two fabric lanes, and storage blocks beside them.
-    const lane = (v: number) => {
-      const [x1, y1] = iso(-0.85, v, cy);
-      const [x2, y2] = iso(0.3, v, cy);
-      return <line key={v} x1={x1} y1={y1} x2={x2} y2={y2} className="stack-lane" />;
-    };
-    const blocks = [-0.55, -0.1, 0.35].map((v) => {
-      const p = [iso(0.5, v - 0.15, cy), iso(0.85, v - 0.15, cy), iso(0.85, v + 0.15, cy), iso(0.5, v + 0.15, cy)];
-      return <polygon key={v} points={pts(p)} className="stack-block" />;
-    });
+    // The switch with its ports, and the all-flash storage shelf with its
+    // drive bays; fibre runs between them.
+    const [c0, c1] = [iso(-0.05, -0.3, cy, 4), iso(0.1, 0.45, cy, 4)];
     return (
       <g>
-        {lane(-0.3)}
-        {lane(0.05)}
-        {lane(0.4)}
-        {blocks}
+        <Box u0={-0.75} u1={-0.05} v0={-0.55} v1={-0.05} h={9} cy={cy}>
+          {(face) =>
+            Array.from({ length: 12 }, (_, k) => {
+              const [x, y] = face(0.08 + k * 0.075, 0.5);
+              return <rect key={k} x={x - 1.6} y={y - 1.4} width="3.2" height="2.8" rx="0.4" className="stack-port" />;
+            })
+          }
+        </Box>
+        <Box u0={0.1} u1={0.75} v0={0.05} v1={0.75} h={16} cy={cy}>
+          {(face) =>
+            [0.3, 0.7].flatMap((t) =>
+              Array.from({ length: 8 }, (_, k) => {
+                const [a, b] = [face(0.08 + k * 0.11, t - 0.15), face(0.08 + k * 0.11, t + 0.15)];
+                return <line key={`${t}-${k}`} x1={a[0]} y1={a[1]} x2={b[0]} y2={b[1]} className="stack-bay" />;
+              }),
+            )
+          }
+        </Box>
+        <path
+          d={`M${c0[0]} ${c0[1]} Q ${(c0[0] + c1[0]) / 2} ${c0[1] + 18} ${c1[0]} ${c1[1]}`}
+          className="stack-lane"
+        />
       </g>
     );
   }
   if (id === "compute") {
-    // Two servers, four GPUs each.
+    // Two 2U servers; on each top, four GPUs in a row, lit.
     return (
       <g>
-        {[-0.42, 0.42].map((v) => {
-          const box = [iso(-0.8, v - 0.3, cy), iso(0.8, v - 0.3, cy), iso(0.8, v + 0.3, cy), iso(-0.8, v + 0.3, cy)];
-          return (
-            <g key={v}>
-              <polygon points={pts(box)} className="stack-server" />
-              {[-0.55, -0.18, 0.18, 0.55].map((u) => {
-                const g = [
-                  iso(u - 0.13, v - 0.17, cy),
-                  iso(u + 0.13, v - 0.17, cy),
-                  iso(u + 0.13, v + 0.17, cy),
-                  iso(u - 0.13, v + 0.17, cy),
-                ];
-                return <polygon key={u} points={pts(g)} className="stack-gpu" />;
-              })}
-            </g>
-          );
-        })}
+        {[-0.55, 0.15].map((v0) => (
+          <Box key={v0} u0={-0.75} u1={0.75} v0={v0} v1={v0 + 0.5} h={14} cy={cy}>
+            {(face) => (
+              <>
+                {Array.from({ length: 10 }, (_, k) => {
+                  const [x, y] = face(0.06 + k * 0.09, 0.5);
+                  return <circle key={k} cx={x} cy={y} r="1.7" className="stack-fan" />;
+                })}
+              </>
+            )}
+          </Box>
+        ))}
+        {[-0.55, 0.15].flatMap((v0) =>
+          [-0.55, -0.2, 0.15, 0.5].map((u) => (
+            <polygon
+              key={`${v0}-${u}`}
+              points={pts([
+                iso(u - 0.13, v0 + 0.1, cy, 14),
+                iso(u + 0.13, v0 + 0.1, cy, 14),
+                iso(u + 0.13, v0 + 0.4, cy, 14),
+                iso(u - 0.13, v0 + 0.4, cy, 14),
+              ])}
+              className="stack-gpu"
+            />
+          )),
+        )}
       </g>
     );
   }
   if (id === "software") {
-    // Services as tiles.
+    // Services as raised tiles, a few of them running.
     const tiles: React.ReactNode[] = [];
-    for (let i = 0; i < 3; i++)
+    for (let i = 0; i < 4; i++)
       for (let j = 0; j < 3; j++) {
-        const u = -0.6 + i * 0.6;
-        const v = -0.6 + j * 0.6;
-        const t = [
-          iso(u - 0.22, v - 0.22, cy),
-          iso(u + 0.22, v - 0.22, cy),
-          iso(u + 0.22, v + 0.22, cy),
-          iso(u - 0.22, v + 0.22, cy),
-        ];
+        const u = -0.66 + i * 0.44;
+        const v = -0.5 + j * 0.5;
+        const on = (i + j * 2) % 3 === 0;
         tiles.push(
-          <polygon key={`${i}${j}`} points={pts(t)} className={cn("stack-tile", (i + j) % 3 === 0 && "is-on")} />,
+          <Box
+            key={`${i}${j}`}
+            u0={u - 0.17}
+            u1={u + 0.17}
+            v0={v - 0.18}
+            v1={v + 0.18}
+            h={on ? 6 : 3}
+            cy={cy}
+            top={on ? "stack-tile is-on" : "stack-tile"}
+          />,
         );
       }
     return <g>{tiles}</g>;
   }
-  // Your workspace: lines of code and a cursor.
-  const lines = [0.9, 0.55, 0.75, 0.4].map((len, k) => {
-    const v = -0.55 + k * 0.32;
-    const [x1, y1] = iso(-0.8, v, cy);
-    const [x2, y2] = iso(-0.8 + len * 1.4, v, cy);
-    return <line key={k} x1={x1} y1={y1} x2={x2} y2={y2} className={cn("stack-code", k === 1 && "is-on")} />;
-  });
-  const [cxp, cyp] = iso(-0.8 + 0.4 * 1.4 + 0.08, 0.41, cy);
+  // Your workspace: a notebook window — title bar, cells of code, a cursor.
+  const win = pts([iso(-0.8, -0.7, cy, 2), iso(0.8, -0.7, cy, 2), iso(0.8, 0.7, cy, 2), iso(-0.8, 0.7, cy, 2)]);
+  const bar = pts([iso(-0.8, -0.7, cy, 2), iso(-0.62, -0.7, cy, 2), iso(-0.62, 0.7, cy, 2), iso(-0.8, 0.7, cy, 2)]);
+  const lines = [
+    [0.9, false],
+    [0.55, true],
+    [0.75, false],
+    [0.4, false],
+    [0.62, true],
+  ] as const;
+  const cur = iso(-0.5 + 0.28 * 5 + 0.04, -0.6 + 0.55 * 1.2 + 0.06, cy, 2);
   return (
     <g>
-      {lines}
-      <circle cx={cxp} cy={cyp} r={2.6} className="stack-cursor" />
+      <polygon points={win} className="stack-window" />
+      <polygon points={bar} className="stack-window__bar" />
+      {[-0.55, -0.45, -0.35].map((v) => {
+        const [x, y] = iso(-0.71, v, cy, 2);
+        return <circle key={v} cx={x} cy={y} r="1.6" className="stack-window__dot" />;
+      })}
+      {lines.map(([len, on], k) => {
+        const u = -0.5 + k * 0.28;
+        const [a, b] = [iso(u, -0.6, cy, 2), iso(u, -0.6 + len * 1.2, cy, 2)];
+        return <line key={k} x1={a[0]} y1={a[1]} x2={b[0]} y2={b[1]} className={cn("stack-code", on && "is-on")} />;
+      })}
+      <circle cx={cur[0]} cy={cur[1]} r={2.4} className="stack-cursor" />
     </g>
   );
 }
@@ -195,7 +310,7 @@ export function LayerStack({ className, compact = false }: { className?: string;
 
   return (
     <div className={cn("grid items-center gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.05fr)] lg:gap-16", className)}>
-      <div ref={figure} aria-hidden="true" className="stack-figure relative mx-auto w-full max-w-[34rem] lg:order-2">
+      <div ref={figure} aria-hidden="true" className="stack-figure relative mx-auto w-full max-w-[44rem] lg:order-2">
         <svg viewBox={`0 0 ${VB.w} ${VB.h}`} className="h-auto w-full overflow-visible">
           {/* Bottom plate first, so the ones above overlap it. */}
           {[...LAYERS]
@@ -205,6 +320,17 @@ export function LayerStack({ className, compact = false }: { className?: string;
               <Plate key={l.id} index={i} id={l.id} active={active === l.id} />
             ))}
           <circle cx={CX} cy={BASE} r={4} className="stack-packet" />
+          {/* Title block. */}
+          <g>
+            <rect x="430" y="540" width="282" height="48" rx="2" className="stack-title" />
+            <line x1="430" y1="558" x2="712" y2="558" className="stack-title__rule" />
+            <text x="439" y="553" className="stack-title__head">
+              CoreValley · the stack
+            </text>
+            <text x="439" y="575" className="stack-title__sub">
+              Exploded view · illustration · not to scale
+            </text>
+          </g>
         </svg>
       </div>
       <ol className="flex flex-col lg:order-1" onPointerLeave={() => setActive(null)}>
