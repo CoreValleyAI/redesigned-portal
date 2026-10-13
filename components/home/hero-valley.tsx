@@ -14,6 +14,9 @@ export function HeroValley() {
       {/* Sky: deepest at the top, warming to the horizon. */}
       <div className="absolute inset-0 bg-[radial-gradient(120%_70%_at_50%_78%,color-mix(in_oklch,var(--hydro)_9%,var(--bg))_0%,var(--bg)_62%)] dark:bg-[radial-gradient(120%_70%_at_50%_78%,color-mix(in_oklch,var(--hydro)_13%,var(--bg))_0%,var(--bg)_60%)]" />
 
+      {/* Daylight: a pale, cool sky above the ranges (the night has none). */}
+      <div className="absolute inset-x-0 top-0 h-[62%] bg-[linear-gradient(180deg,color-mix(in_oklch,var(--glow-2)_13%,var(--bg))_0%,color-mix(in_oklch,var(--glow-2)_5%,var(--bg))_55%,transparent_100%)] dark:hidden" />
+
       {/* The dot plane, receding to the horizon. */}
       <div className="absolute inset-x-[-40%] bottom-[-8%] h-[62%] transition-opacity duration-[1500ms] ease-out [perspective:520px] [perspective-origin:50%_0%] group-data-[gl=on]/hero:opacity-0">
         <div

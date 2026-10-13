@@ -19,20 +19,25 @@
  * into the valley, and the speed of scrolling runs a shimmer across it,
  * like wind over a field.
  *
- * Glass: DOM panels over the valley marked [data-glass-panel] (the hero's
- * stat strip) are drawn by the scene as liquid glass (lib/gl/glass.ts): the
- * valley itself, blurred and bent at the rim. Each panel is told
- * (data-glass="gl") so its CSS glass steps aside.
+ * Glass: DOM elements over the valley marked [data-glass-panel] — the
+ * hero's two calls to action and its fact strip — are drawn by the scene as
+ * liquid glass (lib/gl/glass.ts): the valley itself, blurred and bent at
+ * the rim; data-glass-panel="hydro" is a pane tinted hydro (the primary
+ * button). Each element is told (data-glass="gl") so its CSS glass steps
+ * aside. The panes follow their elements as they move (the magnetic pull,
+ * a press), fade in with them, and brighten under the hand.
  *
- * Two looks. Night Valley (dark): light summed additively, glowing. Glacier
- * (light): a halftone relief print. Tone is carried by the size of the dot,
- * as in print: shadowed slopes take big ink dots, sunlit ones small, the
- * snow is mostly paper, and the ink thins toward the horizon. The valley
- * floor and the rivers are printed in hydro; the pointer swells the dots
- * and deepens them to hydro rather than glowing.
+ * Two looks, one composition. Night Valley (dark): light summed additively,
+ * glowing. Daylight (light): the same picture in ink on porcelain. As at
+ * night, the unlit hills almost vanish — a faint wash, strongest in the
+ * shadowed slopes — so the image is carried by what stands out: the
+ * Himalaya drawn by their shadowed faces in slate blue against a pale sky,
+ * the valley floor and the rivers in colour. A second, faint pass draws the
+ * lit floor large and soft (u_halo), the daylight answer to the night's
+ * glow. The pointer deepens the ink to hydro rather than glowing.
  */
 import { clamp01, compileProgram, lerp, loadDataTexture, lookAt, multiply, perspective, uniforms } from "@/lib/gl/core";
-import { createGlassPass, measurePanels, type GlassRect } from "@/lib/gl/glass";
+import { createGlassPass, measurePanels, type GlassRect, type GlassStyle } from "@/lib/gl/glass";
 import type { FrameInfo, Scene, SceneContext, SceneFactory } from "@/lib/gl/stage";
 import { asset } from "@/lib/links";
 import { encodeSrgb } from "@/lib/theme";
@@ -62,6 +67,7 @@ uniform float u_dark;
 uniform vec2 u_city[3];      // Kathmandu, Lalitpur, Bhaktapur (uv)
 uniform vec3 u_tap[3];       // taps: ndc x, ndc y, age in s (< 0: none)
 uniform vec2 u_wind;         // shimmer from scroll speed: amount 0–1, phase
+uniform float u_halo;        // daylight's soft pass under the lit floor
 out vec3 v_color;
 out float v_alpha;
 
@@ -130,15 +136,14 @@ void main() {
   if (u_dark > 0.5) {
     size = 0.8 + 0.5 * shade + (0.35 + 0.6 * city) * lit * twinkle + 0.7 * riverOn + 1.2 * glow + 1.4 * (front + riverFront) + 0.6 * snow + 1.3 * ripple + 0.9 * wind;
   } else {
-    // Halftone: the darker the tone, the bigger the dot.
-    float tone = 0.12 + 0.88 * (1.0 - shade);
-    size = mix(0.38 + 1.25 * tone, 0.3 + 0.55 * tone, snow);
-    size = max(size, lit * (0.95 + 0.45 * twinkle * (0.6 + 0.7 * city)));
-    size = max(size, riverOn * (0.9 + 0.3 * flow));
-    size += 1.1 * glow + 1.2 * ripple + 0.8 * wind + 1.2 * energy;
+    // Daylight: the night's sizes, a touch finer; the weight is in the ink.
+    size = 0.7 + 0.35 * (1.0 - shade) + (0.75 + 0.75 * city) * lit * twinkle + 0.7 * riverOn + 1.1 * glow + 1.3 * energy + 1.5 * snow * (0.35 + 0.65 * (1.0 - shade)) + 1.2 * ripple + 0.8 * wind;
   }
   size *= u_px / depth;
-  gl_PointSize = clamp(size, 1.0, u_maxPx);
+  // The soft pass draws only the lit floor and the hand's light, large.
+  float haloOn = clamp(lit * (0.55 + 0.45 * twinkle) + glow + energy + ripple, 0.0, 1.0);
+  bool halo = u_halo > 0.5;
+  gl_PointSize = halo ? clamp(size * 3.6, 1.0, u_maxPx * 3.0) : clamp(size, 1.0, u_maxPx);
 
   // Fade the field's edges and the near distance.
   float edge = smoothstep(0.0, 0.12, a_uv.x) * smoothstep(1.0, 0.88, a_uv.x)
@@ -161,40 +166,52 @@ void main() {
     a = (0.42 + 0.45 * shade) + lit * 0.6 + riverOn * 0.5 + snow * 0.5 + glow * 0.6 + front + riverFront + ripple * 0.7 + wind * 0.4;
     a = clamp(a, 0.0, 1.0) * far;
   } else {
-    // Glacier: one ink, its weight in the dot size; snow a cool grey.
-    col = mix(u_cOff, u_cSnow, snow);
-    a = mix(0.56, 0.46, snow);
-    col = mix(col, u_cLit, lit);
-    a = max(a, lit * 0.92);
+    // Daylight. The hills are a faint wash, strongest in shadow; the snow
+    // is drawn by its shadowed faces; the floor and rivers carry colour.
+    float shadow = 1.0 - shade;
+    col = u_cOff;
+    a = 0.04 + 0.2 * shadow * shadow;
+    col = mix(col, u_cSnow, snow);
+    a = mix(a, 0.16 + 0.8 * pow(shadow, 1.2), snow);
+    col = mix(col, u_cLit * mix(1.0, 0.8, city), lit);
+    a = max(a, lit * (0.72 + 0.28 * twinkle * (0.6 + 0.6 * city)));
     float wet = riverOn * (1.0 - lit * 0.5);
     col = mix(col, u_cRiver, wet);
-    a = max(a, wet * 0.85);
+    a = max(a, wet * (0.5 + 0.3 * flow));
     float touch = clamp(glow + ripple + wind * 0.7 + energy, 0.0, 1.0);
     col = mix(col, u_cLit, touch * 0.9);
-    a = max(a, touch * 0.9);
-    // Aerial perspective: the far ranges fade to paper; and the ink stays
-    // light behind the headline, so the words sit on a clean page.
-    float far = mix(0.12 + 0.3 * snow, 1.0, smoothstep(12.5, 5.0, depth));
+    a = max(a, touch * 0.85);
+    // Aerial perspective: the far hills fade into the sky (the snow less);
+    // and the ink stays light behind the headline.
+    float far = mix(0.35 + 0.62 * snow, 1.0, smoothstep(12.5, 5.0, depth));
     vec2 q = (clip.xy / clip.w - vec2(0.0, 0.18)) * vec2(1.05, 1.9);
-    float hush = mix(0.3, 1.0, smoothstep(0.35, 0.95, length(q)));
-    a = clamp(a, 0.0, 1.0) * far * mix(hush, 1.0, lit);
+    float hush = mix(0.35, 1.0, smoothstep(0.35, 0.95, length(q)));
+    a = clamp(a, 0.0, 1.0) * far * mix(hush, 1.0, max(lit, snow));
+    if (halo) {
+      col = mix(u_cLit, u_cRiver, 0.25);
+      a = haloOn * 0.11 * far;
+    }
   }
   v_color = col;
   v_alpha = a * edge * near;
-  gl_Position = clip;
+  // The soft pass skips everything it would not light (off screen).
+  gl_Position = halo && haloOn < 0.02 ? vec4(2.0, 2.0, 2.0, 1.0) : clip;
 }`;
 
 const FS = /* glsl */ `#version 300 es
 precision mediump float;
 uniform highp float u_dark;
+uniform highp float u_halo;
 in vec3 v_color;
 in float v_alpha;
 out vec4 o;
 void main() {
   vec2 c = gl_PointCoord - 0.5;
   float d = length(c) * 2.0;
-  // Night: a soft point of light. Glacier: a printed dot with a crisp rim.
+  // Night: a soft point of light. Daylight: an ink dot with a crisp rim;
+  // its soft pass, a gaussian haze.
   float shape = mix(1.0 - smoothstep(0.55, 0.9, d), smoothstep(1.0, 0.5, d), u_dark);
+  if (u_halo > 0.5) shape = exp(-d * d * 3.5) * (1.0 - smoothstep(0.85, 1.0, d));
   float a = shape * v_alpha;
   if (a < 0.004) discard;
   o = vec4(v_color * a, a);
@@ -242,9 +259,7 @@ export const createValleyScene: SceneFactory = async (ctx: SceneContext): Promis
   const program = compileProgram(gl, VS, FS);
   const u = uniforms(gl, program);
 
-  // The grid of dots, with a seed each.
-  // Two fields of dots: the night's, fine; and Glacier's halftone, on a
-  // coarser screen (about 0.56 of the pitch), whose dots draw larger.
+  // The grid of dots, with a seed each (one field for both looks).
   const hash = (a: number, b: number) => {
     const s = Math.sin(a * 127.1 + b * 311.7) * 43758.5453;
     return s - Math.floor(s);
@@ -274,14 +289,7 @@ export const createValleyScene: SceneFactory = async (ctx: SceneContext): Promis
     return { vao, buf, count };
   };
   const [cols, rows] = GRID[tier];
-  // Each theme's field is built the first time that theme is drawn.
-  let night: ReturnType<typeof field> | null = null;
-  let paper: ReturnType<typeof field> | null = null;
-  const fieldFor = (dark: boolean) =>
-    dark
-      ? (night ??= field(cols, rows, 0.5))
-      : // A printed screen is regular: less jitter.
-        (paper ??= field(Math.round(cols * 0.56), Math.round(rows * 0.56), 0.18));
+  const dots = field(cols, rows, 0.5);
 
   let width = 1;
   let height = 1;
@@ -299,9 +307,22 @@ export const createValleyScene: SceneFactory = async (ctx: SceneContext): Promis
   let glass: ReturnType<typeof createGlassPass> | null = null;
   let panels: GlassRect[] = [];
   let glassShown = false;
+  // Until every element has faded in, its painted opacity is read each frame.
+  let entered = false;
+  // While a hand is about, the elements may move: measure them each frame.
+  let trackUntil = 0;
+  const lifts = glassEls.map(() => 0);
   const measureGlass = () => {
     panels = glass ? measurePanels(ctx.canvas, glassEls) : [];
     ctx.invalidate();
+  };
+  /** An element's opacity as painted: its own times its ancestors' (to the hero). */
+  const paintedOpacity = (el: HTMLElement) => {
+    let o = 1;
+    for (let n: HTMLElement | null = el; n && n !== host; n = n.parentElement) {
+      o *= parseFloat(getComputedStyle(n).opacity);
+    }
+    return Number.isFinite(o) ? o : 1;
   };
   let glassRO: ResizeObserver | null = null;
   if (glassEls.length) {
@@ -387,16 +408,16 @@ export const createValleyScene: SceneFactory = async (ctx: SceneContext): Promis
         lit = [...pal.hydro];
         river = pal.glow2.map((v, i) => v * 0.55 + pal.hydro[i]! * 0.45);
       } else {
-        // Glacier: slate ink for the relief, a cool grey for the far snow,
-        // the page hydro for the lit floor and a teal-green for the rivers.
+        // Daylight: slate ink for the hills, slate blue for the snow's
+        // shadows, the page's hydro for the floor and a teal for the rivers.
         const hydro = encodeSrgb(pal.hydro);
         const ink = encodeSrgb(pal.ink);
         const ink3 = encodeSrgb(pal.ink3);
         const glow2 = encodeSrgb(pal.glow2);
-        off = ink.map((v, i) => v * 0.7 + ink3[i]! * 0.3);
-        snow = glow2.map((v, i) => v * 0.35 + ink3[i]! * 0.65);
+        off = ink.map((v, i) => v * 0.45 + ink3[i]! * 0.55);
+        snow = ink3.map((v, i) => (v * 0.62 + glow2[i]! * 0.38) * 0.82);
         lit = [...hydro];
-        river = glow2.map((v, i) => v * 0.4 + hydro[i]! * 0.6);
+        river = glow2.map((v, i) => (v * 0.5 + hydro[i]! * 0.5) * 0.85);
       }
 
       gl.clearColor(0, 0, 0, 0);
@@ -420,11 +441,10 @@ export const createValleyScene: SceneFactory = async (ctx: SceneContext): Promis
       gl.uniform1f(u("u_reach"), reach);
       gl.uniform3f(u("u_pointer"), f.pointer.x, f.pointer.y, f.pointer.presence);
       gl.uniform1f(u("u_aspect"), aspect);
-      const dots = fieldFor(dark);
       const density = Math.sqrt((GRID[3][0] * GRID[3][1]) / dots.count);
       const scale = Math.max(0.8, Math.min(1.3, width / dpr / 1440));
       gl.uniform1f(u("u_px"), 11 * dpr * density * scale);
-      gl.uniform1f(u("u_maxPx"), (dark ? 6.5 : 4.6) * dpr);
+      gl.uniform1f(u("u_maxPx"), 6.5 * dpr);
       gl.uniform3fv(u("u_cOff"), off);
       gl.uniform3fv(u("u_cLit"), lit);
       gl.uniform3fv(u("u_cSnow"), snow);
@@ -441,12 +461,37 @@ export const createValleyScene: SceneFactory = async (ctx: SceneContext): Promis
       gl.uniform2f(u("u_wind"), wind, windPhase);
 
       gl.bindVertexArray(dots.vao);
+      if (!dark) {
+        gl.uniform1f(u("u_halo"), 1);
+        gl.drawArrays(gl.POINTS, 0, dots.count);
+      }
+      gl.uniform1f(u("u_halo"), 0);
       gl.drawArrays(gl.POINTS, 0, dots.count);
       gl.bindVertexArray(null);
 
-      // The glass panels, made of the valley just drawn.
+      // The glass panes, made of the valley just drawn.
       if (glass && panels.length) {
-        glass.draw(panels, {
+        if (f.pointer.presence > 0.01 || f.pointer.down) trackUntil = f.time + 0.9;
+        if (!entered || f.time < trackUntil) panels = measurePanels(ctx.canvas, glassEls);
+        const hydroTint = encodeSrgb(pal.hydro);
+        const styled: (GlassRect & GlassStyle)[] = panels.map((r, i) => {
+          const el = glassEls[i]!;
+          const want = el.matches(":active") ? 1 : el.matches(":hover, :focus-visible") ? 0.6 : 0;
+          lifts[i] = lifts[i]! + (want - lifts[i]!) * (1 - Math.exp(-f.dt * 14));
+          return {
+            ...r,
+            opacity: entered ? 1 : paintedOpacity(el),
+            lift: lifts[i],
+            ...(el.dataset.glassPanel === "hydro"
+              ? {
+                  tint: [hydroTint[0], hydroTint[1], hydroTint[2], dark ? 0.86 : 0.94] as const,
+                  textLum: dark ? 0.02 : 1,
+                }
+              : {}),
+          };
+        });
+        if (!entered) entered = styled.every((p) => (p.opacity ?? 1) > 0.999);
+        glass.draw(styled, {
           dark,
           bg: encodeSrgb(pal.bg),
           hydro: encodeSrgb(pal.hydro),
@@ -470,11 +515,8 @@ export const createValleyScene: SceneFactory = async (ctx: SceneContext): Promis
       glassRO?.disconnect();
       glass?.dispose();
       for (const el of glassEls) delete el.dataset.glass;
-      for (const d of [night, paper]) {
-        if (!d) continue;
-        gl.deleteBuffer(d.buf);
-        gl.deleteVertexArray(d.vao);
-      }
+      gl.deleteBuffer(dots.buf);
+      gl.deleteVertexArray(dots.vao);
       gl.deleteTexture(tex.texture);
       gl.deleteProgram(program);
     },
