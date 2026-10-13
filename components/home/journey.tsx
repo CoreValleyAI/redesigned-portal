@@ -44,7 +44,7 @@ export function Journey({
               <li
                 key={b.id}
                 data-beat={i}
-                className="flex min-h-[48svh] flex-col justify-center gap-5 border-t border-line py-12 first:border-t-0 lg:min-h-[64svh] lg:border-t-0 lg:py-16"
+                className="flex flex-col justify-center gap-5 border-t border-line py-10 first:border-t-0 lg:min-h-[64svh] lg:border-t-0 lg:py-16"
               >
                 <div className="flex items-center gap-4">
                   <DotGlyph name={b.glyph} className="size-9 lg:hidden" on />

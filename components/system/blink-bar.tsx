@@ -37,9 +37,9 @@ export function BlinkBar({
           />
         ))}
       </div>
-      <figcaption className="type-caption flex justify-between text-ink-3">
+      <figcaption className="type-caption flex flex-col gap-1 text-ink-3 sm:flex-row sm:justify-between sm:gap-6">
         <span>{label}</span>
-        <span>a quick blink · {blink} ms</span>
+        <span className="sm:text-right">a quick blink · {blink} ms</span>
       </figcaption>
     </figure>
   );
