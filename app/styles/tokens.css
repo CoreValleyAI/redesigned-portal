@@ -71,14 +71,14 @@
 :root[data-theme="dark"] {
   color-scheme: dark;
 
-  --bg: oklch(0.165 0.014 252);
-  --bg-raised: oklch(0.205 0.014 252);
-  --bg-sunken: oklch(0.135 0.012 252);
-  --bg-elevated: oklch(0.235 0.014 252);
-  --bg-glass: oklch(0.165 0.014 252 / 0.74);
+  --bg: oklch(0 0 0);
+  --bg-raised: oklch(0.15 0.006 252);
+  --bg-sunken: oklch(0.1 0.004 252);
+  --bg-elevated: oklch(0.19 0.008 252);
+  --bg-glass: oklch(0 0 0 / 0.66);
 
-  --line: oklch(0.3 0.012 252);
-  --line-soft: oklch(0.25 0.012 252);
+  --line: oklch(0.26 0.008 252);
+  --line-soft: oklch(0.2 0.006 252);
   --line-strong: oklch(0.52 0.014 252);
 
   --ink: oklch(0.96 0.005 250);
@@ -110,13 +110,13 @@
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme]) {
     color-scheme: dark;
-    --bg: oklch(0.165 0.014 252);
-    --bg-raised: oklch(0.205 0.014 252);
-    --bg-sunken: oklch(0.135 0.012 252);
-    --bg-elevated: oklch(0.235 0.014 252);
-    --bg-glass: oklch(0.165 0.014 252 / 0.74);
-    --line: oklch(0.3 0.012 252);
-    --line-soft: oklch(0.25 0.012 252);
+    --bg: oklch(0 0 0);
+    --bg-raised: oklch(0.15 0.006 252);
+    --bg-sunken: oklch(0.1 0.004 252);
+    --bg-elevated: oklch(0.19 0.008 252);
+    --bg-glass: oklch(0 0 0 / 0.66);
+    --line: oklch(0.26 0.008 252);
+    --line-soft: oklch(0.2 0.006 252);
     --line-strong: oklch(0.52 0.014 252);
     --ink: oklch(0.96 0.005 250);
     --ink-2: oklch(0.78 0.01 250);
