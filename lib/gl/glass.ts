@@ -29,6 +29,18 @@ export interface GlassRect {
   r: number;
 }
 
+/** How one pane looks, beyond the theme's clear glass. */
+export interface GlassStyle {
+  /** Display-encoded tint and its strength (a coloured pane: a button). */
+  tint?: readonly [number, number, number, number];
+  /** Relative luminance of the text on the pane (for the contrast scrim). */
+  textLum?: number;
+  /** 0–1: the element's own opacity (entrance fades). */
+  opacity?: number;
+  /** 0–1: hover or press, which brightens the pane and its rim. */
+  lift?: number;
+}
+
 export interface GlassLook {
   dark: boolean;
   /** Display-encoded colours (what the canvas holds). */
@@ -107,6 +119,9 @@ uniform float u_minContrast;
 uniform vec2 u_light;
 uniform float u_specular;
 uniform float u_shadow;
+uniform float u_opacity;
+uniform float u_lift;
+uniform float u_tinted;       // a coloured pane: tint mixed as displayed, so it stays saturated
 uniform vec3 u_skyA;          // the sky at its centre
 uniform vec3 u_skyB;          // the background
 uniform vec4 u_sky;           // cx, cy, rx, ry (0-1 of the canvas)
@@ -176,9 +191,10 @@ void main() {
   }
 
   // Tint, then a scrim that guarantees the text's contrast (in linear light).
-  vec3 lin = pow(col, vec3(2.2));
+  // A coloured pane is mixed as displayed (mixing a dark green with white
+  // in linear light would wash it out); clear glass is mixed in linear light.
   vec3 tint = pow(u_tint.rgb, vec3(2.2));
-  lin = mix(lin, tint, u_tint.a);
+  vec3 lin = u_tinted > 0.5 ? pow(mix(col, u_tint.rgb, u_tint.a), vec3(2.2)) : mix(pow(col, vec3(2.2)), tint, u_tint.a);
   float Lb = dot(lin, LUMA), Lk = dot(tint, LUMA);
   bool lightText = u_textLum > Lk;
   float target = lightText ? (u_textLum + 0.05) / u_minContrast - 0.05 : u_minContrast * (u_textLum + 0.05) - 0.05;
@@ -197,9 +213,11 @@ void main() {
   float fresnel = pow(1.0 - N.z, 5.0);
   float facing = dot(nSmooth, u_light);
   float rimLine = (1.0 - smoothstep(0.0, 1.5, inside)) * (0.25 + 0.75 * max(facing, 0.0) + 0.35 * max(-facing, 0.0));
-  col += u_specular * (0.55 * glint + 0.3 * fresnel + 0.7 * rimLine);
+  col += (u_specular * (u_tinted > 0.5 ? 0.5 : 1.0) + 0.35 * u_lift) * (0.55 * glint + 0.3 * fresnel + 0.7 * rimLine);
+  col = mix(col, vec3(1.0), 0.07 * u_lift);
 
-  o = vec4(min(col, vec3(1.0)) * coverage, coverage + shadow * (1.0 - coverage));
+  vec4 res = vec4(min(col, vec3(1.0)) * coverage, coverage + shadow * (1.0 - coverage));
+  o = res * u_opacity;
 }`;
 
 interface Target {
@@ -273,7 +291,7 @@ export function createGlassPass(gl: WebGL2RenderingContext) {
     },
 
     /** Blur what the canvas holds now, then draw the panels over it. */
-    draw(panels: GlassRect[], look: GlassLook) {
+    draw(panels: (GlassRect & GlassStyle)[], look: GlassLook) {
       if (!panels.length || targets.length < 4) return;
       const [t2, t4, t8, out] = targets as [Target, Target, Target, Target];
       gl.disable(gl.BLEND);
@@ -311,9 +329,8 @@ export function createGlassPass(gl: WebGL2RenderingContext) {
       gl.uniform2f(up_("u_res"), width, height);
       // Lighter tints than the CSS glass: the scrim below holds the text's
       // contrast pixel by pixel, so the valley can show through.
-      const tint = look.dark ? [15 / 255, 19 / 255, 25 / 255, 0.38] : [1, 1, 1, 0.44];
-      gl.uniform4fv(up_("u_tint"), tint);
-      gl.uniform1f(up_("u_textLum"), look.dark ? 0.9 : 0.012);
+      const clear = look.dark ? [15 / 255, 19 / 255, 25 / 255, 0.38] : [1, 1, 1, 0.44];
+      const clearText = look.dark ? 0.9 : 0.012;
       gl.uniform1f(up_("u_minContrast"), 4.5);
       gl.uniform2f(up_("u_light"), -0.6, -0.8);
       gl.uniform1f(up_("u_specular"), look.dark ? 0.5 : 0.6);
@@ -327,6 +344,11 @@ export function createGlassPass(gl: WebGL2RenderingContext) {
       const k = width / Math.max(1, (gl.canvas as HTMLCanvasElement).clientWidth || width);
       for (const r of panels) {
         const bezel = Math.max(4, Math.min(22 * k, r.hh * 0.85, r.hw * 0.8));
+        gl.uniform4fv(up_("u_tint"), r.tint ?? clear);
+        gl.uniform1f(up_("u_textLum"), r.textLum ?? clearText);
+        gl.uniform1f(up_("u_opacity"), r.opacity ?? 1);
+        gl.uniform1f(up_("u_lift"), r.lift ?? 0);
+        gl.uniform1f(up_("u_tinted"), r.tint ? 1 : 0);
         gl.uniform2f(up_("u_center"), r.cx, r.cy);
         gl.uniform2f(up_("u_halfSize"), r.hw, r.hh);
         gl.uniform1f(up_("u_radius"), Math.min(r.r, r.hw, r.hh));

@@ -52,10 +52,10 @@ export function Hero() {
           className="mt-9 flex flex-wrap items-center justify-center gap-3"
           style={{ animation: "cv-fade-in 900ms var(--ease-out) 800ms both" }}
         >
-          <ButtonLink href={h.primary.href} size="lg" magnetic>
+          <ButtonLink href={h.primary.href} variant="glass-hydro" size="lg" magnetic data-glass-panel="hydro">
             {h.primary.label}
           </ButtonLink>
-          <ButtonLink href={h.secondary.href} variant="secondary" size="lg">
+          <ButtonLink href={h.secondary.href} variant="glass" size="lg" data-glass-panel="">
             {h.secondary.label}
           </ButtonLink>
         </div>

@@ -1,6 +1,9 @@
 /**
  * Buttons (05 §7). One primary action per view, in hydro; everything else
- * is secondary (outlined) or quiet (ghost).
+ * is secondary (outlined) or quiet (ghost). Over a scene they can be liquid
+ * glass: "glass-hydro" for the primary action, "glass" for the secondary
+ * (app/styles/glass.css; over the hero's valley the scene draws the glass
+ * itself when the button carries data-glass-panel).
  *
  * Press feedback is CSS only: the button sinks to 0.97 on pointer-down and
  * springs back on release, from wherever it is mid-press. Fine pointers get
@@ -16,7 +19,7 @@ import { cn } from "@/lib/cn";
 import { isExternal } from "@/lib/links";
 import { MAIN_URL, siteHref } from "@/lib/site";
 
-type Variant = "primary" | "secondary" | "ghost" | "inverse";
+type Variant = "primary" | "secondary" | "ghost" | "inverse" | "glass" | "glass-hydro";
 type Size = "sm" | "md" | "lg";
 
 const base =
@@ -30,6 +33,8 @@ const variants: Record<Variant, string> = {
   secondary: "border border-line-strong/70 bg-transparent text-ink hover:border-ink hover:bg-bg-sunken",
   ghost: "text-ink-2 hover:bg-bg-sunken hover:text-ink",
   inverse: "bg-ink text-bg hover:bg-ink-2",
+  glass: "lg text-ink",
+  "glass-hydro": "lg-hydro text-on-hydro",
 };
 
 const sizes: Record<Size, string> = {
