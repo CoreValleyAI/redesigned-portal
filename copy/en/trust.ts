@@ -74,6 +74,11 @@ export const TRUST = {
     title: "Who else touches anything.",
     lead: "None of these see your workload data.",
     items: [
+      {
+        name: "Hewlett Packard Enterprise",
+        role: "HPE GreenLake cloud: signing in and software updates for the platform",
+        where: "Outside Nepal",
+      },
       { name: "GitHub, Inc.", role: "Hosts this website (GitHub Pages)", where: "United States" },
       { name: "FormSubmit", role: "Relays messages sent through this website's forms", where: "Outside Nepal" },
       { name: "Zoho Mail", role: "Email for @corevalley.ai addresses", where: "Outside Nepal" },

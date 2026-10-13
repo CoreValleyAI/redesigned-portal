@@ -42,7 +42,7 @@ export const HOME = {
   journey: {
     kicker: "From snow to token",
     title: "Power that starts as snow.",
-    continuation: "Answers that never leave the valley.",
+    continuation: "Answers made in the valley.",
     beats: [
       {
         id: "snow",

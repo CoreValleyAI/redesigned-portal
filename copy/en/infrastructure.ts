@@ -131,6 +131,7 @@ export const INFRASTRUCTURE = {
     leaves: {
       title: "Leaves Nepal",
       items: [
+        "Signing in and software updates, through HPE GreenLake cloud (no customer data is stored there)",
         "This website, hosted on GitHub Pages in the United States",
         "Messages you send through this website's forms, relayed by FormSubmit",
         "Email to and from @corevalley.ai, hosted by Zoho Mail",
