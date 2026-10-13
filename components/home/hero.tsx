@@ -77,7 +77,7 @@ export function Hero() {
                   i > 0 && "border-l border-ink/10",
                 )}
               >
-                <span className="text-[0.875rem] leading-snug font-semibold text-ink sm:text-[1rem] md:text-[1.0625rem]">
+                <span className="text-[0.8125rem] leading-snug font-semibold whitespace-nowrap text-ink sm:text-[1rem] md:text-[1.0625rem]">
                   {f.value}
                 </span>
                 <span className="type-caption leading-snug text-ink-2">{f.label}</span>
