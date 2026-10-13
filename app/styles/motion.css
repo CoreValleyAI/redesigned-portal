@@ -362,6 +362,71 @@
   filter: drop-shadow(0 0 0.4rem color-mix(in oklch, var(--hydro) 40%, transparent));
 }
 
+/* ══ The journey's pictures (components/home/beat-visual.tsx) ═════════════
+   Snow, water, a turbine, pulses along wires and between GPUs, a rack's
+   lights. They play only on screen and never with reduced motion; paused,
+   each holds the frame its delay puts it at, so a still is a fair picture. */
+.bv-flake {
+  animation: bv-fall var(--dur) linear var(--delay) infinite;
+}
+@keyframes bv-fall {
+  from {
+    transform: translate(0, 0);
+  }
+  to {
+    transform: translate(var(--drift), 196px);
+  }
+}
+.bv-flow {
+  animation: bv-flow var(--dur, 1.2s) linear infinite;
+}
+@keyframes bv-flow {
+  to {
+    stroke-dashoffset: -24;
+  }
+}
+.bv-spin {
+  transform-box: view-box;
+  transform-origin: 160px 90px;
+  animation: bv-spin 3.2s linear infinite;
+}
+@keyframes bv-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+.bv-pulse {
+  animation: bv-pulse var(--dur, 2.2s) linear var(--delay, 0s) infinite;
+}
+@keyframes bv-pulse {
+  from {
+    stroke-dashoffset: 100;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+.bv-led {
+  animation: bv-led 2.2s steps(1, end) var(--delay, 0s) infinite;
+}
+@keyframes bv-led {
+  50% {
+    opacity: 0.25;
+  }
+}
+.bv-caret {
+  animation: bv-caret 1s steps(1, end) infinite;
+}
+@keyframes bv-caret {
+  50% {
+    opacity: 0;
+  }
+}
+.beat-visual:not([data-play]) *,
+:root[data-motion="reduce"] .beat-visual * {
+  animation-play-state: paused !important;
+}
+
 /* ══ The live GPU (components/hardware/gpu-live.tsx) ═════════════════════
    --gx/--gy: the pointer in the drawing's units; --gon: whether it is on
    the card. Each compute dot works out its own heat from its distance

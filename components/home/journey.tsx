@@ -9,6 +9,7 @@ import { F, NoteRef, type Notes } from "@/components/system/fact";
 import { SectionHead } from "@/components/system/section";
 import { TextLink } from "@/components/system/text-link";
 import type { Beat } from "@/copy/en/home";
+import { BeatVisual } from "./beat-visual";
 import { JourneyRail } from "./journey-rail";
 
 export function Journey({
@@ -71,6 +72,7 @@ export function Journey({
                     <span className="type-body text-ink-3">{b.metric.label}</span>
                   </p>
                 )}
+                <BeatVisual id={b.id} className="mt-4 w-full max-w-[34rem]" />
               </li>
             ))}
           </ol>
