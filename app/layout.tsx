@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import { ParallaxObserver } from "@/components/motion/parallax-observer";
 import { PointerFx } from "@/components/motion/pointer-fx";
 import { RevealObserver } from "@/components/motion/reveal-observer";
 import { JsonLd, organizationJsonLd, webSiteJsonLd } from "@/components/seo/json-ld";
@@ -97,6 +98,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
         {children}
 
         <RevealObserver />
+        <ParallaxObserver />
         <PointerFx />
       </body>
     </html>

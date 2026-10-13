@@ -34,11 +34,14 @@ interface Tracked {
  *             bottom crossing it (a reading line through a long list).
  *  "leave"    from its top at the viewport top to its bottom there (how far
  *             a full-screen section has scrolled away).
+ *  "end"      from its top entering at the bottom of the viewport to the
+ *             page scrolled to its very end (the footer filling up).
  */
-export type Mode = "pin" | "through" | "enter" | "center" | "leave";
+export type Mode = "pin" | "through" | "enter" | "center" | "leave" | "end";
 
 const tracked = new Set<Tracked>();
 let vh = 0;
+let docH = 0;
 let observing = false;
 let stop: (() => void) | null = null;
 
@@ -50,6 +53,7 @@ function measure(t: Tracked) {
 
 function measureAll() {
   vh = window.innerHeight;
+  docH = document.documentElement.scrollHeight;
   for (const t of tracked) measure(t);
   wake();
 }
@@ -60,6 +64,7 @@ function targetOf(t: Tracked, y: number) {
   else if (t.mode === "through") p = (y + vh - t.top) / (t.height + vh);
   else if (t.mode === "center") p = (y + vh / 2 - t.top) / Math.max(1, t.height);
   else if (t.mode === "leave") p = (y - t.top) / Math.max(1, t.height);
+  else if (t.mode === "end") p = (y + vh - t.top) / Math.max(1, docH - t.top);
   else p = (y + vh - t.top) / vh;
   return Math.min(1, Math.max(0, p));
 }
@@ -88,6 +93,7 @@ function start() {
   if (observing) return;
   observing = true;
   vh = window.innerHeight;
+  docH = document.documentElement.scrollHeight;
   const ro = new ResizeObserver(measureAll);
   ro.observe(document.body);
   const onScroll = () => wake();

@@ -11,13 +11,16 @@
  *  · the frame: driven by the site's one clock (lib/motion/clock), paused
  *    when off-screen or in a hidden tab, and asleep whenever the scene says
  *    it has nothing to animate;
- *  · input: a damped pointer (fine pointers) or touch-and-hold position;
+ *  · input: a damped pointer (fine pointers), or the finger on touch
+ *    screens, followed through a whole swipe as the page scrolls under it;
+ *    the page's scroll velocity, for scenes that feel the scroll;
  *  · the palette, read from the CSS tokens and eased on theme change;
  *  · resilience: context loss stops the scene and shows the poster, a
  *    restore rebuilds it; frame-time watching steps quality down if the
  *    device is struggling.
  */
 import { onFrame, wake } from "@/lib/motion/clock";
+import { readFinger, scrollVelocity } from "@/lib/motion/input";
 import { damp } from "@/lib/motion/spring";
 import { readPalette, subscribePrefs, type GLPalette, type RGB } from "@/lib/theme";
 
@@ -29,7 +32,7 @@ export interface Pointer {
   y: number;
   /** 0 when away, easing to 1 while the pointer (or a held touch) is over the stage. */
   presence: number;
-  /** True for a pressed pointer (touch-and-hold). */
+  /** True while a finger is on the screen over the stage. */
   down: boolean;
 }
 
@@ -41,6 +44,8 @@ export interface FrameInfo {
   progress: number;
   palette: GLPalette;
   reduced: boolean;
+  /** The page's scroll velocity, px/s, damped (positive: moving down). */
+  scrollVel: number;
   /** Recent taps and clicks on the stage, newest last (at most three):
       where (normalised device coordinates) and when (`time` units). */
   taps: readonly Tap[];
@@ -122,6 +127,10 @@ export class Stage {
   private paletteTarget: GLPalette;
   private slowFrames = 0;
   private losses = 0;
+  private fine = true;
+  /** The finger, not a mouse, is placing the light. */
+  private touchLit = false;
+  private touchTarget: HTMLElement | null = null;
 
   constructor(canvas: HTMLCanvasElement, factory: SceneFactory, opts: StageOptions = {}) {
     this.canvas = canvas;
@@ -209,18 +218,20 @@ export class Stage {
     ro.observe(this.canvas);
     this.cleanups.push(() => ro.disconnect());
 
-    // Pointer: fine pointers light the scene as they move; touch lights it
-    // only while held (a tap must not hijack scrolling).
+    // Pointer: fine pointers light the scene as they move. On touch screens
+    // the finger does while it is down (followFinger, polled per frame, so
+    // listening never holds up scrolling).
     const target = this.opts.pointerTarget ?? this.canvas;
     const fine = window.matchMedia("(hover: hover) and (pointer: fine)").matches;
+    this.fine = fine;
     const setFrom = (e: PointerEvent) => {
       const r = this.canvas.getBoundingClientRect();
       this.pointerTarget.x = ((e.clientX - r.left) / r.width) * 2 - 1;
       this.pointerTarget.y = -(((e.clientY - r.top) / r.height) * 2 - 1);
     };
     const onMove = (e: PointerEvent) => {
-      if (e.pointerType === "mouse" && !fine) return;
-      if (e.pointerType !== "mouse" && !this.pointer.down) return;
+      // Touch and pen are followed through the finger poll in tick().
+      if (e.pointerType !== "mouse" || !fine) return;
       setFrom(e);
       this.pointerTarget.inside = true;
       this.needs = true;
@@ -243,35 +254,22 @@ export class Stage {
         this.needs = true;
         wake();
       }
-      if (e.pointerType === "mouse") return;
-      this.pointer.down = true;
-      setFrom(e);
-      this.pointerTarget.inside = true;
-      this.needs = true;
-      wake();
     };
-    const onUp = (e: PointerEvent) => {
-      if (e.pointerType === "mouse") return;
-      this.pointer.down = false;
-      this.pointerTarget.inside = false;
-    };
-    const onLeave = () => {
+    const onLeave = (e: PointerEvent) => {
+      if (e.pointerType !== "mouse") return;
       this.pointerTarget.inside = false;
       this.needs = true;
       wake();
     };
     target.addEventListener("pointermove", onMove, { passive: true });
     target.addEventListener("pointerdown", onDown, { passive: true });
-    window.addEventListener("pointerup", onUp, { passive: true });
-    window.addEventListener("pointercancel", onUp, { passive: true });
     target.addEventListener("pointerleave", onLeave, { passive: true });
     this.cleanups.push(() => {
       target.removeEventListener("pointermove", onMove);
       target.removeEventListener("pointerdown", onDown);
-      window.removeEventListener("pointerup", onUp);
-      window.removeEventListener("pointercancel", onUp);
       target.removeEventListener("pointerleave", onLeave);
     });
+    this.touchTarget = target;
 
     // Theme and motion changes.
     this.cleanups.push(
@@ -324,13 +322,16 @@ export class Stage {
     if (!this.scene || !this.gl || this.disposed) return false;
     if (!this.visible || document.hidden) return false;
 
-    // Ease the pointer and the palette.
+    if (!this.fine) this.followFinger(now);
+
+    // Ease the pointer and the palette. Light that follows a hand or a
+    // finger is direct manipulation, so it stays with reduced motion too.
     const p = this.pointer;
     const t = this.pointerTarget;
-    const half = this.reduced ? 0 : 0.06;
+    const half = this.reduced ? 0 : this.touchLit ? 0.035 : 0.06;
     p.x = damp(p.x, t.x, half, dt);
     p.y = damp(p.y, t.y, half, dt);
-    const presenceTarget = t.inside && !this.reduced ? 1 : 0;
+    const presenceTarget = t.inside ? 1 : 0;
     p.presence = damp(p.presence, presenceTarget, 0.12, dt);
     const pointerMoving =
       Math.abs(p.x - t.x) > 1e-3 || Math.abs(p.y - t.y) > 1e-3 || Math.abs(p.presence - presenceTarget) > 1e-3;
@@ -346,6 +347,7 @@ export class Stage {
       progress: this.progress,
       palette: this.palette,
       reduced: this.reduced,
+      scrollVel: this.reduced ? 0 : scrollVelocity(),
       taps: this.taps,
     });
     this.needs = more;
@@ -355,6 +357,36 @@ export class Stage {
     }
     this.watch(performance.now() - started, dt);
     return more || pointerMoving || paletteMoving;
+  }
+
+  /** Touch screens: light where the finger is while it is down over the
+      stage's target (and for a moment after it lifts, so a tap shows),
+      following it as the page scrolls beneath. */
+  private followFinger(now: number) {
+    const f = readFinger();
+    const held = f.down || (f.t > 0 && now - f.t < 420);
+    const t = this.pointerTarget;
+    if (!held) {
+      if (this.touchLit) {
+        this.touchLit = false;
+        this.pointer.down = false;
+        t.inside = false;
+        this.needs = true;
+      }
+      return;
+    }
+    const area = (this.touchTarget ?? this.canvas).getBoundingClientRect();
+    const over = f.x >= area.left && f.x <= area.right && f.y >= area.top && f.y <= area.bottom;
+    if (!over && !this.touchLit) return;
+    const r = this.canvas.getBoundingClientRect();
+    const x = ((f.x - r.left) / Math.max(1, r.width)) * 2 - 1;
+    const y = -(((f.y - r.top) / Math.max(1, r.height)) * 2 - 1);
+    if (x !== t.x || y !== t.y || t.inside !== over) this.needs = true;
+    t.x = x;
+    t.y = y;
+    t.inside = over;
+    this.pointer.down = f.down && over;
+    this.touchLit = over;
   }
 
   /** Step quality down if frames are consistently slow. */
