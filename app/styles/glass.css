@@ -516,3 +516,12 @@
     background: rgb(14 16 20 / 0.8);
   }
 }
+
+/* On touch screens the light behind the glass moves with the scroll only:
+   a continuous drift would make every pane of glass in view re-blur on
+   every frame, which phones pay for in battery. */
+@media (hover: none) {
+  .glass-light__orb {
+    animation: none;
+  }
+}
