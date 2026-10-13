@@ -91,6 +91,8 @@ in float v_basin;
 in float v_river;
 in float v_city;
 uniform sampler2D u_tex;
+uniform sampler2D u_rivers;
+uniform float u_hasRivers;
 uniform float u_reachF;
 uniform vec3 u_sun;
 uniform vec3 u_cLight;
@@ -141,13 +143,17 @@ void main() {
   float f20 = v_km * 50.0;
   float l20 = 1.0 - clamp(abs(fract(f20 + 0.5) - 0.5) / max(fwidth(f20) * 0.9, 1e-4), 0.0, 1.0);
   col = mix(col, u_cGlow, v_lit * (l20 * (0.55 + 0.35 * v_city) + 0.06 + 0.1 * v_city));
-  // Rivers, per pixel from the texture (they are a texel wide): continuous
-  // hairlines, the Bagmati firm, tributaries finer.
+  // Rivers, from a distance field of their smoothed centrelines
+  // (scripts/build-rivers.mjs): crisp, anti-aliased hairlines at any zoom,
+  // the Bagmati firmer, tributaries finer, fading out where too thin.
+  vec4 rf = texture(u_rivers, v_uv);
+  float rd = rf.r * 8.0;                       // field texels to the centreline
+  float rw = mix(0.35, 1.05, rf.g);            // half-width, field texels
+  float rfw = max(fwidth(rd), 1e-4);
+  float rl = clamp(0.5 + (rw - rd) / rfw, 0.0, 1.0) * clamp(1.6 * rw / rfw, 0.0, 1.0);
   vec4 tx = texture(u_tex, v_uv);
-  vec2 off = vec2(0.6 / 512.0, 0.0);
-  float g = (tx.g * 2.0 + texture(u_tex, v_uv + off).g + texture(u_tex, v_uv - off).g + texture(u_tex, v_uv + off.yx).g + texture(u_tex, v_uv - off.yx).g) / 6.0;
-  float rv = smoothstep(0.05, 0.4, g) * smoothstep(tx.b * tx.b - 0.01, tx.b * tx.b, u_reachF);
-  col = mix(col, u_cRiver, rv * 0.7);
+  rl *= smoothstep(tx.b * tx.b - 0.01, tx.b * tx.b, u_reachF) * u_hasRivers;
+  col = mix(col, u_cRiver, rl * mix(0.55, 0.9, rf.g));
 
   // The hand's light, and taps' rings, in green.
   vec2 dv = (v_ndc - u_pointer.xy) * vec2(u_aspect, 1.0);
@@ -235,6 +241,7 @@ export function createReliefPass(gl: WebGL2RenderingContext, tier: 1 | 2 | 3) {
   return {
     draw(p: {
       tex: WebGLTexture;
+      rivers: WebGLTexture | null;
       viewProj: Float32Array | number[];
       size: [number, number];
       exag: number;
@@ -252,6 +259,11 @@ export function createReliefPass(gl: WebGL2RenderingContext, tier: 1 | 2 | 3) {
       gl.activeTexture(gl.TEXTURE0);
       gl.bindTexture(gl.TEXTURE_2D, p.tex);
       gl.uniform1i(u("u_tex"), 0);
+      gl.activeTexture(gl.TEXTURE1);
+      gl.bindTexture(gl.TEXTURE_2D, p.rivers);
+      gl.uniform1i(u("u_rivers"), 1);
+      gl.uniform1f(u("u_hasRivers"), p.rivers ? 1 : 0);
+      gl.activeTexture(gl.TEXTURE0);
       gl.uniformMatrix4fv(u("u_viewProj"), false, p.viewProj);
       gl.uniform2f(u("u_size"), p.size[0], p.size[1]);
       gl.uniform1f(u("u_exag"), p.exag);

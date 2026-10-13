@@ -304,6 +304,9 @@ export const createValleyScene: SceneFactory = async (ctx: SceneContext): Promis
   const dots = field(cols, rows, 0.5);
   // Daylight's surface, built the first time the light theme is drawn.
   let relief: ReturnType<typeof createReliefPass> | null = null;
+  // Its rivers, as a distance field (scripts/build-rivers.mjs), fetched with it.
+  let rivers: WebGLTexture | null = null;
+  let riversLoading = false;
 
   let width = 1;
   let height = 1;
@@ -482,6 +485,17 @@ export const createValleyScene: SceneFactory = async (ctx: SceneContext): Promis
 
       if (!dark) {
         relief ??= createReliefPass(gl, tier);
+        if (!rivers && !riversLoading) {
+          riversLoading = true;
+          loadDataTexture(gl, asset("/gl/valley-rivers.png"))
+            .then((t) => {
+              rivers = t.texture;
+              ctx.invalidate();
+            })
+            .catch(() => {
+              /* no rivers: the relief stands without them */
+            });
+        }
         const hydro = encodeSrgb(pal.hydro);
         const bg = encodeSrgb(pal.bg);
         const ink3 = encodeSrgb(pal.ink3);
@@ -490,6 +504,7 @@ export const createValleyScene: SceneFactory = async (ctx: SceneContext): Promis
         const mixc = (a: readonly number[], b: readonly number[], t: number) => a.map((v, i) => v + (b[i]! - v) * t);
         relief.draw({
           tex: tex.texture,
+          rivers,
           viewProj,
           size: [meta.km[0] / 10, meta.km[1] / 10],
           exag: 2.4,
@@ -571,6 +586,7 @@ export const createValleyScene: SceneFactory = async (ctx: SceneContext): Promis
 
     dispose() {
       relief?.dispose();
+      if (rivers) gl.deleteTexture(rivers);
       glassRO?.disconnect();
       glass?.dispose();
       for (const el of glassEls) delete el.dataset.glass;
