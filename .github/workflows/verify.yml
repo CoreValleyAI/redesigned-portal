@@ -53,6 +53,15 @@ jobs:
           # blog pages are built and checked on every branch.
           CONTENT_FIXTURES: "1"
 
+      # axe-core on the main pages, a sample post and a sample job, in both
+      # themes, served from the export the way Pages serves it. Fails the run
+      # on any violation.
+      - name: Accessibility
+        run: |
+          npm run serve:out -- 4173 &
+          sleep 2
+          npm run audit:a11y -- --base "http://127.0.0.1:4173${NEXT_PUBLIC_BASE_PATH}"
+
       - name: Build docs site
         run: npm run build:docs
 

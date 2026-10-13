@@ -17,17 +17,15 @@
     "start": "next start",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
-    "generate:brand": "node scripts/generate-brand-images.mjs"
+    "generate:brand": "node scripts/generate-brand-images.mjs",
+    "serve:out": "node scripts/serve-out.mjs",
+    "audit:a11y": "node scripts/audit-a11y.mjs"
   },
   "dependencies": {
-    "@gsap/react": "2.1.2",
-    "@number-flow/react": "0.6.2",
     "@payloadcms/live-preview": "^3.90.2",
     "@phosphor-icons/react": "2.1.10",
     "class-variance-authority": "0.7.1",
     "clsx": "2.1.1",
-    "gsap": "3.15.0",
-    "lenis": "1.3.26",
     "minisearch": "^7.2.0",
     "next": "16.4.0",
     "react": "19.3.0",
@@ -36,7 +34,6 @@
     "remark": "^15.0.1",
     "remark-gfm": "^4.0.1",
     "tailwind-merge": "3.3.1",
-    "three": "0.186.1",
     "unist-util-visit": "^5.1.0",
     "yaml": "^2.9.1"
   },
@@ -47,8 +44,8 @@
     "@types/node": "22.18.0",
     "@types/react": "19.3.0",
     "@types/react-dom": "19.3.0",
-    "@types/three": "0.186.0",
     "@types/unist": "^3.0.3",
+    "axe-core": "4.14.0",
     "eslint": "9.39.5",
     "eslint-config-next": "16.4.0",
     "tailwindcss": "4.3.3",
