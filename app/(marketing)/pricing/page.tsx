@@ -1,5 +1,5 @@
-import { MeterTeaser } from "@/components/home/meter-teaser";
 import { Page } from "@/components/motion/page";
+import { BillingBox } from "@/components/pricing/billing-box";
 import { QuoteBuilder } from "@/components/pricing/quote-builder";
 import { Cta } from "@/components/system/cta";
 import { Faq } from "@/components/system/faq";
@@ -31,17 +31,30 @@ export default function PricingPage() {
         </div>
       </section>
 
-      {/* The Meter (S8) */}
-      <section aria-labelledby="meter-title" className="pb-[var(--section-y)]">
+      {/* Billing at a glance. */}
+      <section aria-labelledby="billing-title" className="pb-[var(--section-y)]">
         <div className="container-page flex flex-col gap-10">
           <SectionHead
-            id="meter-title"
-            kicker={p.meter.kicker}
-            title={p.meter.title}
-            continuation={p.meter.continuation}
+            id="billing-title"
+            kicker={p.billing.kicker}
+            title={p.billing.title}
+            continuation={p.billing.continuation}
             size="title-2"
           />
-          <MeterTeaser />
+          <BillingBox />
+          <p className="type-small text-ink-3">{p.pay.note}</p>
+          <SpecReadout
+            title="Billing"
+            className="max-w-[44rem]"
+            ids={[
+              "billing.unit",
+              "billing.minimum",
+              "billing.currency",
+              "billing.rails",
+              "billing.rates",
+              "contact.reply",
+            ]}
+          />
         </div>
       </section>
 
@@ -86,37 +99,16 @@ export default function PricingPage() {
         </div>
       </section>
 
-      {/* How you pay */}
-      <section aria-labelledby="how-title" className="section-y">
-        <div className="container-page flex flex-col gap-10">
-          <SectionHead id="how-title" kicker={p.pay.kicker} title={p.pay.title} size="title-2" />
-          <ul className="flex flex-wrap gap-3">
-            {p.pay.methods.map((m) => (
-              <li key={m} className="type-title-3 rounded-pill border border-line bg-bg-raised px-6 py-3">
-                {m}
-              </li>
-            ))}
-          </ul>
-          <p className="type-small text-ink-3">{p.pay.note}</p>
-          <SpecReadout
-            title="Billing"
-            className="max-w-[44rem]"
-            ids={[
-              "billing.unit",
-              "billing.minimum",
-              "billing.currency",
-              "billing.rails",
-              "billing.rates",
-              "contact.reply",
-            ]}
-          />
-        </div>
-      </section>
-
       {/* The quote console */}
       <section id="quote" aria-labelledby="quote-title" className="section-y scroll-mt-[var(--header-h)]">
         <div className="container-page flex flex-col gap-12">
-          <SectionHead id="quote-title" kicker={p.quote.kicker} title={p.quote.title} lead={p.quote.lead} />
+          <SectionHead
+            id="quote-title"
+            kicker={p.quote.kicker}
+            title={p.quote.title}
+            continuation={p.quote.continuation}
+            lead={p.quote.lead}
+          />
           <QuoteBuilder />
         </div>
       </section>

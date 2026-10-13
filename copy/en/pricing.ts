@@ -16,10 +16,10 @@ export const PRICING = {
     title: "Billed by the second, in rupees.",
     lead: "Rates are being finalised. Tell us what you want to run and we reply within one working day with a capacity plan and a firm quote in rupees.",
   },
-  meter: {
-    kicker: "The meter",
-    title: "The meter runs while your job does.",
-    continuation: "Not a second longer.",
+  billing: {
+    kicker: "Billing",
+    title: "Per second, in rupees.",
+    continuation: "Nothing rounded up.",
   },
   payFor: {
     kicker: "What you pay for",
@@ -52,8 +52,9 @@ export const PRICING = {
   },
   quote: {
     kicker: "Get a quote",
-    title: "Sketch it in three answers.",
-    lead: "We turn this into a capacity plan and a firm rupee quote within one working day.",
+    title: "Sketch the plan.",
+    continuation: "We send the quote.",
+    lead: "A few quick answers. We turn them into a capacity plan and a firm rupee quote within one working day.",
   },
   faq: [
     {
@@ -79,13 +80,56 @@ export const PRICING = {
   ],
 } as const;
 
-export const QUOTE_PRODUCTS: { slug: ProductSlug; label: string; unit: "gpus" | "slices" | "tb" | "none" }[] = [
-  { slug: "on-demand", label: "On-demand GPUs", unit: "gpus" },
-  { slug: "reserved", label: "Reserved GPUs", unit: "gpus" },
-  { slug: "mig-slicing", label: "MIG slices", unit: "slices" },
-  { slug: "inferencing", label: "Inferencing", unit: "gpus" },
-  { slug: "storage", label: "Storage", unit: "none" },
-  { slug: "services", label: "Services", unit: "none" },
+/** The quote console's questions (components/pricing/quote-builder.tsx). */
+export const QUOTE = {
+  steps: {
+    what: "What will you run on?",
+    whatHint: "Pick one; you can change it later.",
+    gpus: "How many GPUs?",
+    gpusHint: "The first cluster: two servers of four.",
+    slices: "How many slices?",
+    slicesHint: "Up to seven isolated slices per GPU.",
+    storage: "How much storage?",
+    storageHint: "All-flash, beside the GPUs.",
+    duration: "For how long?",
+    workload: "What kind of work?",
+  },
+} as const;
+
+export const QUOTE_PRODUCTS: {
+  slug: ProductSlug;
+  label: string;
+  /** How it is sized and billed, in a few words. */
+  unitLabel: string;
+  unit: "gpus" | "slices" | "tb" | "none";
+}[] = [
+  { slug: "on-demand", label: "On-demand GPUs", unitLabel: "Whole GPUs · per second", unit: "gpus" },
+  { slug: "reserved", label: "Reserved GPUs", unitLabel: "Held for you · fixed term", unit: "gpus" },
+  { slug: "mig-slicing", label: "MIG slices", unitLabel: "Up to 7 per GPU · per second", unit: "slices" },
+  { slug: "inferencing", label: "Inferencing", unitLabel: "Models served in Nepal", unit: "gpus" },
+  { slug: "storage", label: "Storage", unitLabel: "All-flash · by capacity", unit: "tb" },
+  { slug: "services", label: "Services", unitLabel: "Engineers · scoped first", unit: "none" },
 ];
 
-export const QUOTE_DURATIONS = ["A few hours", "Days", "Weeks", "Months", "A year or more"] as const;
+/** Ids are the contact form's own duration answers (copy/en/contact.ts). */
+export const QUOTE_DURATIONS = [
+  { id: "A few hours", label: "Hours", short: "Hours" },
+  { id: "Days", label: "Days", short: "Days" },
+  { id: "Weeks", label: "Weeks", short: "Weeks" },
+  { id: "Months", label: "Months", short: "Months" },
+  { id: "A year or more", label: "A year +", short: "1 yr +" },
+] as const;
+
+export const QUOTE_STORAGE = [
+  { id: "under-1tb", label: "Under 1 TB", short: "< 1 TB" },
+  { id: "1-10tb", label: "1–10 TB", short: "1–10" },
+  { id: "10-30tb", label: "10–30 TB", short: "10–30" },
+  { id: "30tb-plus", label: "30 TB +", short: "30 +" },
+] as const;
+
+export const QUOTE_WORKLOADS = [
+  { id: "training", label: "Training", short: "Train" },
+  { id: "fine-tuning", label: "Fine-tuning", short: "Tune" },
+  { id: "inference", label: "Inference", short: "Serve" },
+  { id: "research", label: "Research", short: "Research" },
+] as const;

@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import { ViewTransition } from "react";
-import { MeterTeaser } from "@/components/home/meter-teaser";
 import { SliceTeaser } from "@/components/home/slice-teaser";
+import { BillingBox } from "@/components/pricing/billing-box";
 import { Page } from "@/components/motion/page";
 import { ProductCard } from "@/components/products/product-card";
 import { JsonLd, serviceJsonLd } from "@/components/seo/json-ld";
@@ -29,9 +29,9 @@ const DEMOS: Partial<Record<string, { title: string; continuation: string; demo:
     demo: () => <SliceTeaser memory={v("gpu.memory")} slice={v("gpu.migSize")} />,
   },
   "on-demand": {
-    title: "The meter runs while your job does.",
-    continuation: "Not a second longer.",
-    demo: () => <MeterTeaser />,
+    title: "Per second, in rupees.",
+    continuation: "Nothing rounded up.",
+    demo: () => <BillingBox className="w-full" />,
   },
 };
 

@@ -1,0 +1,84 @@
+/* ══════════════════════════════════════════════════════════════════════════
+   Controls: the segmented control's sliding lens and the range slider of
+   the quote console (components/pricing/quote-builder.tsx).
+   ══════════════════════════════════════════════════════════════════════════ */
+
+/* The lens: a raised pill that slides to the chosen option on the spring. */
+.segmented__lens {
+  background: var(--bg-raised);
+  box-shadow:
+    0 1px 2px rgb(15 23 42 / 0.08),
+    0 6px 16px -8px rgb(15 23 42 / 0.25),
+    inset 0 0 0 1px var(--line);
+  transition: transform var(--dur-spring-smooth) var(--ease-spring);
+}
+:root[data-theme="dark"] .segmented__lens {
+  background: color-mix(in oklch, var(--ink) 11%, var(--bg-raised));
+  box-shadow:
+    inset 0 1px 0 color-mix(in oklch, white 16%, transparent),
+    inset 0 0 0 1px color-mix(in oklch, white 9%, transparent),
+    0 8px 20px -10px rgb(0 0 0 / 0.6);
+}
+:root[data-motion="reduce"] .segmented__lens {
+  transition-duration: 1ms;
+}
+
+/* The range: a track that fills with hydro up to the thumb. */
+.quote-range {
+  appearance: none;
+  -webkit-appearance: none;
+  height: 2.75rem;
+  background: transparent;
+  cursor: pointer;
+  touch-action: pan-y;
+}
+.quote-range:focus-visible {
+  outline: 2px solid var(--hydro);
+  outline-offset: 4px;
+  border-radius: 999px;
+}
+.quote-range::-webkit-slider-runnable-track {
+  height: 6px;
+  border-radius: 999px;
+  background: linear-gradient(to right, var(--hydro) 0 var(--fill), var(--line) var(--fill) 100%);
+}
+.quote-range::-moz-range-track {
+  height: 6px;
+  border-radius: 999px;
+  background: var(--line);
+}
+.quote-range::-moz-range-progress {
+  height: 6px;
+  border-radius: 999px;
+  background: var(--hydro);
+}
+.quote-range::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 1.625rem;
+  height: 1.625rem;
+  margin-top: calc(3px - 0.8125rem);
+  border-radius: 999px;
+  background: var(--bg-raised);
+  border: 1px solid var(--line-strong);
+  box-shadow:
+    0 2px 6px rgb(15 23 42 / 0.16),
+    0 0 0 0 var(--hydro-wash);
+  transition:
+    transform var(--dur-spring-snappy) var(--ease-spring),
+    box-shadow var(--dur-short) var(--ease-out);
+}
+.quote-range::-moz-range-thumb {
+  width: 1.625rem;
+  height: 1.625rem;
+  border-radius: 999px;
+  background: var(--bg-raised);
+  border: 1px solid var(--line-strong);
+  box-shadow: 0 2px 6px rgb(15 23 42 / 0.16);
+}
+.quote-range:active::-webkit-slider-thumb {
+  transform: scale(1.12);
+  box-shadow:
+    0 2px 6px rgb(15 23 42 / 0.16),
+    0 0 0 8px var(--hydro-wash);
+}

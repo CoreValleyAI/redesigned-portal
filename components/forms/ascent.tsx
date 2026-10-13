@@ -8,7 +8,8 @@
  *  · Progress is an altitude line with a camp per step. Forward steps rise
  *    into place, going back settles down (spatially consistent, 06 §2).
  *  · Answers arriving from other pages (?intent, ?product, ?count,
- *    ?duration, ?topic) are pre-filled, so nothing is asked twice.
+ *    ?duration, ?topic, and the quote console's ?workload and ?capacity)
+ *    are pre-filled, so nothing is asked twice.
  *  · Enter advances; focus moves to each new question; errors say how to
  *    fix them and are announced. Drafts survive a reload (sessionStorage).
  *  · While the request is in flight the card wears the Glow — the only
@@ -23,6 +24,7 @@ import { Button } from "@/components/system/button";
 import { DotGlyph, type GlyphName } from "@/components/system/dot-glyph";
 import { PlanCard } from "./plan-card";
 import { CONTACT, type RouteId } from "@/copy/en/contact";
+import { QUOTE_STORAGE, QUOTE_WORKLOADS } from "@/copy/en/pricing";
 import { PRODUCTS, type ProductSlug } from "@/copy/en/products";
 import { cn } from "@/lib/cn";
 
@@ -212,6 +214,16 @@ export function Ascent() {
     const count = Number(q.get("count"));
     const duration = q.get("duration");
     const topic = q.get("topic");
+    // From the quote console: the kind of work and a storage band.
+    const workload = QUOTE_WORKLOADS.find((w) => w.id === q.get("workload"));
+    const capacity = QUOTE_STORAGE.find((c) => c.id === q.get("capacity"));
+    if ((workload || capacity) && !next.details)
+      next = {
+        ...next,
+        details: [workload && `Workload: ${workload.label.toLowerCase()}.`, capacity && `Storage: ${capacity.label}.`]
+          .filter(Boolean)
+          .join(" "),
+      };
     if (intent && CONTACT.routes.some((r) => r.id === intent)) next = { ...next, route: intent as RouteId };
     if (product && PRODUCTS.some((p) => p.slug === product)) next = { ...next, product: product as ProductSlug };
     if (count > 0 && count <= 56) next = { ...next, count };
