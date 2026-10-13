@@ -369,12 +369,12 @@
 @property --gx {
   syntax: "<number>";
   inherits: true;
-  initial-value: 280;
+  initial-value: 230;
 }
 @property --gy {
   syntax: "<number>";
   inherits: true;
-  initial-value: 190;
+  initial-value: 166;
 }
 @property --gon {
   syntax: "<number>";
@@ -391,19 +391,32 @@
     --gon 500ms var(--ease-out);
 }
 .gpu-sm {
-  --hot: calc(clamp(0, 1 - hypot(var(--gx) - var(--x), var(--gy) - var(--y)) / 56, 1) * var(--gon));
-  opacity: calc(0.5 + 0.5 * var(--hot));
-  r: calc(2.2px + 1.5px * var(--hot));
+  --hot: calc(clamp(0, 1 - hypot(var(--gx) - var(--x), var(--gy) - var(--y)) / 34, 1) * var(--gon));
+  opacity: calc(0.45 + 0.55 * var(--hot));
+  r: calc(1.05px + 0.75px * var(--hot));
 }
 .gpu-glow {
-  cx: calc((280 + (var(--gx) - 280) * 0.35 * var(--gon)) * 1px);
-  cy: calc((190 + (var(--gy) - 190) * 0.35 * var(--gon)) * 1px);
+  cx: calc((230 + (var(--gx) - 230) * 0.35 * var(--gon)) * 1px);
+  cy: calc((166 + (var(--gy) - 166) * 0.35 * var(--gon)) * 1px);
 }
 :root[data-motion="full"] .gpu-live[data-live] .gpu-sm {
   animation: cv-sm 1.4s ease-in-out calc(var(--i) * 70ms) infinite;
 }
 :root[data-motion="full"] .gpu-live[data-live] .gpu-hbm {
   animation: cv-hbm 1.1s ease-in-out calc(var(--i) * 60ms) infinite;
+}
+.gpu-link {
+  stroke-opacity: 0.45;
+  stroke-dasharray: 1.4 1.2;
+}
+:root[data-motion="full"] .gpu-live[data-live] .gpu-link {
+  stroke-opacity: 0.9;
+  animation: cv-gpu-link 0.5s linear infinite;
+}
+@keyframes cv-gpu-link {
+  to {
+    stroke-dashoffset: -2.6;
+  }
 }
 @keyframes cv-sm {
   0%,
