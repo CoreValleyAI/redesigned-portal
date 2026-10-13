@@ -1,6 +1,6 @@
-import { ButtonLink, Icon } from "@/components/ui";
+import { ButtonLink } from "@/components/system/button";
 import { PageHero, TitledSection as Section } from "@/components/system/page-hero";
-import { Reveal } from "@/components/motion/reveal";
+import { TextLink } from "@/components/system/text-link";
 import { JobsBoard } from "@/components/jobs/jobs-board";
 import { LayoutBlocks } from "@/components/content/layout-blocks";
 import { JsonLd, breadcrumbJsonLd, faqJsonLd } from "@/components/seo/json-ld";
@@ -35,18 +35,11 @@ export default function JobsPage() {
         data={[breadcrumbJsonLd([{ name: "Careers", path: "/jobs" }]), ...(faqs.length ? [faqJsonLd(faqs)] : [])]}
       />
       <PageHero eyebrow={page.hero.eyebrow ?? "Careers"} title={page.hero.title} lead={page.hero.lead}>
-        <div className="mt-8 flex flex-wrap items-center gap-x-6 gap-y-4">
-          <ButtonLink href="#roles" size="lg" iconRight={<Icon name="arrow-right" size={17} />}>
+        <div className="mt-2 flex flex-wrap items-center gap-x-6 gap-y-4">
+          <ButtonLink href="#roles" size="lg" arrow>
             {jobs.length ? `See ${jobs.length} open ${jobs.length === 1 ? "role" : "roles"}` : "Open roles"}
           </ButtonLink>
-          {general ? (
-            <a
-              href={general}
-              className="text-[14px] font-medium text-white/70 underline decoration-white/30 underline-offset-4 transition-colors hover:text-white"
-            >
-              Send a general application
-            </a>
-          ) : null}
+          {general ? <TextLink href={general}>Send a general application</TextLink> : null}
         </div>
       </PageHero>
 
@@ -58,22 +51,18 @@ export default function JobsPage() {
 
       {general ? (
         <Section>
-          <Reveal>
-            <div className="flex flex-col items-start justify-between gap-6 rounded-[2rem] border border-line bg-surface-card p-8 md:flex-row md:items-center md:p-10">
-              <div className="max-w-[52ch]">
-                <h2 className="text-2xl font-semibold tracking-tight text-ink-100">{page.generalApplication.title}</h2>
-                <p className="mt-2 text-[15px] leading-relaxed text-ink-400">{page.generalApplication.summary}</p>
-              </div>
-              <ButtonLink
-                href={general}
-                variant="secondary"
-                size="lg"
-                iconRight={<Icon name="arrow-right" size={16} />}
-              >
-                Apply
-              </ButtonLink>
+          <div
+            data-reveal
+            className="flex flex-col items-start justify-between gap-6 rounded-panel border border-line bg-bg-raised p-8 md:flex-row md:items-center md:p-10"
+          >
+            <div className="flex max-w-[52ch] flex-col gap-2">
+              <h2 className="type-title-2">{page.generalApplication.title}</h2>
+              <p className="type-body text-ink-2">{page.generalApplication.summary}</p>
             </div>
-          </Reveal>
+            <ButtonLink href={general} variant="secondary" size="lg" arrow>
+              Apply
+            </ButtonLink>
+          </div>
         </Section>
       ) : null}
     </>

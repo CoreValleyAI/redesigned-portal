@@ -24,11 +24,17 @@ export function ShareLinks({ url, title, className }: { url: string; title: stri
   const u = encodeURIComponent(url);
   const t = encodeURIComponent(title);
   const item =
-    "inline-flex size-9 items-center justify-center rounded-full border border-line text-ink-300 transition-colors duration-300 hover:border-line-strong hover:text-ink-100";
+    "inline-flex size-9 items-center justify-center rounded-full border border-line text-ink-2 transition-colors duration-300 hover:border-line-strong hover:text-ink";
 
   return (
     <div className={cn("flex items-center gap-2", className)}>
-      <button type="button" onClick={copy} className={item} aria-label={copied ? "Link copied" : "Copy link"} title="Copy link">
+      <button
+        type="button"
+        onClick={copy}
+        className={item}
+        aria-label={copied ? "Link copied" : "Copy link"}
+        title="Copy link"
+      >
         <Icon name={copied ? "check" : "copy"} size={15} className={copied ? "text-hydro" : undefined} />
       </button>
       <a

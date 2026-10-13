@@ -9,6 +9,7 @@
  */
 import * as React from "react";
 import { CodeBlock } from "@/components/docs/code-block";
+import { Arrow, buttonClasses } from "@/components/system/button";
 import { Icon } from "@/components/ui";
 import { cn } from "@/lib/cn";
 import { mediaSrc, mediaSrcSet } from "@/lib/content/format";
@@ -108,12 +109,12 @@ export function RichText({ state, media, className }: RichTextProps) {
               alt={item.alt}
               loading="lazy"
               decoding="async"
-              className="w-full rounded-2xl border border-line"
+              className="w-full rounded-card border border-line"
             />
             {caption || item.credit ? (
-              <figcaption className="mt-3 text-[13px] text-ink-500">
+              <figcaption className="mt-3 text-[13px] text-ink-3">
                 {caption}
-                {item.credit ? <span className="text-ink-500/80"> · {item.credit}</span> : null}
+                {item.credit ? <span className="text-ink-3/80"> · {item.credit}</span> : null}
               </figcaption>
             ) : null}
           </figure>
@@ -130,9 +131,9 @@ export function RichText({ state, media, className }: RichTextProps) {
 }
 
 const CALLOUT = {
-  note: { icon: "info", cls: "border-line bg-surface-card" },
+  note: { icon: "info", cls: "border-line bg-bg-raised" },
   tip: { icon: "check-circle", cls: "border-hydro/30 bg-hydro/5" },
-  warning: { icon: "warning", cls: "border-warning/30 bg-warning/8" },
+  warning: { icon: "warning", cls: "border-warn/30 bg-warn/10" },
 } as const;
 
 function ContentBlock({ fields }: { fields: Record<string, string> }) {
@@ -142,11 +143,11 @@ function ContentBlock({ fields }: { fields: Record<string, string> }) {
     case "callout": {
       const tone = CALLOUT[(fields.tone as keyof typeof CALLOUT) ?? "note"] ?? CALLOUT.note;
       return (
-        <aside className={cn("flex gap-3 rounded-xl border px-5 py-4", tone.cls)}>
-          <Icon name={tone.icon} size={18} weight="duotone" className="mt-0.5 shrink-0 text-ink-200" />
-          <div className="text-[15px] leading-relaxed">
-            {fields.title ? <p className="font-semibold text-ink-100">{fields.title}</p> : null}
-            <p className="text-ink-300">{fields.body}</p>
+        <aside className={cn("flex gap-3 rounded-card border px-5 py-4", tone.cls)}>
+          <Icon name={tone.icon} size={18} weight="duotone" className="mt-0.5 shrink-0 text-ink" />
+          <div className="type-small">
+            {fields.title ? <p className="font-semibold text-ink">{fields.title}</p> : null}
+            <p className="text-ink-2">{fields.body}</p>
           </div>
         </aside>
       );
@@ -159,7 +160,7 @@ function ContentBlock({ fields }: { fields: Record<string, string> }) {
           ? `https://player.vimeo.com/video/${id}?dnt=1`
           : `https://www.youtube-nocookie.com/embed/${id}`;
       return (
-        <div className="aspect-video overflow-hidden rounded-2xl border border-line bg-carbon-800">
+        <div className="aspect-video overflow-hidden rounded-card border border-line bg-bg-sunken">
           <iframe
             src={src}
             title={fields.title || "Video"}
@@ -174,15 +175,15 @@ function ContentBlock({ fields }: { fields: Record<string, string> }) {
     case "cta": {
       const href = SAFE_URL.test(fields.href ?? "") ? fields.href! : "/contact/";
       return (
-        <aside className="cv-dark surface-dark grain rounded-[1.5rem] px-6 py-7 md:px-8">
-          <p className="text-xl font-semibold tracking-tight text-white">{fields.heading}</p>
-          {fields.body ? <p className="mt-2 text-[15px] leading-relaxed text-white/60">{fields.body}</p> : null}
+        <aside className="not-prose rounded-panel border border-line bg-bg-sunken px-6 py-7 md:px-8">
+          <p className="type-title-3 text-ink">{fields.heading}</p>
+          {fields.body ? <p className="type-body mt-2 text-ink-2">{fields.body}</p> : null}
           <a
             href={href.startsWith("/") ? `${BASE}${href}` : href}
-            className="mt-5 inline-flex items-center gap-2 rounded-full bg-white px-5 py-2.5 text-[14px] font-medium text-zinc-900 no-underline transition-transform duration-300 hover:scale-[1.02]"
+            className={buttonClasses("primary", "md", "mt-5 no-underline")}
           >
             {fields.label}
-            <Icon name="arrow-right" size={15} />
+            <Arrow />
           </a>
         </aside>
       );

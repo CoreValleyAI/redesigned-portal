@@ -86,23 +86,23 @@ export function BlogSearch({ className }: { className?: string }) {
         type="button"
         onClick={open}
         className={cn(
-          "inline-flex h-10 items-center gap-2.5 rounded-full border border-line bg-surface-card pr-3 pl-4 text-[13.5px] text-ink-400 transition-colors hover:border-line-strong hover:text-ink-200",
+          "inline-flex h-10 items-center gap-2.5 rounded-full border border-line bg-bg-raised pr-3 pl-4 text-[13.5px] text-ink-2 transition-colors hover:border-line-strong hover:text-ink",
           className,
         )}
       >
         <Icon name="search" size={15} />
         Search posts
-        <kbd className="ml-2 rounded border border-line px-1.5 font-mono text-[10.5px] text-ink-500">/</kbd>
+        <kbd className="ml-2 rounded border border-line px-1.5 font-mono text-[10.5px] text-ink-3">/</kbd>
       </button>
 
       <dialog
         ref={dialog}
         aria-label="Search the blog"
         onClick={(e) => e.target === dialog.current && dialog.current?.close()}
-        className="m-auto mt-[12vh] w-[min(40rem,calc(100vw-2rem))] rounded-[1.5rem] border border-line bg-surface-card p-0 text-ink-100 shadow-2xl backdrop:bg-black/40 backdrop:backdrop-blur-sm"
+        className="m-auto mt-[12vh] w-[min(40rem,calc(100vw-2rem))] rounded-panel border border-line bg-bg-raised p-0 text-ink shadow-2xl backdrop:bg-black/40 backdrop:backdrop-blur-sm"
       >
-        <div className="flex items-center gap-3 border-b border-line-subtle px-5">
-          <Icon name="search" size={17} className="text-ink-500" />
+        <div className="flex items-center gap-3 border-b border-line px-5">
+          <Icon name="search" size={17} className="text-ink-3" />
           <input
             ref={input}
             value={q}
@@ -123,33 +123,33 @@ export function BlogSearch({ className }: { className?: string }) {
             aria-controls="blog-search-results"
             aria-activedescendant={hits[active] ? `bs-${hits[active]!.id}` : undefined}
             placeholder="Search posts, topics and authors"
-            className="h-14 flex-1 bg-transparent text-[15px] outline-none placeholder:text-ink-500"
+            className="h-14 flex-1 bg-transparent text-[15px] outline-none placeholder:text-ink-3"
           />
           <button
             type="button"
             onClick={() => dialog.current?.close()}
-            className="text-[12px] text-ink-500 hover:text-ink-200"
+            className="text-[12px] text-ink-3 hover:text-ink"
           >
             Esc
           </button>
         </div>
         <ul id="blog-search-results" role="listbox" className="max-h-[55vh] overflow-y-auto p-2">
           {failed ? (
-            <li className="px-4 py-6 text-center text-[14px] text-ink-500">Search couldn’t load. Try again later.</li>
+            <li className="px-4 py-6 text-center text-[14px] text-ink-3">Search couldn’t load. Try again later.</li>
           ) : null}
           {!failed && q.trim() && index && !hits.length ? (
-            <li className="px-4 py-6 text-center text-[14px] text-ink-500">No posts match “{q}”.</li>
+            <li className="px-4 py-6 text-center text-[14px] text-ink-3">No posts match “{q}”.</li>
           ) : null}
           {hits.map((h, i) => (
             <li key={h.id} id={`bs-${h.id}`} role="option" aria-selected={i === active}>
               <Link
                 href={`/blog/${h.id}/`}
                 onMouseEnter={() => setActive(i)}
-                className={cn("block rounded-2xl px-4 py-3", i === active && "bg-carbon-700/40")}
+                className={cn("block rounded-card px-4 py-3", i === active && "bg-bg-sunken")}
               >
-                <p className="text-[15px] font-medium text-ink-100">{h.title}</p>
-                <p className="mt-0.5 line-clamp-1 text-[13px] text-ink-500">{h.excerpt}</p>
-                <p className="mt-1 font-mono text-[11px] text-ink-500">
+                <p className="text-[15px] font-medium text-ink">{h.title}</p>
+                <p className="mt-0.5 line-clamp-1 text-[13px] text-ink-3">{h.excerpt}</p>
+                <p className="mt-1 font-mono text-[11px] text-ink-3">
                   {[h.category, formatDate(h.date)].filter(Boolean).join(" · ")}
                 </p>
               </Link>

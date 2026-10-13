@@ -1,7 +1,7 @@
-import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ButtonLink, Card, Icon } from "@/components/ui";
+import { ButtonLink } from "@/components/system/button";
 import { PageHero, TitledSection as Section } from "@/components/system/page-hero";
+import { TextLink } from "@/components/system/text-link";
 import { JobRole, JobSummary, HiringSteps, SimilarRoles } from "@/components/jobs/job-parts";
 import { ApplicationForm } from "@/components/jobs/application-form";
 import { JsonLd, breadcrumbJsonLd, jobPostingJsonLd } from "@/components/seo/json-ld";
@@ -73,13 +73,9 @@ export default async function JobPage({ params }: Params) {
             </div>
             <aside className="flex flex-col gap-4 lg:sticky lg:top-28">
               {steps && steps.blockType === "processSteps" ? <HiringSteps steps={steps.steps} compact /> : null}
-              <Link
-                href="/jobs/#roles"
-                className="inline-flex items-center gap-2 text-[14px] text-ink-300 underline underline-offset-4 hover:text-ink-100"
-              >
+              <TextLink href="/jobs/#roles" arrow className="self-start">
                 See open roles
-                <Icon name="arrow-right" size={14} />
-              </Link>
+              </TextLink>
             </aside>
           </div>
         </Section>
@@ -121,21 +117,18 @@ export default async function JobPage({ params }: Params) {
       />
 
       <PageHero eyebrow={team ? `Careers · ${team}` : "Careers"} title={job.title} lead={job.summary}>
-        <p className="mt-6 font-mono text-[12.5px] tracking-wide text-white/50">{jobMetaLine(job)}</p>
+        <p className="type-caption font-mono text-ink-3">{jobMetaLine(job)}</p>
         <div className="mt-6 flex flex-wrap items-center gap-x-6 gap-y-4">
           {job.closed ? (
-            <span className="text-[14px] text-white/70">This role closed on {formatDate(job.closesAt!)}.</span>
+            <span className="type-small text-ink-2">This role closed on {formatDate(job.closesAt!)}.</span>
           ) : (
-            <ButtonLink href="#apply" size="lg" iconRight={<Icon name="arrow-right" size={17} />}>
+            <ButtonLink href="#apply" size="lg" arrow>
               Apply for this role
             </ButtonLink>
           )}
-          <Link
-            href="/jobs/#roles"
-            className="text-[14px] font-medium text-white/70 underline decoration-white/30 underline-offset-4 transition-colors hover:text-white"
-          >
+          <TextLink href="/jobs/#roles" transitionTypes={["page-up"]}>
             All open roles
-          </Link>
+          </TextLink>
         </div>
       </PageHero>
 
@@ -171,22 +164,22 @@ export default async function JobPage({ params }: Params) {
         title={job.closed ? "This role has closed." : "Apply for this role."}
       >
         {job.closed ? (
-          <Card surface="solid" padding={28} className="max-w-[44rem]">
-            <p className="text-[15px] leading-relaxed text-ink-300">
+          <div className="flex max-w-[44rem] flex-col gap-5 rounded-panel border border-line bg-bg-raised p-7">
+            <p className="type-body text-ink-2">
               We’re no longer taking applications for {job.title}. Have a look at the other open roles, or send a
               general application and we’ll keep you in mind.
             </p>
-            <div className="mt-5 flex flex-wrap gap-3">
-              <ButtonLink href="/jobs/#roles" iconRight={<Icon name="arrow-right" size={15} />}>
+            <div className="flex flex-wrap gap-3">
+              <ButtonLink href="/jobs/#roles" arrow>
                 Open roles
               </ButtonLink>
               <ButtonLink href={`/jobs/${GENERAL_APPLICATION}/`} variant="secondary">
                 General application
               </ButtonLink>
             </div>
-          </Card>
+          </div>
         ) : job.applyMode === "external" && job.externalApplyUrl ? (
-          <ButtonLink href={job.externalApplyUrl} size="lg" iconRight={<Icon name="external" size={16} />}>
+          <ButtonLink href={job.externalApplyUrl} size="lg">
             Apply on our hiring partner’s site
           </ButtonLink>
         ) : (

@@ -14,25 +14,32 @@
  * this component posts to it instead.
  */
 import * as React from "react";
-import { Button, Card, Icon, Input } from "@/components/ui";
+import { Arrow, Button } from "@/components/system/button";
+import { Icon } from "@/components/ui";
 
 const INBOX = process.env.NEXT_PUBLIC_APPLY_INBOX || "info@corevalley.ai";
 const ENDPOINT = `https://formsubmit.co/ajax/${INBOX}`;
 const BASE = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
 const MAX_BYTES = 5 * 1024 * 1024;
-const ACCEPT = ".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document";
+const ACCEPT =
+  ".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document";
 
 type Status = "idle" | "sending" | "sent" | "offline";
 
 /** Read fresh each time: the connection can drop while a request is in flight. */
 const offline = () => typeof navigator !== "undefined" && navigator.onLine === false;
 
+/* The contact form's fields (components/forms/ascent.tsx), so the two
+   forms on the site feel the same. */
 const fieldClass =
-  "w-full rounded-md border border-line bg-surface-input px-3 text-[14px] text-ink-100 outline-none transition-[border-color,box-shadow] duration-fast hover:border-line-strong focus:border-hydro focus:shadow-[0_0_0_3px_rgb(var(--hydro-rgb)/0.12)]";
+  "type-body w-full rounded-card border border-line-strong/60 bg-bg px-4 text-ink outline-none transition-[border-color,box-shadow] duration-[var(--dur-short)] placeholder:text-ink-4 hover:border-line-strong focus:border-hydro focus:shadow-[0_0_0_4px_var(--hydro-wash)] aria-[invalid=true]:border-danger";
+const inputClass = `h-12 ${fieldClass}`;
+
+const panel = "rounded-panel border border-line bg-bg-raised p-[clamp(1.25rem,5vw,2rem)]";
 
 function Label({ htmlFor, required, children }: { htmlFor: string; required?: boolean; children: React.ReactNode }) {
   return (
-    <label htmlFor={htmlFor} className="mb-2 block text-[13.5px] font-medium text-ink-200">
+    <label htmlFor={htmlFor} className="type-small mb-2 block font-medium text-ink">
       {children}
       {required ? (
         <span aria-hidden="true" className="ml-0.5 text-hydro">
@@ -128,27 +135,27 @@ export function ApplicationForm({
 
   if (status === "sent") {
     return (
-      <Card surface="solid" padding={32} aria-live="polite">
+      <div className={panel} aria-live="polite">
         <Icon name="check-circle" size={28} weight="duotone" className="text-hydro" />
-        <h3 ref={doneRef} tabIndex={-1} className="mt-4 text-xl font-semibold tracking-tight text-ink-100 outline-none">
+        <h3 ref={doneRef} tabIndex={-1} className="type-title-3 mt-4 outline-none">
           Application received.
         </h3>
-        <p className="mt-2 max-w-[52ch] text-sm leading-relaxed text-ink-400">
-          Thank you. A person on the hiring team reads every application, and we reply to everyone — usually
-          within two weeks.
+        <p className="type-body mt-2 max-w-[52ch] text-ink-2">
+          Thank you. A person on the hiring team reads every application, and we reply to everyone — usually within two
+          weeks.
         </p>
         <Button variant="secondary" className="mt-6" onClick={() => setStatus("idle")}>
           Send another
         </Button>
-      </Card>
+      </div>
     );
   }
 
   const subject = `Application: ${role}${team ? ` (${team})` : ""}`;
 
   return (
-    <Card surface="solid" style={{ padding: "clamp(1.25rem, 5vw, 2rem)" }}>
-      <form onSubmit={onSubmit} encType="multipart/form-data" className="space-y-4">
+    <div className={panel}>
+      <form onSubmit={onSubmit} encType="multipart/form-data" className="space-y-5">
         <input type="hidden" name="_subject" value={subject} />
         <input type="hidden" name="_template" value="table" />
         <input type="hidden" name="_captcha" value="false" />
@@ -158,7 +165,7 @@ export function ApplicationForm({
         {pageUrl ? <input type="hidden" name="role_page" value={pageUrl} /> : null}
         <input type="text" name="_honey" tabIndex={-1} autoComplete="off" aria-hidden="true" className="hidden" />
 
-        <p className="text-[12.5px] text-ink-500">
+        <p className="type-caption text-ink-3">
           Fields marked <span className="text-hydro">*</span> are required.
         </p>
 
@@ -167,27 +174,33 @@ export function ApplicationForm({
             <Label htmlFor="ap-name" required>
               Full name
             </Label>
-            <Input id="ap-name" name="name" required autoComplete="name" />
+            <input id="ap-name" name="name" required autoComplete="name" className={inputClass} />
           </div>
           <div>
             <Label htmlFor="ap-email" required>
               Email
             </Label>
-            <Input id="ap-email" name="email" type="email" required autoComplete="email" />
+            <input id="ap-email" name="email" type="email" required autoComplete="email" className={inputClass} />
           </div>
           <div>
             <Label htmlFor="ap-phone">Phone</Label>
-            <Input id="ap-phone" name="phone" type="tel" autoComplete="tel" placeholder="+977" className="placeholder:text-ink-500" />
+            <input id="ap-phone" name="phone" type="tel" autoComplete="tel" placeholder="+977" className={inputClass} />
           </div>
           <div>
             <Label htmlFor="ap-city">Where you’re based</Label>
-            <Input id="ap-city" name="city" autoComplete="address-level2" placeholder="e.g. Kathmandu" className="placeholder:text-ink-500" />
+            <input
+              id="ap-city"
+              name="city"
+              autoComplete="address-level2"
+              placeholder="e.g. Kathmandu"
+              className={inputClass}
+            />
           </div>
         </div>
 
         <div>
           <Label htmlFor="ap-links">LinkedIn, GitHub or portfolio</Label>
-          <Input id="ap-links" name="links" type="url" placeholder="https://" className="placeholder:text-ink-500" />
+          <input id="ap-links" name="links" type="url" placeholder="https://" className={inputClass} />
         </div>
 
         <div>
@@ -202,9 +215,9 @@ export function ApplicationForm({
             accept={ACCEPT}
             onChange={(e) => checkFile(e.currentTarget)}
             aria-describedby="ap-cv-help"
-            className={`${fieldClass} h-auto py-2 file:mr-3 file:rounded-full file:border-0 file:bg-carbon-600 file:px-3 file:py-1.5 file:text-[13px] file:text-ink-100`}
+            className={`${fieldClass} h-auto py-2.5 file:mr-3 file:rounded-pill file:border-0 file:bg-bg-sunken file:px-3.5 file:py-1.5 file:text-[0.8125rem] file:text-ink`}
           />
-          <p id="ap-cv-help" className={`mt-1.5 text-[12.5px] ${fileError ? "text-warning" : "text-ink-500"}`}>
+          <p id="ap-cv-help" className={`type-caption mt-1.5 ${fileError ? "text-warn" : "text-ink-3"}`}>
             {fileError ?? "PDF or Word, up to 5 MB."}
           </p>
         </div>
@@ -216,12 +229,18 @@ export function ApplicationForm({
             name="message"
             rows={5}
             placeholder="A few lines about you and what you’d like to work on."
-            className={`resize-y py-2.5 leading-relaxed placeholder:text-ink-500 ${fieldClass}`}
+            className={`resize-y py-3 ${fieldClass}`}
           />
         </div>
 
-        <label className="flex items-start gap-3 text-[13.5px] leading-relaxed text-ink-300">
-          <input type="checkbox" name="consent" value="yes" required className="mt-1 size-4 shrink-0 accent-[var(--hydro)]" />
+        <label className="type-small flex items-start gap-3 text-ink-2">
+          <input
+            type="checkbox"
+            name="consent"
+            value="yes"
+            required
+            className="mt-1 size-4 shrink-0 accent-[var(--hydro)]"
+          />
           <span>
             I agree that CoreValley may keep my application for up to 12 months to consider me for this and similar
             roles. It is sent to our inbox through FormSubmit, a third-party form service.
@@ -229,23 +248,20 @@ export function ApplicationForm({
         </label>
 
         {status === "offline" ? (
-          <p role="alert" className="flex items-start gap-2 rounded-md border border-warning/30 bg-warning/8 px-3.5 py-2.5 text-[13.5px] text-ink-200">
-            <Icon name="warning" size={16} weight="fill" className="mt-0.5 shrink-0 text-warning" />
+          <p
+            role="alert"
+            className="type-small flex items-start gap-2 rounded-card border border-warn/30 bg-warn/10 px-4 py-3 text-ink"
+          >
+            <Icon name="warning" size={16} weight="fill" className="mt-0.5 shrink-0 text-warn" />
             You seem to be offline, so nothing was sent. Everything you entered is still here.
           </p>
         ) : null}
 
-        <Button
-          type="submit"
-          variant="primary"
-          size="lg"
-          fullWidth
-          disabled={status === "sending"}
-          iconRight={<Icon name="arrow-right" size={16} />}
-        >
+        <Button type="submit" size="lg" className="w-full" disabled={status === "sending"}>
           {status === "sending" ? "Sending…" : "Submit application"}
+          <Arrow />
         </Button>
       </form>
-    </Card>
+    </div>
   );
 }

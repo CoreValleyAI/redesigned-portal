@@ -12,7 +12,7 @@
  * hidden on the client too.
  */
 import * as React from "react";
-import Link from "next/link";
+import { AppLink } from "@/components/system/app-link";
 import { Icon } from "@/components/ui";
 import { cn } from "@/lib/cn";
 import { EMPLOYMENT_LABEL, WORK_MODE_LABEL, formatDate } from "@/lib/content/format";
@@ -23,7 +23,7 @@ const EMPTY: Filters = { q: "", team: "", location: "", mode: "", type: "" };
 const KEYS = Object.keys(EMPTY) as (keyof Filters)[];
 
 const selectClass =
-  "h-11 w-full appearance-none rounded-full border border-line bg-surface-card pr-9 pl-4 text-[14px] text-ink-100 outline-none transition-[border-color,box-shadow] duration-fast hover:border-line-strong focus:border-hydro focus:shadow-[0_0_0_3px_rgb(var(--hydro-rgb)/0.12)]";
+  "type-small h-11 w-full appearance-none rounded-pill border border-line-strong/60 bg-bg pr-9 pl-4 text-ink outline-none transition-[border-color,box-shadow] duration-[var(--dur-short)] hover:border-line-strong focus:border-hydro focus:shadow-[0_0_0_4px_var(--hydro-wash)]";
 
 function Select({
   label,
@@ -50,7 +50,7 @@ function Select({
       <Icon
         name="arrow-right"
         size={13}
-        className="pointer-events-none absolute top-1/2 right-4 -translate-y-1/2 rotate-90 text-ink-500"
+        className="pointer-events-none absolute top-1/2 right-4 -translate-y-1/2 rotate-90 text-ink-3"
       />
     </label>
   );
@@ -80,10 +80,7 @@ export function JobsBoard({ jobs, generalHref }: { jobs: JobListItem[]; generalH
     });
   };
 
-  const open = React.useMemo(
-    () => (now ? jobs.filter((j) => !j.closesAt || j.closesAt > now) : jobs),
-    [jobs, now],
-  );
+  const open = React.useMemo(() => (now ? jobs.filter((j) => !j.closesAt || j.closesAt > now) : jobs), [jobs, now]);
 
   const count = <T extends string>(pick: (j: JobListItem) => T[]) => {
     const m = new Map<T, number>();
@@ -146,20 +143,20 @@ export function JobsBoard({ jobs, generalHref }: { jobs: JobListItem[]; generalH
 
   if (!open.length) {
     return (
-      <div className="rounded-[2rem] border border-dashed border-line px-6 py-14 text-center md:px-10">
-        <Icon name="search" size={26} weight="duotone" className="mx-auto text-ink-400" />
-        <h3 className="mt-4 text-xl font-semibold tracking-tight text-ink-100">No open roles right now.</h3>
-        <p className="mx-auto mt-2 max-w-[46ch] text-[15px] leading-relaxed text-ink-400">
+      <div className="rounded-panel border border-dashed border-line px-6 py-14 text-center md:px-10">
+        <Icon name="search" size={26} weight="duotone" className="mx-auto text-ink-2" />
+        <h3 className="type-title-3 mt-4">No open roles right now.</h3>
+        <p className="type-body mx-auto mt-2 max-w-[46ch] text-ink-2">
           We still want to hear from people who’d like to build Nepal’s AI infrastructure.
         </p>
         {generalHref ? (
-          <Link
+          <AppLink
             href={generalHref}
-            className="mt-6 inline-flex items-center gap-2 text-[14px] font-medium text-ink-100 underline decoration-hydro/50 underline-offset-4"
+            className="mt-6 inline-flex items-center gap-2 text-[14px] font-medium text-ink underline decoration-hydro/50 underline-offset-4"
           >
             Send a general application
             <Icon name="arrow-right" size={14} />
-          </Link>
+          </AppLink>
         ) : null}
       </div>
     );
@@ -173,7 +170,7 @@ export function JobsBoard({ jobs, generalHref }: { jobs: JobListItem[]; generalH
           <Icon
             name="search"
             size={16}
-            className="pointer-events-none absolute top-1/2 left-4 -translate-y-1/2 text-ink-500"
+            className="pointer-events-none absolute top-1/2 left-4 -translate-y-1/2 text-ink-3"
           />
           <input
             type="search"
@@ -184,12 +181,17 @@ export function JobsBoard({ jobs, generalHref }: { jobs: JobListItem[]; generalH
           />
         </label>
         <Select label="Teams" value={f.team} onChange={(team) => update({ team })} options={teamOpts} />
-        <Select label="Locations" value={f.location} onChange={(location) => update({ location })} options={locationOpts} />
+        <Select
+          label="Locations"
+          value={f.location}
+          onChange={(location) => update({ location })}
+          options={locationOpts}
+        />
         <Select label="Work modes" value={f.mode} onChange={(mode) => update({ mode })} options={modeOpts} />
         <Select label="Types" value={f.type} onChange={(type) => update({ type })} options={typeOpts} />
       </div>
 
-      <div className="mt-5 flex min-h-8 items-center justify-between gap-4 text-[13.5px] text-ink-500">
+      <div className="type-small mt-5 flex min-h-8 items-center justify-between gap-4 text-ink-3">
         <p aria-live="polite">
           {shown.length} {shown.length === 1 ? "role" : "roles"}
           {filtered ? ` of ${open.length}` : ""}
@@ -198,7 +200,7 @@ export function JobsBoard({ jobs, generalHref }: { jobs: JobListItem[]; generalH
           <button
             type="button"
             onClick={() => update(EMPTY)}
-            className="text-ink-300 underline decoration-line underline-offset-4 transition-colors hover:text-ink-100"
+            className="text-ink-2 underline decoration-line underline-offset-4 transition-colors hover:text-ink"
           >
             Clear filters
           </button>
@@ -211,32 +213,30 @@ export function JobsBoard({ jobs, generalHref }: { jobs: JobListItem[]; generalH
             <section key={g.name} aria-labelledby={`team-${g.name}`}>
               <h3
                 id={`team-${g.name}`}
-                className="flex items-baseline gap-3 border-b border-line pb-3 text-[15px] font-semibold tracking-tight text-ink-100"
+                className="type-kicker flex items-baseline gap-3 border-b border-line pb-3 text-ink-3"
               >
                 {g.name}
-                <span className="font-mono text-[12px] font-normal text-ink-500">{g.jobs.length}</span>
+                <span className="tabular-nums text-ink-4">{g.jobs.length}</span>
               </h3>
               <ul>
                 {g.jobs.map((j) => (
-                  <li key={j.slug} className="border-b border-line-subtle">
-                    <Link
+                  <li key={j.slug} className="border-b border-line">
+                    <AppLink
                       href={`/jobs/${j.slug}/`}
                       className="group grid gap-1.5 py-5 md:grid-cols-[minmax(0,1fr)_auto] md:items-center md:gap-8"
                     >
                       <div className="min-w-0">
-                        <p className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[17px] font-medium tracking-tight text-ink-100 transition-colors group-hover:text-hydro-dark">
+                        <p className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[1.125rem] font-semibold tracking-[-0.012em] text-ink transition-colors group-hover:text-hydro-ink">
                           {j.title}
                           {j.featured ? (
-                            <span className="font-mono text-[10.5px] font-normal tracking-label text-hydro uppercase">
+                            <span className="font-mono text-[10.5px] font-normal tracking-[0.14em] text-hydro uppercase">
                               Featured
                             </span>
                           ) : null}
                         </p>
-                        <p className="mt-1 line-clamp-2 max-w-[70ch] text-[14px] leading-relaxed text-ink-400">
-                          {j.summary}
-                        </p>
+                        <p className="type-small mt-1 line-clamp-2 max-w-[70ch] text-ink-2">{j.summary}</p>
                       </div>
-                      <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-[13px] text-ink-500 md:justify-end">
+                      <div className="type-small flex flex-wrap items-center gap-x-4 gap-y-1 text-ink-3 md:justify-end">
                         <span>{j.locations.map((l) => l.name).join(", ") || "Nepal"}</span>
                         <span>{WORK_MODE_LABEL[j.workMode]}</span>
                         <span>{EMPLOYMENT_LABEL[j.employmentType]}</span>
@@ -244,10 +244,10 @@ export function JobsBoard({ jobs, generalHref }: { jobs: JobListItem[]; generalH
                         <Icon
                           name="arrow-right"
                           size={15}
-                          className="hidden text-ink-400 transition-transform duration-300 group-hover:translate-x-1 md:block"
+                          className="hidden text-ink-2 transition-transform duration-300 group-hover:translate-x-1 md:block"
                         />
                       </div>
-                    </Link>
+                    </AppLink>
                   </li>
                 ))}
               </ul>
@@ -255,16 +255,16 @@ export function JobsBoard({ jobs, generalHref }: { jobs: JobListItem[]; generalH
           ))}
         </div>
       ) : (
-        <div className="mt-6 rounded-2xl border border-dashed border-line px-6 py-10 text-center">
-          <p className="text-[15px] text-ink-300">No roles match those filters.</p>
+        <div className="mt-6 rounded-card border border-dashed border-line px-6 py-10 text-center">
+          <p className="text-[15px] text-ink-2">No roles match those filters.</p>
           <div className="mt-4 flex flex-wrap justify-center gap-x-6 gap-y-2 text-[14px]">
-            <button type="button" onClick={() => update(EMPTY)} className="text-ink-100 underline underline-offset-4">
+            <button type="button" onClick={() => update(EMPTY)} className="text-ink underline underline-offset-4">
               Clear filters
             </button>
             {generalHref ? (
-              <Link href={generalHref} className="text-ink-100 underline underline-offset-4">
+              <AppLink href={generalHref} className="text-ink underline underline-offset-4">
                 Send a general application
-              </Link>
+              </AppLink>
             ) : null}
           </div>
         </div>

@@ -2,9 +2,9 @@
  * Pieces of a role page. Isomorphic (no hooks, no fs) so the CMS live
  * preview can render a draft with exactly the same markup.
  */
-import Link from "next/link";
-import { ButtonLink, Card, Icon } from "@/components/ui";
 import { RichText } from "@/components/content/rich-text";
+import { AppLink } from "@/components/system/app-link";
+import { Arrow, ButtonLink } from "@/components/system/button";
 import { ShareLinks } from "@/components/content/share-links";
 import { EMPLOYMENT_LABEL, WORK_MODE_LABEL, formatDate } from "@/lib/content/format";
 import type { Job, MediaItem } from "@/lib/content/types";
@@ -15,11 +15,11 @@ function Points({ title, items }: { title: string; items: string[] }) {
   if (!items.length) return null;
   return (
     <section className="mt-12">
-      <h2 className="text-[1.35rem] font-semibold tracking-tight text-ink-100">{title}</h2>
+      <h2 className="type-title-3">{title}</h2>
       <ul className="mt-5 flex flex-col gap-3">
         {items.map((it) => (
-          <li key={it} className="flex gap-3 text-[15.5px] leading-relaxed text-ink-300">
-            <Icon name="check" size={16} className="mt-1 shrink-0 text-hydro" />
+          <li key={it} className="type-body flex gap-3.5 text-ink-2">
+            <span aria-hidden="true" className="mt-[0.62em] size-1.5 shrink-0 rounded-full bg-hydro" />
             <span>{it}</span>
           </li>
         ))}
@@ -33,8 +33,8 @@ export function JobRole({ job, media }: { job: RoleLike; media: Map<string, Medi
     <article>
       {job.body ? (
         <section>
-          <h2 className="text-[1.35rem] font-semibold tracking-tight text-ink-100">About the role</h2>
-          <RichText state={job.body} media={media} className="mt-5" />
+          <h2 className="type-title-3">About the role</h2>
+          <RichText state={job.body} media={media} className="prose-article mt-5" />
         </section>
       ) : null}
       <Points title="What you’ll do" items={job.responsibilities} />
@@ -54,30 +54,30 @@ export function JobSummary({
   rows: [string, string][];
 }) {
   return (
-    <aside className="lg:sticky lg:top-28">
-      <Card surface="solid" padding={0}>
-        <dl className="divide-y divide-line-subtle">
+    <aside className="overflow-hidden rounded-panel border border-line bg-bg-raised lg:sticky lg:top-[calc(var(--header-h)+1.5rem)]">
+      <div>
+        <dl className="divide-y divide-line">
           {rows.map(([k, v]) => (
             <div key={k} className="flex items-baseline justify-between gap-4 px-5 py-3.5">
-              <dt className="cv-label shrink-0 text-[10px]">{k}</dt>
-              <dd className="text-right text-[14px] text-ink-200">{v}</dd>
+              <dt className="type-kicker shrink-0 text-ink-3">{k}</dt>
+              <dd className="type-small text-right text-ink">{v}</dd>
             </div>
           ))}
         </dl>
-        <div className="border-t border-line-subtle p-5">
+        <div className="border-t border-line p-5">
           {job.closed ? (
-            <p className="text-[14px] text-ink-400">Applications are closed.</p>
+            <p className="type-small text-ink-2">Applications are closed.</p>
           ) : (
-            <ButtonLink href="#apply" fullWidth iconRight={<Icon name="arrow-right" size={15} />} className="justify-between">
+            <ButtonLink href="#apply" arrow className="w-full justify-between">
               Apply now
             </ButtonLink>
           )}
           <div className="mt-4 flex items-center justify-between gap-3">
-            <span className="text-[12.5px] text-ink-500">Share this role</span>
+            <span className="type-caption text-ink-3">Share this role</span>
             <ShareLinks url={url} title={`${job.title} at CoreValley`} />
           </div>
         </div>
-      </Card>
+      </div>
     </aside>
   );
 }
@@ -93,18 +93,16 @@ export function HiringSteps({
 }) {
   return (
     <section>
-      <h2 className={compact ? "cv-label text-[10px]" : "text-[1.35rem] font-semibold tracking-tight text-ink-100"}>
-        {heading}
-      </h2>
+      <h2 className={compact ? "type-kicker text-ink-3" : "type-title-3"}>{heading}</h2>
       <ol className={compact ? "mt-4 flex flex-col gap-3" : "mt-6 grid gap-3 sm:grid-cols-2"}>
         {steps.map((s, i) => (
-          <li key={s.title} className="rounded-2xl border border-line bg-surface-card p-5">
+          <li key={s.title} className="rounded-card border border-line bg-bg-raised p-5">
             <div className="flex items-baseline justify-between gap-3">
-              <span className="font-mono text-[12px] text-ink-500">{String(i + 1).padStart(2, "0")}</span>
-              {s.duration ? <span className="font-mono text-[11.5px] text-ink-500">{s.duration}</span> : null}
+              <span className="font-mono text-[12px] text-ink-3">{String(i + 1).padStart(2, "0")}</span>
+              {s.duration ? <span className="font-mono text-[11.5px] text-ink-3">{s.duration}</span> : null}
             </div>
-            <p className="mt-2 text-[15px] font-semibold tracking-tight text-ink-100">{s.title}</p>
-            {s.body && !compact ? <p className="mt-1.5 text-sm leading-relaxed text-ink-400">{s.body}</p> : null}
+            <p className="type-body mt-2 font-semibold text-ink">{s.title}</p>
+            {s.body && !compact ? <p className="type-small mt-1.5 text-ink-2">{s.body}</p> : null}
           </li>
         ))}
       </ol>
@@ -124,21 +122,25 @@ export function SimilarRoles({
     <ul className="grid gap-4 md:grid-cols-3">
       {jobs.map((j) => (
         <li key={j.slug}>
-          <Link
+          <AppLink
             href={`/jobs/${j.slug}/`}
-            className="group flex h-full flex-col rounded-2xl border border-line bg-surface-card p-6 transition-colors duration-300 hover:border-line-strong"
+            className="group/btn flex h-full flex-col rounded-card border border-line bg-bg-raised p-6 transition-colors duration-300 hover:border-line-strong"
           >
-            <span className="cv-label text-[10px]">{j.teamInfo?.name ?? "CoreValley"}</span>
-            <span className="mt-3 text-[17px] font-semibold tracking-tight text-ink-100">{j.title}</span>
-            <span className="mt-2 text-[13px] text-ink-500">
-              {[j.locationInfo.map((l) => l.name).join(", ") || "Nepal", WORK_MODE_LABEL[j.workMode], EMPLOYMENT_LABEL[j.employmentType]].join(" · ")}
+            <span className="type-kicker text-ink-3">{j.teamInfo?.name ?? "CoreValley"}</span>
+            <span className="type-title-3 mt-3">{j.title}</span>
+            <span className="type-small mt-2 text-ink-3">
+              {[
+                j.locationInfo.map((l) => l.name).join(", ") || "Nepal",
+                WORK_MODE_LABEL[j.workMode],
+                EMPLOYMENT_LABEL[j.employmentType],
+              ].join(" · ")}
             </span>
-            {j.closesAt ? <span className="mt-1 text-[13px] text-ink-500">Closes {formatDate(j.closesAt)}</span> : null}
-            <span className="mt-auto inline-flex items-center gap-1.5 pt-5 text-[13px] font-medium text-ink-300 group-hover:text-ink-100">
+            {j.closesAt ? <span className="type-small mt-1 text-ink-3">Closes {formatDate(j.closesAt)}</span> : null}
+            <span className="type-small mt-auto inline-flex items-center gap-1.5 pt-5 font-medium text-ink-2 group-hover/btn:text-ink">
               View role
-              <Icon name="arrow-right" size={14} className="transition-transform duration-300 group-hover:translate-x-1" />
+              <Arrow />
             </span>
-          </Link>
+          </AppLink>
         </li>
       ))}
     </ul>

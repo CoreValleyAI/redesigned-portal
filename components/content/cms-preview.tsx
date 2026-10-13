@@ -28,10 +28,10 @@ type Doc = Record<string, unknown>;
 
 function Notice({ children }: { children: React.ReactNode }) {
   return (
-    <div className="shell">
-      <div className="px-6 pt-40 pb-24 text-center md:px-14">
-        <p className="cv-label">Live preview</p>
-        <p className="mx-auto mt-4 max-w-[48ch] text-[15px] leading-relaxed text-ink-400">{children}</p>
+    <div className="container-page">
+      <div className="pt-40 pb-24 text-center">
+        <p className="type-kicker text-ink-3">Live preview</p>
+        <p className="mx-auto mt-4 max-w-[48ch] text-[15px] leading-relaxed text-ink-2">{children}</p>
       </div>
     </div>
   );
@@ -71,7 +71,11 @@ export function CmsPreview() {
     const job = previewJob(data, L);
     return (
       <>
-        <PageHero eyebrow={job.teamInfo ? `Careers · ${job.teamInfo.name}` : "Careers"} title={job.title} lead={job.summary} />
+        <PageHero
+          eyebrow={job.teamInfo ? `Careers · ${job.teamInfo.name}` : "Careers"}
+          title={job.title}
+          lead={job.summary}
+        />
         <Section>
           <div className="grid gap-12 lg:grid-cols-[minmax(0,1fr)_21rem] lg:items-start">
             <JobRole job={job} media={L.media} />
@@ -108,7 +112,7 @@ export function CmsPreview() {
       <>
         <PageHero eyebrow={page.hero.eyebrow ?? "Careers"} title={page.hero.title} lead={page.hero.lead} />
         <Section eyebrow="Open roles" title="Join the team.">
-          <p className="text-[15px] text-ink-400">Published roles are listed here on the live page.</p>
+          <p className="text-[15px] text-ink-2">Published roles are listed here on the live page.</p>
         </Section>
         <LayoutBlocks blocks={page.layout} media={L.media} />
       </>
