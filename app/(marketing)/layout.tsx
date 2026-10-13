@@ -1,17 +1,13 @@
-import { SiteFooter } from "@/components/layout/site-footer";
-import { SiteHeader } from "@/components/layout/site-header";
+import { SiteFooter } from "@/components/chrome/site-footer";
+import { SiteHeader } from "@/components/chrome/site-header";
 
-export default function MarketingLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function MarketingLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="flex min-h-dvh flex-col bg-bg-base">
+    <div className="flex min-h-dvh flex-col">
       <SiteHeader />
-      {/* id="main" is the skip link's target (see app/layout.tsx). The page's
-          first slab starts at the top; the glass nav floats over it. */}
-      <main id="main" tabIndex={-1} className="flex-1 pt-2 focus:outline-none md:pt-3">
+      {/* The skip link's target. Pages start at the very top: the header
+          floats over each page's opening section. */}
+      <main id="main" tabIndex={-1} className="flex-1 focus:outline-none">
         {children}
       </main>
       <SiteFooter />

@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { Icon } from "@/components/ui";
-import { PageHero } from "@/components/marketing/page-hero";
-import { Reveal } from "@/components/fx/reveal";
+import { PageHero } from "@/components/system/page-hero";
+import { Reveal } from "@/components/motion/reveal";
 import { pageMetadata } from "@/lib/seo";
 
 /**

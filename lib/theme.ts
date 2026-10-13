@@ -1,199 +1,234 @@
 /**
- * Theme (dark / light) — the one place that knows how the theme is stored,
- * applied and read back.
+ * Visitor preferences: theme, motion and engineer mode.
  *
- * The theme is a `data-theme` attribute on <html>; app/theme.css keys every
- * token override on it, so switching is a single attribute write and no
- * component needs to know which theme is on. The attribute is stamped before
- * first paint by THEME_BOOTSTRAP (inlined by app/layout.tsx), so there is no
- * flash of the wrong theme; the root element carries suppressHydrationWarning
- * for the same reason.
+ * Each is an attribute on <html> that CSS keys on, so a change is a single
+ * attribute write and no component has to know the current value:
  *
- * Resolution order: the visitor's saved choice, else light. Light is the
- * default by decision; the OS preference is not consulted, so first-time
- * visitors on a dark OS still see the light site until they press the toggle.
+ *   data-theme     "light" | "dark"   Glacier or Night Valley (app/styles/tokens.css)
+ *   data-motion    "full" | "reduce"  the OS setting, or the site's own toggle
+ *   data-engineer  "on" | "off"       denser pages with raw specs (S15)
+ *   data-js                           scripting is running (arms the reveal CSS)
+ *
+ * PREFERENCE_BOOTSTRAP stamps all four before first paint (inlined in the
+ * <head> by app/layout.tsx), so there is never a flash of the wrong theme or
+ * of content that is about to animate. A saved choice wins; otherwise the
+ * OS decides. Choices are stored in localStorage on this device only (the
+ * privacy page says so).
  */
 import * as React from "react";
 
-export type Theme = "dark" | "light";
+export type Theme = "light" | "dark";
+export type MotionPref = "full" | "reduce";
 
-export const THEME_STORAGE_KEY = "cv-theme";
+export const STORAGE = {
+  theme: "cv-theme",
+  motion: "cv-motion",
+  engineer: "cv-engineer",
+} as const;
 
-/** The browser-chrome colour per theme: --bg-base from each token set. */
+/** The browser chrome colour per theme: --bg of each palette. */
 export const THEME_COLOR: Record<Theme, string> = {
-  dark: "#000000",
-  light: "#F4F4F5",
+  light: "#F8FAFD",
+  dark: "#0A0F14",
 };
 
-/* Inlined as the first child of <body>. Dependency-free ES5 so it runs
-   anywhere, and wrapped in try/catch because localStorage throws in some
-   private modes. */
-/* The redesign is one light page with dark islands, so the root is always
-   light; a stored choice from the old toggle is ignored. */
-export const THEME_BOOTSTRAP =
-  `document.documentElement.setAttribute("data-theme","light");`;
+/* Dependency-free ES5, wrapped in try/catch because storage throws in some
+   private modes. Keep it short: it blocks the first paint. */
+export const PREFERENCE_BOOTSTRAP = `(function(){var d=document.documentElement,t=null,m=null,e=null;try{t=localStorage.getItem("${STORAGE.theme}");m=localStorage.getItem("${STORAGE.motion}");e=localStorage.getItem("${STORAGE.engineer}")}catch(x){}function q(s){return!!(window.matchMedia&&matchMedia(s).matches)}if(t!=="light"&&t!=="dark")t=q("(prefers-color-scheme: dark)")?"dark":"light";if(m!=="full"&&m!=="reduce")m=q("(prefers-reduced-motion: reduce)")?"reduce":"full";d.setAttribute("data-theme",t);d.setAttribute("data-motion",m);d.setAttribute("data-engineer",e==="on"?"on":"off");d.setAttribute("data-js","")})();`;
 
-const isTheme = (v: unknown): v is Theme => v === "dark" || v === "light";
+/** Kept for the docs layout, which shares the bootstrap. */
+export const THEME_BOOTSTRAP = PREFERENCE_BOOTSTRAP;
 
-/** The theme currently on <html>. "light" on the server and before bootstrap. */
-export function readTheme(): Theme {
-  if (typeof document === "undefined") return "light";
-  const t = document.documentElement.getAttribute("data-theme");
-  return isTheme(t) ? t : "light";
-}
+/* ── Reading and writing ────────────────────────────────────────────────── */
 
-export function applyTheme(theme: Theme, persist = true): void {
-  document.documentElement.setAttribute("data-theme", theme);
-  document
-    .querySelector('meta[name="theme-color"]')
-    ?.setAttribute("content", THEME_COLOR[theme]);
-  if (persist) {
-    try {
-      localStorage.setItem(THEME_STORAGE_KEY, theme);
-    } catch {
-      /* private mode, quota — the choice just does not persist */
-    }
+const html = () => document.documentElement;
+
+function store(key: string, value: string | null) {
+  try {
+    if (value === null) localStorage.removeItem(key);
+    else localStorage.setItem(key, value);
+  } catch {
+    /* Private mode: the choice lasts for this page view only. */
   }
 }
 
-export function toggleTheme(): Theme {
-  const next: Theme = readTheme() === "dark" ? "light" : "dark";
-  applyTheme(next);
-  return next;
+export function readTheme(): Theme {
+  if (typeof document === "undefined") return "light";
+  return html().dataset.theme === "dark" ? "dark" : "light";
+}
+
+export function readMotion(): MotionPref {
+  if (typeof document === "undefined") return "full";
+  return html().dataset.motion === "reduce" ? "reduce" : "full";
+}
+
+export function readEngineer(): boolean {
+  if (typeof document === "undefined") return false;
+  return html().dataset.engineer === "on";
+}
+
+function syncThemeColor(theme: Theme) {
+  for (const meta of document.querySelectorAll<HTMLMetaElement>('meta[name="theme-color"]')) {
+    meta.content = THEME_COLOR[theme];
+    meta.removeAttribute("media");
+  }
 }
 
 /**
- * Fires whenever <html data-theme> changes, from any source — the toggle,
- * another tab, devtools. Canvases use it to repaint; useTheme() is built on
- * it. Returns the unsubscribe.
+ * Switch the theme. With an origin (the toggle's centre) and motion allowed,
+ * the new theme spreads from that point as a circle (a view transition);
+ * otherwise it changes on the next frame.
  */
-export function subscribeTheme(listener: (theme: Theme) => void): () => void {
-  if (typeof MutationObserver === "undefined") return () => {};
-  const observer = new MutationObserver(() => listener(readTheme()));
-  observer.observe(document.documentElement, {
-    attributes: true,
-    attributeFilter: ["data-theme"],
+export function setTheme(theme: Theme, origin?: { x: number; y: number }) {
+  const apply = () => {
+    html().dataset.theme = theme;
+    syncThemeColor(theme);
+  };
+  store(STORAGE.theme, theme);
+
+  const canAnimate =
+    origin && readMotion() === "full" && typeof document.startViewTransition === "function";
+  if (!canAnimate) {
+    apply();
+    return;
+  }
+
+  const root = html();
+  const r = Math.hypot(
+    Math.max(origin.x, window.innerWidth - origin.x),
+    Math.max(origin.y, window.innerHeight - origin.y),
+  );
+  root.style.setProperty("--vt-x", `${origin.x}px`);
+  root.style.setProperty("--vt-y", `${origin.y}px`);
+  root.style.setProperty("--vt-r", `${Math.ceil(r)}px`);
+  root.dataset.vt = "theme";
+  const vt = document.startViewTransition(apply);
+  vt.finished.finally(() => {
+    delete root.dataset.vt;
   });
-  return () => observer.disconnect();
 }
 
-/** The live theme, for client components. Hydrates as "light", like the server. */
+/** Forget the saved theme and follow the OS again. */
+export function followSystemTheme() {
+  store(STORAGE.theme, null);
+  const dark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+  html().dataset.theme = dark ? "dark" : "light";
+  syncThemeColor(dark ? "dark" : "light");
+}
+
+export function setMotion(pref: MotionPref) {
+  store(STORAGE.motion, pref);
+  html().dataset.motion = pref;
+}
+
+export function setEngineer(on: boolean) {
+  store(STORAGE.engineer, on ? "on" : null);
+  html().dataset.engineer = on ? "on" : "off";
+}
+
+/** True if the visitor saved a theme (rather than following the OS). */
+export function hasSavedTheme(): boolean {
+  try {
+    const v = localStorage.getItem(STORAGE.theme);
+    return v === "light" || v === "dark";
+  } catch {
+    return false;
+  }
+}
+
+/* ── Subscribing (React and non-React) ─────────────────────────────────── */
+
+type Listener = () => void;
+const listeners = new Set<Listener>();
+let observer: MutationObserver | null = null;
+
+/** Called whenever theme, motion or engineer mode changes on <html>. */
+export function subscribePrefs(listener: Listener): () => void {
+  listeners.add(listener);
+  if (!observer && typeof MutationObserver !== "undefined") {
+    observer = new MutationObserver(() => listeners.forEach((l) => l()));
+    observer.observe(html(), {
+      attributes: true,
+      attributeFilter: ["data-theme", "data-motion", "data-engineer"],
+    });
+  }
+  return () => {
+    listeners.delete(listener);
+    if (!listeners.size && observer) {
+      observer.disconnect();
+      observer = null;
+    }
+  };
+}
+
 export function useTheme(): Theme {
-  return React.useSyncExternalStore(subscribeTheme, readTheme, () => "light");
+  return React.useSyncExternalStore(subscribePrefs, readTheme, () => "light");
 }
 
-/* ── Canvas palette ────────────────────────────────────────────────────────
-   The painted graphics (canvas 2D and WebGL) cannot read CSS custom
-   properties per pixel, so they take their colours from here. The values
-   mirror app/theme.css: on Carbon the marks are light and ADD light to the
-   ground; on paper they are dark and SUBTRACT from it — so light mode also
-   flips the blend model, not just the colours. */
-
-export type Vec3 = readonly [number, number, number];
-
-export interface CanvasPalette {
-  /** True when marks must darken the ground rather than light it. */
-  subtractive: boolean;
-  /** "r, g, b" triplets for canvas 2D `rgba(${x}, a)` strings. */
-  hydro: string;
-  hot: string;
-  ink: string;
-  info: string;
-  danger: string;
-  /** Solid chip / device body. */
-  surface: string;
-  /** 0–1 vectors for WebGL uniforms. The ground is the page background. In
-      light mode hydroVec / hotVec are the amount subtracted from the ground
-      to land on the target green, so the same shaders serve both themes. */
-  ground: Vec3;
-  hydroVec: Vec3;
-  hotVec: Vec3;
-  /** The accent as an actual colour, for a transparent canvas that composites
-      normally (source-over) rather than against an opaque ground. */
-  hydroPlain: Vec3;
-  /** Contrast lift for the terrain dots: light on Carbon reads at 1; the same
-      light subtracted from paper reads pale, so it is multiplied (and clamped
-      in the shader) until the range stands out. */
-  gain: number;
-  /** Extra weight on the terrain's river of light: 1 on Carbon; on paper the
-      river is the one feature that should read as strongly as it does in the
-      dark, so it gets more than the general gain. */
-  riverGain: number;
-  /** How strongly the pointer lights the terrain dots (the swell itself is
-      always on). Low on paper, where extra ink under the cursor reads as a
-      shadow. */
-  mouseLight: number;
-  /** Peak tint for the terrain's two-tone ridges, as a WebGL vector (same
-      convention as hydroVec: subtracted from the ground on paper). */
-  tealVec: Vec3;
-  /** The terrain river's own colour (water), same vector convention. */
-  riverVec: Vec3;
-  /** Terrain dot boldness: base disc radius in a grid cell (0.5 = touching). */
-  dot: number;
-  /** Solid tint across the terrain faces, giving the ranges mass. */
-  fill: number;
-  /** Terrain ink multiplier at the far left and far right of the range, to
-      even out the two halves (the nearer ridges sit on the right). */
-  balance: readonly [number, number];
+export function useMotionPref(): MotionPref {
+  return React.useSyncExternalStore(subscribePrefs, readMotion, () => "full");
 }
 
-const v = (r: number, g: number, b: number): Vec3 => [r / 255, g / 255, b / 255];
-const sub = (ground: Vec3, target: Vec3): Vec3 => [
-  ground[0] - target[0],
-  ground[1] - target[1],
-  ground[2] - target[2],
-];
+export function useEngineer(): boolean {
+  return React.useSyncExternalStore(subscribePrefs, readEngineer, () => false);
+}
 
-const PAPER = v(244, 244, 245); //  --bg-base, light (zinc-100)
+/* ── Palette for WebGL ──────────────────────────────────────────────────── */
 
-export const CANVAS_PALETTES: Record<Theme, CanvasPalette> = {
-  dark: {
-    subtractive: false,
-    hydro: "52, 211, 153", //  --hydro (emerald-400)
-    hot: "167, 243, 208", //   --hydro-200
-    ink: "250, 250, 250", //   --ink
-    info: "56, 189, 248", //   --info
-    danger: "248, 113, 113", // --danger
-    surface: "24, 24, 27", //  zinc-900
-    ground: v(0, 0, 0), //     black
-    hydroVec: v(52, 211, 153),
-    hotVec: v(167, 243, 208),
-    riverVec: v(167, 243, 208), // emerald-200
-    dot: 0.15,
-    fill: 0.08,
-    balance: [1.9, 0.75],
-    hydroPlain: v(52, 211, 153),
-    gain: 1,
-    riverGain: 1.3,
-    mouseLight: 1,
-    tealVec: v(212, 212, 216), // zinc-300: monochrome peaks
-  },
-  light: {
-    subtractive: true,
-    hydro: "4, 120, 87", //    --hydro (light)
-    hot: "6, 78, 59", //       --hydro-200 (light)
-    ink: "9, 9, 11", //        --ink-100 (light)
-    info: "3, 105, 161", //    --info (light)
-    danger: "220, 38, 38", //  --danger (light)
-    surface: "255, 255, 255", // --carbon-600 (light)
-    ground: PAPER,
-    // Terrain on paper: emerald faces, teal peaks, deep-emerald crests and a
-    // cyan river — richer than the UI green, which is tuned for text.
-    hydroVec: sub(PAPER, v(5, 150, 105)), // emerald-600
-    hotVec: sub(PAPER, v(6, 78, 59)), //     emerald-900
-    riverVec: sub(PAPER, v(8, 145, 178)), // cyan-600
-    dot: 0.2,
-    fill: 0.1,
-    balance: [2.3, 0.7],
-    hydroPlain: v(4, 120, 87),
-    gain: 3.4,
-    riverGain: 3,
-    mouseLight: 0.5,
-    tealVec: sub(PAPER, v(15, 118, 110)), // teal-700
-  },
-};
+export type RGB = readonly [number, number, number];
 
-/** The palette for the theme currently on <html>. Cheap: call it per frame. */
-export function canvasPalette(theme?: Theme): CanvasPalette {
-  return CANVAS_PALETTES[theme ?? readTheme()];
+/** The colours the WebGL scenes draw with, as linear-light RGB floats. */
+export interface GLPalette {
+  theme: Theme;
+  bg: RGB;
+  ink: RGB;
+  ink3: RGB;
+  hydro: RGB;
+  dotOff: RGB;
+  glow2: RGB;
+  glow3: RGB;
+}
+
+/**
+ * Read the current palette from the CSS tokens, so the 3D world and the
+ * page are always the same colours. Tokens are written as `oklch(L C H)`
+ * in app/styles/tokens.css; this converts them to linear sRGB.
+ */
+export function readPalette(): GLPalette {
+  const cs = getComputedStyle(html());
+  const get = (name: string, fallback: RGB): RGB => parseOklch(cs.getPropertyValue(name)) ?? fallback;
+  return {
+    theme: readTheme(),
+    bg: get("--bg", [0.01, 0.012, 0.02]),
+    ink: get("--ink", [0.9, 0.9, 0.9]),
+    ink3: get("--ink-3", [0.3, 0.3, 0.3]),
+    hydro: get("--hydro", [0.1, 0.8, 0.25]),
+    dotOff: get("--dot-off", [0.05, 0.06, 0.08]),
+    glow2: get("--glow-2", [0.2, 0.7, 0.8]),
+    glow3: get("--glow-3", [0.3, 0.2, 0.8]),
+  };
+}
+
+/** Parse `oklch(L C H [/ A])` into linear sRGB (clamped to the gamut). */
+export function parseOklch(value: string): RGB | null {
+  const m = /oklch\(\s*([\d.]+)%?\s+([\d.]+)\s+([\d.]+)/i.exec(value);
+  if (!m) return null;
+  let L = Number(m[1]);
+  if (value.includes("%") && L > 1) L /= 100;
+  return oklchToLinearSrgb(L, Number(m[2]), Number(m[3]));
+}
+
+export function oklchToLinearSrgb(L: number, C: number, H: number): RGB {
+  const h = (H * Math.PI) / 180;
+  const a = C * Math.cos(h);
+  const b = C * Math.sin(h);
+  const l = (L + 0.3963377774 * a + 0.2158037573 * b) ** 3;
+  const m = (L - 0.1055613458 * a - 0.0638541728 * b) ** 3;
+  const s = (L - 0.0894841775 * a - 1.291485548 * b) ** 3;
+  const clamp = (x: number) => Math.min(1, Math.max(0, x));
+  return [
+    clamp(4.0767416621 * l - 3.3077115913 * m + 0.2309699292 * s),
+    clamp(-1.2684380046 * l + 2.6097574011 * m - 0.3413193965 * s),
+    clamp(-0.0041960863 * l - 0.7034186147 * m + 1.707614701 * s),
+  ];
 }

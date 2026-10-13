@@ -1,106 +1,94 @@
 /* ══════════════════════════════════════════════════════════════════════════
-   CoreValley — Tailwind v4 <-> design_system bridge.
+   CoreValley — global styles.
 
-   design_system/tokens/*.css is the SINGLE SOURCE OF TRUTH for every value.
-   Nothing in this file restates a number that already lives there.
+   Order matters:
+     1. Tailwind (declares the theme, base, components and utilities layers).
+     2. Tokens and legacy aliases, unlayered: custom properties only, so they
+        win over Tailwind's own theme variables of the same name.
+     3. Element defaults into layer(base).
+     4. Long-form prose and the motion system.
    ══════════════════════════════════════════════════════════════════════════ */
 
-/* 1 — Tailwind first. It declares @layer theme, base, components, utilities.
-       source(none) disables filesystem auto-detection so design_system/ and
-       reference/ are never scanned for class names. */
 @import "tailwindcss" source(none);
 
-/* 2 — Design-system tokens into layer(theme) AFTER Tailwind, so same-named
-       tokens (--text-*, --radius-*, --shadow-*, --leading-*, --tracking-*,
-       --font-mono, --ease-*) win by source order. tokens/fonts.css is
-       deliberately NOT imported: next/font replaces that Google CDN @import. */
-@import "../design_system/tokens/colors.css" layer(theme);
-@import "../design_system/tokens/typography.css" layer(theme);
-@import "../design_system/tokens/spacing.css" layer(theme);
-
-/* 3 — Element defaults into layer(base) so utilities still beat the
-       body/anchor/heading rules. Importing this unlayered would make it beat
-       every utility — a silent and expensive failure. */
-@import "../design_system/tokens/base.css" layer(base);
-
-/* 4 — Glass surfaces (the one sanctioned deviation) and the motion helpers.
-       Unlayered at the import site because the file declares its own
-       @layer components block; Tailwind has already established the layer
-       order above, so these land between base and utilities and any Tailwind
-       utility on the same element still wins. */
-@import "./glass.css";
-
-/* 4b — Documentation prose (Markdown from corevalley-docs/ rendered by
-       components/docs/markdown.tsx). Same unlayered-import pattern. */
+@import "./styles/tokens.css";
+@import "./styles/legacy.css";
+@import "./styles/base.css" layer(base);
 @import "./prose.css";
+@import "./styles/motion.css";
 
-/* 4c — The light theme and the dark islands inside it (app/theme.css).
-       Unlayered: it overrides glass.css's unlayered :root helpers, which a
-       layered rule never could. Every value there is keyed on
-       <html data-theme>, stamped before paint by lib/theme.ts. */
-@import "./theme.css";
-
-/* 4d — The home-page GPU comparison (components/marketing/gpu-compare.tsx). */
-@import "./gpu-compare.css";
-
-/* 4e — /platform, "The Iceberg" (components/marketing/iceberg-dive.tsx). */
-@import "./platform.css";
-
-/* 4f — The customer console (/portal): cards, tables, meters, live dots. */
-@import "./portal.css";
-
-/* 4g — 2026-10-08 redesign: zinc + emerald, glass, grain, 40px slabs. */
-@import "./redesign.css";
-
-/* The `light:` variant, for the rare one-off a token cannot express. The
-   tokens themselves flip in theme.css; reach for this only when a rule must
-   differ in KIND between themes, not in colour. */
-@custom-variant light (&:where([data-theme="light"], [data-theme="light"] *):not(:where(.cv-dark, .cv-dark *)));
-
-/* 5 — Explicit class sources. */
 @source "../app";
 @source "../components";
 @source "../lib";
+@source "../copy";
 
-/* ── next/font rebinding ───────────────────────────────────────────────────
-   next/font emits a build-hashed family name (__Manrope_a1b2c3), so the
-   literal 'Manrope' in tokens/typography.css would never match a loaded face
-   and the page would silently render in the fallback. Unlayered so it beats
-   layer(theme). Verify: getComputedStyle(document.body).fontFamily. */
-:root {
-  --font-body: var(--font-inter);
-  --font-mono: var(--font-inter);
+/* ── Variants ─────────────────────────────────────────────────────────────── */
+
+/* Themes come from <html data-theme>, not straight from the media query, so
+   the on-site toggle wins over the OS. */
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
+@custom-variant light (&:where([data-theme="light"], [data-theme="light"] *));
+
+/* "Calm": reduced motion, from the OS or the site's own toggle (both end up
+   as <html data-motion="reduce">; see lib/theme.ts). */
+@custom-variant calm (&:where([data-motion="reduce"], [data-motion="reduce"] *));
+
+/* "Still": reduced motion OR no scripting — the states where scroll-driven
+   scenes must lay their content out statically instead of pinning it. */
+@custom-variant still (&:where([data-motion="reduce"] *, :root:not([data-js]) *));
+
+/* Scripting on / off (the bootstrap sets <html data-js> before first paint),
+   for components with a no-script fallback, such as the contact form. */
+@custom-variant js (&:where([data-js] *));
+@custom-variant nojs (&:where(:root:not([data-js]) *));
+
+/* Engineer mode (S15): denser pages with the raw specs expanded. */
+@custom-variant engineer (&:where([data-engineer="on"], [data-engineer="on"] *));
+
+/* Fine pointers only (hover effects, magnetic buttons, the cursor). */
+@custom-variant pointer-fine (@media (hover: hover) and (pointer: fine));
+
+/* ── Theme bridge ─────────────────────────────────────────────────────────── */
+
+@theme {
+  /* Easings — Apple's ease-out for entrances, a symmetric in-out for morphs,
+     an expo-out for the hero's word rises, and the spring (06 §1). The
+     spring is generated by lib/motion/spring.ts (scripts/print-springs.mjs). */
+  --ease-out: cubic-bezier(0, 0, 0.5, 1);
+  --ease-in: cubic-bezier(0.5, 0, 1, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --ease-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-spring: linear(0, 0.004 1.5%, 0.0329 4.4%, 0.1022 8.5%, 0.2109 13.5%, 0.3456 19.3%, 0.488 25.8%, 0.6218 33%, 0.7361 40.8%, 0.8263 49.3%, 0.8929 58.4%, 0.9392 68%, 0.9696 78.1%, 0.9886 88.8%, 1);
+
+  --breakpoint-xs: 26rem;
 }
 
-/* ══ THEME BRIDGE ══════════════════════════════════════════════════════════
-   `inline` makes Tailwind substitute the value text straight into utilities
-   instead of emitting a duplicate custom property. Every entry is a var()
-   reference back to the design system. */
 @theme inline {
-  /* ── Hydro (accent / action) ─────────────────────────── */
-  --color-hydro: var(--hydro);
-  --color-hydro-dark: var(--hydro-dark);
-  --color-hydro-100: var(--hydro-100);
-  --color-hydro-200: var(--hydro-200);
-  --color-hydro-300: var(--hydro-300);
-  --color-hydro-400: var(--hydro-400);
-  --color-hydro-500: var(--hydro-500);
-  --color-hydro-600: var(--hydro-600);
-  --color-hydro-700: var(--hydro-700);
-  --color-hydro-800: var(--hydro-800);
-  --color-hydro-900: var(--hydro-900);
-
-  /* ── Carbon (ground / elevations) ────────────────────── */
-  --color-carbon: var(--carbon);
-  --color-carbon-400: var(--carbon-400);
-  --color-carbon-500: var(--carbon-500);
-  --color-carbon-600: var(--carbon-600);
-  --color-carbon-700: var(--carbon-700);
-  --color-carbon-800: var(--carbon-800);
-  --color-carbon-900: var(--carbon-900);
-
-  /* ── Ink (text ramp) ─────────────────────────────────── */
+  /* ── New palette ─────────────────────────────────────── */
+  --color-bg: var(--bg);
+  --color-bg-raised: var(--bg-raised);
+  --color-bg-sunken: var(--bg-sunken);
+  --color-bg-elevated: var(--bg-elevated);
+  --color-bg-glass: var(--bg-glass);
+  --color-line: var(--line);
+  --color-line-soft: var(--line-soft);
+  --color-line-strong: var(--line-strong);
   --color-ink: var(--ink);
+  --color-ink-2: var(--ink-2);
+  --color-ink-3: var(--ink-3);
+  --color-ink-4: var(--ink-4);
+  --color-hydro: var(--hydro);
+  --color-hydro-ink: var(--hydro-ink);
+  --color-on-hydro: var(--on-hydro);
+  --color-hydro-wash: var(--hydro-wash);
+  --color-dot-off: var(--dot-off);
+  --color-warn: var(--warn);
+  --color-danger: var(--danger);
+  --color-glow-2: var(--glow-2);
+  --color-glow-3: var(--glow-3);
+  --color-glow-4: var(--glow-4);
+
+  /* ── Legacy palette names (docs, blog, jobs until rebuilt) ── */
   --color-ink-100: var(--ink-100);
   --color-ink-200: var(--ink-200);
   --color-ink-300: var(--ink-300);
@@ -109,408 +97,179 @@
   --color-ink-600: var(--ink-600);
   --color-ink-700: var(--ink-700);
   --color-mute: var(--mute);
-
-  /* ── Hairlines. Tailwind has no --border-* namespace; border colours come
-        from --color-*. Namespaced "line" so border-line-strong reads well and
-        bg-line-* never looks like a surface token. */
+  --color-hydro-dark: var(--hydro-dark);
+  --color-hydro-100: var(--hydro-100);
+  --color-hydro-200: var(--hydro-200);
+  --color-hydro-300: var(--hydro-300);
+  --color-hydro-400: var(--hydro-400);
+  --color-hydro-500: var(--hydro-500);
+  --color-hydro-600: var(--hydro-600);
+  --color-hydro-700: var(--hydro-700);
+  --color-carbon: var(--carbon);
+  --color-carbon-400: var(--carbon-400);
+  --color-carbon-500: var(--carbon-500);
+  --color-carbon-600: var(--carbon-600);
+  --color-carbon-700: var(--carbon-700);
+  --color-carbon-800: var(--carbon-800);
+  --color-carbon-900: var(--carbon-900);
   --color-line-subtle: var(--border-subtle);
-  --color-line: var(--border-default);
-  --color-line-strong: var(--border-strong);
   --color-line-hydro: var(--border-hydro);
-
-  /* ── Status ──────────────────────────────────────────── */
   --color-success: var(--success);
   --color-warning: var(--warning);
-  --color-danger: var(--danger);
   --color-info: var(--info);
-
-  /* ── Semantic surfaces ───────────────────────────────── */
   --color-bg-base: var(--bg-base);
-  --color-bg-sunken: var(--bg-sunken);
   --color-surface-card: var(--surface-card);
   --color-surface-raised: var(--surface-raised);
   --color-surface-input: var(--surface-input);
   --color-surface-hover: var(--surface-hover);
   --color-surface-active: var(--surface-active);
-
-  /* ── Text roles are fg-*, NOT text-*: --color-text-muted would generate
-        the class "text-text-muted". */
   --color-fg: var(--text-primary);
   --color-fg-secondary: var(--text-secondary);
   --color-fg-muted: var(--text-muted);
   --color-fg-accent: var(--text-accent);
-  --color-on-hydro: var(--text-on-hydro);
-
-  --color-action: var(--action);
-  --color-action-hover: var(--action-hover);
-  --color-action-press: var(--action-press);
   --color-link: var(--link);
   --color-link-hover: var(--link-hover);
+  --color-action: var(--action);
 
-  /* ── Spacing: one multiplier drives the whole dynamic scale.
-        p-1=4 · p-4=16 · h-9.5=38 · p-24=96 — and the fractional steps the
-        design-system scale omits come free. */
-  --spacing: var(--space-1);
+  /* ── Radii and the one shadow ─────────────────────────── */
+  --radius-chip: var(--r-sm);
+  --radius-card: var(--r-md);
+  --radius-panel: var(--r-lg);
+  --radius-pill: var(--r-pill);
+  --shadow-chrome: var(--shadow-float);
 
-  /* ── Fonts. --font-mono is NOT redeclared here (the design system owns that
-        exact name; a self-reference would be a cycle). */
-  --font-sans: var(--font-body);
-
-  /* ── Glow: the design system calls these --glow-*, Tailwind's namespace
-        is --shadow-*. */
-  --shadow-glow-sm: var(--glow-hydro-sm);
-  --shadow-glow-md: var(--glow-hydro-md);
-  --shadow-glow-lg: var(--glow-hydro-lg);
-
-  /* ── Motion defaults, so a bare `transition` is already on-brand. */
-  --default-transition-duration: var(--duration-normal);
-  --default-transition-timing-function: var(--ease-standard);
-
-  /* ── Containers: DELETE Tailwind's namespace. The design system's
-        640/960/1200/1400px would otherwise redefine max-w-sm..xl and make the
-        scale non-monotonic (max-w-xl 1400px > max-w-2xl 672px), and would
-        poison container queries. Re-added under a distinct name. */
-  --container-*: initial;
-  --container-page-sm: var(--container-sm);
-  --container-page-md: var(--container-md);
-  --container-page-lg: var(--container-lg);
-  --container-page-xl: var(--container-xl);
-
-  /* ── Line-height pairing. Tailwind ships --text-*--line-height companions
-        the design system does not override, so text-2xl would inherit
-        Tailwind's 1.2 rather than the brand's 1.05. Mapping them is a design
-        decision, not a duplicated value. */
-  --text-xs--line-height: var(--leading-normal);
-  --text-sm--line-height: var(--leading-normal);
-  --text-base--line-height: var(--leading-relaxed);
-  --text-lg--line-height: var(--leading-snug);
-  --text-xl--line-height: var(--leading-snug);
-  --text-2xl--line-height: var(--leading-tight);
-  --text-3xl--line-height: var(--leading-tight);
-  --text-4xl--line-height: var(--leading-tight);
-  --text-5xl--line-height: var(--leading-tight);
+  --font-display: var(--font-sans);
 }
 
-/* ══ UTILITIES for design-system names with no Tailwind namespace slot ═════ */
+/* ── Type scale (05 §2.2). One utility per role; nothing in between. ─────── */
 
-@utility text-2xs {
-  font-size: var(--text-2xs);
-  line-height: var(--leading-normal);
+@utility type-display-1 {
+  font-size: var(--fs-display-1);
+  line-height: 0.95;
+  font-weight: 600;
+  letter-spacing: -0.035em;
 }
-@utility text-md {
-  font-size: var(--text-md);
-  line-height: var(--leading-snug);
+@utility type-display-2 {
+  font-size: var(--fs-display-2);
+  line-height: 1;
+  font-weight: 600;
+  letter-spacing: -0.03em;
 }
-
-@utility tracking-label {
-  letter-spacing: var(--tracking-label);
+@utility type-title-1 {
+  font-size: var(--fs-title-1);
+  line-height: 1.05;
+  font-weight: 600;
+  letter-spacing: -0.022em;
 }
-@utility rounded-pill {
-  border-radius: var(--radius-pill);
+@utility type-title-2 {
+  font-size: var(--fs-title-2);
+  line-height: 1.12;
+  font-weight: 600;
+  letter-spacing: -0.015em;
 }
-@utility font-body {
-  font-family: var(--font-body);
+@utility type-title-3 {
+  font-size: var(--fs-title-3);
+  line-height: 1.25;
+  font-weight: 600;
+  letter-spacing: -0.01em;
 }
-@utility font-display {
-  font-family: var(--font-display);
+@utility type-lead {
+  font-size: var(--fs-lead);
+  line-height: 1.45;
+  font-weight: 400;
+  letter-spacing: -0.011em;
 }
-@utility ease-standard {
-  transition-timing-function: var(--ease-standard);
+@utility type-body {
+  font-size: var(--fs-body);
+  line-height: 1.55;
+  font-weight: 400;
+  letter-spacing: -0.006em;
 }
-/* `ease-out` and `ease-in` need no utility: Tailwind's own resolve to
-   --ease-out / --ease-in, which the design system redefines in layer(theme). */
-@utility duration-fast {
-  transition-duration: var(--duration-fast);
+@utility type-small {
+  font-size: var(--fs-small);
+  line-height: 1.5;
+  letter-spacing: -0.003em;
 }
-@utility duration-normal {
-  transition-duration: var(--duration-normal);
+@utility type-caption {
+  font-size: var(--fs-caption);
+  line-height: 1.4;
+  font-weight: 450;
+  letter-spacing: 0.005em;
 }
-@utility duration-slow {
-  transition-duration: var(--duration-slow);
-}
-
-/* Design-system border-name parity, alongside border-line-* from the theme. */
-@utility border-subtle {
-  border-color: var(--border-subtle);
-}
-@utility border-default {
-  border-color: var(--border-default);
-}
-@utility border-strong {
-  border-color: var(--border-strong);
-}
-@utility border-hydro {
-  border-color: var(--border-hydro);
-}
-
-/* The brand eyebrow. Mirrors .cv-label from tokens/base.css as a utility. */
-@utility cv-label {
+@utility type-kicker {
   font-family: var(--font-mono);
-  font-weight: var(--fw-medium);
-  font-size: var(--text-xs);
-  letter-spacing: var(--tracking-label);
+  font-size: var(--fs-kicker);
+  line-height: 1.3;
+  font-weight: 500;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: var(--text-muted);
+}
+@utility type-mono {
+  font-family: var(--font-mono);
+  font-size: var(--fs-small);
+  line-height: 1.5;
+  letter-spacing: 0;
+}
+@utility type-metric {
+  font-size: var(--fs-metric);
+  line-height: 0.9;
+  font-weight: 600;
+  letter-spacing: -0.04em;
+  font-variant-numeric: tabular-nums;
+}
+@utility tabular {
+  font-variant-numeric: tabular-nums;
 }
 
-/* ══ GLASS ═════════════════════════════════════════════════════════════════
-   The four sanctioned translucency recipes — glass-card, glass-nav,
-   glass-modal, glass-panel — live in app/glass.css, aliased onto the
-   liquid-glass weights there so the refraction pass and the
-   no-backdrop-filter fallback are each defined exactly once.
+/* ── Layout ───────────────────────────────────────────────────────────────── */
 
-   They are NOT `@utility` blocks. Tailwind v4's @apply resolves only
-   Tailwind utilities, so `@apply lg lg--nav` is a hard build error rather
-   than a silent miss — the alias has to be a selector list, which is what
-   glass.css does. The consequence is that these four names do not accept
-   variants (`hover:glass-card` will not compile); nothing uses them that way,
-   and a hover-swapped blur recipe would be a repaint per frame anyway. */
-
-/* The signature block cursor, lifted out of Terminal's inline style tag. It
-   sits steady: nothing on the site blinks. The class name stays so Terminal
-   and DecodeText need no change. */
-@utility animate-cursor {
-  animation: none;
+/* The page column: max 1280 px of content with fluid side margins. */
+@utility container-page {
+  width: 100%;
+  max-width: calc(var(--content-max) + 2 * var(--page-x));
+  margin-inline: auto;
+  padding-inline: var(--page-x);
+}
+@utility section-y {
+  padding-block: var(--section-y);
+}
+@utility measure {
+  max-width: var(--text-max);
 }
 
-/* "online." — the lit word in the hero: a soft, STILL Hydro glow, held low
-   enough to read as ink with light behind it rather than neon. It does not
-   breathe or pulse; nothing on the site blinks to say "online". */
-@utility online-glow {
-  text-shadow: 0 0 24px rgb(var(--hydro-rgb) / 0.32);
+/* Floating chrome: the only glass on the site (05 §4). */
+@utility glass {
+  background: var(--bg-glass);
+  -webkit-backdrop-filter: blur(20px) saturate(160%);
+  backdrop-filter: blur(20px) saturate(160%);
 }
 
-/* ── Grid overlays ─────────────────────────────────────────────────────────
-   Subdued backdrop texture for feature graphics. Ink at very low alpha so it
-   reads as a technical substrate rather than decoration. */
-@utility bg-dot-grid {
-  background-image: radial-gradient(
-    circle at center,
-    rgb(var(--ink-rgb) / 0.09) 1px,
-    transparent 1px
-  );
-  background-size: 22px 22px;
+/* A hairline that fades out at both ends, instead of a hard border. */
+@utility rule-fade {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--line) 12%, var(--line) 88%, transparent);
 }
 
-@utility bg-wire-grid {
-  background-image:
-    linear-gradient(to right, rgb(var(--ink-rgb) / 0.035) 1px, transparent 1px),
-    linear-gradient(to bottom, rgb(var(--ink-rgb) / 0.035) 1px, transparent 1px);
-  background-size: 44px 44px;
-}
-
-/* ── Card spotlight ────────────────────────────────────────────────────────
-   A soft Hydro bloom that follows the cursor across a card, plus a brightened
-   hairline. --mx/--my are written by <SpotlightGroup>; without it the vars are
-   unset, the fallback centres the bloom, and opacity keeps it invisible.
-
-   Both layers are pointer-events:none and sit behind content via z-index, so
-   nothing here can intercept a click. */
-@utility cv-spotlight {
-  position: relative;
-  isolation: isolate;
-
-  &::before,
-  &::after {
-    content: "";
-    position: absolute;
-    inset: 0;
-    border-radius: inherit;
-    pointer-events: none;
-    opacity: 0;
-    transition: opacity var(--duration-normal) var(--ease-standard);
-    /* Negative z-index inside the isolated stacking context paints above the
-       card's own background but below its content — so no rule is needed on
-       the children, and nothing fights Tailwind's positioning utilities. */
-    z-index: -1;
-  }
-
-  /* The bloom, and under it the brand's dot matrix: a fine Hydro dot grid
-     revealed only inside a pool around the pointer, so the card surface
-     reads as the same material as the hero terrain wherever the cursor
-     touches it. Both layers share the one mask. */
-  &::before {
-    background:
-      radial-gradient(
-        16rem circle at var(--mx, 50%) var(--my, 50%),
-        rgb(var(--hydro-rgb) / 0.1),
-        transparent 65%
-      ),
-      radial-gradient(circle at center, rgb(var(--hydro-rgb) / 0.45) 1px, transparent 1.6px)
-        0 0 / 12px 12px;
-    -webkit-mask-image: radial-gradient(
-      13rem circle at var(--mx, 50%) var(--my, 50%),
-      #000,
-      transparent 72%
-    );
-    mask-image: radial-gradient(
-      13rem circle at var(--mx, 50%) var(--my, 50%),
-      #000,
-      transparent 72%
-    );
-  }
-
-  /* A Hydro edge highlight, masked to the border box so only the hairline
-     lights up rather than the whole card. */
-  &::after {
-    padding: 1px;
-    background: radial-gradient(
-      13rem circle at var(--mx, 50%) var(--my, 50%),
-      rgb(var(--hydro-rgb) / 0.45),
-      transparent 60%
-    );
-    -webkit-mask:
-      linear-gradient(#000 0 0) content-box,
-      linear-gradient(#000 0 0);
-    mask:
-      linear-gradient(#000 0 0) content-box,
-      linear-gradient(#000 0 0);
-    -webkit-mask-composite: xor;
-    mask-composite: exclude;
-  }
-
-  &:hover::before,
-  &:hover::after,
-  &:focus-within::before,
-  &:focus-within::after {
-    opacity: 1;
-  }
-}
-
-/* Touch: <SpotlightGroup> lights a card as it scrolls through the middle of
-   the screen, and the bloom eases in and out instead of snapping. */
-.cv-spotlight[data-lit]::before,
-.cv-spotlight[data-lit]::after {
-  opacity: 1;
-}
-@media (pointer: coarse) {
-  .cv-spotlight::before,
-  .cv-spotlight::after {
-    transition: opacity 600ms var(--ease-standard);
-  }
-}
-
-/* No motion budget for it. */
-@media (prefers-reduced-motion: reduce) {
-  .cv-spotlight::before,
-  .cv-spotlight::after {
-    display: none;
-  }
-}
-
-/* ══ BASE PATCHES ══════════════════════════════════════════════════════════ */
+/* ══ Base patches ══════════════════════════════════════════════════════════ */
 @layer base {
-  /* Tailwind v4 Preflight defaults border-color to currentColor. Restore the
-     design-system hairline so a bare `border` class is already on-brand. */
+  /* Tailwind's preflight makes bare borders currentColor; hairline instead. */
   *,
   ::after,
   ::before,
   ::backdrop,
   ::file-selector-button {
-    border-color: var(--border-default);
+    border-color: var(--line);
   }
 
-  html {
-    /* In-page anchors and the docs sidebar both jump; scroll-padding keeps
-       the target clear of the 64px sticky header instead of under it. The
-       smooth glide itself is opted into below, only for readers who have
-       not asked the OS for reduced motion. */
-    scroll-padding-top: 5.5rem;
-    /* Carbon on the root too, so the rubber-band area on iOS and the area
-       behind a short page continue the ground instead of showing a seam. */
-    background-color: var(--bg-base);
-
-    /* Structural guard against horizontal scroll. `clip` rather than
-       `hidden`: overflow:hidden on the root element makes the browser treat
-       the html box as the scroll container, which silently breaks every
-       position:sticky descendant — the site header included. overflow-x:clip
-       leaves vertical overflow visible and sticky working. */
-    overflow-x: clip;
-  }
+  html,
   body {
+    /* `clip`, not `hidden`: hidden would make <html> the scroll container
+       and break every position: sticky below it. */
     overflow-x: clip;
   }
 
-  /* Selection colour and the focus ring come from design_system/tokens/
-     base.css: Hydro, Hydro. The Carbon ground is painted by <html> above;
-     the body itself is transparent so the fixed floor canvas (z −10) shows
-     through — a body with its own background would paint over it. */
-  body {
-    background: transparent;
-  }
-
-  /* Scrollbar. The default dark scrollbar on Carbon is a light grey slab
-     down the right edge; this makes it a hairline. */
   * {
     scrollbar-width: thin;
-    scrollbar-color: var(--ink-700) transparent;
-  }
-  ::-webkit-scrollbar {
-    width: 10px;
-    height: 10px;
-  }
-  ::-webkit-scrollbar-track {
-    background: transparent;
-  }
-  ::-webkit-scrollbar-thumb {
-    background: var(--ink-700);
-    border: 3px solid transparent;
-    background-clip: content-box;
-    border-radius: 999px;
-  }
-  ::-webkit-scrollbar-thumb:hover {
-    background: var(--ink-600);
-    background-clip: content-box;
-  }
-
-  @media (prefers-reduced-motion: no-preference) {
-    html {
-      scroll-behavior: smooth;
-    }
-  }
-
-  /* Links inherit by default. The design system's base.css colours every
-     bare <a>, which turns nav items and card wrappers green. */
-  a {
-    color: inherit;
-  }
-  a:hover {
-    color: inherit;
-  }
-
-  /* One focus ring everywhere. base.css already draws the Hydro ring on
-     every :focus-visible element (2px, 2px offset — the same as Button);
-     this only rounds it on links and disclosure summaries, so a ring around
-     a text link or a card link matches the buttons beside it. */
-  :where(a[href], summary):focus-visible {
-    border-radius: var(--radius-sm);
-  }
-
-  /* Typography that holds up at every width: headings balance their lines
-     (no single orphaned word under a long first line), body copy avoids
-     one-word last lines. Utilities still override either. */
-  :where(h1, h2, h3) {
-    text-wrap: balance;
-  }
-  :where(p, li, dd, figcaption) {
-    text-wrap: pretty;
-  }
-
-  /* "Motion mechanical, no bounce" applied all the way down. Note this also
-     neutralises the reveal system: [data-reveal] transitions collapse to
-     0.01ms, so content appears immediately rather than never — the failure
-     mode a JS-gated reveal would have had. */
-  @media (prefers-reduced-motion: reduce) {
-    *,
-    ::before,
-    ::after {
-      animation-duration: 0.01ms !important;
-      animation-iteration-count: 1 !important;
-      transition-duration: 0.01ms !important;
-      scroll-behavior: auto !important;
-    }
-    html {
-      scroll-behavior: auto;
-    }
+    scrollbar-color: var(--line-strong) transparent;
   }
 }

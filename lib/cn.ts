@@ -2,29 +2,43 @@ import clsx, { type ClassValue } from "clsx";
 import { extendTailwindMerge } from "tailwind-merge";
 
 /**
- * tailwind-merge cannot infer the custom `@utility` classes declared in
- * app/globals.css, so they are registered here. An unregistered class is
- * simply never merged — safe, but conflicts would not resolve — so anything
- * added to the @utility block in globals.css belongs here too.
+ * tailwind-merge cannot infer the custom utilities declared in
+ * app/globals.css, so they are registered here: anything added there that
+ * can conflict with another class belongs here too.
  */
-// The generic parameter registers class-group ids that are not part of
-// Tailwind's defaults — required for the custom "cv-glass" group below.
-const twMerge = extendTailwindMerge<"cv-glass">({
+const twMerge = extendTailwindMerge<"type-role" | "cv-glass">({
   extend: {
     theme: {
-      radius: ["pill"],
+      radius: ["chip", "card", "panel", "pill"],
+      ease: ["expo", "spring", "standard"],
       text: ["2xs", "md"],
       tracking: ["label"],
-      ease: ["standard"],
     },
     classGroups: {
+      // One type role per element: a later type-* replaces an earlier one.
+      "type-role": [
+        {
+          type: [
+            "display-1",
+            "display-2",
+            "title-1",
+            "title-2",
+            "title-3",
+            "lead",
+            "body",
+            "small",
+            "caption",
+            "kicker",
+            "mono",
+            "metric",
+          ],
+        },
+      ],
+      shadow: [{ shadow: ["chrome", "glow-sm", "glow-md", "glow-lg"] }],
       "font-family": [{ font: ["body", "display"] }],
       "border-color": [{ border: ["subtle", "default", "strong", "hydro"] }],
-      shadow: [{ shadow: ["glow-sm", "glow-md", "glow-lg"] }],
-      "max-w": [{ "max-w": ["page-sm", "page-md", "page-lg", "page-xl"] }],
       duration: [{ duration: ["fast", "normal", "slow"] }],
-      // The four glass recipes are mutually exclusive surface treatments.
-      "cv-glass": ["glass-card", "glass-nav", "glass-modal", "glass-panel"],
+      "cv-glass": ["glass", "glass-card", "glass-nav", "glass-modal", "glass-panel"],
     },
   },
 });

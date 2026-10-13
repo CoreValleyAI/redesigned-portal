@@ -1,6 +1,6 @@
 import { ButtonLink, Icon } from "@/components/ui";
-import { PageHero, Section } from "@/components/marketing/page-hero";
-import { Reveal } from "@/components/fx/reveal";
+import { PageHero, TitledSection as Section } from "@/components/system/page-hero";
+import { Reveal } from "@/components/motion/reveal";
 import { JobsBoard } from "@/components/jobs/jobs-board";
 import { LayoutBlocks } from "@/components/content/layout-blocks";
 import { JsonLd, breadcrumbJsonLd, faqJsonLd } from "@/components/seo/json-ld";

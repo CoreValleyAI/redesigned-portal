@@ -1,11 +1,10 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ButtonLink, Icon } from "@/components/ui";
-import { Section } from "@/components/marketing/page-hero";
+import { TitledSection as Section } from "@/components/system/page-hero";
 import { AuthorBios, PostBody, PostHeader } from "@/components/blog/post-article";
 import { PostGrid } from "@/components/blog/post-parts";
 import { JsonLd, blogPostingJsonLd, breadcrumbJsonLd } from "@/components/seo/json-ld";
-import { EARLY_ACCESS } from "@/lib/availability";
 import { mediaSrc } from "@/lib/content/format";
 import { NONE, livePosts, neighbours, paramsOrPlaceholder, postBySlug, relatedPosts } from "@/lib/content/posts";
 import { loadContent } from "@/lib/content/source";
@@ -121,13 +120,13 @@ export default async function PostPage({ params }: Params) {
       ) : null}
 
       <Section>
-        <div className="cv-dark surface-dark grain flex flex-col items-start gap-6 !rounded-[2rem] p-8 md:flex-row md:items-end md:justify-between md:p-12">
+        <div className="flex flex-col items-start gap-6 border-t border-line pt-12 md:flex-row md:items-end md:justify-between">
           <div className="max-w-[46ch]">
-            <h2 className="display text-3xl text-white md:text-4xl">Run your model in Nepal.</h2>
-            <p className="mt-3 text-[15px] leading-relaxed text-white/60">{EARLY_ACCESS.promise}</p>
+            <h2 className="type-title-1">Run your model in Nepal.</h2>
+            <p className="type-lead mt-3 text-ink-2">Tell us what you want to run, and we will plan the capacity with you.</p>
           </div>
           <ButtonLink href="/contact" size="lg" iconRight={<Icon name="arrow-right" size={17} />}>
-            Get early access
+            Request access
           </ButtonLink>
         </div>
       </Section>

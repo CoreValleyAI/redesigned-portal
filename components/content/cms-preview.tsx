@@ -13,7 +13,7 @@
 import * as React from "react";
 import { ready, subscribe, unsubscribe } from "@payloadcms/live-preview";
 import { LayoutBlocks } from "@/components/content/layout-blocks";
-import { PageHero, Section } from "@/components/marketing/page-hero";
+import { PageHero, TitledSection as Section } from "@/components/system/page-hero";
 import { JobRole, JobSummary } from "@/components/jobs/job-parts";
 import { PostBody, PostHeader } from "@/components/blog/post-article";
 import { EMPLOYMENT_LABEL, WORK_MODE_LABEL, formatDate } from "@/lib/content/format";

@@ -1,4 +1,4 @@
-import { PageHero, Section } from "@/components/marketing/page-hero";
+import { PageHero, TitledSection as Section } from "@/components/system/page-hero";
 import { BlogSearch } from "./blog-search";
 import { CategoryTabs, Pagination, PostCard, PostGrid } from "./post-parts";
 import { categoriesInUse, type PostView } from "@/lib/content/posts";

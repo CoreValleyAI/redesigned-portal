@@ -4,9 +4,9 @@
  */
 import * as React from "react";
 import { Card, Icon, StatBlock } from "@/components/ui";
-import { Section } from "@/components/marketing/page-hero";
-import { FaqList } from "@/components/marketing/faq-list";
-import { RevealGroup } from "@/components/fx/reveal";
+import { TitledSection as Section } from "@/components/system/page-hero";
+import { Faq } from "@/components/system/faq";
+import { RevealGroup } from "@/components/motion/reveal";
 import { mediaSrc, mediaSrcSet, objectPosition } from "@/lib/content/format";
 import { key, type LayoutBlock, type MediaItem } from "@/lib/content/types";
 import { RichText } from "./rich-text";
@@ -166,7 +166,7 @@ function LayoutBlockView({
     case "faq":
       return (
         <Section title={b.heading}>
-          <FaqList items={b.items.map((f) => ({ q: f.question, a: f.answer }))} />
+          <Faq jsonLd={false} items={b.items.map((f) => ({ q: f.question, a: f.answer }))} />
         </Section>
       );
 

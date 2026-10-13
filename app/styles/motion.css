@@ -1,0 +1,463 @@
+/* ══════════════════════════════════════════════════════════════════════════
+   Motion — the CSS half of the motion system (docs/revamp/06).
+
+   Everything here animates compositor properties only (transform, opacity,
+   clip-path, filter). Content is visible without scripting; motion is an
+   enhancement that arms itself when <html data-js> is present and motion is
+   allowed (<html data-motion="full">).
+   ══════════════════════════════════════════════════════════════════════════ */
+
+/* ── Reveal on enter ───────────────────────────────────────────────────────
+   <div data-reveal> rises and fades in the first time it scrolls into view.
+   components/motion/reveal-observer.tsx arms (data-armed) only elements that
+   start below the fold, after first paint — so nothing the visitor can see
+   on arrival is ever hidden, and nothing is hidden at all without script.
+   Children stagger by --i (70 ms apart). */
+:root[data-motion="full"] [data-reveal][data-armed]:not([data-in]) {
+  opacity: 0;
+  transform: translate3d(0, var(--reveal-y, 1.5rem), 0);
+}
+:root[data-motion="full"] [data-reveal][data-armed] {
+  transition:
+    opacity var(--dur-long) var(--ease-out),
+    transform 900ms var(--ease-expo);
+  transition-delay: calc(var(--i, 0) * 70ms + var(--reveal-delay, 0ms));
+}
+
+/* ── Word rise (the hero's headline) ───────────────────────────────────────
+   Each word sits in its own clipped line box and rises into place. The words
+   start 55 % visible, not hidden, so the headline is painted on the very
+   first frame (it is the LCP element). */
+.rise {
+  display: inline;
+}
+.rise__w {
+  display: inline-block;
+  overflow: clip;
+  overflow-clip-margin: 0.12em;
+  vertical-align: top;
+  /* Room for descenders inside the clip. */
+  padding-bottom: 0.1em;
+  margin-bottom: -0.1em;
+}
+.rise__t {
+  display: inline-block;
+}
+/* The lit word glows past its box, so it rises unclipped (and fades in). */
+.rise__w--open {
+  overflow: visible;
+}
+:root[data-js][data-motion="full"] .rise__t {
+  animation: cv-rise 1100ms var(--ease-expo) both;
+  animation-delay: calc(var(--i, 0) * 70ms + var(--rise-delay, 0ms));
+}
+@keyframes cv-rise {
+  from {
+    transform: translate3d(0, 45%, 0);
+    opacity: 0.001;
+  }
+  to {
+    transform: none;
+    opacity: 1;
+  }
+}
+
+/* ── The online glow ──────────────────────────────────────────────────────
+   A one-shot sweep of the Glow gradient through the letters, then a slow
+   8 s breathe of the halo (below the 0.2 Hz vestibular band, far below any
+   flash threshold). Static and soft under reduced motion. */
+.online {
+  color: var(--hydro-ink);
+  text-shadow: 0 0 0.45em color-mix(in oklch, var(--hydro) 38%, transparent);
+}
+:root[data-theme="light"] .online {
+  color: var(--hydro);
+  text-shadow: 0 0 0.6em color-mix(in oklch, var(--hydro) 18%, transparent);
+}
+:root[data-js][data-motion="full"] .online {
+  background: linear-gradient(
+      100deg,
+      currentColor 0 38%,
+      var(--glow-2) 46%,
+      var(--glow-3) 50%,
+      var(--glow-2) 54%,
+      currentColor 62% 100%
+    )
+    0 0 / 300% 100% no-repeat;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation:
+    cv-sweep 1600ms var(--ease-in-out) 700ms both,
+    cv-breathe 8s ease-in-out 2400ms infinite;
+}
+@keyframes cv-sweep {
+  from {
+    background-position: 100% 0;
+  }
+  to {
+    background-position: 0% 0;
+  }
+}
+@keyframes cv-breathe {
+  0%,
+  100% {
+    text-shadow: 0 0 0.45em color-mix(in oklch, var(--hydro) 38%, transparent);
+  }
+  50% {
+    text-shadow: 0 0 0.75em color-mix(in oklch, var(--hydro) 55%, transparent);
+  }
+}
+
+/* ── Small loops ──────────────────────────────────────────────────────────── */
+@keyframes cv-fade-in {
+  from {
+    opacity: 0;
+  }
+}
+@keyframes cv-fade-out {
+  to {
+    opacity: 0;
+  }
+}
+@keyframes cv-lift-out {
+  to {
+    opacity: 0;
+    transform: translate3d(0, -0.75rem, 0);
+  }
+}
+@keyframes cv-rise-in {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 1.5rem, 0);
+  }
+}
+@keyframes cv-pulse-dot {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.35;
+  }
+}
+@keyframes cv-spin {
+  to {
+    transform: rotate(1turn);
+  }
+}
+
+/* ══ Page transitions — the "Fog pass" (06 §8) ═════════════════════════════
+   React's <ViewTransition> on each page tags the old and new content with
+   the class of the transition type. The header keeps its place; the old
+   page lifts and fades quickly, the new one rises in. */
+
+::view-transition {
+  pointer-events: none;
+}
+
+::view-transition-group(site-header) {
+  animation: none;
+  z-index: 100;
+}
+::view-transition-old(site-header) {
+  display: none;
+}
+::view-transition-new(site-header) {
+  animation: none;
+}
+
+::view-transition-old(.page) {
+  animation: 160ms var(--ease-in) both cv-lift-out;
+}
+::view-transition-new(.page) {
+  animation: 520ms var(--ease-expo) 120ms both cv-rise-in;
+}
+
+/* Up the hierarchy (a breadcrumb, "all products"): the new page settles
+   down into place instead. */
+::view-transition-old(.page-up) {
+  animation: 160ms var(--ease-in) both cv-fade-out;
+}
+::view-transition-new(.page-up) {
+  animation: 460ms var(--ease-expo) 100ms both cv-settle-in;
+}
+@keyframes cv-settle-in {
+  from {
+    opacity: 0;
+    transform: translate3d(0, -1rem, 0);
+  }
+}
+
+/* Shared elements (product card ↔ product hero, post card ↔ post hero). */
+::view-transition-group(.morph) {
+  animation-duration: 480ms;
+  animation-timing-function: var(--ease-expo);
+}
+::view-transition-image-pair(.morph) {
+  animation-name: cv-morph-blur;
+}
+@keyframes cv-morph-blur {
+  35% {
+    filter: blur(2px);
+  }
+}
+
+/* ── Theme switch: a circular reveal from the toggle ──────────────────────
+   lib/theme.ts sets <html data-vt="theme"> for the duration, which drops
+   every other view-transition name so the whole page is one snapshot, and
+   --vt-x / --vt-y to the toggle's centre. */
+:root[data-vt="theme"] *,
+:root[data-vt="theme"] *::before,
+:root[data-vt="theme"] *::after {
+  view-transition-name: none !important;
+}
+:root[data-vt="theme"]::view-transition-old(root) {
+  animation: none;
+  z-index: 0;
+}
+:root[data-vt="theme"]::view-transition-new(root) {
+  z-index: 1;
+  animation: cv-theme-reveal 620ms var(--ease-in-out) both;
+}
+@keyframes cv-theme-reveal {
+  from {
+    clip-path: circle(0 at var(--vt-x, 50%) var(--vt-y, 0%));
+  }
+  to {
+    clip-path: circle(var(--vt-r, 150vmax) at var(--vt-x, 50%) var(--vt-y, 0%));
+  }
+}
+
+/* ══ Reduced motion ════════════════════════════════════════════════════════
+   One switch for the OS setting and the site's own toggle. Movement stops;
+   state changes still read (opacity), and nothing is left hidden. */
+:root[data-motion="reduce"] *,
+:root[data-motion="reduce"] *::before,
+:root[data-motion="reduce"] *::after {
+  animation-duration: 1ms !important;
+  animation-delay: 0ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 1ms !important;
+  transition-delay: 0ms !important;
+}
+:root[data-motion="reduce"]::view-transition-group(*),
+:root[data-motion="reduce"]::view-transition-old(*),
+:root[data-motion="reduce"]::view-transition-new(*) {
+  animation-duration: 150ms !important;
+  animation-delay: 0ms !important;
+}
+:root[data-motion="reduce"]::view-transition-new(*) {
+  animation-name: cv-fade-in !important;
+}
+:root[data-motion="reduce"]::view-transition-old(*) {
+  animation-name: cv-fade-out !important;
+}
+@media (prefers-reduced-motion: reduce) {
+  :root:not([data-js]) *,
+  :root:not([data-js]) *::before,
+  :root:not([data-js]) *::after {
+    animation-duration: 1ms !important;
+    transition-duration: 1ms !important;
+  }
+}
+
+/* ── Disclosures (FAQ): animate the answer's height where supported ───── */
+:root {
+  interpolate-size: allow-keywords;
+}
+.faq::details-content {
+  block-size: 0;
+  overflow-y: clip;
+  transition:
+    block-size var(--dur-base) var(--ease-out),
+    content-visibility var(--dur-base) allow-discrete;
+}
+.faq[open]::details-content {
+  block-size: auto;
+}
+
+/* ══ The Reservoir (S3) ════════════════════════════════════════════════════
+   Dot pitch scales with the wordmark (≈ 1/150 of its width), so it reads as
+   a dot matrix at every size. --fill is the water level (0 → 100 %). */
+@property --fill {
+  syntax: "<percentage>";
+  inherits: true;
+  initial-value: 100%;
+}
+.reservoir {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 816 / 125;
+  --cols: 96;
+  --rows: 15;
+  --dot: radial-gradient(circle at center, #000 0 36%, transparent 40%);
+}
+@media (min-width: 48rem) {
+  .reservoir {
+    --cols: 150;
+    --rows: 23;
+  }
+}
+.reservoir__dots,
+.reservoir__water {
+  position: absolute;
+  inset: 0;
+  -webkit-mask: var(--mask) center / 100% 100% no-repeat;
+  mask: var(--mask) center / 100% 100% no-repeat;
+}
+.reservoir__dots::before,
+.reservoir__water::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  -webkit-mask: var(--dot) 0 0 / calc(100% / var(--cols)) calc(100% / var(--rows));
+  mask: var(--dot) 0 0 / calc(100% / var(--cols)) calc(100% / var(--rows));
+}
+.reservoir__dots::before {
+  background: var(--dot-off);
+}
+.reservoir__water::before {
+  background: linear-gradient(to top, var(--hydro) 0%, color-mix(in oklch, var(--hydro) 70%, var(--glow-2)) 100%);
+}
+.reservoir__water {
+  /* The water line: lit below --fill, a soft two-row shoreline above it. */
+  -webkit-mask:
+    var(--mask) center / 100% 100% no-repeat,
+    linear-gradient(to top, #000 calc(var(--fill) - 4%), transparent calc(var(--fill) + 4%));
+  -webkit-mask-composite: source-in;
+  mask:
+    var(--mask) center / 100% 100% no-repeat,
+    linear-gradient(to top, #000 calc(var(--fill) - 4%), transparent calc(var(--fill) + 4%));
+  mask-composite: intersect;
+}
+:root[data-theme="dark"] .reservoir__water {
+  filter: drop-shadow(0 0 0.35rem color-mix(in oklch, var(--hydro) 45%, transparent));
+}
+@supports (animation-timeline: view()) {
+  :root[data-motion="full"] .reservoir {
+    animation: cv-reservoir linear both;
+    animation-timeline: view();
+    animation-range: entry 0% entry 100%;
+  }
+}
+@keyframes cv-reservoir {
+  from {
+    --fill: -8%;
+  }
+  to {
+    --fill: 108%;
+  }
+}
+
+/* ── Metro map (platform): the line fills, then a light runs along it ──── */
+@keyframes cv-metro-fill {
+  from {
+    transform: translateX(-100%);
+  }
+}
+@keyframes cv-metro-run {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(10%);
+  }
+}
+
+/* ── Atlas filter: cards glide to their new places ───────────────────────── */
+.atlas-cards[data-vt="on"] > li {
+  view-transition-name: match-element;
+  view-transition-class: card;
+}
+::view-transition-group(.card) {
+  animation-duration: 460ms;
+  animation-timing-function: var(--ease-expo);
+}
+
+/* ── The Ascent: steps rise forward and settle back ─────────────────────── */
+@keyframes cv-step-up {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 1.75rem, 0);
+  }
+}
+@keyframes cv-step-down {
+  from {
+    opacity: 0;
+    transform: translate3d(0, -1.75rem, 0);
+  }
+}
+@keyframes cv-shake {
+  20% {
+    transform: translateX(-2px);
+  }
+  60% {
+    transform: translateX(2px);
+  }
+}
+
+/* ══ The Glow ══════════════════════════════════════════════════════════════
+   A living gradient edge — hydro, glacier cyan, dusk violet — shown only
+   while a machine is actually working (01 §3): here, a request in flight.
+   CSS edition: a rotating conic gradient masked to the border, plus a soft
+   bloom behind. Static (no rotation) under reduced motion. */
+@property --glow-angle {
+  syntax: "<angle>";
+  inherits: false;
+  initial-value: 0deg;
+}
+.glow-frame {
+  position: relative;
+  isolation: isolate;
+}
+.glow-frame::before,
+.glow-frame::after {
+  content: "";
+  position: absolute;
+  border-radius: inherit;
+  background: conic-gradient(
+    from var(--glow-angle),
+    var(--glow-1),
+    var(--glow-2),
+    var(--glow-3),
+    var(--glow-2),
+    var(--glow-1)
+  );
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 500ms var(--ease-out);
+}
+.glow-frame::before {
+  inset: -2px;
+  padding: 2px;
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask:
+    linear-gradient(#000 0 0) content-box exclude,
+    linear-gradient(#000 0 0);
+  z-index: 1;
+}
+.glow-frame::after {
+  inset: -18px;
+  filter: blur(28px);
+  z-index: -1;
+}
+.glow-frame[data-glow="on"]::before {
+  opacity: 1;
+  animation: cv-glow-spin 2.4s linear infinite;
+}
+.glow-frame[data-glow="on"]::after {
+  opacity: 0.45;
+  animation: cv-glow-spin 2.4s linear infinite;
+}
+:root[data-theme="light"] .glow-frame[data-glow="on"]::after {
+  opacity: 0.3;
+}
+@keyframes cv-glow-spin {
+  to {
+    --glow-angle: 360deg;
+  }
+}

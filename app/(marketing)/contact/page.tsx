@@ -1,147 +1,130 @@
-import { Card, Icon } from "@/components/ui";
-import { PageHero, Section } from "@/components/marketing/page-hero";
-import { ContactForm } from "@/components/marketing/contact-form";
-import type { IconName } from "@/components/ui";
-import { EARLY_ACCESS } from "@/lib/availability";
+import { ValleyTime } from "@/components/chrome/valley-time";
+import { Ascent } from "@/components/forms/ascent";
+import { Page } from "@/components/motion/page";
+import { Faq } from "@/components/system/faq";
+import { Kicker } from "@/components/system/kicker";
+import { SectionHead } from "@/components/system/section";
+import { CONTACT } from "@/copy/en/contact";
 import { pageMetadata } from "@/lib/seo";
-import { JsonLd, faqJsonLd } from "@/components/seo/json-ld";
 
 export const metadata = pageMetadata({
-  title: "Get Early Access — NVIDIA H200 GPUs in Nepal",
-  description:
-    "Enterprise early access to NVIDIA H200 GPUs in a hydro-powered Kathmandu datacenter. Tell us the workload and we reply within one working day with a capacity plan and a firm NPR quote.",
+  title: CONTACT.meta.title,
+  description: CONTACT.meta.description,
   path: "/contact",
 });
 
-const DETAILS: { icon: IconName; title: string; body: React.ReactNode }[] = [
-  {
-    icon: "send",
-    title: "Email",
-    body: (
-      <a
-        href="mailto:info@corevalley.ai"
-        className="text-hydro underline decoration-hydro/40 underline-offset-4 transition-colors duration-normal hover:text-hydro-300"
-      >
-        info@corevalley.ai
-      </a>
-    ),
-  },
-  {
-    icon: "location",
-    title: "Location",
-    body: "Kathmandu Valley, Nepal · np-ktm-1",
-  },
-  {
-    icon: "health",
-    title: "Support hours",
-    body: "Nepal Standard Time (UTC+5:45). Technical questions welcome.",
-  },
-  {
-    icon: "cost",
-    title: "Payment rails",
-    body: "eSewa, Khalti, bank transfer or a corporate invoice on net terms — all in NPR.",
-  },
-];
-
 const FAQ = [
   {
-    q: "When can I get access?",
-    a: "The NVIDIA H200 is coming soon, with the RTX PRO 6000 Blackwell after it. Enterprises can join the early-access list now, and we will tell you first when capacity opens.",
+    q: "What should we include?",
+    a: "What you want to run, roughly how big, for how long, and anything about your data that matters — for example that it must stay in Nepal. A sentence each is enough.",
   },
   {
-    q: "What should I include?",
-    a: "The model and its size, roughly how much data, the GPU hours you expect each month, and which products you need: reserved or on-demand GPUs, MIG slices, inferencing, storage or engineering help. A rough guess is fine.",
+    q: "How fast do you reply?",
+    a: "Within one working day, from Kathmandu.",
   },
   {
-    q: "How quickly will I hear back?",
-    a: "Within one working day, with a capacity plan and a firm price in NPR. When H200 capacity opens and your account is set up, you launch and pay by the second.",
-  },
-  {
-    q: "Do you support universities?",
-    a: "Yes. Access for universities and labs is coming soon, with MIG slices sized for teaching. Join the list now and we will be in touch when it opens.",
-  },
-  {
-    q: "How will I pay?",
-    a: "In Nepali rupees, metered by the second with a 60-second minimum. Pay by eSewa, Khalti, bank transfer or a corporate invoice on net terms.",
-  },
-  {
-    q: "Can data stay in Nepal?",
-    a: "Yes — that is the point. Compute and storage are in our Kathmandu datacenter, nothing is copied abroad, and regulated projects block all outbound traffic by default. This form is the exception: it travels through FormSubmit, so keep confidential details for a secure channel.",
+    q: "What happens after?",
+    a: "We check what you need against the cluster, then send a capacity plan and a firm quote in rupees. If it fits, we set you up for early access.",
   },
 ];
 
+const fallbackInput =
+  "type-body h-12 w-full rounded-card border border-line-strong/60 bg-bg px-4 text-ink";
+
 export default function ContactPage() {
+  const c = CONTACT;
   return (
-    <>
-      <JsonLd data={faqJsonLd(FAQ)} />
-      <PageHero
-        eyebrow="Get early access"
-        title="Tell us what you want to run."
-        lead={`${EARLY_ACCESS.line} We reply ${EARLY_ACCESS.replyTime} with a capacity plan and a firm rupee quote.`}
-      >
-        <p className="mt-7 flex items-center gap-3 font-mono text-[11.5px] tracking-label text-ink-300 uppercase">
-          <span aria-hidden="true" className="h-px w-8 shrink-0 bg-hydro" />
-          <span>
-            <span className="text-hydro light:text-hydro-dark">{EARLY_ACCESS.pill}</span>
-            <span className="hidden sm:inline"> · enterprise early access</span>
-          </span>
-        </p>
-      </PageHero>
-
-      <Section>
-        <div className="grid gap-10 lg:grid-cols-[0.85fr_1fr] lg:items-start lg:gap-8">
-          {/* The form leads on a phone; on a wide screen it takes the right
-              column and the ways to reach us sit beside it. */}
-          <div className="order-1 lg:order-2">
-            <ContactForm />
-          </div>
-
-          <div className="order-2 lg:order-1">
-            <h2 className="text-xl font-semibold tracking-tight text-ink-100">
-              Reach us directly
-            </h2>
-            <p className="mt-2 text-[14px] leading-relaxed text-ink-400">
-              Prefer email? Write to us. We answer in Nepal business hours,
-              usually {EARLY_ACCESS.replyTime}.
-            </p>
-
-            <div className="mt-6 space-y-3">
-              {DETAILS.map((d) => (
-                <Card key={d.title} surface="solid" padding={18}>
-                  <div className="flex items-start gap-3.5">
-                    <span className="mt-0.5 shrink-0">
-                      <Icon name={d.icon} size={18} className="text-ink-200" />
-                    </span>
-                    <div>
-                      <h3 className="text-sm font-semibold text-ink-100">
-                        {d.title}
-                      </h3>
-                      <div className="mt-1 text-[14px] leading-relaxed text-ink-400">
-                        {d.body}
-                      </div>
-                    </div>
-                  </div>
-                </Card>
-              ))}
+    <Page>
+      <section className="relative pt-[calc(var(--header-h)+clamp(2.5rem,6vw,5rem))] pb-[var(--section-y)]">
+        <div className="container-page grid gap-12 lg:grid-cols-[1fr_20rem] lg:gap-16">
+          <div className="flex min-w-0 flex-col gap-10">
+            <div className="flex max-w-[44rem] flex-col gap-5">
+              <Kicker>{c.hero.kicker}</Kicker>
+              <h1 className="type-display-2">{c.hero.title}</h1>
+              <p className="type-lead text-ink-2">{c.hero.lead}</p>
             </div>
-          </div>
-        </div>
-      </Section>
 
-      <Section eyebrow="Quick answers" title="Before you write.">
-        <div className="grid gap-4 md:grid-cols-2">
-          {FAQ.map((f) => (
-            <Card key={f.q} surface="solid" padding={22} className="h-full">
-              <h3 className="text-[15px] font-semibold tracking-tight text-ink-100">
-                {f.q}
-              </h3>
-              <p className="mt-2 text-[14px] leading-relaxed text-ink-400">
-                {f.a}
-              </p>
-            </Card>
-          ))}
+            <div className="nojs:hidden">
+              <Ascent />
+            </div>
+
+            {/* Without scripting: one plain form to the same inbox. */}
+            <form
+              action={`https://formsubmit.co/${c.inbox}`}
+              method="POST"
+              className="hidden flex-col gap-5 rounded-panel border border-line bg-bg-raised p-6 nojs:flex md:p-10"
+            >
+              <input type="hidden" name="_subject" value="Request from corevalley.ai (no-script form)" />
+              <input type="hidden" name="_template" value="table" />
+              <input type="text" name="_honey" tabIndex={-1} autoComplete="off" className="hidden" />
+              <label className="flex flex-col gap-2">
+                <span className="type-kicker text-ink-3">What are you here for?</span>
+                <select name="Route" className={fallbackInput}>
+                  {c.routes
+                    .filter((r) => r.id !== "careers")
+                    .map((r) => (
+                      <option key={r.id}>{r.title}</option>
+                    ))}
+                </select>
+              </label>
+              <label className="flex flex-col gap-2">
+                <span className="type-kicker text-ink-3">Your message</span>
+                <textarea name="Message" required rows={5} className={`${fallbackInput} h-auto py-3`} />
+              </label>
+              <div className="grid gap-5 sm:grid-cols-2">
+                <label className="flex flex-col gap-2">
+                  <span className="type-kicker text-ink-3">Name</span>
+                  <input name="Name" required autoComplete="name" className={fallbackInput} />
+                </label>
+                <label className="flex flex-col gap-2">
+                  <span className="type-kicker text-ink-3">Work email</span>
+                  <input name="Email" type="email" required autoComplete="email" className={fallbackInput} />
+                </label>
+                <label className="flex flex-col gap-2">
+                  <span className="type-kicker text-ink-3">Organisation</span>
+                  <input name="Organisation" autoComplete="organization" className={fallbackInput} />
+                </label>
+              </div>
+              <button type="submit" className="type-body h-12 self-start rounded-pill bg-hydro px-6 font-medium text-on-hydro">
+                Send request
+              </button>
+              <p className="type-caption text-ink-3">{c.disclosure}</p>
+            </form>
+          </div>
+
+          {/* Side rail: the human details. */}
+          <aside aria-label="Other ways to reach us" className="flex flex-col gap-8 lg:pt-[12.5rem]">
+            <div className="flex flex-col gap-2 border-t border-line pt-5">
+              <p className="type-kicker text-ink-3">Email</p>
+              <a href={`mailto:${c.inbox}`} className="type-title-3 underline decoration-line-strong underline-offset-4 hover:decoration-hydro">
+                {c.inbox}
+              </a>
+            </div>
+            <div className="flex flex-col gap-2 border-t border-line pt-5">
+              <p className="type-kicker text-ink-3">Time in Kathmandu</p>
+              <ValleyTime />
+            </div>
+            <div className="flex flex-col gap-3 border-t border-line pt-5">
+              <p className="type-kicker text-ink-3">What happens next</p>
+              <ol className="flex flex-col gap-2.5">
+                {c.done.next.map((s, i) => (
+                  <li key={s} className="type-small flex gap-3 text-ink-2">
+                    <span className="type-kicker mt-0.5 text-hydro-ink light:text-hydro">{i + 1}</span>
+                    {s}
+                  </li>
+                ))}
+              </ol>
+            </div>
+          </aside>
         </div>
-      </Section>
-    </>
+      </section>
+
+      <section aria-labelledby="faq-title" className="section-y">
+        <div className="container-page grid gap-10 lg:grid-cols-[1fr_2fr]">
+          <SectionHead id="faq-title" kicker="Questions" title="Before you write." size="title-2" />
+          <Faq items={FAQ} />
+        </div>
+      </section>
+    </Page>
   );
 }

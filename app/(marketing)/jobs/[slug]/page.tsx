@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ButtonLink, Card, Icon } from "@/components/ui";
-import { PageHero, Section } from "@/components/marketing/page-hero";
+import { PageHero, TitledSection as Section } from "@/components/system/page-hero";
 import { JobRole, JobSummary, HiringSteps, SimilarRoles } from "@/components/jobs/job-parts";
 import { ApplicationForm } from "@/components/jobs/application-form";
 import { JsonLd, breadcrumbJsonLd, jobPostingJsonLd } from "@/components/seo/json-ld";

@@ -1,63 +1,37 @@
 "use client";
 
-import { Button, ButtonLink, Icon } from "@/components/ui";
-import { LogoLockup } from "@/components/layout/logo";
+/**
+ * A page failed to render. Say so plainly, offer the retry that usually
+ * works, and give the reference an engineer would need.
+ */
+import { Brandmark, Wordmark } from "@/components/brand/logo";
+import { Button, ButtonLink } from "@/components/system/button";
 
-export default function GlobalError({
-  error,
-  reset,
-}: {
-  error: Error & { digest?: string };
-  reset: () => void;
-}) {
+export default function GlobalError({ error, reset }: { error: Error & { digest?: string }; reset: () => void }) {
   return (
-    <main className="mx-auto flex min-h-dvh w-full max-w-lg flex-col justify-center px-6 py-20">
-      <LogoLockup size={20} />
-
-      <p className="cv-label mt-14">error · render failed</p>
-
-      <h1 className="display mt-4 text-[clamp(2rem,7vw,3rem)]">
-        This page didn&rsquo;t load.
-      </h1>
-      <p className="mt-5 leading-relaxed text-ink-400">
-        Something on this page failed to load. Trying again usually fixes it.
-        If it keeps happening, send us the reference below and an engineer in
-        Kathmandu will trace it.
+    <main id="main" className="container-page flex min-h-dvh max-w-[40rem] flex-col justify-center gap-8 py-20">
+      <span className="flex items-center gap-2.5">
+        <Brandmark className="w-8" />
+        <Wordmark className="w-[6.75rem] text-ink" />
+      </span>
+      <p className="type-kicker text-ink-3">Something went wrong</p>
+      <h1 className="type-title-1">This page didn&apos;t load.</h1>
+      <p className="type-lead text-ink-2">
+        Trying again usually fixes it. If it keeps happening, send us the reference below and an engineer in Kathmandu will trace it.
       </p>
-
-      {/* The digest is the only thing that makes a support email actionable,
-          so it is presented as something to copy — not as fine print. */}
-      {error.digest ? (
-        <div className="lg lg--panel mt-8 rounded-lg px-4 py-3.5">
-          <p className="cv-label text-[10px]">Reference</p>
-          <p className="nums mt-1.5 font-mono text-[13px] break-all text-ink-200 select-all">
-            {error.digest}
-          </p>
-        </div>
-      ) : null}
-
-      <div className="mt-9 flex flex-wrap gap-3">
-        <Button
-          variant="primary"
-          onClick={reset}
-          iconLeft={<Icon name="rotate" size={15} />}
-        >
+      {error.digest && (
+        <p className="type-mono rounded-card bg-bg-sunken px-4 py-3 text-ink">
+          Reference · <span className="font-semibold select-all">{error.digest}</span>
+        </p>
+      )}
+      <div className="flex flex-wrap gap-3">
+        <Button size="lg" onClick={reset}>
           Try again
         </Button>
-        <ButtonLink href="/" variant="secondary">
-          Back to home
+        <ButtonLink href="/" variant="secondary" size="lg">
+          Home
         </ButtonLink>
       </div>
-
-      <p className="mt-8 font-mono text-[11.5px] tracking-wide text-ink-500">
-        still broken? email{" "}
-        <a
-          href="mailto:info@corevalley.ai"
-          className="text-hydro underline decoration-hydro/40 underline-offset-4 transition-colors duration-normal hover:text-hydro-300"
-        >
-          info@corevalley.ai
-        </a>
-      </p>
     </main>
   );
 }

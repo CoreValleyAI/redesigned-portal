@@ -1,0 +1,138 @@
+/* ══════════════════════════════════════════════════════════════════════════
+   Legacy aliases — the preview-era variable names, mapped onto the new
+   tokens so components not yet rebuilt (docs, blog, jobs, CMS preview,
+   components/ui) render in the new palette in both themes.
+
+   Delete each group once nothing reads it: `grep -rn "var(--carbon" app
+   components` etc. New code never uses these names.
+   ══════════════════════════════════════════════════════════════════════════ */
+
+:root {
+  /* Text ramp (light-to-dark meaning flips with the theme automatically). */
+  --ink-100: var(--ink);
+  --ink-200: var(--ink);
+  --ink-300: var(--ink-2);
+  --ink-400: var(--ink-2);
+  --ink-500: var(--ink-3);
+  --ink-600: var(--ink-3);
+  --ink-700: var(--ink-4);
+  --mute: var(--ink-3);
+
+  --text-primary: var(--ink);
+  --text-secondary: var(--ink-2);
+  --text-muted: var(--ink-3);
+  --text-accent: var(--hydro-ink);
+  --text-on-hydro: var(--on-hydro);
+
+  /* Ground ramp. */
+  --carbon: var(--bg);
+  --carbon-900: var(--bg-sunken);
+  --carbon-800: var(--bg);
+  --carbon-700: var(--bg-raised);
+  --carbon-600: var(--bg-elevated);
+  --carbon-500: var(--line);
+  --carbon-400: var(--line-strong);
+
+  --bg-base: var(--bg);
+  --surface-page: var(--bg);
+  --surface-card: var(--bg-raised);
+  --surface-raised: var(--bg-elevated);
+  --surface-input: var(--bg-raised);
+  --surface-hover: var(--bg-sunken);
+  --surface-active: var(--bg-sunken);
+
+  --border-subtle: var(--line-soft);
+  --border-default: var(--line);
+  --border-strong: var(--line-strong);
+  --border-hydro: color-mix(in oklch, var(--hydro) 45%, transparent);
+
+  --hydro-dark: var(--hydro-ink);
+  --hydro-100: color-mix(in oklch, var(--hydro) 12%, var(--bg));
+  --hydro-200: color-mix(in oklch, var(--hydro) 25%, var(--bg));
+  --hydro-300: var(--hydro-ink);
+  --hydro-400: var(--hydro);
+  --hydro-500: var(--hydro);
+  --hydro-600: var(--hydro);
+  --hydro-700: var(--hydro-ink);
+  --hydro-800: var(--hydro-ink);
+  --hydro-900: var(--hydro-ink);
+
+  --success: var(--hydro);
+  --warning: var(--warn);
+  --info: var(--glow-2);
+  --link: var(--hydro-ink);
+  --link-hover: var(--ink);
+  --action: var(--hydro);
+  --action-hover: var(--hydro-ink);
+  --action-press: var(--hydro-ink);
+  --focus-ring: var(--hydro);
+
+  /* Buttons of components/ui/button.tsx. */
+  --btn-bg: var(--ink);
+  --btn-fg: var(--bg);
+  --btn2-bg: transparent;
+  --btn2-fg: var(--ink);
+  --btn2-border: var(--line);
+  --btn2-hover: var(--bg-sunken);
+  --btn-orb: var(--hydro);
+  --btn-orb-fg: var(--on-hydro);
+  --btn-orb-hover: var(--hydro-ink);
+
+  /* Type and motion names of design_system/tokens. */
+  --fw-light: 300;
+  --fw-regular: 400;
+  --fw-medium: 500;
+  --fw-semibold: 600;
+  --fw-bold: 700;
+  --text-2xs: 11px;
+  --text-xs: 12px;
+  --text-sm: 13px;
+  --text-base: 15px;
+  --text-md: 17px;
+  --text-lg: 20px;
+  --text-xl: 24px;
+  --text-2xl: 32px;
+  --text-3xl: 42px;
+  --text-4xl: 56px;
+  --text-5xl: 72px;
+  --leading-tight: 1.05;
+  --leading-snug: 1.25;
+  --leading-normal: 1.5;
+  --leading-relaxed: 1.6;
+  --tracking-tight: -0.02em;
+  --tracking-normal: 0;
+  --tracking-wide: 0.04em;
+  --tracking-label: 0.14em;
+  --radius-sm: var(--r-sm);
+  --radius-md: 0.75rem;
+  --radius-lg: var(--r-md);
+  --radius-xl: var(--r-lg);
+  --radius-pill: var(--r-pill);
+  --duration-fast: var(--dur-micro);
+  --duration-normal: var(--dur-short);
+  --duration-slow: var(--dur-base);
+  --ease-standard: var(--ease-out);
+}
+
+:root,
+:root[data-theme="light"] {
+  --hydro-rgb: 0 127 61;
+}
+:root[data-theme="dark"] {
+  --hydro-rgb: 89 236 133;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme]) {
+    --hydro-rgb: 89 236 133;
+  }
+}
+
+/* The brand's small-caps mono eyebrow, as the docs still use it. */
+.cv-label {
+  font-family: var(--font-mono);
+  font-weight: 500;
+  font-size: var(--fs-kicker);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}

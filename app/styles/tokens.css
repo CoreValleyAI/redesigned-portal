@@ -1,0 +1,185 @@
+/* ══════════════════════════════════════════════════════════════════════════
+   CoreValley tokens — the single source of every colour, size, radius and
+   timing on the site (docs/revamp/05 and 06).
+
+   Two complete themes, designed separately:
+     · Glacier      light. Cool paper, near-black ink, deep hydro green.
+     · Night Valley dark.  Blue-black night, soft white ink, bright hydro.
+
+   <html data-theme> is stamped before first paint by the bootstrap script in
+   lib/theme.ts (saved choice, else the OS preference). Without scripting the
+   media query below picks the theme instead, so the page is never wrong.
+
+   Colours are OKLCH. Contrast was checked for every text/background pair
+   (body ≥ 7:1, secondary and captions ≥ 4.5:1, control boundaries ≥ 3:1).
+   WebGL scenes read the same values through lib/theme.ts → readPalette().
+   ══════════════════════════════════════════════════════════════════════════ */
+
+:root,
+:root[data-theme="light"] {
+  color-scheme: light;
+
+  /* ── Surfaces ─────────────────────────────────────────── */
+  --bg: oklch(0.985 0.004 240);
+  --bg-raised: oklch(1 0 0);
+  --bg-sunken: oklch(0.955 0.006 240);
+  --bg-elevated: oklch(1 0 0);
+  /* Translucent chrome (header bar, sheets): the page colour at 72 %. */
+  --bg-glass: oklch(0.985 0.004 240 / 0.8);
+
+  /* ── Lines ────────────────────────────────────────────── */
+  --line: oklch(0.88 0.008 240);
+  --line-soft: oklch(0.92 0.006 240);
+  /* Boundaries of controls (inputs, switches): ≥ 3:1 on the page. */
+  --line-strong: oklch(0.63 0.012 240);
+
+  /* ── Ink ──────────────────────────────────────────────── */
+  --ink: oklch(0.2 0.015 250);
+  --ink-2: oklch(0.42 0.015 250);
+  --ink-3: oklch(0.52 0.014 250);
+  /* Disabled and decorative only — never for text that must be read. */
+  --ink-4: oklch(0.66 0.012 250);
+
+  /* ── Hydro, the one accent ────────────────────────────── */
+  --hydro: oklch(0.52 0.14 152);
+  --hydro-ink: oklch(0.47 0.13 152);
+  --on-hydro: oklch(0.99 0.01 150);
+  --hydro-wash: oklch(0.52 0.14 152 / 0.08);
+
+  /* ── Dots ─────────────────────────────────────────────── */
+  --dot-off: oklch(0.78 0.012 240);
+  --dot-on: var(--hydro);
+
+  /* ── State ────────────────────────────────────────────── */
+  --warn: oklch(0.54 0.13 70);
+  --danger: oklch(0.55 0.19 27);
+
+  /* ── The Glow (only while a machine is working) ───────── */
+  --glow-1: var(--hydro);
+  --glow-2: oklch(0.7 0.11 210);
+  --glow-3: oklch(0.55 0.17 295);
+  --glow-4: oklch(0.7 0.13 75);
+
+  /* ── Elevation: one shadow, for floating chrome only ──── */
+  --shadow-float:
+    0 1px 0 oklch(1 0 0 / 0.6) inset, 0 0 0 1px oklch(0.2 0.015 250 / 0.06),
+    0 12px 32px -12px oklch(0.2 0.03 250 / 0.22);
+
+  --selection: oklch(0.52 0.14 152 / 0.2);
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+
+  --bg: oklch(0.165 0.014 252);
+  --bg-raised: oklch(0.205 0.014 252);
+  --bg-sunken: oklch(0.135 0.012 252);
+  --bg-elevated: oklch(0.235 0.014 252);
+  --bg-glass: oklch(0.165 0.014 252 / 0.82);
+
+  --line: oklch(0.3 0.012 252);
+  --line-soft: oklch(0.25 0.012 252);
+  --line-strong: oklch(0.52 0.014 252);
+
+  --ink: oklch(0.96 0.005 250);
+  --ink-2: oklch(0.78 0.01 250);
+  --ink-3: oklch(0.67 0.012 252);
+  --ink-4: oklch(0.5 0.012 252);
+
+  --hydro: oklch(0.84 0.19 150);
+  --hydro-ink: oklch(0.88 0.15 150);
+  --on-hydro: oklch(0.2 0.04 150);
+  --hydro-wash: oklch(0.84 0.19 150 / 0.1);
+
+  --dot-off: oklch(0.4 0.02 252);
+
+  --warn: oklch(0.83 0.13 75);
+  --danger: oklch(0.72 0.16 25);
+
+  --glow-2: oklch(0.84 0.11 205);
+  --glow-3: oklch(0.66 0.17 295);
+  --glow-4: oklch(0.83 0.13 75);
+
+  --shadow-float:
+    0 1px 0 oklch(1 0 0 / 0.06) inset, 0 0 0 1px oklch(1 0 0 / 0.06),
+    0 16px 40px -12px oklch(0 0 0 / 0.65);
+
+  --selection: oklch(0.84 0.19 150 / 0.28);
+}
+
+/* No script: follow the OS. (With script the attribute is always set.) */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme]) {
+    color-scheme: dark;
+    --bg: oklch(0.165 0.014 252);
+    --bg-raised: oklch(0.205 0.014 252);
+    --bg-sunken: oklch(0.135 0.012 252);
+    --bg-elevated: oklch(0.235 0.014 252);
+    --bg-glass: oklch(0.165 0.014 252 / 0.82);
+    --line: oklch(0.3 0.012 252);
+    --line-soft: oklch(0.25 0.012 252);
+    --line-strong: oklch(0.52 0.014 252);
+    --ink: oklch(0.96 0.005 250);
+    --ink-2: oklch(0.78 0.01 250);
+    --ink-3: oklch(0.67 0.012 252);
+    --ink-4: oklch(0.5 0.012 252);
+    --hydro: oklch(0.84 0.19 150);
+    --hydro-ink: oklch(0.88 0.15 150);
+    --on-hydro: oklch(0.2 0.04 150);
+    --hydro-wash: oklch(0.84 0.19 150 / 0.1);
+    --dot-off: oklch(0.4 0.02 252);
+    --warn: oklch(0.83 0.13 75);
+    --danger: oklch(0.72 0.16 25);
+    --glow-2: oklch(0.84 0.11 205);
+    --glow-3: oklch(0.66 0.17 295);
+    --glow-4: oklch(0.83 0.13 75);
+    --selection: oklch(0.84 0.19 150 / 0.28);
+  }
+}
+
+/* ── Theme-independent tokens ─────────────────────────────────────────────── */
+:root {
+  /* Type families (next/font provides the faces; see app/fonts.ts). */
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: var(--font-jetbrains-mono), ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+
+  /* Fluid type scale: mobile (360 px) → desktop (1440 px). See 05 §2.2. */
+  --fs-display-1: clamp(3.25rem, 1.667rem + 7.04vw, 8rem);
+  --fs-display-2: clamp(2.5rem, 1.5rem + 4.44vw, 5.5rem);
+  --fs-title-1: clamp(2rem, 1.5rem + 2.22vw, 3.5rem);
+  --fs-title-2: clamp(1.5rem, 1.25rem + 1.11vw, 2.25rem);
+  --fs-title-3: clamp(1.25rem, 1.167rem + 0.37vw, 1.5rem);
+  --fs-lead: clamp(1.125rem, 1.042rem + 0.37vw, 1.375rem);
+  --fs-body: clamp(1rem, 0.979rem + 0.093vw, 1.0625rem);
+  --fs-small: 0.875rem;
+  --fs-caption: 0.78125rem;
+  --fs-kicker: clamp(0.6875rem, 0.667rem + 0.093vw, 0.75rem);
+  --fs-metric: clamp(4rem, 2rem + 8.89vw, 10rem);
+
+  /* Layout. */
+  --page-x: clamp(1rem, 5vw, 4rem);
+  --content-max: 80rem;
+  --text-max: 42rem;
+  --section-y: clamp(4rem, 2rem + 6vw, 8rem);
+  --header-h: 3.5rem;
+
+  /* Radii. The preview's 2.5rem slab radius is retired. */
+  --r-sm: 0.5rem;
+  --r-md: 1rem;
+  --r-lg: 1.75rem;
+  --r-pill: 999px;
+
+  /* Motion (06 §1). Springs are critically damped (no overshoot), generated
+     by lib/motion/spring.ts — regenerate there, never edit by hand. */
+  --dur-micro: 120ms;
+  --dur-short: 220ms;
+  --dur-base: 380ms;
+  --dur-long: 640ms;
+  --dur-cine: 1200ms;
+  /* Easings (--ease-out, --ease-in-out, --ease-in, --ease-expo, --ease-spring)
+     live in the @theme block of app/globals.css, which also makes them
+     Tailwind utilities. */
+  --dur-spring-snappy: 300ms;
+  --dur-spring-smooth: 450ms;
+  --dur-spring-gentle: 700ms;
+}

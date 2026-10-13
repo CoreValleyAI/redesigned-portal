@@ -1,10 +1,10 @@
 import type { Metadata, Viewport } from "next";
 import { DocsShell } from "@/components/docs/docs-shell";
-import { SiteFooter } from "@/components/layout/site-footer";
-import { SiteHeader } from "@/components/layout/site-header";
+import { SiteFooter } from "@/components/chrome/site-footer";
+import { SiteHeader } from "@/components/chrome/site-header";
 import { SITE_NAME, SITE_URL } from "@/lib/site";
 import { SOCIAL_IMAGE } from "@/lib/seo";
-import { THEME_BOOTSTRAP, THEME_COLOR } from "@/lib/theme";
+import { PREFERENCE_BOOTSTRAP, THEME_COLOR } from "@/lib/theme";
 import { inter, jetbrainsMono } from "./fonts";
 import "./globals.css";
 
@@ -39,37 +39,34 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: THEME_COLOR.light,
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: THEME_COLOR.light },
+    { media: "(prefers-color-scheme: dark)", color: THEME_COLOR.dark },
+  ],
+  colorScheme: "light dark",
 };
 
 export default function DocsRootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html
-      lang="en"
-      data-theme="light"
-      className={`${inter.variable} ${jetbrainsMono.variable}`}
-      suppressHydrationWarning
-    >
-      <body className="min-h-dvh antialiased">
-        {/* Same theme bootstrap as the marketing site (lib/theme.ts). */}
-        <script dangerouslySetInnerHTML={{ __html: THEME_BOOTSTRAP }} />
-
+    <html lang="en" className={`${inter.variable} ${jetbrainsMono.variable}`} suppressHydrationWarning>
+      <head>
+        {/* Same preference bootstrap as the site (lib/theme.ts). */}
+        <script dangerouslySetInnerHTML={{ __html: PREFERENCE_BOOTSTRAP }} />
+      </head>
+      <body>
+        <div id="top" aria-hidden="true" className="pointer-events-none absolute top-0 left-0 h-px w-px" />
         <a
           href="#main"
-          className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[9999] focus:rounded-full focus:bg-zinc-900 focus:px-5 focus:py-2.5 focus:text-[10px] focus:font-bold focus:tracking-[0.2em] focus:text-white focus:uppercase"
+          className="type-small fixed top-3 left-3 z-[100] -translate-y-20 rounded-pill bg-ink px-5 py-2.5 font-medium text-bg transition-transform duration-[var(--dur-spring-snappy)] ease-spring focus-visible:translate-y-0"
         >
           Skip to content
         </a>
 
-        <noscript>
-          <style>{`[data-reveal]{opacity:1!important;transform:none!important}`}</style>
-        </noscript>
-
-        <div className="flex min-h-dvh flex-col bg-bg-base">
+        <div className="flex min-h-dvh flex-col">
           <SiteHeader />
-          <main id="main" tabIndex={-1} className="flex-1 pt-2 focus:outline-none md:pt-3">
+          <main id="main" tabIndex={-1} className="flex-1 pt-[var(--header-h)] focus:outline-none">
             <DocsShell>{children}</DocsShell>
           </main>
           <SiteFooter />

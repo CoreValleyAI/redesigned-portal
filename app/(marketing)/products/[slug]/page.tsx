@@ -1,161 +1,185 @@
 import { notFound } from "next/navigation";
-import Link from "next/link";
-import { ButtonLink, Card, Icon, Terminal } from "@/components/ui";
-import { PageHero, Section } from "@/components/marketing/page-hero";
-import { Reveal } from "@/components/fx/reveal";
-import { PRODUCTS, productBySlug } from "@/lib/products";
-import { EARLY_ACCESS } from "@/lib/availability";
+import { ViewTransition } from "react";
+import { Page } from "@/components/motion/page";
+import { ProductCard } from "@/components/products/product-card";
+import { JsonLd, serviceJsonLd } from "@/components/seo/json-ld";
+import { Breadcrumbs } from "@/components/system/breadcrumbs";
+import { ButtonLink } from "@/components/system/button";
+import { Cta } from "@/components/system/cta";
+import { DotGlyph } from "@/components/system/dot-glyph";
+import { createNotes, NoteList } from "@/components/system/fact";
+import { Faq } from "@/components/system/faq";
+import { Kicker } from "@/components/system/kicker";
+import { SectionHead } from "@/components/system/section";
+import { SpecList } from "@/components/system/spec-list";
+import { Status } from "@/components/system/status";
+import { TextLink } from "@/components/system/text-link";
+import { PRODUCTS, productBySlug } from "@/copy/en/products";
+import { fact } from "@/lib/facts";
 import { pageMetadata } from "@/lib/seo";
-import { JsonLd, breadcrumbJsonLd, serviceJsonLd } from "@/components/seo/json-ld";
 
 export function generateStaticParams() {
   return PRODUCTS.map((p) => ({ slug: p.slug }));
 }
 
-export async function generateMetadata({
-  params,
-}: {
-  params: Promise<{ slug: string }>;
-}) {
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const product = productBySlug(slug);
   if (!product) return {};
   return pageMetadata({
-    title: `${product.name} — GPU cloud in Nepal`,
-    description: product.summary,
+    title: product.meta.title,
+    description: product.meta.description,
     path: `/products/${product.slug}`,
   });
 }
 
-export default async function ProductPage({
-  params,
-}: {
-  params: Promise<{ slug: string }>;
-}) {
+export default async function ProductPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const product = productBySlug(slug);
   if (!product) notFound();
 
+  const others = PRODUCTS.filter((p) => p.slug !== product.slug);
+  const notes = createNotes(product.specs.filter((id) => fact(id).footnote || fact(id).source.url));
+  const contact = `/contact?intent=workloads&product=${product.slug}`;
+
   return (
-    <>
+    <Page>
       <JsonLd
-        data={[
-          serviceJsonLd({
-            path: `/products/${product.slug}`,
-            name: product.name,
-            description: product.summary,
-            audience: product.audience,
-          }),
-          breadcrumbJsonLd([
-            { name: "Products", path: "/products" },
-            { name: product.name, path: `/products/${product.slug}` },
-          ]),
-        ]}
+        data={serviceJsonLd({
+          path: `/products/${product.slug}`,
+          name: product.name,
+          description: product.summary,
+          audience: product.bestFor,
+        })}
       />
-      <PageHero eyebrow="Products" title={product.name} lead={product.summary}>
-        {/* What is on offer, read before the buttons that act on it. */}
-        <p className="mt-6 max-w-[62ch] text-[14px] leading-relaxed text-ink-300">
-          {EARLY_ACCESS.line} We reply {EARLY_ACCESS.replyTime}.
-        </p>
-        <div className="mt-6 flex flex-wrap gap-3">
-          <ButtonLink
-            href="/contact"
-            variant="primary"
-            size="lg"
-            iconRight={<Icon name="arrow-right" size={17} />}
-          >
-            Get early access
-          </ButtonLink>
-          <ButtonLink href="/pricing" variant="secondary" size="lg">
-            How billing works
-          </ButtonLink>
-        </div>
-        <p className="mt-6 font-mono text-[12px] leading-relaxed tracking-wide text-ink-500">
-          built for {product.audience.toLowerCase()}
-          <span aria-hidden="true"> · </span>
-          <span className="sr-only">. Technology: </span>
-          {product.meta}
-        </p>
-      </PageHero>
 
-      <Section>
-        <div className="grid gap-10 lg:grid-cols-[1fr_0.85fr] lg:items-start">
-          <div className="grid gap-4 sm:grid-cols-2">
-            {product.features.map((f) => (
-              <Card key={f.title} padding={24} className="h-full">
-                <h2 className="text-base font-semibold tracking-tight text-ink-100">{f.title}</h2>
-                <p className="mt-2 text-[14px] leading-relaxed text-ink-400">{f.body}</p>
-              </Card>
-            ))}
-          </div>
-
-          <div className="min-w-0 lg:sticky lg:top-24">
-            {product.terminal ? (
-              <Terminal title="np-ktm-1.corevalley.ai" lines={product.terminal} />
-            ) : null}
-            <Card surface="solid" padding={0} className={product.terminal ? "mt-4" : undefined}>
-              <dl>
-                {product.specs.map((s, i) => (
-                  <div
-                    key={s.label}
-                    className={`flex items-center justify-between gap-4 px-5 py-3.5 ${
-                      i > 0 ? "border-t border-line-subtle" : ""
-                    }`}
-                  >
-                    <dt className="cv-label shrink-0 text-[10px]">{s.label}</dt>
-                    <dd className="text-right font-mono text-[13px] text-ink-200">{s.value}</dd>
-                  </div>
-                ))}
-              </dl>
-            </Card>
-          </div>
-        </div>
-      </Section>
-
-      <Section>
-        <Reveal kind="scale">
-          <Card padding={36} className="text-center">
-            <h2 className="display text-[clamp(1.5rem,3vw,2rem)]">Start with a quote.</h2>
-            <p className="mx-auto mt-4 max-w-xl leading-relaxed text-ink-300">
-              {EARLY_ACCESS.promise}
-            </p>
-            <div className="mt-7 flex justify-center">
-              <ButtonLink
-                href="/contact"
-                variant="primary"
-                size="lg"
-                iconRight={<Icon name="arrow-right" size={17} />}
-              >
-                Get early access
+      {/* Hero */}
+      <section className="relative pt-[calc(var(--header-h)+clamp(2.5rem,7vw,6rem))] pb-[clamp(3rem,7vw,6rem)]">
+        <div className="container-page grid items-end gap-12 lg:grid-cols-[1.5fr_1fr]">
+          <div className="flex flex-col gap-6">
+            <Breadcrumbs
+              trail={[
+                { href: "/products", label: "Products" },
+                { href: `/products/${product.slug}`, label: product.name },
+              ]}
+            />
+            <Kicker>{product.name}</Kicker>
+            <h1 className="type-display-2 max-w-[14ch]">{product.tagline}</h1>
+            <p className="type-lead measure text-ink-2">{product.summary}</p>
+            <Status />
+            <div className="mt-2 flex flex-wrap gap-3">
+              <ButtonLink href={contact} size="lg" magnetic>
+                Request access
+              </ButtonLink>
+              <ButtonLink href="#how" variant="secondary" size="lg">
+                How it works
               </ButtonLink>
             </div>
-          </Card>
-        </Reveal>
-      </Section>
-
-      <Section eyebrow="Other products" title="Keep exploring.">
-        <div className="flex flex-wrap gap-3">
-          {PRODUCTS.filter((p) => p.slug !== product.slug).map((p) => (
-            <Link key={p.slug} href={`/products/${p.slug}`} className="group">
-              <Card
-                surface="solid"
-                padding={16}
-                className="transition-colors duration-fast group-hover:border-line-strong"
-              >
-                <span className="flex items-center gap-2.5">
-                  <Icon name={p.icon} size={17} className="text-ink-200" />
-                  <span className="text-sm font-semibold text-ink-200">{p.name}</span>
-                  <Icon
-                    name="arrow-right"
-                    size={14}
-                    className="text-ink-500 transition-transform duration-normal ease-out group-hover:translate-x-0.5"
-                  />
-                </span>
-              </Card>
-            </Link>
-          ))}
+          </div>
+          <div className="hidden justify-end lg:flex">
+            <div className="grid aspect-square w-full max-w-[22rem] place-items-center rounded-panel border border-line bg-bg-raised">
+              <ViewTransition name={`product-glyph-${product.slug}`} share="morph" default="none">
+                <DotGlyph name={product.glyph} className="size-40" on />
+              </ViewTransition>
+            </div>
+          </div>
         </div>
-      </Section>
-    </>
+      </section>
+
+      {/* How it works */}
+      <section id="how" aria-labelledby="how-title" className="section-y scroll-mt-[var(--header-h)]">
+        <div className="container-page">
+          <SectionHead id="how-title" kicker="How it works" title="Three steps." size="title-1" />
+          <ol className="mt-12 grid gap-4 md:grid-cols-3 md:gap-5">
+            {product.steps.map((step, i) => (
+              <li
+                key={step.title}
+                className="flex flex-col gap-4 rounded-panel border border-line bg-bg-raised p-6 md:p-8"
+                data-reveal
+                style={{ "--i": i } as React.CSSProperties}
+              >
+                <span className="type-kicker text-hydro-ink light:text-hydro">{String(i + 1).padStart(2, "0")}</span>
+                <h3 className="type-title-3">{step.title}</h3>
+                <p className="type-small text-ink-2">{step.body}</p>
+              </li>
+            ))}
+          </ol>
+        </div>
+      </section>
+
+      {/* What you get */}
+      <section aria-labelledby="get-title" className="section-y">
+        <div className="container-page">
+          <SectionHead id="get-title" kicker="What you get" title={`${product.name}, in detail.`} size="title-1" />
+          <ul className="mt-12 grid gap-x-10 gap-y-10 md:grid-cols-2 lg:grid-cols-3">
+            {product.features.map((f, i) => (
+              <li
+                key={f.title}
+                className="flex flex-col gap-3 border-t border-line pt-6"
+                data-reveal
+                style={{ "--i": i % 3 } as React.CSSProperties}
+              >
+                <h3 className="type-title-3">{f.title}</h3>
+                <p className="type-body text-ink-2">{f.body}</p>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </section>
+
+      {/* Under the hood, and billing */}
+      <section aria-labelledby="hood-title" className="section-y">
+        <div className="container-page grid gap-12 lg:grid-cols-2 lg:gap-20">
+          <div className="flex flex-col gap-6">
+            <SectionHead id="hood-title" kicker="Under the hood" title="The key numbers." size="title-2" />
+            <SpecList rows={product.specs} />
+            <TextLink href="/hardware" arrow>
+              Full specifications
+            </TextLink>
+          </div>
+          <div className="flex flex-col gap-6">
+            <SectionHead kicker="Billing" title={product.billing} size="title-2" />
+            <p className="type-body text-ink-2">
+              Commitment: {product.commitment.toLowerCase()}. Rates are being finalised; every request gets a firm quote
+              in rupees.
+            </p>
+            <TextLink href="/pricing" arrow>
+              How billing works
+            </TextLink>
+          </div>
+        </div>
+      </section>
+
+      {/* Product questions only (03 §3). */}
+      <section aria-labelledby="faq-title" className="section-y">
+        <div className="container-page grid gap-10 lg:grid-cols-[1fr_2fr]">
+          <SectionHead id="faq-title" kicker="Questions" title={`About ${product.name.toLowerCase()}.`} size="title-2" />
+          <Faq items={product.faq} />
+        </div>
+      </section>
+
+      <Cta
+        title={`Start with ${product.name.toLowerCase()}.`}
+        lead="Tell us what you want to run. It takes about a minute."
+        action={{ href: contact, label: "Request access" }}
+      />
+
+      <section aria-labelledby="others-title" className="pb-[var(--section-y)]">
+        <div className="container-page">
+          <h2 id="others-title" className="type-kicker mb-6 text-ink-3">
+            Other ways to run
+          </h2>
+          <ul className="flex snap-x snap-mandatory gap-4 overflow-x-auto pb-4 [scrollbar-width:none] md:grid md:grid-cols-5 md:overflow-visible [&::-webkit-scrollbar]:hidden">
+            {others.map((p) => (
+              <li key={p.slug} className="w-[70%] shrink-0 snap-start md:w-auto">
+                <ProductCard product={p} className="gap-6 p-5 md:p-5" />
+              </li>
+            ))}
+          </ul>
+        </div>
+      </section>
+
+      <NoteList notes={notes} />
+    </Page>
   );
 }

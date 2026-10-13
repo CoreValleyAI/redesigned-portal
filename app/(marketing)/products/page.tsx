@@ -1,255 +1,118 @@
-import Link from "next/link";
-import { Badge, ButtonLink, Card, Icon } from "@/components/ui";
-import { PageHero, Section } from "@/components/marketing/page-hero";
-import { PRODUCTS, type ProductDef } from "@/lib/products";
-import { GPU_SKUS } from "@/lib/catalog";
-import { EARLY_ACCESS, SOON_GPUS, statusLabel } from "@/lib/availability";
-import { RevealGroup } from "@/components/fx/reveal";
+import { Page } from "@/components/motion/page";
+import { FitFinder } from "@/components/products/fit-finder";
+import { ProductCard } from "@/components/products/product-card";
+import { Cta } from "@/components/system/cta";
+import { DotGlyph } from "@/components/system/dot-glyph";
+import { Kicker } from "@/components/system/kicker";
+import { SectionHead } from "@/components/system/section";
+import { Status } from "@/components/system/status";
+import { PRODUCTS } from "@/copy/en/products";
 import { pageMetadata } from "@/lib/seo";
-import type { GpuSku } from "@/lib/api/types";
 
 export const metadata = pageMetadata({
-  title: "GPU Cloud Products — Reserved, On-demand, Inferencing, MIG Slicing, Storage, Services",
+  title: "Products — six ways to run AI in Nepal",
   description:
-    "NVIDIA H200 GPUs in Kathmandu: reserved servers, on-demand GPUs by the second, OpenAI-compatible inferencing, MIG slices, in-country storage and engineering services. Billed in NPR, with data that stays in Nepal. Blackwell coming soon.",
+    "Reserved GPUs, on-demand GPUs billed by the second, inferencing, MIG slicing, storage and engineering services — on NVIDIA H200 NVL in the Kathmandu Valley.",
   path: "/products",
 });
 
-const list = new Intl.ListFormat("en-GB", { style: "long", type: "conjunction" });
-const SOON = list.format(SOON_GPUS.map((s) => s.name.replace(/^NVIDIA /, "")));
-
-const COMPARE_COLUMNS: { key: keyof ProductDef["compare"]; label: string }[] = [
-  { key: "billing", label: "Billing" },
-  { key: "commitment", label: "Commitment" },
-  { key: "bestFor", label: "Best for" },
-];
-
-/** How a card can be rented, in plain words. */
-const waysToRent = (s: GpuSku) => (s.migCapable ? "whole card or slices" : "whole card");
-
-function StatusBadge({ sku }: { sku: GpuSku }) {
-  return sku.status === "available" ? (
-    <Badge tone="hydro">
-      {statusLabel(sku)}
-    </Badge>
-  ) : (
-    <Badge tone="neutral">{statusLabel(sku)}</Badge>
-  );
-}
-
 export default function ProductsPage() {
   return (
-    <>
-      <PageHero
-        eyebrow="Products"
-        title="Everything to run AI in Nepal."
-        lead="Reserve servers or rent GPUs by the second, slice a card, serve a model as an API and keep the data beside it — with engineers in Kathmandu to help. One account and one rupee invoice for all of it."
-      >
-        {/* What is on offer, read before the button that acts on it. */}
-        <p className="mt-6 max-w-[62ch] text-[14px] leading-relaxed text-ink-300">
-          {EARLY_ACCESS.line} We reply {EARLY_ACCESS.replyTime}.
-        </p>
-        <div className="mt-6 flex flex-wrap items-center gap-x-7 gap-y-4">
-          <ButtonLink
-            href="/contact"
-            variant="primary"
-            size="lg"
-            iconRight={<Icon name="arrow-right" size={17} />}
-          >
-            Get early access
-          </ButtonLink>
-          <Link
-            href="/pricing"
-            className="group inline-flex min-h-11 items-center gap-2 text-[14px] font-medium text-ink-300 transition-colors duration-300 hover:text-ink-100"
-          >
-            How billing works
-            <Icon
-              name="arrow-right"
-              size={14}
-              className="transition-transform duration-normal ease-out group-hover:translate-x-1"
-            />
-          </Link>
+    <Page>
+      {/* Hero: the six glyphs line up as the headline rises. */}
+      <section className="relative pt-[calc(var(--header-h)+clamp(3.5rem,9vw,8rem))] pb-[clamp(3rem,7vw,6rem)]">
+        <div className="container-page flex flex-col gap-10">
+          <div aria-hidden="true" className="flex flex-wrap gap-3 md:gap-4">
+            {PRODUCTS.map((p, i) => (
+              <span
+                key={p.slug}
+                className="grid size-14 place-items-center rounded-card border border-line bg-bg-raised md:size-16"
+                style={{ animation: `cv-rise-in 700ms var(--ease-expo) ${120 + i * 70}ms both` }}
+              >
+                <DotGlyph name={p.glyph} className="size-8 md:size-9" on />
+              </span>
+            ))}
+          </div>
+          <div className="flex max-w-[56rem] flex-col gap-6">
+            <Kicker>Products</Kicker>
+            <h1 className="type-display-2">
+              Six ways to run AI <span className="text-ink-3">in Nepal.</span>
+            </h1>
+            <p className="type-lead measure text-ink-2">
+              Whole GPUs, slices of one, endpoints for your models and storage beside them — all on NVIDIA H200 NVL in the Kathmandu Valley, all billed in rupees.
+            </p>
+            <Status />
+          </div>
         </div>
-      </PageHero>
+      </section>
 
-      <Section>
-        <RevealGroup step={70} className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {PRODUCTS.map((p) => (
-            <Link key={p.slug} href={`/products/${p.slug}`} className="group">
-              <Card
-                padding={28}
-                className="flex h-full flex-col transition-[border-color,transform] duration-normal ease-standard group-hover:-translate-y-px group-hover:border-line-strong"
-              >
-                <span className="inline-flex self-start rounded-lg border border-line bg-carbon-600 p-2.5">
-                  <Icon name={p.icon} size={20} weight="duotone" className="text-ink-100" />
-                </span>
-                <h2 className="mt-4 text-xl font-semibold tracking-tight text-ink-100">
-                  {p.name}
-                </h2>
-                <p className="mt-1 text-[15px] font-medium text-ink-200">{p.tagline}</p>
-                <p className="mt-3 text-[14.5px] leading-relaxed text-ink-400">{p.summary}</p>
-                <div className="mt-auto pt-5">
-                  <div className="flex items-center justify-between gap-4 border-t border-line-subtle pt-4">
-                    <span className="font-mono text-[11.5px] tracking-wide text-ink-500">
-                      {p.meta}
-                    </span>
-                    <span className="inline-flex shrink-0 items-center gap-1.5 text-[13px] font-medium text-ink-300 transition-colors duration-300 group-hover:text-ink-100">
-                      Learn more
-                      <Icon
-                        name="arrow-right"
-                        size={14}
-                        className="transition-transform duration-normal ease-out group-hover:translate-x-1"
-                      />
-                    </span>
-                  </div>
-                </div>
-              </Card>
-            </Link>
-          ))}
-        </RevealGroup>
-      </Section>
-
-      <Section
-        id="compare"
-        eyebrow="Compare"
-        title="Which one fits."
-        lead="Most teams use more than one: a slice to explore, on-demand cards for bursts, reserved servers once the work is steady."
-      >
-        {/* Phones: a card per product, so nothing scrolls sideways. */}
-        <ul className="flex flex-col gap-3 md:hidden">
-          {PRODUCTS.map((p) => (
-            <li key={p.slug} className="rounded-lg border border-line bg-surface-card px-5 py-4">
-              <Link
-                href={`/products/${p.slug}`}
-                className="flex items-center gap-2.5 text-[15px] font-semibold text-ink-100"
-              >
-                <Icon name={p.icon} size={17} className="text-ink-300" />
-                {p.name}
-              </Link>
-              <dl className="mt-3 grid grid-cols-2 gap-x-4 gap-y-2.5">
-                {COMPARE_COLUMNS.map((c) => (
-                  <div key={c.key} className={c.key === "bestFor" ? "col-span-2" : undefined}>
-                    <dt className="text-[12px] text-ink-500">{c.label}</dt>
-                    <dd className="text-[13.5px] text-ink-300">{p.compare[c.key]}</dd>
-                  </div>
-                ))}
-              </dl>
+      <section aria-label="The six products" className="pb-[var(--section-y)]">
+        <ul className="container-page grid gap-4 md:grid-cols-2 lg:grid-cols-3 lg:gap-5">
+          {PRODUCTS.map((p, i) => (
+            <li key={p.slug} data-reveal style={{ "--i": i % 3 } as React.CSSProperties}>
+              <ProductCard product={p} detail />
             </li>
           ))}
         </ul>
+      </section>
 
-        <div className="hidden overflow-x-auto rounded-lg border border-line md:block">
-          <table className="w-full border-collapse">
-            <thead>
-              <tr className="bg-carbon-800/60">
-                {["Product", ...COMPARE_COLUMNS.map((c) => c.label)].map((h) => (
-                  <th key={h} className="cv-label px-4 py-3 text-left text-[10px]">
-                    {h}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {PRODUCTS.map((p) => (
-                <tr key={p.slug} className="border-t border-line-subtle">
-                  <th scope="row" className="px-4 py-3.5 text-left">
-                    <Link
-                      href={`/products/${p.slug}`}
-                      className="inline-flex items-center gap-2.5 text-sm font-semibold text-ink-100 hover:underline"
+      <section id="compare" aria-labelledby="compare-title" className="section-y scroll-mt-[var(--header-h)]">
+        <div className="container-page">
+          <SectionHead
+            id="compare-title"
+            kicker="Compare"
+            title="Which one fits."
+            continuation="Billing, commitment, and what each is for."
+          />
+          <div className="mt-12 overflow-x-auto rounded-panel border border-line [scrollbar-width:thin]">
+            <table className="w-full min-w-[44rem] border-collapse text-left">
+              <caption className="sr-only">The six products compared by billing, commitment and what they are best for</caption>
+              <thead>
+                <tr className="border-b border-line bg-bg-sunken">
+                  {["Product", "Billing", "Commitment", "Best for"].map((h, i) => (
+                    <th
+                      key={h}
+                      scope="col"
+                      className={`type-kicker px-5 py-4 font-medium text-ink-3 ${i === 0 ? "sticky left-0 bg-bg-sunken" : ""}`}
                     >
-                      <Icon name={p.icon} size={16} className="text-ink-300" />
-                      {p.name}
-                    </Link>
-                  </th>
-                  {COMPARE_COLUMNS.map((c) => (
-                    <td key={c.key} className="px-4 py-3.5 text-[13.5px] text-ink-400">
-                      {p.compare[c.key]}
-                    </td>
-                  ))}
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </Section>
-
-      <Section
-        id="hardware"
-        eyebrow="Hardware"
-        title="What it all runs on."
-        lead={`${SOON} — all coming soon.`}
-      >
-        {/* Phones: a card per GPU, so nothing scrolls sideways. */}
-        <ul className="flex flex-col gap-3 md:hidden">
-          {GPU_SKUS.map((s) => (
-            <li key={s.id} className="rounded-lg border border-line bg-surface-card px-5 py-4">
-              <div className="flex items-start justify-between gap-3">
-                <p className="text-[15px] font-semibold text-ink-100">{s.name}</p>
-                <StatusBadge sku={s} />
-              </div>
-              <dl className="mt-3 grid grid-cols-2 gap-x-4 gap-y-2.5">
-                <div>
-                  <dt className="text-[12px] text-ink-500">Memory</dt>
-                  <dd className="font-mono text-[13px] text-ink-200">
-                    {s.memoryGb} GB {s.memoryType}
-                  </dd>
-                </div>
-                <div>
-                  <dt className="text-[12px] text-ink-500">Memory speed</dt>
-                  <dd className="font-mono text-[13px] text-ink-200">{s.bandwidth}</dd>
-                </div>
-                <div>
-                  <dt className="text-[12px] text-ink-500">Generation</dt>
-                  <dd className="font-mono text-[13px] text-ink-300">{s.architecture}</dd>
-                </div>
-                <div>
-                  <dt className="text-[12px] text-ink-500">Ways to rent</dt>
-                  <dd className="text-[13.5px] text-ink-300">{waysToRent(s)}</dd>
-                </div>
-              </dl>
-            </li>
-          ))}
-        </ul>
-
-        <div className="hidden overflow-x-auto rounded-lg border border-line md:block">
-          <table className="w-full border-collapse">
-            <thead>
-              <tr className="bg-carbon-800/60">
-                {["GPU", "Generation", "Memory", "Memory speed", "Ways to rent", "Status"].map(
-                  (h) => (
-                    <th key={h} className="cv-label px-4 py-3 text-left text-[10px]">
                       {h}
                     </th>
-                  ),
-                )}
-              </tr>
-            </thead>
-            <tbody>
-              {GPU_SKUS.map((s) => (
-                <tr key={s.id} className="border-t border-line-subtle">
-                  <th
-                    scope="row"
-                    className="px-4 py-3.5 text-left text-sm font-semibold text-ink-100"
-                  >
-                    {s.name}
-                  </th>
-                  <td className="px-4 py-3.5 font-mono text-[13px] text-ink-400">
-                    {s.architecture}
-                  </td>
-                  <td className="px-4 py-3.5 font-mono text-[13px] text-ink-300">
-                    {s.memoryGb} GB {s.memoryType}
-                  </td>
-                  <td className="px-4 py-3.5 font-mono text-[13px] text-ink-400">{s.bandwidth}</td>
-                  <td className="px-4 py-3.5 text-[13.5px] text-ink-400">{waysToRent(s)}</td>
-                  <td className="px-4 py-3.5">
-                    <StatusBadge sku={s} />
-                  </td>
+                  ))}
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {PRODUCTS.map((p) => (
+                  <tr key={p.slug} className="border-b border-line last:border-b-0">
+                    <th scope="row" className="sticky left-0 bg-bg px-5 py-5 align-top">
+                      <span className="type-body flex items-center gap-3 font-medium text-ink">
+                        <DotGlyph name={p.glyph} className="size-6" />
+                        {p.name}
+                      </span>
+                    </th>
+                    <td className="type-small px-5 py-5 align-top text-ink-2">{p.billing}</td>
+                    <td className="type-small px-5 py-5 align-top text-ink-2">{p.commitment}</td>
+                    <td className="type-small px-5 py-5 align-top text-ink-2">{p.bestFor}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
-      </Section>
-    </>
+      </section>
+
+      <section aria-labelledby="fit-title" className="section-y">
+        <div className="container-page flex flex-col gap-12">
+          <SectionHead id="fit-title" kicker="Not sure?" title="Two questions." continuation="One suggestion." />
+          <FitFinder />
+        </div>
+      </section>
+
+      <Cta
+        title="Tell us what you want to run."
+        continuation="We'll plan it with you."
+        action={{ href: "/contact?intent=workloads", label: "Request access" }}
+        secondary={{ href: "/hardware", label: "The machines" }}
+      />
+    </Page>
   );
 }

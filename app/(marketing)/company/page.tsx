@@ -1,377 +1,120 @@
-import Link from "next/link";
-import { Badge, ButtonLink, Card, Icon, StatBlock } from "@/components/ui";
-import { PageHero, Section } from "@/components/marketing/page-hero";
-import { Reveal, RevealGroup } from "@/components/fx/reveal";
-import { JsonLd, breadcrumbJsonLd, faqJsonLd } from "@/components/seo/json-ld";
-import { pageMetadata } from "@/lib/seo";
-import { FaqList } from "@/components/marketing/faq-list";
-import { EARLY_ACCESS, FACTS } from "@/lib/availability";
-import { ORG } from "@/lib/site";
+import { Brandmark } from "@/components/brand/logo";
+import { Page } from "@/components/motion/page";
+import { Cta } from "@/components/system/cta";
+import { Kicker } from "@/components/system/kicker";
+import { SectionHead } from "@/components/system/section";
+import { TextLink } from "@/components/system/text-link";
+import { COMPANY } from "@/copy/en/company";
 import { openJobs } from "@/lib/content/jobs";
-import { PRODUCTS } from "@/lib/products";
-import type { IconName } from "@/components/ui";
+import { pageMetadata } from "@/lib/seo";
 
 export const metadata = pageMetadata({
-  title: "About CoreValley — Nepal's Sovereign AI Cloud",
-  description:
-    "CoreValley runs NVIDIA H200 GPUs in a hydro-powered Kathmandu datacenter, so Nepali teams can build AI without foreign clouds, foreign currency or foreign support hours.",
+  title: COMPANY.meta.title,
+  description: COMPANY.meta.description,
   path: "/company",
 });
 
-/* Copy rule for this page: every claim is something the public site states
-   or a customer can verify. Availability, latency and power come from
-   lib/availability.ts, so this page cannot drift from the home page. */
-
-const PRINCIPLES: { icon: IconName; title: string; body: string }[] = [
-  {
-    icon: "lock",
-    title: "Sovereign by default",
-    body: "Your infrastructure, your data and your support stay in Nepal. Local compliance is a design requirement, not an add-on for enterprise deals.",
-  },
-  {
-    icon: "terminal",
-    title: "Practical over theoretical",
-    body: "We optimise for real work: fast setup, firm quotes in rupees, and engineers in Kathmandu who answer in Nepal time.",
-  },
-  {
-    icon: "university",
-    title: "Accessible to researchers",
-    body: "University labs and student projects should reach serious GPUs without an enterprise procurement cycle. Enterprise early access comes first; research access is next.",
-  },
-  {
-    icon: "check-circle",
-    title: "Honest about constraints",
-    body: "We say what we will actually run. First up is the NVIDIA H200. Where a GPU has not landed or a control is still in progress, we say so.",
-  },
-];
-
-const AUDIENCES: {
-  icon: IconName;
-  title: string;
-  body: string;
-  status: { tone: "hydro" | "neutral"; label: string };
-}[] = [
-  {
-    icon: "building",
-    title: "Enterprises and public sector",
-    body: "Isolated environments, data that stays in the country and engineers in Kathmandu — for banks, hospitals, government and any regulated workload that cannot cross a border.",
-    status: { tone: "hydro", label: "Early-access list · H200" },
-  },
-  {
-    icon: "university",
-    title: "Universities and researchers",
-    body: "Managed notebooks so students and faculty can work with modern models without running a cluster or opening a foreign cloud account.",
-    status: { tone: "neutral", label: "Coming soon" },
-  },
-  {
-    icon: "launch",
-    title: "Startups and ML teams",
-    body: "On-demand GPUs with root access, the freedom to install what you need, and inferencing when you ship.",
-    status: { tone: "neutral", label: "Coming soon" },
-  },
-];
-
-const FAQ = [
-  {
-    q: "Where is CoreValley hosted?",
-    a: "In a hydro-powered datacenter in the Kathmandu Valley, Nepal — the region we call np-ktm-1. Compute and storage stay in the country. Nothing is replicated abroad.",
-  },
-  {
-    q: "Which GPUs do you run?",
-    a: "The NVIDIA H200, with 141 GB of memory, is coming soon through enterprise early access — as a whole card or as a slice. The RTX PRO 6000 Blackwell follows, with the L40S after it.",
-  },
-  {
-    q: "How do you bill?",
-    a: "In Nepali rupees. Usage is metered per second and invoiced monthly, and GPUs can be reserved by the month. Pay by eSewa, Khalti, bank transfer or corporate invoice on net terms. Rates are not published yet, so every request gets a firm quote within one working day.",
-  },
-  {
-    q: "Are you open to new customers?",
-    a: "Yes. Enterprises can join the early-access list for NVIDIA H200 now. Tell us the model, the dataset size and the GPU hours you expect, and we size capacity with you before you commit. Universities, startups and other teams can join the list today — access for more teams is coming soon.",
-  },
-  {
-    q: "What does early access mean?",
-    a: "The H200 platform is coming online, and we will onboard enterprise teams one at a time. You tell us the workload, we send a capacity plan and a firm rupee quote within one working day, and our team sets up your project with you. More GPUs, and access for more teams, are coming soon.",
-  },
-  {
-    q: "Why does it matter that the GPUs are in Kathmandu?",
-    a: "Two reasons. Your data never has to leave the country, and latency inside Kathmandu is under 5 ms — so an app serving users in Nepal does not wait on a round trip overseas.",
-  },
-  {
-    q: "What powers the datacenter?",
-    a: "Hydropower. Our Kathmandu datacenter runs on Nepal's hydroelectricity, so your compute is low-carbon and its power price is not tied to a gas market on another continent.",
-  },
-  {
-    q: "How do I reach the team?",
-    a: "Email info@corevalley.ai or use the contact form. We reply within one working day, in Nepal time.",
-  },
-];
-
 export default function CompanyPage() {
-  const openRoles = openJobs().length;
+  const c = COMPANY;
+  const roles = openJobs().length;
+
   return (
-    <>
-      <JsonLd
-        data={[
-          faqJsonLd(FAQ),
-          breadcrumbJsonLd([{ name: "Company", path: "/company" }]),
-        ]}
-      />
-
-      <PageHero
-        eyebrow="Company"
-        title="Nepal's AI infrastructure, built for Nepal."
-        lead="We exist so that researchers, startups and enterprises can build and run AI without foreign clouds, foreign currency or foreign support hours."
-      >
-        <p className="mt-8 flex items-center gap-3 font-mono text-[11.5px] tracking-label whitespace-nowrap text-ink-300 uppercase">
-          <span aria-hidden="true" className="h-px w-8 shrink-0 bg-hydro" />
-          <span>
-            <span className="text-hydro light:text-hydro-dark">{EARLY_ACCESS.pill}</span> ·{" "}
-            <span className="hidden sm:inline">enterprise&nbsp;</span>early access
-          </span>
-        </p>
-      </PageHero>
-
-      <Section>
-        <div className="grid gap-12 lg:grid-cols-[1.15fr_0.85fr] lg:items-start">
-          <div>
-            <h2 className="text-2xl font-semibold tracking-tight text-ink-100">
-              Our mission
-            </h2>
-            <div className="mt-5 space-y-5 leading-relaxed text-ink-300">
-              <p>
-                CoreValley is building GPU infrastructure in Nepal, so Nepali
-                teams can train models, fine-tune LLMs, run inference and ship
-                AI products without sending data abroad or paying in dollars.
-              </p>
-              <p>
-                Until now, serious AI work in Nepal has meant three
-                compromises: data shipped overseas, invoices in USD, and
-                support that answers while you sleep. That does not work for
-                universities, for regulated industries, or for the next
-                generation of Nepali AI companies.
-              </p>
-              <p>
-                So we built the alternative: the NVIDIA H200, the same class of
-                GPU the world&rsquo;s AI labs train on, in a hydro-powered
-                datacenter in Kathmandu. Billed in rupees, and run by engineers
-                who understand both the technology and the local context.
-              </p>
-            </div>
+    <Page>
+      <section className="relative pt-[calc(var(--header-h)+clamp(3rem,8vw,7rem))] pb-[clamp(3rem,7vw,6rem)]">
+        <div className="container-page grid items-end gap-12 lg:grid-cols-[1.4fr_1fr]">
+          <div className="flex flex-col gap-6">
+            <Kicker>{c.hero.kicker}</Kicker>
+            <h1 className="type-display-2 max-w-[14ch]">
+              {c.hero.title} <span className="text-ink-3">{c.hero.continuation}</span>
+            </h1>
+            <p className="type-lead measure text-ink-2">{c.hero.lead}</p>
           </div>
-
-          <Card padding={32}>
-            <div className="grid grid-cols-2 gap-x-6 gap-y-9">
-              <StatBlock value="H200" label="coming soon" size="sm" accent />
-              <StatBlock value={FACTS.latency} label={FACTS.latencyLabel} size="sm" />
-              <StatBlock value="NPR" label="billed in rupees" size="sm" />
-              <StatBlock value="100%" label="of your data stays in nepal" size="sm" />
-            </div>
-          </Card>
+          <div aria-hidden="true" className="hidden justify-end lg:flex">
+            <Brandmark className="w-64 opacity-90" />
+          </div>
         </div>
-      </Section>
+      </section>
 
-      <Section
-        eyebrow="What we run"
-        title="Six products, one platform."
-        lead="Reserved and on-demand GPUs, hardware slices, inferencing, storage and engineering help. All on NVIDIA H200s in Kathmandu, coming soon, with Blackwell after them — one account, one rupee invoice."
-        alt
-      >
-        <RevealGroup step={80} className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {PRODUCTS.map((o) => (
-            <Card key={o.slug} padding={26} className="flex h-full flex-col">
-              <Icon name={o.icon} size={21} weight="duotone" className="text-ink-100" />
-              <h3 className="mt-4 text-lg font-semibold tracking-tight text-ink-100">
-                {o.name}
-              </h3>
-              <p className="mt-3 flex-1 text-sm leading-relaxed text-ink-400">{o.tagline}</p>
-              <Link
-                href={`/products/${o.slug}`}
-                className="mt-5 inline-flex min-h-11 items-center gap-1.5 font-mono text-[12.5px] tracking-wide text-hydro transition-colors duration-normal hover:text-hydro-300"
-              >
-                See {o.name}
-                <Icon name="arrow-right" size={13} />
-              </Link>
-            </Card>
-          ))}
-        </RevealGroup>
-
-        <Reveal>
-          <dl className="mt-10 grid gap-x-10 gap-y-6 border-t border-line-subtle pt-8 sm:grid-cols-2 lg:grid-cols-4">
-            <div>
-              <dt className="cv-label text-[10px]">Hardware</dt>
-              <dd className="mt-2 text-sm leading-relaxed text-ink-300">
-                NVIDIA H200, coming soon. RTX PRO 6000 Blackwell after it;
-                L40S after that.
-              </dd>
-            </div>
-            <div>
-              <dt className="cv-label text-[10px]">Software</dt>
-              <dd className="mt-2 text-sm leading-relaxed text-ink-300">
-                Ready from first boot: CUDA, PyTorch, TensorFlow, Jupyter,
-                vLLM and DeepSpeed.
-              </dd>
-            </div>
-            <div>
-              <dt className="cv-label text-[10px]">Billing</dt>
-              <dd className="mt-2 text-sm leading-relaxed text-ink-300">
-                In rupees, metered per second. eSewa, Khalti, bank transfer or
-                corporate invoice.
-              </dd>
-            </div>
-            <div>
-              <dt className="cv-label text-[10px]">Power and latency</dt>
-              <dd className="mt-2 text-sm leading-relaxed text-ink-300">
-                A hydro-powered datacenter in Kathmandu, with{" "}
-                {FACTS.latencyLong.replace(/(\d) /, "$1 ")} latency inside
-                the city.
-              </dd>
-            </div>
-          </dl>
-        </Reveal>
-      </Section>
-
-      <Section eyebrow="Principles" title="What guides us.">
-        <RevealGroup step={80} className="grid gap-4 md:grid-cols-2">
-          {PRINCIPLES.map((p) => (
-            <Card key={p.title} padding={26} className="h-full">
-              <Icon
-                name={p.icon}
-                size={21}
-                weight="duotone"
-                className="text-ink-100"
-              />
-              <h3 className="mt-4 text-lg font-semibold tracking-tight text-ink-100">
-                {p.title}
-              </h3>
-              <p className="mt-2 text-sm leading-relaxed text-ink-400">
-                {p.body}
+      {/* Why we exist: three paragraphs, set large. */}
+      <section aria-labelledby="why-title" className="section-y">
+        <div className="container-page grid gap-10 lg:grid-cols-[1fr_2fr] lg:gap-20">
+          <h2 id="why-title" className="type-kicker text-ink-3">
+            {c.why.kicker}
+          </h2>
+          <div className="flex flex-col gap-8">
+            {c.why.paragraphs.map((p, i) => (
+              <p key={i} className="type-title-3 max-w-[34ch] font-medium text-ink" data-reveal style={{ "--i": i } as React.CSSProperties}>
+                {p}
               </p>
-            </Card>
-          ))}
-        </RevealGroup>
-      </Section>
-
-      {/* Three equal cards in a row was the same shape as the section above
-          it and the section below it. These are three audiences, not three
-          products — so they are a list with hanging icons and dividing rules,
-          which also lets each entry be as long as it needs to be. Each says
-          plainly whether it can get in today. */}
-      <Section
-        eyebrow="Who we serve"
-        title="Who we build for."
-        lead={EARLY_ACCESS.line}
-        alt
-      >
-        <ul className="flex flex-col">
-          {AUDIENCES.map((a, i) => (
-            <Reveal as="li" key={a.title} delay={i * 80}>
-              <div className="grid gap-5 border-t border-line-subtle py-9 md:grid-cols-[auto_1fr_1.4fr] md:gap-10">
-                <span className="inline-flex size-11 shrink-0 items-center justify-center rounded-lg border border-line bg-carbon-600">
-                  <Icon
-                    name={a.icon}
-                    size={20}
-                    weight="duotone"
-                    className="text-ink-100"
-                  />
-                </span>
-                <div className="flex flex-col items-start gap-2.5 self-center">
-                  <h3 className="text-lg font-semibold tracking-tight text-ink-100">
-                    {a.title}
-                  </h3>
-                  <Badge tone={a.status.tone}>{a.status.label}</Badge>
-                </div>
-                <p className="max-w-[56ch] self-center leading-relaxed text-ink-400">
-                  {a.body}
-                </p>
-              </div>
-            </Reveal>
-          ))}
-        </ul>
-      </Section>
-
-      <Section eyebrow="Questions" title="Frequently asked.">
-        <FaqList items={FAQ} />
-      </Section>
-
-      <Section eyebrow="Contact" title="Where to find us.">
-        <Reveal>
-          <dl className="grid gap-x-10 gap-y-8 border-t border-line-subtle pt-10 sm:grid-cols-2 lg:grid-cols-4">
-            <div>
-              <dt className="cv-label text-[10px]">Location</dt>
-              <dd className="mt-3 text-ink-200">Kathmandu Valley, Nepal</dd>
-              <dd className="mt-1 font-mono text-xs text-ink-500">
-                np-ktm-1 · hydro-powered
-              </dd>
-            </div>
-            <div>
-              <dt className="cv-label text-[10px]">Email</dt>
-              <dd className="mt-3">
-                <a
-                  href={`mailto:${ORG.email}`}
-                  className="text-hydro underline decoration-hydro/40 underline-offset-4 transition-colors duration-normal hover:text-hydro-300"
-                >
-                  {ORG.email}
-                </a>
-              </dd>
-              <dd className="mt-1 font-mono text-xs text-ink-500">
-                replies within one working day
-              </dd>
-            </div>
-            <div>
-              <dt className="cv-label text-[10px]">Careers</dt>
-              <dd className="mt-3">
-                <Link
-                  href="/jobs/"
-                  className="inline-flex items-center gap-1.5 text-hydro underline decoration-hydro/40 underline-offset-4 transition-colors duration-normal hover:text-hydro-300"
-                >
-                  {openRoles ? `${openRoles} open ${openRoles === 1 ? "role" : "roles"}` : "Careers"}
-                  <Icon name="arrow-right" size={13} className="text-ink-500" />
-                </Link>
-              </dd>
-              <dd className="mt-1 font-mono text-xs text-ink-500">
-                hiring in kathmandu
-              </dd>
-            </div>
-            <div>
-              <dt className="cv-label text-[10px]">Elsewhere</dt>
-              <dd className="mt-3 flex flex-col gap-2">
-                <a
-                  href={ORG.linkedin}
-                  target="_blank"
-                  rel="noreferrer noopener"
-                  className="inline-flex items-center gap-1.5 text-ink-200 transition-colors duration-normal hover:text-hydro"
-                >
-                  LinkedIn
-                  <Icon name="external" size={13} className="text-ink-500" />
-                </a>
-                <a
-                  href={ORG.github}
-                  target="_blank"
-                  rel="noreferrer noopener"
-                  className="inline-flex items-center gap-1.5 text-ink-200 transition-colors duration-normal hover:text-hydro"
-                >
-                  GitHub
-                  <Icon name="external" size={13} className="text-ink-500" />
-                </a>
-              </dd>
-            </div>
-          </dl>
-        </Reveal>
-
-        <div className="mt-10 flex flex-col items-center gap-3 text-center">
-          <ButtonLink
-            href="/contact"
-            variant="primary"
-            size="lg"
-            iconRight={<Icon name="arrow-right" size={17} />}
-          >
-            Get early access
-          </ButtonLink>
-          <p className="max-w-[46ch] text-[13.5px] leading-relaxed text-ink-400">
-            {EARLY_ACCESS.promise}
-          </p>
+            ))}
+          </div>
         </div>
-      </Section>
-    </>
+      </section>
+
+      <section aria-labelledby="principles-title" className="section-y">
+        <div className="container-page">
+          <SectionHead id="principles-title" kicker={c.principles.kicker} title={c.principles.title} />
+          <ol className="mt-12 grid gap-x-10 gap-y-10 md:grid-cols-2 lg:grid-cols-3">
+            {c.principles.items.map((p, i) => (
+              <li key={p.title} className="flex flex-col gap-3 border-t border-line pt-6" data-reveal style={{ "--i": i % 3 } as React.CSSProperties}>
+                <span className="type-kicker text-ink-3">{String(i + 1).padStart(2, "0")}</span>
+                <h3 className="type-title-2">{p.title}</h3>
+                <p className="type-body text-ink-2">{p.body}</p>
+              </li>
+            ))}
+          </ol>
+        </div>
+      </section>
+
+      <section aria-labelledby="vision-title" className="section-y">
+        <div className="container-page grid gap-12 lg:grid-cols-[1fr_1.5fr] lg:gap-20">
+          <SectionHead id="vision-title" kicker={c.vision.kicker} title={c.vision.title} continuation={c.vision.continuation} lead={c.vision.lead} />
+          <ol className="relative flex flex-col gap-10 border-l border-dashed border-line-strong pl-8">
+            {c.vision.items.map((v, i) => (
+              <li key={v.title} className="relative flex flex-col gap-2" data-reveal style={{ "--i": i } as React.CSSProperties}>
+                <span aria-hidden="true" className="absolute top-1.5 -left-[2.4rem] size-4 rounded-full border-2 border-dashed border-line-strong bg-bg" />
+                <h3 className="type-title-3">{v.title}</h3>
+                <p className="type-body text-ink-2">{v.body}</p>
+              </li>
+            ))}
+          </ol>
+        </div>
+      </section>
+
+      <section aria-labelledby="press-title" className="section-y">
+        <div className="container-page grid gap-12 lg:grid-cols-2 lg:gap-20">
+          <div className="flex flex-col gap-6">
+            <SectionHead id="press-title" kicker={c.press.kicker} title={c.press.title} size="title-2" />
+            <dl className="flex flex-col">
+              {c.press.lines.map((l) => (
+                <div key={l.label} className="grid gap-1 border-t border-line py-4 sm:grid-cols-[8rem_1fr]">
+                  <dt className="type-kicker self-center text-ink-3">{l.label}</dt>
+                  <dd className="type-body text-ink">
+                    {"href" in l && l.href ? (
+                      <a href={l.href} className="underline decoration-line-strong underline-offset-4 hover:decoration-hydro">
+                        {l.value}
+                      </a>
+                    ) : (
+                      l.value
+                    )}
+                  </dd>
+                </div>
+              ))}
+            </dl>
+          </div>
+          <div className="flex flex-col gap-6">
+            <SectionHead kicker={c.careers.kicker} title={c.careers.title} size="title-2" />
+            <p className="type-body text-ink-2">
+              {roles > 0 ? `${roles} open ${roles === 1 ? "role" : "roles"} right now.` : "No open roles right now — general applications are always welcome."}
+            </p>
+            <TextLink href="/jobs" arrow>
+              See open roles
+            </TextLink>
+          </div>
+        </div>
+      </section>
+
+      <Cta title="Come and see what we're building." action={{ href: "/contact", label: "Get in touch" }} secondary={{ href: "/blog", label: "Read the blog" }} />
+    </Page>
   );
 }
