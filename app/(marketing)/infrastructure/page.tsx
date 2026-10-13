@@ -1,4 +1,4 @@
-import { ContourCover } from "@/components/art/contour-cover";
+import { ValleyPortrait } from "@/components/art/valley-portrait";
 import { Journey } from "@/components/home/journey";
 import { RimDrag } from "@/components/infrastructure/rim-drag";
 import { Page } from "@/components/motion/page";
@@ -33,20 +33,18 @@ export default function InfrastructurePage() {
   return (
     <Page>
       {/* Hero */}
-      <section className="relative overflow-clip pt-[calc(var(--header-h)+clamp(3rem,8vw,7rem))] pb-[clamp(3rem,7vw,6rem)]">
-        <div
-          aria-hidden="true"
-          className="absolute inset-0 -z-10 opacity-60 [mask-image:linear-gradient(to_bottom,transparent,black_30%,black_70%,transparent)]"
-        >
-          <ContourCover seed="kathmandu-valley" className="h-full w-full bg-transparent" />
-        </div>
-        <div className="container-page">
-          <div className="flex max-w-[60rem] flex-col gap-6">
+      <section className="relative pt-[calc(var(--header-h)+clamp(3rem,8vw,7rem))] pb-[clamp(3rem,7vw,6rem)]">
+        <div className="container-page grid items-center gap-12 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)] lg:gap-16">
+          <div className="flex flex-col gap-6">
             <Kicker>{p.hero.kicker}</Kicker>
             <h1 className="type-display-1">{p.hero.title}</h1>
             <p className="type-lead measure text-ink-2">{p.hero.lead}</p>
             <Status id="region" />
           </div>
+          <figure className="flex flex-col gap-3">
+            <ValleyPortrait className="aspect-[640/545] w-full rounded-panel border border-line" />
+            <figcaption className="type-caption text-ink-3">{p.hero.portrait}</figcaption>
+          </figure>
         </div>
       </section>
 

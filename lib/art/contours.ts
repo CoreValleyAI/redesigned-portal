@@ -1,11 +1,17 @@
 /**
- * Generative "contour prints" (S14): a small topographic map seeded by a
- * slug — every post and use case gets its own place in the valley, the same
- * on every build. A noise heightfield is contoured with marching squares;
- * the segments are joined into continuous lines (so a line can be traced
- * end to end, like a plotter drawing it) and smoothed, and returned as SVG
- * path data, plus a sprinkling of dots on the high ground. Pure and
- * deterministic: it runs on the server and in the browser alike.
+ * Contour prints (S14): topographic line art, as SVG path data.
+ *
+ *  · contourArt(seed)  a small generated map seeded by a slug: every post
+ *                      and use case gets its own place in the valley, the
+ *                      same on every build. Pure and deterministic: it runs
+ *                      on the server and in the browser alike.
+ *  · isoLines(field)   the contour lines of any height field at one level,
+ *                      used for the generated maps and for the real
+ *                      Kathmandu Valley (lib/art/valley.ts).
+ *
+ * Marching squares finds the crossings; the segments are joined into
+ * continuous lines (so a line can be traced end to end, like a plotter
+ * drawing it) and smoothed.
  */
 
 export interface ContourArt {
@@ -17,6 +23,8 @@ export interface ContourArt {
   /** The level drawn in the accent colour. */
   accent: number;
   dots: { x: number; y: number; r: number }[];
+  /** Named places, drawn as accent dots with a label (the real valley). */
+  markers?: { x: number; y: number; label: string }[];
 }
 
 function hashString(s: string): number {
@@ -58,12 +66,14 @@ function makeNoise(rnd: () => number, size = 64) {
   };
 }
 
+type Pt = [number, number];
+
 /**
  * Join segments into lines. Segment n runs from point 2n to 2n + 1; its
  * ends are named by the cell edge they lie on, and an edge is shared by at
  * most two segments, so following names walks each line from end to end.
  */
-function chain(ends: string[], pts: [number, number][]): [number, number][][] {
+function chain(ends: string[], pts: Pt[]): Pt[][] {
   const at = new Map<string, number[]>();
   ends.forEach((k, i) => {
     const list = at.get(k);
@@ -71,7 +81,7 @@ function chain(ends: string[], pts: [number, number][]): [number, number][][] {
     else at.set(k, [i]);
   });
   const used = new Uint8Array(ends.length / 2);
-  const lines: [number, number][][] = [];
+  const lines: Pt[][] = [];
   // From end `i` of a segment, the other end of the segment sharing its edge.
   const next = (i: number) => {
     const k = ends[i]!;
@@ -81,31 +91,47 @@ function chain(ends: string[], pts: [number, number][]): [number, number][][] {
   for (let s = 0; s < used.length; s++) {
     if (used[s]) continue;
     used[s] = 1;
-    const line: [number, number][] = [pts[2 * s]!, pts[2 * s + 1]!];
-    // Grow forward from the segment's second end, then backward from its first.
-    for (const [from, push] of [
-      [2 * s + 1, (p: [number, number]) => line.push(p)],
-      [2 * s, (p: [number, number]) => line.unshift(p)],
+    // Grow forward from the segment's second end, then backward from its
+    // first (into a list of its own, reversed at the end).
+    const fwd: Pt[] = [pts[2 * s]!, pts[2 * s + 1]!];
+    const back: Pt[] = [];
+    for (const [from, out] of [
+      [2 * s + 1, fwd],
+      [2 * s, back],
     ] as const) {
       let j = next(from);
       while (j >= 0) {
         used[j >> 1] = 1;
         const other = j ^ 1;
-        push(pts[other]!);
+        out.push(pts[other]!);
         j = next(other);
       }
     }
+    const line = back.reverse().concat(fwd);
     if (line.length >= 3) lines.push(line);
   }
   return lines;
 }
 
-/** Two rounds of Chaikin corner cutting: the cell grid's kinks become curves. */
-function smooth(line: [number, number][]): [number, number][] {
+/** Drop points closer than `min` to the last one kept (ends stay). */
+function thin(line: Pt[], min: number): Pt[] {
+  if (min <= 0 || line.length < 4) return line;
+  const out: Pt[] = [line[0]!];
+  for (let i = 1; i < line.length - 1; i++) {
+    const [x, y] = line[i]!;
+    const [px, py] = out.at(-1)!;
+    if (Math.hypot(x - px, y - py) >= min) out.push(line[i]!);
+  }
+  out.push(line.at(-1)!);
+  return out;
+}
+
+/** Rounds of Chaikin corner cutting: the cell grid's kinks become curves. */
+function smooth(line: Pt[], rounds: number): Pt[] {
   let out = line;
-  for (let r = 0; r < 2; r++) {
+  for (let r = 0; r < rounds; r++) {
     const closed = out.length > 3 && Math.hypot(out[0]![0] - out.at(-1)![0], out[0]![1] - out.at(-1)![1]) < 0.01;
-    const next: [number, number][] = closed ? [] : [out[0]!];
+    const next: Pt[] = closed ? [] : [out[0]!];
     for (let i = 0; i < out.length - 1; i++) {
       const [ax, ay] = out[i]!;
       const [bx, by] = out[i + 1]!;
@@ -118,9 +144,89 @@ function smooth(line: [number, number][]): [number, number][] {
   return out;
 }
 
-function toPath(line: [number, number][]): string {
+function toPath(line: Pt[]): string {
   const f = (v: number) => String(Math.round(v * 10) / 10);
   return line.map(([x, y], i) => `${i ? "L" : "M"}${f(x)} ${f(y)}`).join("");
+}
+
+/**
+ * The contour lines of a (cols + 1) × (rows + 1) height field at one level,
+ * drawn into W × H, as SVG path data: one path per continuous line.
+ * `thinTo` drops vertices closer than that (in W × H units) before
+ * smoothing; `rounds` is the number of smoothing passes.
+ */
+export function isoLines(
+  field: Float32Array,
+  cols: number,
+  rows: number,
+  iso: number,
+  W: number,
+  H: number,
+  { thinTo = 0, rounds = 2 }: { thinTo?: number; rounds?: number } = {},
+): string[] {
+  const sx = W / cols;
+  const sy = H / rows;
+  // Marching squares. Each crossing lies on one cell edge, named so that
+  // the two cells sharing an edge name it the same: that is how segments
+  // are joined into lines.
+  const ends: string[] = [];
+  const pts: Pt[] = [];
+  const lerp = (p: number, q: number) => (iso - p) / (q - p);
+  for (let j = 0; j < rows; j++) {
+    for (let i = 0; i < cols; i++) {
+      const a = field[j * (cols + 1) + i]!;
+      const b = field[j * (cols + 1) + i + 1]!;
+      const c = field[(j + 1) * (cols + 1) + i + 1]!;
+      const e = field[(j + 1) * (cols + 1) + i]!;
+      const code = (a > iso ? 8 : 0) | (b > iso ? 4 : 0) | (c > iso ? 2 : 0) | (e > iso ? 1 : 0);
+      if (code === 0 || code === 15) continue;
+      const x = i * sx;
+      const y = j * sy;
+      const top = { k: `h${i},${j}`, p: [x + sx * lerp(a, b), y] as Pt };
+      const right = { k: `v${i + 1},${j}`, p: [x + sx, y + sy * lerp(b, c)] as Pt };
+      const bottom = { k: `h${i},${j + 1}`, p: [x + sx * lerp(e, c), y + sy] as Pt };
+      const left = { k: `v${i},${j}`, p: [x, y + sy * lerp(a, e)] as Pt };
+      const seg = (u: typeof top, v: typeof top) => {
+        ends.push(u.k, v.k);
+        pts.push(u.p, v.p);
+      };
+      switch (code) {
+        case 1:
+        case 14:
+          seg(left, bottom);
+          break;
+        case 2:
+        case 13:
+          seg(bottom, right);
+          break;
+        case 3:
+        case 12:
+          seg(left, right);
+          break;
+        case 4:
+        case 11:
+          seg(top, right);
+          break;
+        case 5:
+          seg(left, top);
+          seg(bottom, right);
+          break;
+        case 6:
+        case 9:
+          seg(top, bottom);
+          break;
+        case 7:
+        case 8:
+          seg(left, top);
+          break;
+        case 10:
+          seg(top, right);
+          seg(left, bottom);
+          break;
+      }
+    }
+  }
+  return chain(ends, pts).map((line) => toPath(smooth(thin(line, thinTo), rounds)));
 }
 
 export function contourArt(seed: string, opts: { cols?: number; rows?: number; levels?: number } = {}): ContourArt {
@@ -161,80 +267,17 @@ export function contourArt(seed: string, opts: { cols?: number; rows?: number; l
     }
   }
 
-  const sx = W / cols;
-  const sy = H / rows;
-  const levels: { d: string; lines: string[]; t: number }[] = [];
+  const levels: ContourArt["levels"] = [];
   for (let L = 1; L <= nLevels; L++) {
     const t = L / (nLevels + 1);
-    const iso = lo + (hi - lo) * t;
-
-    // Marching squares. Each crossing lies on one cell edge, named so that
-    // the two cells sharing an edge name it the same: that is how segments
-    // are joined into lines below.
-    const ends: string[] = [];
-    const pts: [number, number][] = [];
-    const lerp = (p: number, q: number) => (iso - p) / (q - p);
-    for (let j = 0; j < rows; j++) {
-      for (let i = 0; i < cols; i++) {
-        const a = field[j * (cols + 1) + i]!;
-        const b = field[j * (cols + 1) + i + 1]!;
-        const c = field[(j + 1) * (cols + 1) + i + 1]!;
-        const e = field[(j + 1) * (cols + 1) + i]!;
-        const code = (a > iso ? 8 : 0) | (b > iso ? 4 : 0) | (c > iso ? 2 : 0) | (e > iso ? 1 : 0);
-        if (code === 0 || code === 15) continue;
-        const x = i * sx;
-        const y = j * sy;
-        const top = { k: `h${i},${j}`, p: [x + sx * lerp(a, b), y] as [number, number] };
-        const right = { k: `v${i + 1},${j}`, p: [x + sx, y + sy * lerp(b, c)] as [number, number] };
-        const bottom = { k: `h${i},${j + 1}`, p: [x + sx * lerp(e, c), y + sy] as [number, number] };
-        const left = { k: `v${i},${j}`, p: [x, y + sy * lerp(a, e)] as [number, number] };
-        const seg = (u: typeof top, v: typeof top) => {
-          ends.push(u.k, v.k);
-          pts.push(u.p, v.p);
-        };
-        switch (code) {
-          case 1:
-          case 14:
-            seg(left, bottom);
-            break;
-          case 2:
-          case 13:
-            seg(bottom, right);
-            break;
-          case 3:
-          case 12:
-            seg(left, right);
-            break;
-          case 4:
-          case 11:
-            seg(top, right);
-            break;
-          case 5:
-            seg(left, top);
-            seg(bottom, right);
-            break;
-          case 6:
-          case 9:
-            seg(top, bottom);
-            break;
-          case 7:
-          case 8:
-            seg(left, top);
-            break;
-          case 10:
-            seg(top, right);
-            seg(left, bottom);
-            break;
-        }
-      }
-    }
-
-    const lines = chain(ends, pts).map((line) => toPath(smooth(line)));
+    const lines = isoLines(field, cols, rows, lo + (hi - lo) * t, W, H);
     levels.push({ d: lines.join(""), lines, t });
   }
 
-  // Dots on the high ground: a sparse grid where the field is above 75 %.
-  const dots: { x: number; y: number; r: number }[] = [];
+  // Dots on the high ground: a sparse grid where the field is above 72 %.
+  const sx = W / cols;
+  const sy = H / rows;
+  const dots: ContourArt["dots"] = [];
   for (let j = 1; j < rows; j += 2) {
     for (let i = 1; i < cols; i += 2) {
       const h = (field[j * (cols + 1) + i]! - lo) / (hi - lo);

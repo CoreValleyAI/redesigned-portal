@@ -29,13 +29,17 @@ const TONE: Record<ContourTone, { stroke: string; fill: string }> = {
 };
 
 export function ContourCover({
-  seed,
+  seed = "",
+  load,
   className,
   tone = "hydro",
   draw = false,
   light = false,
 }: {
-  seed: string;
+  /** A generated print, from this slug. */
+  seed?: string;
+  /** Or a print from elsewhere (the real valley, lib/art/valley.ts). */
+  load?: () => Promise<ContourArt> | ContourArt;
   className?: string;
   tone?: ContourTone;
   draw?: boolean;
@@ -44,30 +48,39 @@ export function ContourCover({
   const ref = useRef<HTMLDivElement>(null);
   const [art, setArt] = useState<ContourArt | null>(null);
   // Drawn large, strokes are set in screen pixels from the print's scale.
-  const [scale, setScale] = useState(1);
+  const [box, setBox] = useState({ w: 640, h: 400 });
 
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
+    let live = true;
     const io = new IntersectionObserver(
       ([e]) => {
         if (!e?.isIntersecting) return;
         io.disconnect();
-        setArt(contourArt(seed));
+        Promise.resolve(load ? load() : contourArt(seed))
+          .then((a) => live && setArt(a))
+          .catch(() => {
+            /* no art: the box stays quietly empty */
+          });
       },
       { rootMargin: "400px 0px" },
     );
     io.observe(el);
-    return () => io.disconnect();
+    return () => {
+      live = false;
+      io.disconnect();
+    };
+    // The loader is chosen once per mount.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [seed]);
 
   useEffect(() => {
     const el = ref.current;
     if (!el || !draw) return;
-    // "slice": the print covers the box, so its scale is the larger ratio.
     const ro = new ResizeObserver(([e]) => {
       const r = e?.contentRect;
-      if (r) setScale(Math.max(r.width / 640, r.height / 400) || 1);
+      if (r && r.width > 0) setBox({ w: r.width, h: r.height });
     });
     ro.observe(el);
     return () => ro.disconnect();
@@ -92,6 +105,8 @@ export function ContourCover({
   }, [light]);
 
   const t = TONE[tone];
+  // "slice": the print covers the box, so its scale is the larger ratio.
+  const scale = art ? Math.max(box.w / art.width, box.h / art.height) || 1 : 1;
   const px = 1 / scale; // one screen pixel, in print units
 
   const lines = (lit: boolean) =>
@@ -161,6 +176,20 @@ export function ContourCover({
                 opacity="0.55"
                 style={draw ? ({ "--d": `${900 + (i % 17) * 60}ms` } as React.CSSProperties) : undefined}
               />
+            ))}
+            {art.markers?.map((m, i) => (
+              <g key={m.label} className="contour-dot" style={{ "--d": `${1500 + i * 180}ms` } as React.CSSProperties}>
+                <circle cx={m.x} cy={m.y} r={9 * px} className={t.fill} opacity={0.18} />
+                <circle cx={m.x} cy={m.y} r={3.5 * px} className={t.fill} />
+                <text
+                  x={m.x + 12 * px}
+                  y={m.y + 4 * px}
+                  fontSize={11 * px}
+                  className="fill-ink-2 font-mono tracking-[0.12em] uppercase"
+                >
+                  {m.label}
+                </text>
+              </g>
             ))}
           </svg>
           {light && (

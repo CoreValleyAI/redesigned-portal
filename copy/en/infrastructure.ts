@@ -16,6 +16,8 @@ export const INFRASTRUCTURE = {
     kicker: "Infrastructure",
     title: "The place.",
     lead: "A datacentre in the Kathmandu Valley, running on Nepal's hydropower. Where your data is stored, processed and kept.",
+    portrait:
+      "The Kathmandu Valley, contoured every 100 m from public elevation data (SRTM). The highlighted line is 1,400 m, near the edge of the valley floor.",
   },
   journey: {
     kicker: "From snow to token",
