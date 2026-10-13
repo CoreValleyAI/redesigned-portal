@@ -20,7 +20,9 @@ import { useEffect, useRef, useState } from "react";
 import { contourArt, type ContourArt } from "@/lib/art/contours";
 import { cn } from "@/lib/cn";
 
-export type ContourTone = "hydro" | "glow-2" | "glow-3";
+import type { ContourTone } from "@/lib/content/tone";
+
+export type { ContourTone };
 
 const TONE: Record<ContourTone, { stroke: string; fill: string }> = {
   hydro: { stroke: "stroke-hydro", fill: "fill-hydro" },

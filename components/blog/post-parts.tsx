@@ -7,11 +7,12 @@
  * of its own and no stock photography. A cover image chosen in the CMS
  * appears inside the post itself, and in its link previews.
  */
-import { ContourCover, type ContourTone } from "@/components/art/contour-cover";
+import { ContourCover } from "@/components/art/contour-cover";
 import { AppLink } from "@/components/system/app-link";
 import { Icon } from "@/components/ui";
 import { cn } from "@/lib/cn";
 import { formatDate, mediaSrc } from "@/lib/content/format";
+import { toneFor } from "@/lib/content/tone";
 import { key, type Author, type Category, type MediaItem, type Post } from "@/lib/content/types";
 
 type CardPost = Pick<Post, "slug" | "title" | "excerpt" | "cover" | "publishAt"> & {
@@ -20,18 +21,7 @@ type CardPost = Pick<Post, "slug" | "title" | "excerpt" | "cover" | "publishAt">
   minutes: number;
 };
 
-const TONES: ContourTone[] = ["hydro", "glow-2", "glow-3"];
-
-/** A category's colour in the prints: fixed for the two we start with,
-    then a stable pick for any category an editor adds. */
-export function toneFor(category: Pick<Category, "slug"> | null | undefined): ContourTone {
-  const slug = category?.slug ?? "";
-  if (slug === "engineering" || !slug) return "hydro";
-  if (slug === "company") return "glow-2";
-  let h = 0;
-  for (let i = 0; i < slug.length; i++) h = (h * 31 + slug.charCodeAt(i)) >>> 0;
-  return TONES[h % TONES.length]!;
-}
+export { toneFor };
 
 export function Byline({
   authors,

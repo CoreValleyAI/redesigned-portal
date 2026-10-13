@@ -41,8 +41,12 @@ export async function generateMetadata({ params }: Params) {
     path: `/blog/${post.slug}`,
     canonical: post.seo.canonical,
     noindex: post.seo.noindex,
+    // The post's own image if it has one; otherwise its contour print
+    // (./og.png/route.tsx), so every shared link looks like its post.
     image:
-      img && item ? { url: absoluteMedia(img.src), width: img.width, height: img.height, alt: item.alt } : undefined,
+      img && item
+        ? { url: absoluteMedia(img.src), width: img.width, height: img.height, alt: item.alt }
+        : { url: absoluteUrl(`/blog/${post.slug}/og.png`), width: 1200, height: 630, alt: post.title },
     article: {
       publishedTime: post.publishAt,
       modifiedTime: post.updatedAt,
