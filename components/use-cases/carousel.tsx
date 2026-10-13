@@ -71,14 +71,14 @@ export function UseCaseCarousel({
       let bestD = Infinity;
       cards().forEach((c, i) => {
         const d = (c.offsetLeft - line) / Math.max(1, c.offsetWidth);
-        // A card partly out of view eases back and dims by how much of it
-        // is hidden; cards wholly in view stay as they are.
+        // A card partly out of view eases back by how much of it is
+        // hidden (never dimmed: its text keeps its contrast); cards wholly
+        // in view stay as they are.
         if (!still) {
           const left = c.offsetLeft - t.scrollLeft;
           const shown = Math.min(left + c.offsetWidth, t.clientWidth) - Math.max(left, 0);
           const hidden = 1 - Math.max(0, Math.min(1, shown / c.offsetWidth));
           c.style.setProperty("--s", (1 - hidden * 0.06).toFixed(4));
-          c.style.setProperty("--o", (1 - hidden * 0.55).toFixed(3));
           c.style.transformOrigin = left < 0 ? "right center" : "left center";
         }
         if (Math.abs(d) < bestD) {
@@ -233,7 +233,28 @@ export function UseCaseCarousel({
             <Arrow />
           </button>
         </div>
-        <ol className="flex flex-1 items-center gap-1.5" aria-label="Stories">
+        {/* On a phone the marks are too narrow to tap: there they only show
+            the progress, and the arrows, a swipe or the keys move it. */}
+        <div aria-hidden="true" className="flex flex-1 items-center gap-1 md:hidden">
+          {cases.map((u, i) => (
+            <span key={u.slug} className="relative block h-1 flex-1 overflow-hidden rounded-full bg-line">
+              <span
+                key={i === active ? `on-${active}` : "off"}
+                className={cn(
+                  "uc-seg absolute inset-0 origin-left rounded-full bg-hydro",
+                  i < active && "scale-x-100",
+                  i > active && "scale-x-0",
+                  i === active && (running ? "is-running" : "scale-x-100"),
+                )}
+                style={{ "--dur": `${INTERVAL}ms` } as React.CSSProperties}
+              />
+            </span>
+          ))}
+        </div>
+        <p className="sr-only" aria-live="polite">
+          {`Story ${active + 1} of ${cases.length}: ${cases[active]?.title ?? ""}`}
+        </p>
+        <ol className="hidden flex-1 items-center gap-1.5 md:flex" aria-label="Stories">
           {cases.map((u, i) => (
             <li key={u.slug} className="flex-1">
               <button

@@ -162,7 +162,6 @@
 }
 .uc-card {
   transform: scale(var(--s, 1));
-  opacity: var(--o, 1);
   transform-origin: left center;
 }
 .uc-seg.is-running {

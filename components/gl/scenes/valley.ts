@@ -274,9 +274,14 @@ export const createValleyScene: SceneFactory = async (ctx: SceneContext): Promis
     return { vao, buf, count };
   };
   const [cols, rows] = GRID[tier];
-  const night = field(cols, rows, 0.5);
-  // A printed screen is regular: less jitter.
-  const paper = field(Math.round(cols * 0.56), Math.round(rows * 0.56), 0.18);
+  // Each theme's field is built the first time that theme is drawn.
+  let night: ReturnType<typeof field> | null = null;
+  let paper: ReturnType<typeof field> | null = null;
+  const fieldFor = (dark: boolean) =>
+    dark
+      ? (night ??= field(cols, rows, 0.5))
+      : // A printed screen is regular: less jitter.
+        (paper ??= field(Math.round(cols * 0.56), Math.round(rows * 0.56), 0.18));
 
   let width = 1;
   let height = 1;
@@ -415,7 +420,7 @@ export const createValleyScene: SceneFactory = async (ctx: SceneContext): Promis
       gl.uniform1f(u("u_reach"), reach);
       gl.uniform3f(u("u_pointer"), f.pointer.x, f.pointer.y, f.pointer.presence);
       gl.uniform1f(u("u_aspect"), aspect);
-      const dots = dark ? night : paper;
+      const dots = fieldFor(dark);
       const density = Math.sqrt((GRID[3][0] * GRID[3][1]) / dots.count);
       const scale = Math.max(0.8, Math.min(1.3, width / dpr / 1440));
       gl.uniform1f(u("u_px"), 11 * dpr * density * scale);
@@ -466,6 +471,7 @@ export const createValleyScene: SceneFactory = async (ctx: SceneContext): Promis
       glass?.dispose();
       for (const el of glassEls) delete el.dataset.glass;
       for (const d of [night, paper]) {
+        if (!d) continue;
         gl.deleteBuffer(d.buf);
         gl.deleteVertexArray(d.vao);
       }

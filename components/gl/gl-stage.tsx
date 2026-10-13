@@ -2,9 +2,11 @@
 
 /**
  * <GLStage> — a canvas that hosts one WebGL scene (lib/gl/stage.ts), filling
- * its positioned parent. It waits until the page has painted and the browser
- * is idle, loads the scene's code, and fades the canvas in over whatever
- * poster sits beneath it once the first frame is drawn. Without WebGL2, or
+ * its positioned parent. It waits until the canvas is within a screen or so
+ * of the viewport (scenes far down the page cost nothing at load), then
+ * until the page has painted and the browser is idle, loads the scene's
+ * code, and fades the canvas in over whatever poster sits beneath it once
+ * the first frame is drawn. Without WebGL2, or
  * with reduced motion and `still` set, nothing is mounted and the poster
  * simply stays.
  *
@@ -70,12 +72,25 @@ export function GLStage({
       cancelIdleCallback?: Window["cancelIdleCallback"];
     };
     const viaIdle = typeof w.requestIdleCallback === "function";
-    const handle = viaIdle
-      ? w.requestIdleCallback!(() => void start(), { timeout: 1200 })
-      : window.setTimeout(() => void start(), 300);
+    let handle = 0;
+    const schedule = () => {
+      handle = viaIdle
+        ? w.requestIdleCallback!(() => void start(), { timeout: 1200 })
+        : window.setTimeout(() => void start(), 300);
+    };
+    const near = new IntersectionObserver(
+      ([e]) => {
+        if (!e?.isIntersecting) return;
+        near.disconnect();
+        schedule();
+      },
+      { rootMargin: "120% 0px" },
+    );
+    near.observe(canvas);
 
     return () => {
       cancelled = true;
+      near.disconnect();
       if (viaIdle) w.cancelIdleCallback?.(handle);
       else window.clearTimeout(handle);
       offProgress?.();
