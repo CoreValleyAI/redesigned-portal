@@ -362,6 +362,19 @@
   filter: drop-shadow(0 0 0.4rem color-mix(in oklch, var(--hydro) 40%, transparent));
 }
 
+/* The 404 snow field (components/brand/snow-mark.tsx): the snow thins out
+   toward the edges instead of stopping at a box. */
+.snow-field {
+  -webkit-mask:
+    linear-gradient(to bottom, transparent, #000 14%, #000 86%, transparent),
+    linear-gradient(to right, transparent, #000 7%, #000 93%, transparent);
+  -webkit-mask-composite: source-in;
+  mask:
+    linear-gradient(to bottom, transparent, #000 14%, #000 86%, transparent),
+    linear-gradient(to right, transparent, #000 7%, #000 93%, transparent);
+  mask-composite: intersect;
+}
+
 /* ══ Dew, the cursor's companion (components/motion/pointer-fx.tsx) ═══════
    A dot that follows the pointer and a ring that trails it, settles around
    buttons and links, or becomes a small label. Positioned by script. */

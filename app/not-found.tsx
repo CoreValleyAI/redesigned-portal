@@ -1,9 +1,10 @@
+import { SnowMark } from "@/components/brand/snow-mark";
 import { SiteFooter } from "@/components/chrome/site-footer";
 import { SiteHeader } from "@/components/chrome/site-header";
 import { AppLink } from "@/components/system/app-link";
 import { Arrow, ButtonLink } from "@/components/system/button";
 import { DotGlyph, type GlyphName } from "@/components/system/dot-glyph";
-import { DotText } from "@/components/system/dot-text";
+import { Kicker } from "@/components/system/kicker";
 import { DOCS_URL } from "@/lib/site";
 
 export const metadata = {
@@ -31,14 +32,15 @@ export default function NotFound() {
       <div className="flex min-h-dvh flex-col">
         <SiteHeader />
         <main id="main" tabIndex={-1} className="flex-1 focus:outline-none">
-          <section className="container-page flex flex-col items-center pt-[calc(var(--header-h)+clamp(3rem,10vw,8rem))] pb-[var(--section-y)] text-center">
-            <DotText text="404" label="404" className="w-[min(22rem,70vw)] text-hydro" />
-            <h1 className="type-display-2 mt-12 max-w-[16ch]">This trail goes off the map.</h1>
+          <section className="container-page flex flex-col items-center pt-[calc(var(--header-h)+clamp(2.5rem,8vw,6rem))] pb-[var(--section-y)] text-center">
+            <Kicker>404 · Off the map</Kicker>
+            <h1 className="type-display-2 mt-6 max-w-[16ch]">This trail goes off the map.</h1>
             <p className="type-lead mt-5 max-w-[34rem] text-ink-2">
               The page isn&apos;t here. It may have moved, or the link is out of date. One of these will get you back on
               the path.
             </p>
-            <div className="mt-9">
+            <SnowMark className="mt-4 w-full" />
+            <div className="mt-8">
               <ButtonLink href="/" size="lg" transitionTypes={["page-up"]}>
                 Back to the valley
               </ButtonLink>

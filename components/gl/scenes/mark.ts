@@ -12,6 +12,11 @@
  *    finger parts the dots, and scrolling sloshes them like water in a glass.
  *  · Still. With reduced motion: the finished mark, drawn once.
  *
+ * Snow mode (the 404 page, S18): the dots start as snow falling through the
+ * field, and the pointer gathers them back into the mark as it passes; a
+ * sideways swipe does on a phone, and left alone the snow slowly gathers
+ * itself. Once most of it is home the rest follows, and onGathered fires.
+ *
  * The dots come from the logo's own paths (components/brand/paths.ts),
  * rasterised at grid resolution with 4× supersampling, so there is no image
  * request. Coverage is weighted by the logo's gradient, so the light
@@ -43,6 +48,10 @@ export interface MarkOptions {
   bleed?: number;
   /** Fly in again each time the mark comes back into view. */
   replay?: boolean;
+  /** "assemble" (the footer) or "snow" (the 404 page). */
+  mode?: "assemble" | "snow";
+  /** Snow mode: the mark is whole again. */
+  onGathered?: () => void;
 }
 
 const VS = /* glsl */ `#version 300 es
@@ -51,10 +60,12 @@ layout(location = 0) in vec2 a_pos;    // CSS px
 layout(location = 1) in float a_size;  // diameter, CSS px
 layout(location = 2) in float a_alpha;
 layout(location = 3) in float a_lit;
+layout(location = 4) in float a_home;  // 0 snow … 1 part of the mark
 uniform vec2 u_res;                    // CSS px
 uniform float u_dpr;
 uniform vec3 u_color;
 uniform vec3 u_hot;
+uniform vec3 u_snow;
 out float v_alpha;
 out vec3 v_color;
 void main() {
@@ -62,7 +73,7 @@ void main() {
   gl_Position = vec4(clip.x, -clip.y, 0.0, 1.0);
   gl_PointSize = a_size * u_dpr;
   v_alpha = a_alpha;
-  v_color = mix(u_color, u_hot, clamp(a_lit, 0.0, 1.0));
+  v_color = mix(mix(u_snow, u_color, a_home), u_hot, clamp(a_lit, 0.0, 1.0));
 }`;
 
 /* Night Valley: the live site's dot, a solid core to 28 % of the radius,
@@ -88,8 +99,8 @@ void main() {
   o = vec4(v_color * i, i);
 }`;
 
-/** Floats per dot in the vertex buffer: x, y, size, alpha, lit. */
-const STRIDE = 5;
+/** Floats per dot in the vertex buffer: x, y, size, alpha, lit, home. */
+const STRIDE = 6;
 /** Supersampling per cell when rasterising the mark. */
 const SS = 4;
 /** The dots' spring: stiff, a touch under critical damping (≈ 6 % overshoot). */
@@ -98,7 +109,10 @@ const C = 2 * 0.66 * Math.sqrt(K);
 /** Scroll slosh: share of a change in scroll speed passed to the dots. */
 const SLOSH = 0.07;
 
-type Phase = "waiting" | "assembling" | "done";
+type Phase = "waiting" | "assembling" | "snow" | "done";
+
+/** Snow mode: a flake gathers when the pointer passes within this many px. */
+const GATHER_R = 130;
 
 function mulberry32(seed: number) {
   let a = seed >>> 0;
@@ -165,6 +179,7 @@ export function createMarkScene(options: MarkOptions = {}): SceneFactory {
   const push = options.push ?? 18;
   const bleed = options.bleed ?? 90;
   const replay = options.replay ?? true;
+  const snowMode = options.mode === "snow";
 
   return (ctx: SceneContext): Scene => {
     const { gl, canvas } = ctx;
@@ -185,6 +200,8 @@ export function createMarkScene(options: MarkOptions = {}): SceneFactory {
     gl.vertexAttribPointer(2, 1, gl.FLOAT, false, bytes, 12);
     gl.enableVertexAttribArray(3);
     gl.vertexAttribPointer(3, 1, gl.FLOAT, false, bytes, 16);
+    gl.enableVertexAttribArray(4);
+    gl.vertexAttribPointer(4, 1, gl.FLOAT, false, bytes, 20);
     gl.bindVertexArray(null);
 
     // The field, as parallel arrays.
@@ -201,6 +218,15 @@ export function createMarkScene(options: MarkOptions = {}): SceneFactory {
     let order = new Float32Array(0); // fly-in start, 0–1 across the sweep
     let mass = new Float32Array(0); // slosh response
     let glow = new Float32Array(0); // light from the pointer, with afterglow
+    // Snow mode: where each flake started, how it falls and sways, and how
+    // far it has been gathered home (0–1).
+    let fx = new Float32Array(0);
+    let fy = new Float32Array(0);
+    let fall = new Float32Array(0);
+    let sway = new Float32Array(0);
+    let freq = new Float32Array(0);
+    let ph = new Float32Array(0);
+    let gat = new Float32Array(0);
     let verts = new Float32Array(0);
 
     let cssW = 1;
@@ -210,7 +236,10 @@ export function createMarkScene(options: MarkOptions = {}): SceneFactory {
     const box = { x: 0, y: 0, w: 1, h: 1 };
 
     let reduced = ctx.reduced;
-    let phase: Phase = reduced ? "done" : "waiting";
+    let phase: Phase = reduced ? "done" : snowMode ? "snow" : "waiting";
+    let completing = false;
+    let lastTouch = -1;
+    let told = false;
     let tStart = -1;
     let firstView = true;
     let holdUntil = -1;
@@ -290,6 +319,13 @@ export function createMarkScene(options: MarkOptions = {}): SceneFactory {
       order = new Float32Array(n);
       mass = new Float32Array(n);
       glow = new Float32Array(n);
+      fx = new Float32Array(n);
+      fy = new Float32Array(n);
+      fall = new Float32Array(n);
+      sway = new Float32Array(n);
+      freq = new Float32Array(n);
+      ph = new Float32Array(n);
+      gat = new Float32Array(n);
       verts = new Float32Array(n * STRIDE);
       keep.forEach((cellIndex, i) => {
         const c = cellIndex % cols;
@@ -300,10 +336,23 @@ export function createMarkScene(options: MarkOptions = {}): SceneFactory {
         order[i] = clamp01((c - ox) / gw) * 0.75 + rnd() * 0.25;
         mass[i] = 0.55 + rnd() * 0.9;
         scatter(i);
+        fx[i] = rnd() * cssW;
+        fy[i] = rnd() * cssH;
+        fall[i] = 12 + rnd() * 26;
+        sway[i] = 4 + rnd() * 14;
+        freq[i] = 0.25 + rnd() * 0.6;
+        ph[i] = rnd() * Math.PI * 2;
       });
+      if (phase === "snow") {
+        // A resize mid-snow starts the gathering over: the field is new.
+        sx.set(fx);
+        sy.set(fy);
+        completing = false;
+      }
       // Resized mid-flight: land at once rather than restart the sweep.
       if (phase === "assembling") phase = "done";
       place(phase === "done");
+      gat.fill(phase === "snow" ? 0 : 1);
 
       gl.bindBuffer(gl.ARRAY_BUFFER, buf);
       gl.bufferData(gl.ARRAY_BUFFER, verts.byteLength, gl.DYNAMIC_DRAW);
@@ -314,7 +363,7 @@ export function createMarkScene(options: MarkOptions = {}): SceneFactory {
     // still poster was already showing the mark: no fly-in then.
     const io = new IntersectionObserver(
       ([e]) => {
-        if (!e) return;
+        if (!e || snowMode) return;
         const ratio = e.isIntersecting ? e.intersectionRatio : 0;
         if (ratio >= 0.3) {
           if (firstView && phase === "waiting") {
@@ -350,6 +399,7 @@ export function createMarkScene(options: MarkOptions = {}): SceneFactory {
         if (reduced && phase !== "done") {
           phase = "done";
           place(true);
+          gat.fill(1);
         }
         // Not yet in view: nothing to show until the fly-in starts.
         if (phase === "waiting" || n === 0) {
@@ -382,6 +432,17 @@ export function createMarkScene(options: MarkOptions = {}): SceneFactory {
         const near = px > -radius && py > -radius && px < cssW + radius && py < cssH + radius;
         if (f.pointer.down && near) holdUntil = f.time + 0.6;
         const presence = reduced || !near ? 0 : Math.max(f.pointer.presence, holdUntil > f.time ? 1 : 0);
+        if (lastTouch < 0 || presence > 0.05) lastTouch = f.time;
+
+        // Snow: once most flakes are home the rest follow; left alone for a
+        // while, the snow gathers itself, slowly.
+        const snowing = phase === "snow";
+        let home = 0;
+        if (snowing) {
+          for (let i = 0; i < n; i++) if (gat[i]! >= 1) home++;
+          if (home > n * 0.7) completing = true;
+        }
+        const drift = snowing ? (completing ? 0.85 : f.time - lastTouch > 7 ? 0.05 : 0) : 0;
 
         // Touch screens: a light drifting on a slow figure-of-eight once the
         // mark has landed, stepping aside while a finger is down.
@@ -432,6 +493,35 @@ export function createMarkScene(options: MarkOptions = {}): SceneFactory {
           let tx = hx[i]!;
           let ty = hy[i]!;
           let on = 1;
+          let homeAmt = 1;
+          if (snowing) {
+            const span = cssH + 24;
+            const fallen = fy[i]! + fall[i]! * f.time;
+            const snowX = fx[i]! + sway[i]! * Math.sin(f.time * freq[i]! + ph[i]!);
+            const snowY = (((fallen % span) + span) % span) - 12;
+            let gi = gat[i]!;
+            if (gi < 1) {
+              if (presence > 0) {
+                const dx = x[i]! - px;
+                const dy = y[i]! - py;
+                const dist = Math.sqrt(dx * dx + dy * dy);
+                if (dist < GATHER_R) gi += dt * 2.4 * (1 - dist / GATHER_R) * presence;
+              }
+              gi = Math.min(1, gi + dt * drift);
+              gat[i] = gi;
+            }
+            homeAmt = gi * gi * (3 - 2 * gi);
+            tx = snowX + (hx[i]! - snowX) * homeAmt;
+            ty = snowY + (hy[i]! - snowY) * homeAmt;
+            // A flake wrapping from the bottom to the top jumps; it does not fly.
+            if (Math.abs(ty - y[i]!) > cssH * 0.5) {
+              x[i] = tx;
+              y[i] = ty;
+              vx[i] = 0;
+              vy[i] = 0;
+            }
+            on = 0.42 + 0.58 * homeAmt;
+          }
           if (landing) {
             const p = clamp01((t - order[i]! * 0.9) / 1.1);
             const e = 1 - Math.pow(1 - p, 3.2);
@@ -442,7 +532,7 @@ export function createMarkScene(options: MarkOptions = {}): SceneFactory {
           }
 
           let lit = 0;
-          if (presence > 0) {
+          if (presence > 0 && homeAmt >= 1) {
             const dx = x[i]! - px;
             const dy = y[i]! - py;
             const dist = Math.sqrt(dx * dx + dy * dy);
@@ -495,8 +585,16 @@ export function createMarkScene(options: MarkOptions = {}): SceneFactory {
           verts[o + 2] = cell * (0.55 + 0.45 * wi) * (1 + g * 0.9) * 2;
           verts[o + 3] = Math.min(1, wi * intensity * on + g * 0.7 * on);
           verts[o + 4] = g;
+          verts[o + 5] = homeAmt;
         }
         if (landing && landed) phase = "done";
+        if (snowing && home === n) {
+          phase = "done";
+          if (!told) {
+            told = true;
+            options.onGathered?.();
+          }
+        }
 
         // With nothing but the drifting light to show, half the frame rate
         // is plenty (and kinder to a phone's battery).
@@ -527,6 +625,7 @@ export function createMarkScene(options: MarkOptions = {}): SceneFactory {
         gl.uniform1f(u("u_rim"), 1 / (cell * 2 * dpr));
         gl.uniform3fv(u("u_color"), color);
         gl.uniform3fv(u("u_hot"), hot);
+        gl.uniform3fv(u("u_snow"), dark ? ink : encodeSrgb(pal.ink3));
         gl.bindBuffer(gl.ARRAY_BUFFER, buf);
         gl.bufferSubData(gl.ARRAY_BUFFER, 0, verts);
         gl.bindVertexArray(vao);
@@ -536,7 +635,7 @@ export function createMarkScene(options: MarkOptions = {}): SceneFactory {
         dirty = false;
         drawn = { theme: pal.theme, color };
 
-        return phase === "assembling" || moving || presence > 0 || ambient > 0;
+        return phase === "assembling" || phase === "snow" || moving || presence > 0 || ambient > 0;
       },
 
       dispose() {
