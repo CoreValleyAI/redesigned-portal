@@ -622,9 +622,34 @@
 .contour-light[data-lit] .contour-light__glow {
   opacity: 1;
 }
+/* The light as one wash (light="overlay"): hydro blended over the lines,
+   so the print is never drawn twice. */
+.contour-light__wash {
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 600ms var(--ease-out);
+  background: radial-gradient(
+    circle 12rem at var(--mx) var(--my),
+    color-mix(in oklch, var(--hydro) 80%, transparent),
+    transparent
+  );
+  mix-blend-mode: color;
+}
+:root[data-theme="dark"] .contour-light__wash {
+  background: radial-gradient(
+    circle 12rem at var(--mx) var(--my),
+    color-mix(in oklch, var(--hydro) 38%, transparent),
+    transparent
+  );
+  mix-blend-mode: screen;
+}
+.contour-light[data-lit] .contour-light__wash {
+  opacity: 1;
+}
 /* Touch screens have no pointer to follow: the light drifts by itself. */
 @media (hover: none) {
-  :root[data-motion="full"] .contour-light__glow {
+  :root[data-motion="full"] .contour-light__glow,
+  :root[data-motion="full"] .contour-light__wash {
     opacity: 0.85;
     animation: cv-drift 18s ease-in-out infinite alternate;
   }

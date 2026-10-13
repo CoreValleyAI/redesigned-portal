@@ -13,8 +13,12 @@
  *  · draw   every contour line traces itself in, end to end, as if a
  *           plotter were drawing the map; the levels follow one another
  *           from the valley floor up. Reduced motion: the finished print.
+ *           `trace="accent"` traces only the accent level and fades the
+ *           rest in: for prints with hundreds of lines (the real valley).
  *  · light  a soft light follows the pointer and the lines under it glow in
  *           the accent tone. On touch screens it drifts across by itself.
+ *           `light="overlay"` lights them with one blended wash instead of
+ *           a second copy of every line: again for the heavy prints.
  */
 import { useEffect, useRef, useState } from "react";
 import { contourArt, type ContourArt } from "@/lib/art/contours";
@@ -36,6 +40,7 @@ export function ContourCover({
   className,
   tone = "hydro",
   draw = false,
+  trace = "all",
   light = false,
 }: {
   /** A generated print, from this slug. */
@@ -45,7 +50,8 @@ export function ContourCover({
   className?: string;
   tone?: ContourTone;
   draw?: boolean;
-  light?: boolean;
+  trace?: "all" | "accent";
+  light?: boolean | "overlay";
 }) {
   const ref = useRef<HTMLDivElement>(null);
   const [art, setArt] = useState<ContourArt | null>(null);
@@ -120,6 +126,20 @@ export function ContourCover({
         strokeLinejoin: "round" as const,
         className: lit || accent ? t.stroke : "stroke-ink-3",
       };
+      if (draw && trace === "accent" && !accent) {
+        // One path per level, faded in after the accent starts tracing.
+        return (
+          <path
+            key={i}
+            d={l.d}
+            {...common}
+            strokeWidth={px}
+            opacity={lit ? 0.95 : 0.24 + l.t * 0.5}
+            className={cn(common.className, "contour-dot")}
+            style={{ "--d": `${300 + i * 60}ms` } as React.CSSProperties}
+          />
+        );
+      }
       if (!draw) {
         return (
           <path
@@ -194,7 +214,8 @@ export function ContourCover({
               </g>
             ))}
           </svg>
-          {light && (
+          {light === "overlay" && <div className="contour-light__wash absolute inset-0" />}
+          {light === true && (
             <svg
               viewBox={`0 0 ${art.width} ${art.height}`}
               preserveAspectRatio="xMidYMid slice"
