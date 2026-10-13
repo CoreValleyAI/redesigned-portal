@@ -70,7 +70,7 @@ void main() {
   }
   v_lit = smoothstep(arrive - 0.012, arrive, u_power) * basin;
   v_basin = basin;
-  v_river = smoothstep(arrive - 0.01, arrive, u_reach) * smoothstep(0.18, 0.5, t.g);
+  v_river = smoothstep(arrive - 0.01, arrive, u_reach) * smoothstep(0.3, 0.72, t.g);
   v_city = city;
   v_km = km;
   v_depth = clip.w;
@@ -90,6 +90,8 @@ in float v_lit;
 in float v_basin;
 in float v_river;
 in float v_city;
+uniform sampler2D u_tex;
+uniform float u_reachF;
 uniform vec3 u_sun;
 uniform vec3 u_cLight;
 uniform vec3 u_cShade;
@@ -131,10 +133,21 @@ void main() {
   float fade = 1.0 - smoothstep(0.25, 0.6, fwidth(f1));
   col = mix(col, u_cLine, max(l1 * 0.09 * fade, l5 * 0.24) * (1.0 - v_basin * 0.6));
 
-  // The floor in mint, its lit districts glowing; the rivers in teal.
-  col = mix(col, u_cFloor, v_basin * 0.5);
-  col = mix(col, u_cGlow, v_lit * (0.22 + 0.28 * v_city));
-  col = mix(col, u_cRiver, v_river * 0.8);
+  // The floor: a clean pale surface, and as power arrives it is traced in
+  // fine hydro contours every 20 m — the valley drawn like an engineered
+  // map — denser and brighter in the three cities. The rivers: thin, crisp
+  // lines of deep teal.
+  col = mix(col, u_cFloor, v_basin * 0.35);
+  float f20 = v_km * 50.0;
+  float l20 = 1.0 - clamp(abs(fract(f20 + 0.5) - 0.5) / max(fwidth(f20) * 0.9, 1e-4), 0.0, 1.0);
+  col = mix(col, u_cGlow, v_lit * (l20 * (0.55 + 0.35 * v_city) + 0.06 + 0.1 * v_city));
+  // Rivers, per pixel from the texture (they are a texel wide): continuous
+  // hairlines, the Bagmati firm, tributaries finer.
+  vec4 tx = texture(u_tex, v_uv);
+  vec2 off = vec2(0.6 / 512.0, 0.0);
+  float g = (tx.g * 2.0 + texture(u_tex, v_uv + off).g + texture(u_tex, v_uv - off).g + texture(u_tex, v_uv + off.yx).g + texture(u_tex, v_uv - off.yx).g) / 6.0;
+  float rv = smoothstep(0.05, 0.4, g) * smoothstep(tx.b * tx.b - 0.01, tx.b * tx.b, u_reachF);
+  col = mix(col, u_cRiver, rv * 0.7);
 
   // The hand's light, and taps' rings, in green.
   vec2 dv = (v_ndc - u_pointer.xy) * vec2(u_aspect, 1.0);
@@ -250,6 +263,7 @@ export function createReliefPass(gl: WebGL2RenderingContext, tier: 1 | 2 | 3) {
       gl.uniform3f(u("u_pointer"), p.pointer[0], p.pointer[1], p.pointer[2]);
       gl.uniform1f(u("u_aspect"), p.aspect);
       gl.uniform3fv(u("u_tap[0]"), p.taps);
+      gl.uniform1f(u("u_reachF"), p.reach);
       gl.uniform1f(u("u_hushX"), p.aspect < 0.85 ? 1.15 : 0.6);
       const L = p.look;
       gl.uniform3fv(u("u_sun"), L.sun);

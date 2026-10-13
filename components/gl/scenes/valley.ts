@@ -190,11 +190,9 @@ void main() {
   } else {
     // Daylight: the surface carries the land (valley-relief.ts); the dots
     // are only its lights — the lit floor in green, the rivers, the hand.
-    col = mix(u_cLit, u_cGlow, 0.3 + 0.35 * twinkle) * mix(1.0, 0.82, city);
-    a = lit * (0.38 + 0.4 * twinkle * (0.4 + 0.8 * city));
-    float wet = riverOn * (1.0 - lit);
-    col = mix(col, u_cRiver, step(a, wet * 0.6));
-    a = max(a, wet * (0.4 + 0.3 * flow));
+    // The surface draws the floor; the dots only answer the hand.
+    col = u_cLit;
+    a = 0.0;
     float touch = clamp(glow + ripple + wind * 0.7 + energy, 0.0, 1.0);
     col = mix(col, u_cLit, touch * 0.9);
     a = max(a, touch * 0.85);
@@ -509,9 +507,9 @@ export const createValleyScene: SceneFactory = async (ctx: SceneContext): Promis
             light: raised,
             shade: mixc(mixc(bg, ink3, 0.56), glow2, 0.1),
             snowShade: mixc(mixc(bg, ink3, 0.3), glow2, 0.22),
-            floor: mixc(bg, hydro, 0.16),
-            glow: glowGreen,
-            river: mixc(glow2, hydro, 0.45).map((v) => v * 0.92),
+            floor: mixc(raised, hydro, 0.05),
+            glow: hydro,
+            river: mixc(mixc(glow2, hydro, 0.3), encodeSrgb(pal.ink), 0.45),
             sky: mixc(bg, glow2, 0.07),
             line: mixc(ink3, encodeSrgb(pal.ink), 0.25),
             // Foothills: sage in the sun, a grey-green in shadow.
@@ -525,10 +523,6 @@ export const createValleyScene: SceneFactory = async (ctx: SceneContext): Promis
       }
 
       gl.bindVertexArray(dots.vao);
-      if (!dark) {
-        gl.uniform1f(u("u_halo"), 1);
-        gl.drawArrays(gl.POINTS, 0, dots.count);
-      }
       gl.uniform1f(u("u_halo"), 0);
       gl.drawArrays(gl.POINTS, 0, dots.count);
       gl.bindVertexArray(null);
