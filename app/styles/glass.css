@@ -246,3 +246,104 @@
     transform: scaleX(1);
   }
 }
+
+/* ── The platform strata (components/platform/strata.tsx) ──────────────────
+   Glass plates over a slow light: three soft orbs drift behind the stack so
+   the blur has something to bend. The stack tilts toward the pointer. */
+.strata {
+  --tx: 0;
+  --ty: 0;
+  perspective: 1100px;
+}
+.strata__orb {
+  position: absolute;
+  border-radius: 999px;
+  filter: blur(30px) saturate(140%);
+  opacity: 0.7;
+  animation: strata-drift 18s ease-in-out infinite alternate;
+}
+.strata__orb--a {
+  width: 46%;
+  aspect-ratio: 1;
+  left: 8%;
+  top: 22%;
+  background: var(--hydro);
+}
+.strata__orb--b {
+  width: 38%;
+  aspect-ratio: 1;
+  right: 6%;
+  top: 4%;
+  background: var(--glow-2);
+  animation-duration: 23s;
+  animation-delay: -6s;
+}
+.strata__orb--c {
+  width: 30%;
+  aspect-ratio: 1;
+  right: 22%;
+  bottom: 0;
+  background: color-mix(in oklch, var(--glow-3) 70%, var(--glow-2));
+  opacity: 0.35;
+  animation-duration: 27s;
+  animation-delay: -12s;
+}
+:root[data-theme="dark"] .strata__orb {
+  opacity: 0.32;
+}
+:root[data-theme="dark"] .strata__orb--c {
+  opacity: 0.22;
+}
+@keyframes strata-drift {
+  from {
+    transform: translate(-6%, 4%) scale(0.94);
+  }
+  to {
+    transform: translate(8%, -6%) scale(1.08);
+  }
+}
+.strata__stack {
+  transform: rotateX(calc(var(--ty) * -5deg)) rotateY(calc(var(--tx) * 7deg));
+  transform-style: preserve-3d;
+  transition: transform var(--dur-spring-gentle) var(--ease-spring);
+}
+.strata__plate {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+  min-height: 3.5rem;
+  padding: 0 1.25rem;
+  border-radius: 1rem;
+  transform: translateZ(calc(var(--i) * -6px));
+  transition:
+    transform var(--dur-spring-smooth) var(--ease-spring),
+    background-color var(--dur-short) var(--ease-out);
+  animation: cv-rise-in 760ms var(--ease-expo) calc(var(--i) * 90ms) both;
+}
+@media (min-width: 48rem) {
+  .strata__plate {
+    min-height: 4rem;
+  }
+}
+@media (hover: hover) and (pointer: fine) {
+  .strata__plate:hover {
+    transform: translateZ(24px) translateY(-2px);
+  }
+}
+:root[data-motion="reduce"] .strata__orb {
+  animation: none;
+}
+:root[data-motion="reduce"] .strata__stack {
+  transform: none;
+}
+/* Strata plates are clearer than the default glass: the light behind is
+   the point. Text stays ≥ 4.5:1 because the orbs are pale and blurred. */
+.strata__plate.lg {
+  background: rgb(255 255 255 / 0.5);
+}
+:root[data-theme="dark"] .strata__plate.lg {
+  background: rgb(15 19 25 / 0.42);
+}
+.strata__plate.lg-hydro {
+  background: color-mix(in oklch, var(--hydro) 94%, transparent);
+}
