@@ -44,7 +44,7 @@ export const LEGAL: Record<"privacy" | "terms" | "data-residency", LegalPage> = 
       {
         heading: "This website",
         paragraphs: [
-          "This covers corevalley.ai, docs.corevalley.ai and status.corevalley.ai. They are static sites hosted on GitHub Pages, run by GitHub, Inc. in the United States. Like any web host, GitHub receives your IP address and browser details in order to serve each page, and keeps them in its server logs for security. We do not receive those logs.",
+          "This covers corevalley.ai, docs.corevalley.ai and status.corevalley.ai. They are static sites served by a third-party web host outside Nepal. Like any web host, it receives your IP address and browser details in order to serve each page, and keeps them in its server logs for security. We do not receive those logs.",
           "Beyond that, visiting these sites collects nothing about you:",
         ],
         bullets: [
@@ -58,15 +58,15 @@ export const LEGAL: Record<"privacy" | "terms" | "data-residency", LegalPage> = 
       {
         heading: "The contact form and email",
         paragraphs: [
-          "The contact form sends what you enter: what you are writing about; for a workload, what you want to run, the product, size and duration you have in mind and any requirements for your data, or otherwise your message; and your name and work email, with your organisation, phone number and the best time to reach you if you give them. A short reference code is added so that we can find your enquiry. The form is delivered to our mailbox by FormSubmit (formsubmit.co), a third-party form service with servers outside Nepal.",
-          "Email to and from any @corevalley.ai address, including enquiries from the form, is hosted by Zoho Mail, outside Nepal.",
+          "The contact form sends what you enter: what you are writing about; for a workload, what you want to run, the product, size and duration you have in mind and any requirements for your data, or otherwise your message; and your name and work email, with your organisation, phone number and the best time to reach you if you give them. A short reference code is added so that we can find your enquiry. The form is delivered to our mailbox by a third-party form service with servers outside Nepal.",
+          "Email to and from any @corevalley.ai address, including enquiries from the form, is hosted by an email provider outside Nepal.",
           "We use an enquiry only to answer it and follow up. We keep it for up to two years after our last contact with you and then delete it, unless you become a customer, in which case it becomes part of your account record. Please keep confidential details out of the form; we will set up a secure channel for them.",
         ],
       },
       {
         heading: "Job applications",
         paragraphs: [
-          "When you apply for a role at corevalley.ai/jobs, the form sends what you enter (your name, email, phone number, where you are based, links you add, your CV and your note) together with the role you applied for. Like the contact form, it is delivered to our mailbox by FormSubmit, with servers outside Nepal, and held in our Zoho Mail inbox.",
+          "When you apply for a role at corevalley.ai/jobs, the form sends what you enter (your name, email, phone number, where you are based, links you add, your CV and your note) together with the role you applied for. Like the contact form, it is delivered to our mailbox by a third-party form service with servers outside Nepal, and held in our email inbox.",
           "Only the people involved in hiring read applications. We keep an application for up to 12 months to consider you for that role and similar ones, then delete it, unless you join us. You can ask us to delete it sooner by writing to info@corevalley.ai.",
         ],
       },
@@ -75,7 +75,7 @@ export const LEGAL: Record<"privacy" | "terms" | "data-residency", LegalPage> = 
         paragraphs: [
           "When your organisation uses CoreValley, we hold two kinds of data, kept apart. Account data identifies your organisation and its users: names, work email addresses, billing contacts, tax registration and payment references. Customer data is what your work brings and produces: datasets, model weights and checkpoints, prompts and outputs, notebooks and logs.",
           "Customer data is stored and processed on our systems in our datacentre in the Kathmandu Valley, and is not stored outside Nepal. It is yours: we delete it when you ask, or when your account closes, as set out in your agreement.",
-          "Account data is kept in our own records while the account is open, and afterwards for as long as Nepali law requires. The platform's software signs users in through HPE GreenLake cloud, outside Nepal, which may process your users' sign-in details. Email about your account goes through Zoho Mail.",
+          "Account data is kept in our own records while the account is open, and afterwards for as long as Nepali law requires. The platform's software signs users in through HPE GreenLake cloud, outside Nepal, which may process your users' sign-in details. Email about your account goes through our email provider.",
           "Payments are handled by the payment provider or bank you choose. They see the transaction, not your work.",
         ],
       },
@@ -91,9 +91,9 @@ export const LEGAL: Record<"privacy" | "terms" | "data-residency", LegalPage> = 
           "Your datasets, models, prompts and outputs stay in Nepal. These services, used for the website, for email and to run the platform, are outside the country:",
         ],
         bullets: [
-          "GitHub Pages (United States): hosts the websites and sees visitors' IP addresses.",
-          "FormSubmit: delivers contact-form enquiries and job applications.",
-          "Zoho Mail: hosts email for @corevalley.ai addresses.",
+          "Website hosting: serves the websites and sees visitors' IP addresses.",
+          "A form service: delivers contact-form enquiries and job applications.",
+          "Email hosting: for @corevalley.ai addresses.",
           GREENLAKE,
         ],
       },
@@ -207,9 +207,9 @@ export const LEGAL: Record<"privacy" | "terms" | "data-residency", LegalPage> = 
         ],
         bullets: [
           GREENLAKE,
-          "This website, docs.corevalley.ai and status.corevalley.ai are hosted on GitHub Pages in the United States, which sees visitors' IP addresses.",
-          "Enquiries and job applications sent through the forms on this website are delivered to our inbox by FormSubmit, a third-party form service with servers outside Nepal. They carry what you type and attach, so keep confidential details for a secure channel.",
-          "Email to and from @corevalley.ai addresses, including invoices and notifications, is hosted by Zoho Mail, outside Nepal. It carries what is written in the email.",
+          "This website, docs.corevalley.ai and status.corevalley.ai are served by a web host outside Nepal, which sees visitors' IP addresses.",
+          "Enquiries and job applications sent through the forms on this website are delivered by a third-party form service outside Nepal. They carry what you type and attach, so keep confidential details for a secure channel.",
+          "Email to and from @corevalley.ai addresses, including invoices and notifications, is hosted by an email provider outside Nepal. It carries what is written in the email.",
           "Public container images, packages and models you choose to download come from outside the country; the download is your traffic, under your policy.",
           "If your code calls a third-party model API, that request leaves Nepal. We cannot make someone else's service sovereign.",
         ],

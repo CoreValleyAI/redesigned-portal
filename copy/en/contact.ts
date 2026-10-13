@@ -40,7 +40,7 @@ export const CONTACT = {
     review: "Check your answers.",
   },
   disclosure:
-    "This form is relayed to our inbox by FormSubmit, a service outside Nepal. Please keep confidential details for a secure channel.",
+    "This form is delivered to our inbox by a third-party service outside Nepal. Please keep confidential details for a secure channel.",
   done: {
     title: "Request sent.",
     lead: "We reply within one working day, from Kathmandu.",

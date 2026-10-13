@@ -56,7 +56,7 @@ export const TRUST = {
       {
         label: "Account data",
         value:
-          "Names, work emails, billing contacts and payment references. Kept in our own records while the account is open, and afterwards as long as Nepali law requires. Signing in goes through HPE GreenLake cloud and email through Zoho Mail, both outside Nepal.",
+          "Names, work emails, billing contacts and payment references. Kept in our own records while the account is open, and afterwards as long as Nepali law requires. Signing in goes through HPE GreenLake cloud and email through our email provider, both outside Nepal.",
       },
       {
         label: "Workload data",
@@ -79,10 +79,7 @@ export const TRUST = {
         role: "HPE GreenLake cloud: signing in and software updates for the platform",
         where: "Outside Nepal",
       },
-      { name: "GitHub, Inc.", role: "Hosts this website (GitHub Pages)", where: "United States" },
-      { name: "FormSubmit", role: "Relays messages sent through this website's forms", where: "Outside Nepal" },
-      { name: "Zoho Mail", role: "Email for @corevalley.ai addresses", where: "Outside Nepal" },
-      { name: "Cloudflare", role: "DNS for corevalley.ai", where: "Global network" },
+      { name: "Website and email providers", role: "Serve this website, deliver its forms and host our email", where: "Outside Nepal" },
     ],
   },
   disclosure: {

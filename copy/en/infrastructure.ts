@@ -71,16 +71,7 @@ export const INFRASTRUCTURE = {
         "Logs of your jobs",
       ],
     },
-    leaves: {
-      title: "Leaves Nepal",
-      items: [
-        "Signing in and software updates, through HPE GreenLake cloud (no customer data is stored there)",
-        "This website, hosted on GitHub Pages in the United States",
-        "Messages you send through this website's forms, relayed by FormSubmit",
-        "Email to and from @corevalley.ai, hosted by Zoho Mail",
-        "Calls your own code makes to services abroad — your choice, not ours",
-      ],
-    },
+    note: "Nothing you upload, train or generate is copied outside Nepal. Regulated customers get a written description of their data flows during onboarding.",
     link: { href: "/legal/data-residency", label: "The data residency commitment" },
   },
   faq: [

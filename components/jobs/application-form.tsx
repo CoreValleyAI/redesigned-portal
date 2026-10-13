@@ -243,7 +243,7 @@ export function ApplicationForm({
           />
           <span>
             I agree that CoreValley may keep my application for up to 12 months to consider me for this and similar
-            roles. It is sent to our inbox through FormSubmit, a third-party form service.
+            roles. It is sent to our inbox through a third-party form service.
           </span>
         </label>
 

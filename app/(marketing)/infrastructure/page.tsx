@@ -2,7 +2,7 @@ import { ValleyPortrait } from "@/components/art/valley-portrait";
 import { HpeLogo, NvidiaLogo } from "@/components/brand/partner-logos";
 import { ClusterDiagram } from "@/components/hardware/visuals";
 import { LayerStack } from "@/components/infrastructure/layer-stack";
-import { RimDrag } from "@/components/infrastructure/rim-drag";
+import { DataPath } from "@/components/infrastructure/data-path";
 import { Page } from "@/components/motion/page";
 import { BlinkBar } from "@/components/system/blink-bar";
 import { Cta } from "@/components/system/cta";
@@ -302,39 +302,25 @@ export default function InfrastructurePage() {
               title={p.residency.title}
               continuation={p.residency.continuation}
             />
-            <div className="grid gap-8 sm:grid-cols-2">
-              <div>
-                <h3 className="type-kicker mb-4 flex items-center gap-2 text-hydro-ink light:text-hydro">
-                  <span aria-hidden="true" className="size-2 rounded-full bg-hydro" />
-                  {p.residency.stays.title}
-                </h3>
-                <ul className="flex flex-col gap-2.5">
-                  {p.residency.stays.items.map((s) => (
-                    <li key={s} className="type-small text-ink-2">
-                      {s}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-              <div>
-                <h3 className="type-kicker mb-4 flex items-center gap-2 text-ink-3">
-                  <span aria-hidden="true" className="size-2 rounded-full border border-ink-3" />
-                  {p.residency.leaves.title}
-                </h3>
-                <ul className="flex flex-col gap-2.5">
-                  {p.residency.leaves.items.map((s) => (
-                    <li key={s} className="type-small text-ink-2">
-                      {s}
-                    </li>
-                  ))}
-                </ul>
-              </div>
+            <div className="flex flex-col gap-6">
+              <h3 className="type-kicker flex items-center gap-2 text-hydro-ink light:text-hydro">
+                <span aria-hidden="true" className="size-2 rounded-full bg-hydro" />
+                {p.residency.stays.title}
+              </h3>
+              <ul className="grid gap-x-8 sm:grid-cols-2">
+                {p.residency.stays.items.map((s) => (
+                  <li key={s} className="type-small border-t border-line py-3 text-ink-2">
+                    {s}
+                  </li>
+                ))}
+              </ul>
+              <p className="type-small text-ink-3">{p.residency.note}</p>
             </div>
             <TextLink href={p.residency.link.href} arrow>
               {p.residency.link.label}
             </TextLink>
           </div>
-          <RimDrag />
+          <DataPath />
         </div>
       </section>
 
