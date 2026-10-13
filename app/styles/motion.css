@@ -156,6 +156,13 @@
   pointer-events: none;
 }
 
+/* The header is named only while a transition runs: a view-transition-name
+   makes an element a backdrop root, and the header's glass must see the
+   page behind it the rest of the time. */
+:root:active-view-transition .site-header {
+  view-transition-name: site-header;
+}
+
 ::view-transition-group(site-header) {
   animation: none;
   z-index: 100;
@@ -621,20 +628,6 @@
   }
 }
 
-/* ── Metro map (platform): the line fills, then a light runs along it ──── */
-@keyframes cv-metro-fill {
-  from {
-    transform: translateX(-100%);
-  }
-}
-@keyframes cv-metro-run {
-  from {
-    transform: translateX(-100%);
-  }
-  to {
-    transform: translateX(10%);
-  }
-}
 
 /* ── Atlas filter: cards glide to their new places ───────────────────────── */
 .atlas-cards[data-vt="on"] > li {

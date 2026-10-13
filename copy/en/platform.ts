@@ -83,14 +83,51 @@ export const PLATFORM = {
     ] satisfies { name: string; what: string; glyph: GlyphName }[],
   },
   day: {
-    kicker: "A day on the platform",
-    title: "Four lines through one valley.",
-    lead: "Example workflows, drawn as a metro map: each line is a pipeline, each stop a tool. Pick a line to follow it.",
+    kicker: "Pipelines",
+    title: "Four pipelines, one cluster.",
+    lead: "Example workflows in HPE AI Essentials, stage by stage. Data and models stay on the cluster from the first step to the last.",
     lines: [
-      { id: "data", name: "Data operations", stops: ["Storage", "Spark", "Presto", "Superset"] },
-      { id: "models", name: "Model operations", stops: ["JupyterLab", "Kubeflow", "Katib", "MLflow", "KServe"] },
-      { id: "predict", name: "Batch predictions", stops: ["Airflow", "Spark", "Ray", "Storage"] },
-      { id: "llm", name: "Language models", stops: ["NVIDIA NIM", "JupyterLab", "MLflow", "KServe"] },
+      {
+        id: "models",
+        name: "Model operations",
+        stops: [
+          { tool: "JupyterLab", role: "Explore" },
+          { tool: "Kubeflow", role: "Pipeline" },
+          { tool: "Katib", role: "Tune" },
+          { tool: "MLflow", role: "Track" },
+          { tool: "KServe", role: "Serve" },
+        ],
+      },
+      {
+        id: "llm",
+        name: "Language models",
+        stops: [
+          { tool: "NVIDIA NIM", role: "Base model" },
+          { tool: "JupyterLab", role: "Evaluate" },
+          { tool: "MLflow", role: "Register" },
+          { tool: "KServe", role: "Endpoint" },
+        ],
+      },
+      {
+        id: "predict",
+        name: "Batch predictions",
+        stops: [
+          { tool: "Airflow", role: "Schedule" },
+          { tool: "Spark", role: "Features" },
+          { tool: "Ray", role: "Inference" },
+          { tool: "Storage", role: "Results · S3" },
+        ],
+      },
+      {
+        id: "data",
+        name: "Data operations",
+        stops: [
+          { tool: "Storage", role: "Object · file" },
+          { tool: "Spark", role: "Transform" },
+          { tool: "Presto", role: "SQL" },
+          { tool: "Superset", role: "Dashboards" },
+        ],
+      },
     ],
   },
   isolation: {

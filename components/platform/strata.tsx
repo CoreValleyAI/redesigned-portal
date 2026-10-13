@@ -60,6 +60,8 @@ export function Strata({
         {layers.map((l, i) => (
           <div
             key={l.id}
+            data-refract
+            data-refract-bezel="14"
             className={cn("strata__plate", l.touch ? "lg-hydro text-on-hydro" : "lg text-ink")}
             style={{ "--i": i, width: `${74 + (i / (n - 1)) * 26}%` } as React.CSSProperties}
           >
@@ -67,9 +69,7 @@ export function Strata({
               {String(n - i).padStart(2, "0")}
             </span>
             <span className="truncate text-[0.9375rem] font-semibold tracking-[-0.01em]">{l.name}</span>
-            <span
-              className={cn("type-kicker ml-auto hidden shrink-0 sm:inline", l.touch ? "" : "text-ink-2")}
-            >
+            <span className={cn("type-kicker ml-auto hidden shrink-0 sm:inline", l.touch ? "" : "text-ink-2")}>
               {KIND[l.id] ?? ""}
             </span>
           </div>

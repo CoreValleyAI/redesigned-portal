@@ -1,9 +1,10 @@
 import { Page } from "@/components/motion/page";
-import { MetroMap } from "@/components/platform/metro-map";
+import { PipelineBoard } from "@/components/platform/pipeline-board";
 import { Strata } from "@/components/platform/strata";
 import { Cta } from "@/components/system/cta";
 import { DotGlyph } from "@/components/system/dot-glyph";
 import { Kicker } from "@/components/system/kicker";
+import { GlassLight } from "@/components/system/glass-light";
 import { SectionHead } from "@/components/system/section";
 import { SpecReadout } from "@/components/system/spec-readout";
 import { Status } from "@/components/system/status";
@@ -116,10 +117,11 @@ export default function PlatformPage() {
       </section>
 
       {/* A day on the platform */}
-      <section aria-labelledby="day-title" className="section-y">
+      <section aria-labelledby="day-title" className="section-y relative isolate">
+        <GlassLight variant="c" />
         <div className="container-page flex flex-col gap-12">
           <SectionHead id="day-title" kicker={p.day.kicker} title={p.day.title} lead={p.day.lead} />
-          <MetroMap lines={p.day.lines} />
+          <PipelineBoard lanes={p.day.lines} />
         </div>
       </section>
 
