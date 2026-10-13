@@ -63,6 +63,9 @@ uniform vec3 u_cOff;
 uniform vec3 u_cLit;
 uniform vec3 u_cSnow;
 uniform vec3 u_cRiver;
+uniform vec3 u_cGlow;        // daylight: the floor's glow, a brighter green
+uniform vec3 u_eye;          // the camera, world units
+uniform float u_grid;        // dots across the field
 uniform float u_dark;
 uniform vec2 u_city[3];      // Kathmandu, Lalitpur, Bhaktapur (uv)
 uniform vec3 u_tap[3];       // taps: ndc x, ndc y, age in s (< 0: none)
@@ -83,9 +86,26 @@ void main() {
   float river = t.g;
   float arrive = t.b * t.b;
 
-  // Relief: a light from the north-west, from the height gradient.
-  float hx = heightKm(a_uv + vec2(u_texel, 0.0)) - heightKm(a_uv - vec2(u_texel, 0.0));
-  float hz = heightKm(a_uv + vec2(0.0, u_texel)) - heightKm(a_uv - vec2(0.0, u_texel));
+  // Relief: a light from the north-west, from the height gradient; and
+  // the crests, where the land is convex (a negative Laplacian).
+  float hxp = heightKm(a_uv + vec2(u_texel, 0.0));
+  float hxm = heightKm(a_uv - vec2(u_texel, 0.0));
+  float hzp = heightKm(a_uv + vec2(0.0, u_texel));
+  float hzm = heightKm(a_uv - vec2(0.0, u_texel));
+  float hx = hxp - hxm;
+  float hz = hzp - hzm;
+  float crest = smoothstep(0.004, 0.035, 4.0 * km - (hxp + hxm + hzp + hzm));
+
+  // Daylight's drawing: contour lines every 100 m, heavier every 500 m —
+  // the dots that lie on a level, the band as wide as one step of the grid
+  // on that slope, so the lines are even — and the silhouettes, where a
+  // slope turns away from the eye.
+  float grad = length(vec2(hx, hz)) / (2.0 * u_texel);       // km per uv
+  float step1 = max(grad / u_grid, 0.0015);                  // km per dot
+  float d100 = abs(fract(km * 10.0 + 0.5) - 0.5) * 0.1;
+  float d500 = abs(fract(km * 2.0 + 0.5) - 0.5) * 0.5;
+  float contour = 1.0 - smoothstep(0.35, 0.75, d100 / step1);
+  float index = 1.0 - smoothstep(0.45, 0.9, d500 / step1);
   vec3 n = normalize(vec3(-hx * 6.0, 1.0, -hz * 6.0));
   float shade = clamp(dot(n, normalize(vec3(-0.6, 0.75, -0.55))), 0.0, 1.0);
 
@@ -128,6 +148,9 @@ void main() {
   float wind = u_wind.x * band * band;
   pos.y += glow * 0.06 + ripple * 0.05 + wind * 0.045;
   clip = u_viewProj * vec4(pos, 1.0);
+  // The silhouette: the true surface normal, against the line of sight.
+  vec3 gn = normalize(vec3(-hx * 0.1 * u_exag / (2.0 * u_texel * u_size.x), 1.0, -hz * 0.1 * u_exag / (2.0 * u_texel * u_size.y)));
+  float sil = smoothstep(0.82, 0.97, 1.0 - abs(dot(gn, normalize(u_eye - pos))));
 
   float depth = max(clip.w, 0.05);
   float snow = smoothstep(4.4, 5.6, km);
@@ -136,14 +159,14 @@ void main() {
   if (u_dark > 0.5) {
     size = 0.8 + 0.5 * shade + (0.35 + 0.6 * city) * lit * twinkle + 0.7 * riverOn + 1.2 * glow + 1.4 * (front + riverFront) + 0.6 * snow + 1.3 * ripple + 0.9 * wind;
   } else {
-    // Daylight: the night's sizes, a touch finer; the weight is in the ink.
-    size = 0.7 + 0.35 * (1.0 - shade) + (0.75 + 0.75 * city) * lit * twinkle + 0.7 * riverOn + 1.1 * glow + 1.3 * energy + 1.5 * snow * (0.35 + 0.65 * (1.0 - shade)) + 1.2 * ripple + 0.8 * wind;
+    // Daylight: fine dots; the lines and outlines a little heavier.
+    size = 0.6 + 0.85 * contour + 0.6 * index + 0.45 * sil + (0.85 + 0.8 * city) * lit * twinkle + 0.7 * riverOn + 1.1 * glow + 1.3 * energy + 1.3 * snow * (0.35 + 0.65 * (1.0 - shade)) + 1.2 * ripple + 0.8 * wind;
   }
   size *= u_px / depth;
   // The soft pass draws only the lit floor and the hand's light, large.
   float haloOn = clamp(lit * (0.55 + 0.45 * twinkle) + glow + energy + ripple, 0.0, 1.0);
   bool halo = u_halo > 0.5;
-  gl_PointSize = halo ? clamp(size * 3.6, 1.0, u_maxPx * 3.0) : clamp(size, 1.0, u_maxPx);
+  gl_PointSize = halo ? clamp(size * 5.0, 1.0, u_maxPx * 4.0) : clamp(size, 1.0, u_maxPx);
 
   // Fade the field's edges and the near distance.
   float edge = smoothstep(0.0, 0.12, a_uv.x) * smoothstep(1.0, 0.88, a_uv.x)
@@ -166,30 +189,40 @@ void main() {
     a = (0.42 + 0.45 * shade) + lit * 0.6 + riverOn * 0.5 + snow * 0.5 + glow * 0.6 + front + riverFront + ripple * 0.7 + wind * 0.4;
     a = clamp(a, 0.0, 1.0) * far;
   } else {
-    // Daylight. The hills are a faint wash, strongest in shadow; the snow
-    // is drawn by its shadowed faces; the floor and rivers carry colour.
+    // Daylight: the ranges drawn as a topographic print. Contour lines in
+    // slate, every fifth one heavier; silhouettes where a slope turns
+    // away; between the lines only a breath of shading. The snow keeps its
+    // shadowed faces; the floor is a glowing green.
     float shadow = 1.0 - shade;
-    col = u_cOff;
-    a = 0.04 + 0.2 * shadow * shadow;
+    float line = max(contour * 0.7, index * 0.95);
+    col = mix(u_cOff, u_cSnow * 0.8, index);
+    a = 0.012 + 0.05 * pow(shadow, 2.0) + line + 0.32 * sil;
     col = mix(col, u_cSnow, snow);
-    a = mix(a, 0.16 + 0.8 * pow(shadow, 1.2), snow);
-    col = mix(col, u_cLit * mix(1.0, 0.8, city), lit);
-    a = max(a, lit * (0.72 + 0.28 * twinkle * (0.6 + 0.6 * city)));
+    a = mix(a, max(0.18 + 0.78 * pow(shadow, 1.2), line), snow);
+    col = mix(col, mix(u_cLit, u_cGlow, 0.3 + 0.35 * twinkle) * mix(1.0, 0.82, city), lit);
+    a = max(a, lit * (0.78 + 0.22 * twinkle * (0.6 + 0.6 * city)));
     float wet = riverOn * (1.0 - lit * 0.5);
     col = mix(col, u_cRiver, wet);
     a = max(a, wet * (0.5 + 0.3 * flow));
     float touch = clamp(glow + ripple + wind * 0.7 + energy, 0.0, 1.0);
     col = mix(col, u_cLit, touch * 0.9);
     a = max(a, touch * 0.85);
-    // Aerial perspective: the far hills fade into the sky (the snow less);
-    // and the ink stays light behind the headline.
-    float far = mix(0.35 + 0.62 * snow, 1.0, smoothstep(12.5, 5.0, depth));
-    vec2 q = (clip.xy / clip.w - vec2(0.0, 0.18)) * vec2(1.05, 1.9);
-    float hush = mix(0.35, 1.0, smoothstep(0.35, 0.95, length(q)));
-    a = clamp(a, 0.0, 1.0) * far * mix(hush, 1.0, max(lit, snow));
+    // Aerial perspective: the far hills soften toward the sky (the snow
+    // less), and only a little behind the headline: the ranges run on.
+    float far = mix(0.5 + 0.47 * snow, 1.0, smoothstep(12.5, 5.0, depth));
+    // Behind the words (kicker, headline, lead) the ink steps back; the
+    // outlines run on around them.
+    // A rounded box over kicker, headline and lead (normalised device coords).
+    vec2 q = abs(clip.xy / clip.w - vec2(0.0, 0.24)) / vec2(u_aspect < 0.85 ? 1.15 : 0.6, 0.5);
+    float box = pow(pow(q.x, 4.0) + pow(q.y, 4.0), 0.25);
+    float hush = mix(0.2, 1.0, smoothstep(0.82, 1.22, box));
+    // The nearest ground draws its dots large: lighter ink there.
+    float close = mix(0.5, 1.0, smoothstep(1.4, 3.4, depth));
+    a = clamp(a, 0.0, 1.0) * far * mix(hush * close, 1.0, lit) * mix(1.0, sqrt(hush), snow);
     if (halo) {
-      col = mix(u_cLit, u_cRiver, 0.25);
-      a = haloOn * 0.11 * far;
+      // The glow: the floor's light, spread wide and soft.
+      col = u_cGlow;
+      a = haloOn * (0.16 + 0.1 * city) * far;
     }
   }
   v_color = col;
@@ -402,6 +435,7 @@ export const createValleyScene: SceneFactory = async (ctx: SceneContext): Promis
       const pal = f.palette;
       const dark = pal.theme === "dark";
       let off: number[], snow: number[], lit: number[], river: number[];
+      let glowGreen: number[] = [...pal.hydro];
       if (dark) {
         off = pal.dotOff.map((v) => v * 1.5);
         snow = [0.82, 0.88, 0.95];
@@ -418,6 +452,8 @@ export const createValleyScene: SceneFactory = async (ctx: SceneContext): Promis
         snow = ink3.map((v, i) => (v * 0.62 + glow2[i]! * 0.38) * 0.82);
         lit = [...hydro];
         river = glow2.map((v, i) => (v * 0.5 + hydro[i]! * 0.5) * 0.85);
+        // A brighter, livelier green than the ink: the floor's daylight glow.
+        glowGreen = hydro.map((v, i) => v * 0.45 + [0.16, 0.8, 0.4][i]! * 0.55);
       }
 
       gl.clearColor(0, 0, 0, 0);
@@ -449,6 +485,9 @@ export const createValleyScene: SceneFactory = async (ctx: SceneContext): Promis
       gl.uniform3fv(u("u_cLit"), lit);
       gl.uniform3fv(u("u_cSnow"), snow);
       gl.uniform3fv(u("u_cRiver"), river);
+      gl.uniform3fv(u("u_cGlow"), glowGreen);
+      gl.uniform3fv(u("u_eye"), eye);
+      gl.uniform1f(u("u_grid"), Math.sqrt(dots.count));
       gl.uniform1f(u("u_dark"), dark ? 1 : 0);
       gl.uniform2fv(u("u_city[0]"), [...meta.places.Kathmandu, ...meta.places.Lalitpur, ...meta.places.Bhaktapur]);
       const taps = new Float32Array(9).fill(-1);
