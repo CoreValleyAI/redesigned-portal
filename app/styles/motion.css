@@ -362,6 +362,62 @@
   filter: drop-shadow(0 0 0.4rem color-mix(in oklch, var(--hydro) 40%, transparent));
 }
 
+/* ══ Dew, the cursor's companion (components/motion/pointer-fx.tsx) ═══════
+   A dot that follows the pointer and a ring that trails it, settles around
+   buttons and links, or becomes a small label. Positioned by script. */
+.dew {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  pointer-events: none;
+  opacity: 0;
+}
+.dew__dot,
+.dew__ring {
+  position: absolute;
+  top: 0;
+  left: 0;
+  will-change: transform;
+}
+.dew__dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--ink);
+  opacity: 0.55;
+}
+.dew__ring {
+  box-sizing: border-box;
+  display: grid;
+  place-items: center;
+  border: 1px solid color-mix(in oklch, var(--ink) 30%, transparent);
+  transition:
+    background-color var(--dur-short) var(--ease-out),
+    border-color var(--dur-short) var(--ease-out);
+}
+.dew[data-mode="hug"] .dew__ring {
+  border-color: color-mix(in oklch, var(--ink) 16%, transparent);
+  background: color-mix(in oklch, var(--ink) 5%, transparent);
+}
+.dew[data-mode="label"] .dew__ring {
+  border-color: var(--line-strong);
+  background: var(--bg-raised);
+}
+.dew__label {
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: var(--ink);
+  opacity: 0;
+  transition: opacity var(--dur-short) var(--ease-out);
+}
+.dew[data-mode="label"] .dew__label {
+  opacity: 1;
+}
+
 /* ══ Contour prints, drawn large (components/art/contour-cover.tsx) ════════
    Each line traces itself in (pathLength 1: the dash is the whole line, the
    gap a little longer, so a line is fully hidden at the start and has no

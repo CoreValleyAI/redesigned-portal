@@ -170,7 +170,7 @@ export function RimDrag() {
           The rim · Nepal
         </text>
         {/* The data. */}
-        <g ref={dataRef} className="cursor-grab active:cursor-grabbing">
+        <g ref={dataRef} data-cursor="Drag" className="cursor-grab active:cursor-grabbing">
           <circle cx={C} cy={C} r="54" className="fill-hydro" opacity="0.1" />
           <circle cx={C} cy={C} r="30" className="fill-hydro" opacity="0.18" />
           {Array.from({ length: 19 }, (_, i) => {
