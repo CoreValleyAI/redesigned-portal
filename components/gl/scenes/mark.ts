@@ -1,0 +1,550 @@
+/**
+ * The Living Mark: the brand mark as a field of hydro dots. It is the
+ * footer mark from the live site (components/marketing/dot-matrix.tsx on
+ * main), rebuilt on the shared Stage.
+ *
+ *  · Assemble. The first time the mark scrolls into view, its dots fly in
+ *    from a scatter, sweeping left to right and switching on as they land:
+ *    the mark coming online. It plays again whenever the mark comes back.
+ *  · React. The pointer parts the dots and lights them, leaving a short
+ *    afterglow; they spring home with a little overshoot when it moves on.
+ *    On touch screens a soft light drifts across the mark by itself, a held
+ *    finger parts the dots, and scrolling sloshes them like water in a glass.
+ *  · Still. With reduced motion: the finished mark, drawn once.
+ *
+ * The dots come from the logo's own paths (components/brand/paths.ts),
+ * rasterised at grid resolution with 4× supersampling, so there is no image
+ * request. Coverage is weighted by the logo's gradient, so the light
+ * upper-left of the mark carries the fuller dots. The physics runs on the
+ * CPU (a couple of thousand springs); the field is one buffer upload and
+ * one draw call per frame.
+ */
+import { BRANDMARK } from "@/components/brand/paths";
+import { clamp01, compileProgram, smoothstep, uniforms } from "@/lib/gl/core";
+import type { FrameInfo, Scene, SceneContext, SceneFactory } from "@/lib/gl/stage";
+import { damp } from "@/lib/motion/spring";
+import { encodeSrgb, type RGB } from "@/lib/theme";
+
+export interface MarkOptions {
+  /** Grid pitch, CSS px. */
+  cell?: number;
+  /** Cells below this share of the peak coverage stay empty. */
+  threshold?: number;
+  /** Exponent on coverage: below 1 lifts the faint edge cells. */
+  gamma?: number;
+  /** Peak dot alpha. */
+  intensity?: number;
+  /** Pointer reach, CSS px. */
+  radius?: number;
+  /** How far the pointer pushes a dot at its centre, CSS px. */
+  push?: number;
+  /** Empty margin around the mark inside the canvas, CSS px: room for the
+      fly-in. Must match the host's negative inset. */
+  bleed?: number;
+  /** Fly in again each time the mark comes back into view. */
+  replay?: boolean;
+}
+
+const VS = /* glsl */ `#version 300 es
+precision highp float;
+layout(location = 0) in vec2 a_pos;    // CSS px
+layout(location = 1) in float a_size;  // diameter, CSS px
+layout(location = 2) in float a_alpha;
+layout(location = 3) in float a_lit;
+uniform vec2 u_res;                    // CSS px
+uniform float u_dpr;
+uniform vec3 u_color;
+uniform vec3 u_hot;
+out float v_alpha;
+out vec3 v_color;
+void main() {
+  vec2 clip = (a_pos / u_res) * 2.0 - 1.0;
+  gl_Position = vec4(clip.x, -clip.y, 0.0, 1.0);
+  gl_PointSize = a_size * u_dpr;
+  v_alpha = a_alpha;
+  v_color = mix(u_color, u_hot, clamp(a_lit, 0.0, 1.0));
+}`;
+
+/* Night Valley: the live site's dot, a solid core to 28 % of the radius,
+   a shoulder to 50 %, then a halo falling to nothing at the edge; summed
+   additively, the halos are the glow. Glacier (u_paper): light does not
+   glow on paper, so a crisp disc with an anti-aliased rim, like the dots of
+   the Reservoir below it. */
+const FS = /* glsl */ `#version 300 es
+precision mediump float;
+uniform float u_paper;
+uniform float u_rim;    // the disc's anti-aliasing width, in d units
+in float v_alpha;
+in vec3 v_color;
+out vec4 o;
+void main() {
+  float d = length(gl_PointCoord - 0.5) * 2.0;
+  float glow = d < 0.28 ? 1.0
+             : d < 0.5 ? mix(0.9, 0.28, (d - 0.28) / 0.22)
+             : mix(0.28, 0.0, min(1.0, (d - 0.5) / 0.5));
+  float disc = 1.0 - smoothstep(0.36 - u_rim, 0.36 + u_rim, d);
+  float i = mix(glow, disc, u_paper) * v_alpha;
+  if (i < 0.003) discard;
+  o = vec4(v_color * i, i);
+}`;
+
+/** Floats per dot in the vertex buffer: x, y, size, alpha, lit. */
+const STRIDE = 5;
+/** Supersampling per cell when rasterising the mark. */
+const SS = 4;
+/** The dots' spring: stiff, a touch under critical damping (≈ 6 % overshoot). */
+const K = 170;
+const C = 2 * 0.66 * Math.sqrt(K);
+/** Scroll slosh: share of a change in scroll speed passed to the dots. */
+const SLOSH = 0.07;
+
+type Phase = "waiting" | "assembling" | "done";
+
+function mulberry32(seed: number) {
+  let a = seed >>> 0;
+  return () => {
+    a = (a + 0x6d2b79f5) >>> 0;
+    let t = a;
+    t = Math.imul(t ^ (t >>> 15), t | 1);
+    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+/**
+ * Coverage per cell of the mark drawn into a cols × rows grid at (ox, oy),
+ * gw × gh cells. Supersampled, then box-averaged, so every source pixel gets
+ * a share of its cell; lighter parts of the gradient count for more.
+ */
+function rasterise(cols: number, rows: number, ox: number, oy: number, gw: number): Float32Array {
+  const W = cols * SS;
+  const H = rows * SS;
+  const canvas: OffscreenCanvas | HTMLCanvasElement =
+    typeof OffscreenCanvas !== "undefined"
+      ? new OffscreenCanvas(W, H)
+      : Object.assign(document.createElement("canvas"), { width: W, height: H });
+  const g = canvas.getContext("2d", { willReadFrequently: true }) as
+    CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D | null;
+  const cov = new Float32Array(cols * rows);
+  if (!g) return cov;
+
+  const [vx, vy, vw] = BRANDMARK.viewBox;
+  const k = (gw * SS) / vw;
+  g.setTransform(k, 0, 0, k, ox * SS - vx * k, oy * SS - vy * k);
+  const G = BRANDMARK.gradient;
+  const grad = g.createLinearGradient(G.x1, G.y1, G.x2, G.y2);
+  grad.addColorStop(0, G.from);
+  grad.addColorStop(1, G.to);
+  g.fillStyle = grad;
+  for (const d of BRANDMARK.paths) g.fill(new Path2D(d));
+
+  const data = g.getImageData(0, 0, W, H).data;
+  for (let r = 0; r < rows; r++) {
+    for (let c = 0; c < cols; c++) {
+      let sum = 0;
+      for (let y = 0; y < SS; y++) {
+        for (let x = 0; x < SS; x++) {
+          const i = ((r * SS + y) * W + (c * SS + x)) * 4;
+          const a = data[i + 3]! / 255;
+          const lum = (data[i]! * 0.3 + data[i + 1]! * 0.59 + data[i + 2]! * 0.11) / 255;
+          sum += a * (0.35 + 0.65 * lum);
+        }
+      }
+      cov[r * cols + c] = sum / (SS * SS);
+    }
+  }
+  return cov;
+}
+
+export function createMarkScene(options: MarkOptions = {}): SceneFactory {
+  const cell = options.cell ?? 4;
+  const threshold = options.threshold ?? 0.08;
+  const gamma = options.gamma ?? 0.6;
+  const intensity = options.intensity ?? 1;
+  const radius = options.radius ?? 90;
+  const push = options.push ?? 18;
+  const bleed = options.bleed ?? 90;
+  const replay = options.replay ?? true;
+
+  return (ctx: SceneContext): Scene => {
+    const { gl, canvas } = ctx;
+    const program = compileProgram(gl, VS, FS);
+    const u = uniforms(gl, program);
+    const fine = window.matchMedia("(hover: hover) and (pointer: fine)").matches;
+
+    const vao = gl.createVertexArray()!;
+    const buf = gl.createBuffer()!;
+    gl.bindVertexArray(vao);
+    gl.bindBuffer(gl.ARRAY_BUFFER, buf);
+    const bytes = STRIDE * 4;
+    gl.enableVertexAttribArray(0);
+    gl.vertexAttribPointer(0, 2, gl.FLOAT, false, bytes, 0);
+    gl.enableVertexAttribArray(1);
+    gl.vertexAttribPointer(1, 1, gl.FLOAT, false, bytes, 8);
+    gl.enableVertexAttribArray(2);
+    gl.vertexAttribPointer(2, 1, gl.FLOAT, false, bytes, 12);
+    gl.enableVertexAttribArray(3);
+    gl.vertexAttribPointer(3, 1, gl.FLOAT, false, bytes, 16);
+    gl.bindVertexArray(null);
+
+    // The field, as parallel arrays.
+    let n = 0;
+    let hx = new Float32Array(0); // home
+    let hy = new Float32Array(0);
+    let sx = new Float32Array(0); // fly-in start
+    let sy = new Float32Array(0);
+    let x = new Float32Array(0);
+    let y = new Float32Array(0);
+    let vx = new Float32Array(0);
+    let vy = new Float32Array(0);
+    let w = new Float32Array(0); // coverage weight, 0–1
+    let order = new Float32Array(0); // fly-in start, 0–1 across the sweep
+    let mass = new Float32Array(0); // slosh response
+    let glow = new Float32Array(0); // light from the pointer, with afterglow
+    let verts = new Float32Array(0);
+
+    let cssW = 1;
+    let cssH = 1;
+    let dpr = 1;
+    // The mark's box inside the canvas, CSS px.
+    const box = { x: 0, y: 0, w: 1, h: 1 };
+
+    let reduced = ctx.reduced;
+    let phase: Phase = reduced ? "done" : "waiting";
+    let tStart = -1;
+    let firstView = true;
+    let holdUntil = -1;
+    let ambient = 0;
+    let lastTime = -1;
+    let lastScroll = 0;
+    let scrollVel = 0;
+    let frames = 0;
+    // What the canvas shows now, so a frame with nothing new can be skipped.
+    let settled = false;
+    let dirty = true;
+    let drawn: { theme: string; color: RGB } = { theme: "", color: [0, 0, 0] };
+    const rnd = mulberry32(20_260_413);
+
+    /** A fly-in start: a random direction, a distance that fits the margin,
+        clamped inside the canvas (the left and top keep a wider margin: the
+        footer clips what lies beyond its edges). */
+    const scatter = (i: number) => {
+      const ang = rnd() * Math.PI * 2;
+      const reach = bleed * 0.9 + Math.min(box.w, box.h) * 0.15;
+      const dist = 30 + rnd() * reach;
+      const m = 6;
+      const lt = bleed * 0.72;
+      sx[i] = Math.min(cssW - m, Math.max(lt, hx[i]! + Math.cos(ang) * dist));
+      sy[i] = Math.min(cssH - m, Math.max(lt, hy[i]! + Math.sin(ang) * dist));
+    };
+
+    const place = (atHome: boolean) => {
+      dirty = true;
+      for (let i = 0; i < n; i++) {
+        x[i] = atHome ? hx[i]! : sx[i]!;
+        y[i] = atHome ? hy[i]! : sy[i]!;
+        vx[i] = 0;
+        vy[i] = 0;
+        glow[i] = 0;
+      }
+    };
+
+    const build = () => {
+      const cols = Math.max(1, Math.floor(cssW / cell));
+      const rows = Math.max(1, Math.floor(cssH / cell));
+      const gx = (cssW - cols * cell) / 2;
+      const gy = (cssH - rows * cell) / 2;
+      const bc = Math.round(bleed / cell);
+      const ic = Math.max(1, cols - bc * 2);
+      const ir = Math.max(1, rows - bc * 2);
+      const aspect = BRANDMARK.viewBox[2] / BRANDMARK.viewBox[3];
+      let gw = ic;
+      let gh = Math.round(ic / aspect);
+      if (gh > ir) {
+        gh = ir;
+        gw = Math.round(ir * aspect);
+      }
+      const ox = bc + Math.floor((ic - gw) / 2);
+      const oy = bc + Math.floor((ir - gh) / 2);
+      box.x = gx + ox * cell;
+      box.y = gy + oy * cell;
+      box.w = gw * cell;
+      box.h = gh * cell;
+
+      const cov = rasterise(cols, rows, ox, oy, gw);
+      let peak = 0;
+      for (let i = 0; i < cov.length; i++) peak = Math.max(peak, cov[i]!);
+      const keep: number[] = [];
+      if (peak > 0) for (let i = 0; i < cov.length; i++) if (cov[i]! / peak >= threshold) keep.push(i);
+
+      n = keep.length;
+      hx = new Float32Array(n);
+      hy = new Float32Array(n);
+      sx = new Float32Array(n);
+      sy = new Float32Array(n);
+      x = new Float32Array(n);
+      y = new Float32Array(n);
+      vx = new Float32Array(n);
+      vy = new Float32Array(n);
+      w = new Float32Array(n);
+      order = new Float32Array(n);
+      mass = new Float32Array(n);
+      glow = new Float32Array(n);
+      verts = new Float32Array(n * STRIDE);
+      keep.forEach((cellIndex, i) => {
+        const c = cellIndex % cols;
+        const r = (cellIndex - c) / cols;
+        hx[i] = gx + (c + 0.5) * cell;
+        hy[i] = gy + (r + 0.5) * cell;
+        w[i] = Math.pow(cov[cellIndex]! / peak, gamma);
+        order[i] = clamp01((c - ox) / gw) * 0.75 + rnd() * 0.25;
+        mass[i] = 0.55 + rnd() * 0.9;
+        scatter(i);
+      });
+      // Resized mid-flight: land at once rather than restart the sweep.
+      if (phase === "assembling") phase = "done";
+      place(phase === "done");
+
+      gl.bindBuffer(gl.ARRAY_BUFFER, buf);
+      gl.bufferData(gl.ARRAY_BUFFER, verts.byteLength, gl.DYNAMIC_DRAW);
+    };
+
+    // The fly-in waits until the mark is properly in view, and plays again
+    // after it has left (replay). Visible the moment the scene starts, the
+    // still poster was already showing the mark: no fly-in then.
+    const io = new IntersectionObserver(
+      ([e]) => {
+        if (!e) return;
+        const ratio = e.isIntersecting ? e.intersectionRatio : 0;
+        if (ratio >= 0.3) {
+          if (firstView && phase === "waiting") {
+            phase = "done";
+            place(true);
+          } else if (phase === "waiting") {
+            phase = "assembling";
+            tStart = -1;
+          }
+          ctx.invalidate();
+        } else if (ratio === 0 && replay && phase === "done" && !reduced) {
+          for (let i = 0; i < n; i++) scatter(i);
+          place(false);
+          phase = "waiting";
+        }
+        firstView = false;
+      },
+      { threshold: [0, 0.3] },
+    );
+    io.observe(canvas);
+
+    return {
+      resize(width, height, d) {
+        dpr = d;
+        cssW = width / d;
+        cssH = height / d;
+        gl.viewport(0, 0, width, height);
+        build();
+      },
+
+      frame(f: FrameInfo) {
+        reduced = f.reduced;
+        if (reduced && phase !== "done") {
+          phase = "done";
+          place(true);
+        }
+        // Not yet in view: nothing to show until the fly-in starts.
+        if (phase === "waiting" || n === 0) {
+          gl.clearColor(0, 0, 0, 0);
+          gl.clear(gl.COLOR_BUFFER_BIT);
+          lastTime = -1;
+          dirty = true;
+          return false;
+        }
+        frames++;
+
+        // Time since this scene last drew: the Stage skips frames while the
+        // scene sleeps, and a long gap restarts the integration cleanly.
+        const gap = lastTime < 0 ? 1 : f.time - lastTime;
+        lastTime = f.time;
+        const dt = gap > 0.1 ? 1 / 60 : Math.min(1 / 30, gap);
+
+        // Assembly clock.
+        let t = 0;
+        if (phase === "assembling") {
+          if (tStart < 0) tStart = f.time;
+          t = f.time - tStart;
+        }
+
+        // The pointer, in canvas px; a held finger stays for a moment after
+        // it lifts, so a tap visibly parts the dots.
+        // Only a pointer within reach of the field counts.
+        const px = (f.pointer.x + 1) * 0.5 * cssW;
+        const py = (1 - f.pointer.y) * 0.5 * cssH;
+        const near = px > -radius && py > -radius && px < cssW + radius && py < cssH + radius;
+        if (f.pointer.down && near) holdUntil = f.time + 0.6;
+        const presence = reduced || !near ? 0 : Math.max(f.pointer.presence, holdUntil > f.time ? 1 : 0);
+
+        // Touch screens: a light drifting on a slow figure-of-eight once the
+        // mark has landed, stepping aside while a finger is down.
+        const wantAmbient = !fine && !reduced && phase === "done" && presence < 0.05;
+        ambient = damp(ambient, wantAmbient ? 1 : 0, 0.5, dt);
+        if (!wantAmbient && ambient < 0.002) ambient = 0;
+        const ax = box.x + box.w * (0.5 + 0.4 * Math.sin(f.time * 0.55));
+        const ay = box.y + box.h * (0.5 + 0.3 * Math.sin(f.time * 1.1 + 0.6));
+
+        // Scroll slosh: a change of scroll speed is felt as inertia.
+        let kick = 0;
+        if (!reduced) {
+          const scroll = window.scrollY;
+          if (gap > 0.1) {
+            scrollVel = 0;
+          } else {
+            const raw = (scroll - lastScroll) / Math.max(gap, 1 / 240);
+            const prev = scrollVel;
+            scrollVel = damp(scrollVel, raw, 0.05, gap);
+            kick = Math.max(-160, Math.min(160, (scrollVel - prev) * SLOSH));
+          }
+          lastScroll = scroll;
+        }
+
+        // Nothing new to show (the Stage also calls when its own pointer
+        // moves, wherever it is): keep the last frame on screen.
+        const pal = f.palette;
+        const color = encodeSrgb(pal.hydro);
+        const sameLook =
+          pal.theme === drawn.theme &&
+          Math.abs(color[0] - drawn.color[0]) +
+            Math.abs(color[1] - drawn.color[1]) +
+            Math.abs(color[2] - drawn.color[2]) <
+            1e-4;
+        if (settled && !dirty && sameLook && phase === "done" && presence === 0 && ambient === 0 && kick === 0) {
+          return false;
+        }
+
+        const subs = Math.max(1, Math.ceil(dt / (1 / 120)));
+        const h = dt / subs;
+        const fade = Math.exp(-dt * 4.5);
+        let moving = false;
+        const landing = phase === "assembling";
+        let landed = true;
+
+        for (let i = 0; i < n; i++) {
+          // Where the dot wants to be: home, on its way home, or pushed aside.
+          let tx = hx[i]!;
+          let ty = hy[i]!;
+          let on = 1;
+          if (landing) {
+            const p = clamp01((t - order[i]! * 0.9) / 1.1);
+            const e = 1 - Math.pow(1 - p, 3.2);
+            tx = sx[i]! + (tx - sx[i]!) * e;
+            ty = sy[i]! + (ty - sy[i]!) * e;
+            on = smoothstep(0, 0.3, p);
+            if (p < 1) landed = false;
+          }
+
+          let lit = 0;
+          if (presence > 0) {
+            const dx = x[i]! - px;
+            const dy = y[i]! - py;
+            const dist = Math.sqrt(dx * dx + dy * dy);
+            if (dist < radius) {
+              const fall = 1 - dist / radius;
+              lit = fall * presence;
+              const k = (fall * fall * push * presence) / (dist || 1);
+              tx += dx * k;
+              ty += dy * k;
+            }
+          }
+          if (ambient > 0) {
+            const dx = x[i]! - ax;
+            const dy = y[i]! - ay;
+            const dist = Math.sqrt(dx * dx + dy * dy);
+            if (dist < radius) {
+              const fall = 1 - dist / radius;
+              lit = Math.max(lit, fall * ambient);
+              const k = (fall * fall * push * ambient) / (dist || 1);
+              tx += dx * k;
+              ty += dy * k;
+            }
+          }
+
+          // Spring toward the target (semi-implicit Euler, 120 Hz substeps).
+          let X = x[i]!;
+          let Y = y[i]!;
+          let VX = vx[i]!;
+          let VY = vy[i]! + kick * mass[i]!;
+          for (let s = 0; s < subs; s++) {
+            VX += (K * (tx - X) - C * VX) * h;
+            VY += (K * (ty - Y) - C * VY) * h;
+            X += VX * h;
+            Y += VY * h;
+          }
+          x[i] = X;
+          y[i] = Y;
+          vx[i] = VX;
+          vy[i] = VY;
+          if (Math.abs(VX) + Math.abs(VY) > 1.5 || Math.abs(tx - X) + Math.abs(ty - Y) > 0.08) moving = true;
+
+          const g = Math.max(lit, glow[i]! * fade);
+          glow[i] = g < 0.004 ? 0 : g;
+          if (g > 0.004) moving = true;
+
+          const o = i * STRIDE;
+          const wi = w[i]!;
+          verts[o] = X;
+          verts[o + 1] = Y;
+          verts[o + 2] = cell * (0.55 + 0.45 * wi) * (1 + g * 0.9) * 2;
+          verts[o + 3] = Math.min(1, wi * intensity * on + g * 0.7 * on);
+          verts[o + 4] = g;
+        }
+        if (landing && landed) phase = "done";
+
+        // With nothing but the drifting light to show, half the frame rate
+        // is plenty (and kinder to a phone's battery).
+        const onlyAmbient = phase === "done" && presence === 0 && kick === 0 && ambient > 0;
+        if (onlyAmbient && frames % 2 === 1) return true;
+
+        // Colour and blend per frame, so a theme change takes on the next
+        // paint. Night Valley: additive hydro. Glacier: the canvas is
+        // transparent, so the (premultiplied) dots lay over the page.
+        const dark = pal.theme === "dark";
+        const ink = encodeSrgb(pal.ink);
+        const mixHot = dark ? 0.55 : 0.4;
+        const hot: RGB = [
+          color[0] + (ink[0] - color[0]) * mixHot,
+          color[1] + (ink[1] - color[1]) * mixHot,
+          color[2] + (ink[2] - color[2]) * mixHot,
+        ];
+
+        gl.clearColor(0, 0, 0, 0);
+        gl.clear(gl.COLOR_BUFFER_BIT);
+        gl.enable(gl.BLEND);
+        gl.blendFunc(gl.ONE, dark ? gl.ONE : gl.ONE_MINUS_SRC_ALPHA);
+        gl.useProgram(program);
+        gl.uniform2f(u("u_res"), cssW, cssH);
+        gl.uniform1f(u("u_dpr"), dpr);
+        gl.uniform1f(u("u_paper"), dark ? 0 : 1);
+        // One device pixel of rim, as a share of a full-weight dot.
+        gl.uniform1f(u("u_rim"), 1 / (cell * 2 * dpr));
+        gl.uniform3fv(u("u_color"), color);
+        gl.uniform3fv(u("u_hot"), hot);
+        gl.bindBuffer(gl.ARRAY_BUFFER, buf);
+        gl.bufferSubData(gl.ARRAY_BUFFER, 0, verts);
+        gl.bindVertexArray(vao);
+        gl.drawArrays(gl.POINTS, 0, n);
+        gl.bindVertexArray(null);
+        settled = !moving;
+        dirty = false;
+        drawn = { theme: pal.theme, color };
+
+        return phase === "assembling" || moving || presence > 0 || ambient > 0;
+      },
+
+      dispose() {
+        io.disconnect();
+        gl.deleteBuffer(buf);
+        gl.deleteVertexArray(vao);
+        gl.deleteProgram(program);
+      },
+    };
+  };
+}

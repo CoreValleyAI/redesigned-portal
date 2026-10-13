@@ -350,6 +350,18 @@
   }
 }
 
+/* ══ The Living Mark, still (components/brand/living-mark.tsx) ════════════
+   The brand mark on a 4 px dot grid: what shows before the WebGL field has
+   drawn, and for good without it. */
+.mark-poster {
+  background: radial-gradient(circle at center, var(--hydro) 0 0.85px, transparent 1.35px) 0 0 / 4px 4px;
+  -webkit-mask: var(--mask) center / contain no-repeat;
+  mask: var(--mask) center / contain no-repeat;
+}
+:root[data-theme="dark"] .mark-poster {
+  filter: drop-shadow(0 0 0.4rem color-mix(in oklch, var(--hydro) 40%, transparent));
+}
+
 /* ── Metro map (platform): the line fills, then a light runs along it ──── */
 @keyframes cv-metro-fill {
   from {

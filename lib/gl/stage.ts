@@ -48,6 +48,9 @@ export interface SceneContext {
   canvas: HTMLCanvasElement;
   tier: Tier;
   reduced: boolean;
+  /** Ask for a frame: for scenes that react to events of their own (an
+      observer, a timer) between the Stage's own reasons to draw. */
+  invalidate: () => void;
 }
 
 export interface Scene {
@@ -143,7 +146,16 @@ export class Stage {
     const gl = this.gl;
     if (!gl || this.disposed) return;
     try {
-      this.scene = await this.factory({ gl, canvas: this.canvas, tier: this.tier, reduced: this.reduced });
+      this.scene = await this.factory({
+        gl,
+        canvas: this.canvas,
+        tier: this.tier,
+        reduced: this.reduced,
+        invalidate: () => {
+          this.needs = true;
+          if (this.visible) wake();
+        },
+      });
     } catch (err) {
       console.error("[stage]", err);
       this.opts.onFail?.("scene-failed");
@@ -294,7 +306,8 @@ export class Stage {
     p.y = damp(p.y, t.y, half, dt);
     const presenceTarget = t.inside && !this.reduced ? 1 : 0;
     p.presence = damp(p.presence, presenceTarget, 0.12, dt);
-    const pointerMoving = Math.abs(p.x - t.x) > 1e-3 || Math.abs(p.y - t.y) > 1e-3 || Math.abs(p.presence - presenceTarget) > 1e-3;
+    const pointerMoving =
+      Math.abs(p.x - t.x) > 1e-3 || Math.abs(p.y - t.y) > 1e-3 || Math.abs(p.presence - presenceTarget) > 1e-3;
     const paletteMoving = this.easePalette(dt);
 
     if (!this.needs && !pointerMoving && !paletteMoving) return false;
