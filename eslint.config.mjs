@@ -1,9 +1,5 @@
-import { dirname } from "node:path";
-import { fileURLToPath } from "node:url";
-import { FlatCompat } from "@eslint/eslintrc";
-
-const __dirname = dirname(fileURLToPath(import.meta.url));
-const compat = new FlatCompat({ baseDirectory: __dirname });
+import nextVitals from "eslint-config-next/core-web-vitals";
+import nextTs from "eslint-config-next/typescript";
 
 const eslintConfig = [
   {
@@ -27,11 +23,12 @@ const eslintConfig = [
     ],
   },
 
-  ...compat.extends("next/core-web-vitals", "next/typescript"),
+  ...nextVitals,
+  ...nextTs,
 
   {
     rules: {
-      // Enforce the token boundary: app code consumes components/ui and the
+      // Enforce the token boundary: app code consumes components and the
       // CSS custom properties, never the design system's internals.
       "no-restricted-imports": [
         "error",
@@ -40,14 +37,33 @@ const eslintConfig = [
             {
               group: ["**/design_system/**"],
               message:
-                "Do not import from design_system/. Use components/ui/* or the CSS tokens via Tailwind utilities.",
+                "Do not import from design_system/. Use components/system/* or the CSS tokens.",
             },
           ],
         },
       ],
-      // Logos and the ridgeline are intentionally plain <img>: next/image does
-      // nothing useful for SVG and would need dangerouslyAllowSVG.
+      // Logos and generated art are intentionally plain <img>: next/image
+      // does nothing useful for SVG and the export is unoptimised anyway.
       "@next/next/no-img-element": "off",
+    },
+  },
+
+  {
+    // Components from the preview site that predate the React Compiler
+    // rules. Each is rebuilt or rewritten in its revamp phase (see
+    // docs/revamp/11); new code gets the rules at full strength.
+    files: [
+      "components/blog/**",
+      "components/content/**",
+      "components/docs/**",
+      "components/jobs/**",
+      "components/layout/**",
+      "components/marketing/**",
+      "components/portal/**",
+    ],
+    rules: {
+      "react-hooks/set-state-in-effect": "warn",
+      "react-hooks/refs": "warn",
     },
   },
 
