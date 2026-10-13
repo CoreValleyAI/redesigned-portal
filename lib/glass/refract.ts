@@ -51,11 +51,15 @@ function sd(px: number, py: number, hw: number, hh: number, r: number): [number,
   return qx > qy ? [qx - r, sx, 0] : [qy - r, 0, sy];
 }
 
+/** The map is built at half resolution (feImage stretches it): a quarter of
+    the work, and the bezel is smooth enough not to show it. */
+const RES = 0.5;
+
 function mapDataUrl(o: MapOptions): { href: string; scale: number } {
-  const w = Math.max(1, Math.round(o.width));
-  const h = Math.max(1, Math.round(o.height));
-  const hw = w / 2;
-  const hh = h / 2;
+  const w = Math.max(1, Math.round(o.width * RES));
+  const h = Math.max(1, Math.round(o.height * RES));
+  const hw = o.width / 2;
+  const hh = o.height / 2;
   const r = Math.min(o.radius, hw, hh);
   const bezel = Math.max(1, Math.min(o.bezel, hw, hh));
   const lut = profile(bezel, o.thickness);
@@ -72,8 +76,8 @@ function mapDataUrl(o: MapOptions): { href: string; scale: number } {
   // One quadrant, mirrored.
   for (let j = 0; j < Math.ceil(h / 2); j++)
     for (let i = 0; i < Math.ceil(w / 2); i++) {
-      const px = i + 0.5 - hw;
-      const py = j + 0.5 - hh;
+      const px = (i + 0.5) / RES - hw;
+      const py = (j + 0.5) / RES - hh;
       const inside = -sd(px, py, hw, hh, r)[0];
       let ox = 0;
       let oy = 0;
@@ -111,8 +115,7 @@ export function canRefract(): boolean {
   if (!nav.userAgentData?.brands?.some((b) => b.brand === "Chromium")) return false;
   if (nav.connection?.saveData) return false;
   if ((nav.deviceMemory ?? 8) < 4 || (nav.hardwareConcurrency ?? 8) < 6) return false;
-  return !matchMedia("(prefers-contrast: more), (forced-colors: active)")
-    .matches;
+  return !matchMedia("(prefers-contrast: more), (forced-colors: active)").matches;
 }
 
 let host: SVGSVGElement | null = null;
