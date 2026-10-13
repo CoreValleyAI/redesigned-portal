@@ -28,17 +28,16 @@
  * a press), fade in with them, and brighten under the hand.
  *
  * Two looks, one composition. Night Valley (dark): light summed additively,
- * glowing. Daylight (light): the same picture in ink on porcelain. As at
- * night, the unlit hills almost vanish — a faint wash, strongest in the
- * shadowed slopes — so the image is carried by what stands out: the
- * Himalaya drawn by their shadowed faces in slate blue against a pale sky,
- * the valley floor and the rivers in colour. A second, faint pass draws the
- * lit floor large and soft (u_halo), the daylight answer to the night's
- * glow. The pointer deepens the ink to hydro rather than glowing.
+ * glowing. Daylight (light): dark dots on a light page read as grain, so
+ * the valley is drawn as a surface instead (valley-relief.ts) — a softly lit
+ * relief with hairline contours, haze, bright snow and a mint floor — and
+ * the dot field draws only its lights on top: the lit floor glowing green
+ * (with a soft halo pass, u_halo), the rivers, and the hand's light.
  */
 import { clamp01, compileProgram, lerp, loadDataTexture, lookAt, multiply, perspective, uniforms } from "@/lib/gl/core";
 import { createGlassPass, measurePanels, type GlassRect, type GlassStyle } from "@/lib/gl/glass";
 import type { FrameInfo, Scene, SceneContext, SceneFactory } from "@/lib/gl/stage";
+import { createReliefPass } from "./valley-relief";
 import { asset } from "@/lib/links";
 import { encodeSrgb } from "@/lib/theme";
 
@@ -160,7 +159,7 @@ void main() {
     size = 0.8 + 0.5 * shade + (0.35 + 0.6 * city) * lit * twinkle + 0.7 * riverOn + 1.2 * glow + 1.4 * (front + riverFront) + 0.6 * snow + 1.3 * ripple + 0.9 * wind;
   } else {
     // Daylight: fine dots; the lines and outlines a little heavier.
-    size = 0.6 + 0.85 * contour + 0.6 * index + 0.45 * sil + (0.85 + 0.8 * city) * lit * twinkle + 0.7 * riverOn + 1.1 * glow + 1.3 * energy + 1.3 * snow * (0.35 + 0.65 * (1.0 - shade)) + 1.2 * ripple + 0.8 * wind;
+    size = 0.6 + 0.85 * contour + 0.6 * index + 0.45 * sil + (0.5 + 0.7 * city) * lit * twinkle + 0.7 * riverOn + 1.1 * glow + 1.3 * energy + 1.3 * snow * (0.35 + 0.65 * (1.0 - shade)) + 1.2 * ripple + 0.8 * wind;
   }
   size *= u_px / depth;
   // The soft pass draws only the lit floor and the hand's light, large.
@@ -189,36 +188,18 @@ void main() {
     a = (0.42 + 0.45 * shade) + lit * 0.6 + riverOn * 0.5 + snow * 0.5 + glow * 0.6 + front + riverFront + ripple * 0.7 + wind * 0.4;
     a = clamp(a, 0.0, 1.0) * far;
   } else {
-    // Daylight: the ranges drawn as a topographic print. Contour lines in
-    // slate, every fifth one heavier; silhouettes where a slope turns
-    // away; between the lines only a breath of shading. The snow keeps its
-    // shadowed faces; the floor is a glowing green.
-    float shadow = 1.0 - shade;
-    float line = max(contour * 0.7, index * 0.95);
-    col = mix(u_cOff, u_cSnow * 0.8, index);
-    a = 0.012 + 0.05 * pow(shadow, 2.0) + line + 0.32 * sil;
-    col = mix(col, u_cSnow, snow);
-    a = mix(a, max(0.18 + 0.78 * pow(shadow, 1.2), line), snow);
-    col = mix(col, mix(u_cLit, u_cGlow, 0.3 + 0.35 * twinkle) * mix(1.0, 0.82, city), lit);
-    a = max(a, lit * (0.78 + 0.22 * twinkle * (0.6 + 0.6 * city)));
-    float wet = riverOn * (1.0 - lit * 0.5);
-    col = mix(col, u_cRiver, wet);
-    a = max(a, wet * (0.5 + 0.3 * flow));
+    // Daylight: the surface carries the land (valley-relief.ts); the dots
+    // are only its lights — the lit floor in green, the rivers, the hand.
+    col = mix(u_cLit, u_cGlow, 0.3 + 0.35 * twinkle) * mix(1.0, 0.82, city);
+    a = lit * (0.38 + 0.4 * twinkle * (0.4 + 0.8 * city));
+    float wet = riverOn * (1.0 - lit);
+    col = mix(col, u_cRiver, step(a, wet * 0.6));
+    a = max(a, wet * (0.4 + 0.3 * flow));
     float touch = clamp(glow + ripple + wind * 0.7 + energy, 0.0, 1.0);
     col = mix(col, u_cLit, touch * 0.9);
     a = max(a, touch * 0.85);
-    // Aerial perspective: the far hills soften toward the sky (the snow
-    // less), and only a little behind the headline: the ranges run on.
-    float far = mix(0.5 + 0.47 * snow, 1.0, smoothstep(12.5, 5.0, depth));
-    // Behind the words (kicker, headline, lead) the ink steps back; the
-    // outlines run on around them.
-    // A rounded box over kicker, headline and lead (normalised device coords).
-    vec2 q = abs(clip.xy / clip.w - vec2(0.0, 0.24)) / vec2(u_aspect < 0.85 ? 1.15 : 0.6, 0.5);
-    float box = pow(pow(q.x, 4.0) + pow(q.y, 4.0), 0.25);
-    float hush = mix(0.2, 1.0, smoothstep(0.82, 1.22, box));
-    // The nearest ground draws its dots large: lighter ink there.
-    float close = mix(0.5, 1.0, smoothstep(1.4, 3.4, depth));
-    a = clamp(a, 0.0, 1.0) * far * mix(hush * close, 1.0, lit) * mix(1.0, sqrt(hush), snow);
+    float far = smoothstep(12.5, 5.0, depth) * 0.6 + 0.4;
+    a = clamp(a, 0.0, 1.0) * far;
     if (halo) {
       // The glow: the floor's light, spread wide and soft.
       col = u_cGlow;
@@ -323,6 +304,8 @@ export const createValleyScene: SceneFactory = async (ctx: SceneContext): Promis
   };
   const [cols, rows] = GRID[tier];
   const dots = field(cols, rows, 0.5);
+  // Daylight's surface, built the first time the light theme is drawn.
+  let relief: ReturnType<typeof createReliefPass> | null = null;
 
   let width = 1;
   let height = 1;
@@ -499,6 +482,48 @@ export const createValleyScene: SceneFactory = async (ctx: SceneContext): Promis
       gl.uniform3fv(u("u_tap[0]"), taps);
       gl.uniform2f(u("u_wind"), wind, windPhase);
 
+      if (!dark) {
+        relief ??= createReliefPass(gl, tier);
+        const hydro = encodeSrgb(pal.hydro);
+        const bg = encodeSrgb(pal.bg);
+        const ink3 = encodeSrgb(pal.ink3);
+        const glow2 = encodeSrgb(pal.glow2);
+        const raised = encodeSrgb(pal.bg).map((v) => Math.min(1, v + 0.012));
+        const mixc = (a: readonly number[], b: readonly number[], t: number) => a.map((v, i) => v + (b[i]! - v) * t);
+        relief.draw({
+          tex: tex.texture,
+          viewProj,
+          size: [meta.km[0] / 10, meta.km[1] / 10],
+          exag: 2.4,
+          decode: [meta.height.min / 1000, meta.height.max / 1000, meta.height.gamma],
+          step: 1 / meta.size,
+          power,
+          reach,
+          city: [...meta.places.Kathmandu, ...meta.places.Lalitpur, ...meta.places.Bhaktapur],
+          pointer: [f.pointer.x, f.pointer.y, f.pointer.presence],
+          aspect,
+          taps,
+          look: {
+            // Late-morning sun from the south-west, over the viewer's left shoulder.
+            sun: normalize3([-0.62, 0.62, 0.48]),
+            light: raised,
+            shade: mixc(mixc(bg, ink3, 0.56), glow2, 0.1),
+            snowShade: mixc(mixc(bg, ink3, 0.3), glow2, 0.22),
+            floor: mixc(bg, hydro, 0.16),
+            glow: glowGreen,
+            river: mixc(glow2, hydro, 0.45).map((v) => v * 0.92),
+            sky: mixc(bg, glow2, 0.07),
+            line: mixc(ink3, encodeSrgb(pal.ink), 0.25),
+            // Foothills: sage in the sun, a grey-green in shadow.
+            hill: mixc(raised, hydro, 0.13),
+            hillShade: mixc(mixc(bg, ink3, 0.46), hydro, 0.17),
+          },
+        });
+        gl.useProgram(program);
+        gl.activeTexture(gl.TEXTURE0);
+        gl.bindTexture(gl.TEXTURE_2D, tex.texture);
+      }
+
       gl.bindVertexArray(dots.vao);
       if (!dark) {
         gl.uniform1f(u("u_halo"), 1);
@@ -551,6 +576,7 @@ export const createValleyScene: SceneFactory = async (ctx: SceneContext): Promis
     },
 
     dispose() {
+      relief?.dispose();
       glassRO?.disconnect();
       glass?.dispose();
       for (const el of glassEls) delete el.dataset.glass;
@@ -561,6 +587,11 @@ export const createValleyScene: SceneFactory = async (ctx: SceneContext): Promis
     },
   };
 };
+
+function normalize3(v: [number, number, number]): [number, number, number] {
+  const l = Math.hypot(v[0], v[1], v[2]) || 1;
+  return [v[0] / l, v[1] / l, v[2] / l];
+}
 
 function easeOut(t: number) {
   return 1 - Math.pow(1 - t, 2.4);
