@@ -27,13 +27,17 @@ export function DotText({
   className,
   litClassName = "fill-current",
   offClassName = "fill-dot-off",
+  charClassName,
 }: {
   text: string;
   label?: string;
   className?: string;
   litClassName?: string;
   offClassName?: string;
+  /** A class for one character's group (the clock's blinking colon). */
+  charClassName?: (char: string, index: number) => string | undefined;
 }) {
+  const source = Array.from(text);
   const chars = Array.from(text).map((c) => FONT[c] ?? FONT[" "]!);
   const cellW = 6; // 5 dots + 1 gap
   const w = chars.length * cellW - 1;
@@ -46,20 +50,22 @@ export function DotText({
       aria-hidden={label ? undefined : true}
       focusable="false"
     >
-      {chars.map((rows, ci) =>
-        rows.map((row, y) =>
-          Array.from(row).map((d, x) => (
-            <circle
-              key={`${ci}-${x}-${y}`}
-              cx={(ci * cellW + x) * 10 + 5}
-              cy={y * 10 + 5}
-              r={d === "#" ? 3.8 : 2.2}
-              className={d === "#" ? litClassName : offClassName}
-              opacity={d === "#" ? 1 : 0.6}
-            />
-          )),
-        ),
-      )}
+      {chars.map((rows, ci) => (
+        <g key={ci} className={charClassName?.(source[ci]!, ci)}>
+          {rows.map((row, y) =>
+            Array.from(row).map((d, x) => (
+              <circle
+                key={`${x}-${y}`}
+                cx={(ci * cellW + x) * 10 + 5}
+                cy={y * 10 + 5}
+                r={d === "#" ? 3.8 : 2.2}
+                className={d === "#" ? cn("dt-lit", litClassName) : offClassName}
+                opacity={d === "#" ? 1 : 0.6}
+              />
+            )),
+          )}
+        </g>
+      ))}
     </svg>
   );
 }

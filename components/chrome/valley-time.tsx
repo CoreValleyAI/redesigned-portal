@@ -2,11 +2,13 @@
 
 /**
  * Valley Time (S12): the time in Kathmandu, which keeps its own clock
- * (UTC+05:45). The static page cannot know the visitor's time, so the
- * digits render as a fixed-width placeholder and fill in on the client —
- * no layout shift, and never a wrong time from the build.
+ * (UTC+05:45), on a small dot-matrix face whose colon blinks the seconds.
+ * The static page cannot know the visitor's time, so the face renders
+ * blank and fills in on the client: no layout shift, and never a wrong
+ * time from the build.
  */
 import * as React from "react";
+import { DotText } from "@/components/system/dot-text";
 import { cn } from "@/lib/cn";
 import { UI } from "@/copy/en/site";
 
@@ -33,12 +35,14 @@ function subscribe(cb: () => void) {
 export function ValleyTime({ className }: { className?: string }) {
   const time = React.useSyncExternalStore(subscribe, nptNow, () => "--:--");
   return (
-    <p className={cn("flex items-baseline gap-3", className)}>
-      <time
-        className="type-title-3 tabular font-mono font-medium tracking-[-0.02em] text-ink"
-        aria-label={time === "--:--" ? undefined : `${time} in ${UI.valleyTime.place}`}
-      >
-        {time}
+    <p className={cn("flex items-center gap-3.5", className)}>
+      <time className="flex" aria-label={time === "--:--" ? undefined : `${time} in ${UI.valleyTime.place}`}>
+        <DotText
+          text={time}
+          className="h-7 w-auto"
+          litClassName="fill-hydro-ink light:fill-hydro"
+          charClassName={(c) => (c === ":" ? "dt-blink" : undefined)}
+        />
       </time>
       <span className="type-small text-ink-3">
         {UI.valleyTime.place} · {UI.valleyTime.zone} (UTC+05:45)

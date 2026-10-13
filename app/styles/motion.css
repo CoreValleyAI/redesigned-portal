@@ -362,6 +362,17 @@
   filter: drop-shadow(0 0 0.4rem color-mix(in oklch, var(--hydro) 40%, transparent));
 }
 
+/* Valley Time (components/chrome/valley-time.tsx): the colon blinks the
+   seconds. */
+:root[data-motion="full"] .dt-blink .dt-lit {
+  animation: cv-blink 2s steps(1, end) infinite;
+}
+@keyframes cv-blink {
+  50% {
+    opacity: 0.18;
+  }
+}
+
 /* The 404 snow field (components/brand/snow-mark.tsx): the snow thins out
    toward the edges instead of stopping at a box. */
 .snow-field {
