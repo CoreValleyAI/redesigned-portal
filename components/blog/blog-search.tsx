@@ -125,12 +125,18 @@ export function BlogSearch({ className }: { className?: string }) {
             placeholder="Search posts, topics and authors"
             className="h-14 flex-1 bg-transparent text-[15px] outline-none placeholder:text-ink-500"
           />
-          <button type="button" onClick={() => dialog.current?.close()} className="text-[12px] text-ink-500 hover:text-ink-200">
+          <button
+            type="button"
+            onClick={() => dialog.current?.close()}
+            className="text-[12px] text-ink-500 hover:text-ink-200"
+          >
             Esc
           </button>
         </div>
         <ul id="blog-search-results" role="listbox" className="max-h-[55vh] overflow-y-auto p-2">
-          {failed ? <li className="px-4 py-6 text-center text-[14px] text-ink-500">Search couldn’t load. Try again later.</li> : null}
+          {failed ? (
+            <li className="px-4 py-6 text-center text-[14px] text-ink-500">Search couldn’t load. Try again later.</li>
+          ) : null}
           {!failed && q.trim() && index && !hits.length ? (
             <li className="px-4 py-6 text-center text-[14px] text-ink-500">No posts match “{q}”.</li>
           ) : null}

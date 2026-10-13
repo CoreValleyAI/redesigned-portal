@@ -1,17 +1,19 @@
 /**
  * Generative "contour prints" (S14): a small topographic map seeded by a
  * slug — every post and use case gets its own place in the valley, the same
- * on every build. A noise heightfield is contoured with marching squares
- * and returned as SVG path data, plus a sprinkling of dots on the high
- * ground. Pure and deterministic, so it runs on the server, in the build
- * script for OG images, and on the client alike.
+ * on every build. A noise heightfield is contoured with marching squares;
+ * the segments are joined into continuous lines (so a line can be traced
+ * end to end, like a plotter drawing it) and smoothed, and returned as SVG
+ * path data, plus a sprinkling of dots on the high ground. Pure and
+ * deterministic: it runs on the server and in the browser alike.
  */
 
 export interface ContourArt {
   width: number;
   height: number;
-  /** One path per level, lowest first. */
-  levels: { d: string; t: number }[];
+  /** One entry per level, lowest first: `d` is the whole level as one
+      path; `lines` the same contours as separate paths, one per line. */
+  levels: { d: string; lines: string[]; t: number }[];
   /** The level drawn in the accent colour. */
   accent: number;
   dots: { x: number; y: number; r: number }[];
@@ -56,6 +58,71 @@ function makeNoise(rnd: () => number, size = 64) {
   };
 }
 
+/**
+ * Join segments into lines. Segment n runs from point 2n to 2n + 1; its
+ * ends are named by the cell edge they lie on, and an edge is shared by at
+ * most two segments, so following names walks each line from end to end.
+ */
+function chain(ends: string[], pts: [number, number][]): [number, number][][] {
+  const at = new Map<string, number[]>();
+  ends.forEach((k, i) => {
+    const list = at.get(k);
+    if (list) list.push(i);
+    else at.set(k, [i]);
+  });
+  const used = new Uint8Array(ends.length / 2);
+  const lines: [number, number][][] = [];
+  // From end `i` of a segment, the other end of the segment sharing its edge.
+  const next = (i: number) => {
+    const k = ends[i]!;
+    for (const j of at.get(k) ?? []) if (j !== i && !used[j >> 1]) return j;
+    return -1;
+  };
+  for (let s = 0; s < used.length; s++) {
+    if (used[s]) continue;
+    used[s] = 1;
+    const line: [number, number][] = [pts[2 * s]!, pts[2 * s + 1]!];
+    // Grow forward from the segment's second end, then backward from its first.
+    for (const [from, push] of [
+      [2 * s + 1, (p: [number, number]) => line.push(p)],
+      [2 * s, (p: [number, number]) => line.unshift(p)],
+    ] as const) {
+      let j = next(from);
+      while (j >= 0) {
+        used[j >> 1] = 1;
+        const other = j ^ 1;
+        push(pts[other]!);
+        j = next(other);
+      }
+    }
+    if (line.length >= 3) lines.push(line);
+  }
+  return lines;
+}
+
+/** Two rounds of Chaikin corner cutting: the cell grid's kinks become curves. */
+function smooth(line: [number, number][]): [number, number][] {
+  let out = line;
+  for (let r = 0; r < 2; r++) {
+    const closed = out.length > 3 && Math.hypot(out[0]![0] - out.at(-1)![0], out[0]![1] - out.at(-1)![1]) < 0.01;
+    const next: [number, number][] = closed ? [] : [out[0]!];
+    for (let i = 0; i < out.length - 1; i++) {
+      const [ax, ay] = out[i]!;
+      const [bx, by] = out[i + 1]!;
+      next.push([ax * 0.75 + bx * 0.25, ay * 0.75 + by * 0.25], [ax * 0.25 + bx * 0.75, ay * 0.25 + by * 0.75]);
+    }
+    if (closed) next.push(next[0]!);
+    else next.push(out.at(-1)!);
+    out = next;
+  }
+  return out;
+}
+
+function toPath(line: [number, number][]): string {
+  const f = (v: number) => String(Math.round(v * 10) / 10);
+  return line.map(([x, y], i) => `${i ? "L" : "M"}${f(x)} ${f(y)}`).join("");
+}
+
 export function contourArt(seed: string, opts: { cols?: number; rows?: number; levels?: number } = {}): ContourArt {
   const cols = opts.cols ?? 56;
   const rows = opts.rows ?? 35;
@@ -96,11 +163,17 @@ export function contourArt(seed: string, opts: { cols?: number; rows?: number; l
 
   const sx = W / cols;
   const sy = H / rows;
-  const levels: { d: string; t: number }[] = [];
+  const levels: { d: string; lines: string[]; t: number }[] = [];
   for (let L = 1; L <= nLevels; L++) {
     const t = L / (nLevels + 1);
     const iso = lo + (hi - lo) * t;
-    let d = "";
+
+    // Marching squares. Each crossing lies on one cell edge, named so that
+    // the two cells sharing an edge name it the same: that is how segments
+    // are joined into lines below.
+    const ends: string[] = [];
+    const pts: [number, number][] = [];
+    const lerp = (p: number, q: number) => (iso - p) / (q - p);
     for (let j = 0; j < rows; j++) {
       for (let i = 0; i < cols; i++) {
         const a = field[j * (cols + 1) + i]!;
@@ -111,13 +184,13 @@ export function contourArt(seed: string, opts: { cols?: number; rows?: number; l
         if (code === 0 || code === 15) continue;
         const x = i * sx;
         const y = j * sy;
-        const lerp = (p: number, q: number) => (iso - p) / (q - p);
-        const top: [number, number] = [x + sx * lerp(a, b), y];
-        const right: [number, number] = [x + sx, y + sy * lerp(b, c)];
-        const bottom: [number, number] = [x + sx * lerp(e, c), y + sy];
-        const left: [number, number] = [x, y + sy * lerp(a, e)];
-        const seg = (p: [number, number], q: [number, number]) => {
-          d += `M${Math.round(p[0])} ${Math.round(p[1])}L${Math.round(q[0])} ${Math.round(q[1])}`;
+        const top = { k: `h${i},${j}`, p: [x + sx * lerp(a, b), y] as [number, number] };
+        const right = { k: `v${i + 1},${j}`, p: [x + sx, y + sy * lerp(b, c)] as [number, number] };
+        const bottom = { k: `h${i},${j + 1}`, p: [x + sx * lerp(e, c), y + sy] as [number, number] };
+        const left = { k: `v${i},${j}`, p: [x, y + sy * lerp(a, e)] as [number, number] };
+        const seg = (u: typeof top, v: typeof top) => {
+          ends.push(u.k, v.k);
+          pts.push(u.p, v.p);
         };
         switch (code) {
           case 1:
@@ -155,7 +228,9 @@ export function contourArt(seed: string, opts: { cols?: number; rows?: number; l
         }
       }
     }
-    levels.push({ d, t });
+
+    const lines = chain(ends, pts).map((line) => toPath(smooth(line)));
+    levels.push({ d: lines.join(""), lines, t });
   }
 
   // Dots on the high ground: a sparse grid where the field is above 75 %.

@@ -75,14 +75,14 @@
   }
 
   /* ── Inline ───────────────────────────────────────────────────────── */
-  .prose-docs :where(a:not(.md-card-link)) {
+  .prose-docs :where(a:not(.md-card-link, .md-anchor)) {
     color: var(--hydro);
     text-decoration: underline;
     text-decoration-color: color-mix(in srgb, var(--hydro) 40%, transparent);
     text-underline-offset: 4px;
     transition: color var(--duration-normal) var(--ease-standard);
   }
-  .prose-docs :where(a:not(.md-card-link)):hover {
+  .prose-docs :where(a:not(.md-card-link, .md-anchor)):hover {
     color: var(--hydro-300);
   }
   .prose-docs :where(strong) {
@@ -276,5 +276,64 @@
   }
   .prose-docs :where(.md-tabpanel > * + *) {
     margin-top: 1em;
+  }
+
+  /* ── Blog articles: the same prose, set for reading ─────────────────
+     A larger measure-friendly size, the opening paragraph as a lead,
+     headings on the site's title scale without rules, and quotes set as
+     pull quotes. */
+  .prose-article {
+    max-width: 44rem;
+    font-size: clamp(1.0625rem, 1rem + 0.28vw, 1.1875rem);
+    line-height: 1.75;
+    color: var(--ink-2);
+  }
+  .prose-article > :where(* + *) {
+    margin-top: 1.25em;
+  }
+  .prose-article > :where(p:first-child) {
+    font-size: 1.16em;
+    line-height: 1.6;
+    color: var(--ink);
+  }
+  .prose-article :where(h2) {
+    margin-top: 2.2em;
+    padding-top: 0;
+    border-top: 0;
+    font-size: var(--fs-title-2);
+    line-height: 1.15;
+    font-weight: 650;
+    letter-spacing: -0.022em;
+    color: var(--ink);
+  }
+  .prose-article :where(h3) {
+    margin-top: 1.9em;
+    font-size: var(--fs-title-3);
+    line-height: 1.25;
+    color: var(--ink);
+  }
+  .prose-article :where(h2, h3, h4) + :where(*) {
+    margin-top: 0.7em;
+  }
+  .prose-article :where(a:not(.md-card-link, .md-anchor)) {
+    color: var(--ink);
+    text-decoration-color: color-mix(in oklch, var(--hydro) 70%, transparent);
+    text-decoration-thickness: 1.5px;
+  }
+  .prose-article :where(a:not(.md-card-link, .md-anchor)):hover {
+    color: var(--hydro-ink);
+  }
+  .prose-article :where(blockquote) {
+    margin-block: 2.2em;
+    padding-left: 1.4rem;
+    border-left: 3px solid var(--hydro);
+    font-size: var(--fs-title-3);
+    line-height: 1.4;
+    font-weight: 500;
+    letter-spacing: -0.012em;
+    color: var(--ink);
+  }
+  .prose-article :where(figure, pre, .md-table) {
+    margin-block: 2.2em;
   }
 }

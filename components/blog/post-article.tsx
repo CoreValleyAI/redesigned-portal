@@ -1,17 +1,25 @@
 /**
  * A blog post's header and body. Isomorphic (no hooks, no fs): the post
  * page and the CMS live preview render the same markup.
+ *
+ * The header's art is the post's own contour print, drawn large: its lines
+ * trace themselves in, and a light follows the pointer across them. A cover
+ * image chosen in the CMS opens the article body instead.
  */
-import Link from "next/link";
+import { ContourCover } from "@/components/art/contour-cover";
 import { RichText } from "@/components/content/rich-text";
 import { ShareLinks } from "@/components/content/share-links";
 import { DocsToc } from "@/components/docs/docs-toc";
+import { AppLink } from "@/components/system/app-link";
 import { mediaSrc, mediaSrcSet, objectPosition } from "@/lib/content/format";
 import type { ContentHeading } from "@/lib/content/lexical";
 import { key, type Author, type Category, type MediaItem, type Post, type Tag } from "@/lib/content/types";
-import { Byline } from "./post-parts";
+import { Byline, toneFor } from "./post-parts";
 
-export interface ArticlePost extends Pick<Post, "slug" | "title" | "excerpt" | "cover" | "body" | "publishAt" | "updatedAt"> {
+export interface ArticlePost extends Pick<
+  Post,
+  "slug" | "title" | "excerpt" | "cover" | "body" | "publishAt" | "updatedAt"
+> {
   authorInfo: Author[];
   categoryInfo: Category | null;
   tagInfo: Tag[];
@@ -20,86 +28,87 @@ export interface ArticlePost extends Pick<Post, "slug" | "title" | "excerpt" | "
 }
 
 export function PostHeader({ post, media }: { post: ArticlePost; media: Map<string, MediaItem> }) {
-  const item = post.cover !== undefined ? media.get(key(post.cover)) : undefined;
-  const cover = mediaSrc(item, "wide");
   return (
-    <header className="shell">
-      <div className="px-6 pt-36 md:px-14 md:pt-44">
-        <nav aria-label="Breadcrumb" className="flex items-center gap-2 text-[13px] text-ink-500">
-          <Link href="/blog/" className="hover:text-ink-100">
+    <header className="pt-[calc(var(--header-h)+clamp(2.5rem,6vw,5rem))]">
+      <div className="container-page">
+        <nav aria-label="Breadcrumb" className="type-small flex items-center gap-2 text-ink-3">
+          <AppLink href="/blog/" transitionTypes={["page-up"]} className="transition-colors hover:text-ink">
             Blog
-          </Link>
+          </AppLink>
           {post.categoryInfo ? (
             <>
               <span aria-hidden="true">/</span>
-              <Link href={`/blog/category/${post.categoryInfo.slug}/`} className="hover:text-ink-100">
+              <AppLink
+                href={`/blog/category/${post.categoryInfo.slug}/`}
+                transitionTypes={["page-up"]}
+                className="transition-colors hover:text-ink"
+              >
                 {post.categoryInfo.name}
-              </Link>
+              </AppLink>
             </>
           ) : null}
         </nav>
-        <h1 className="display mt-6 max-w-[22ch] text-[clamp(2.4rem,5.5vw,4.5rem)] leading-[1.02] text-balance text-ink-100">
-          {post.title}
-        </h1>
-        <p className="mt-6 max-w-[60ch] text-[clamp(1.05rem,1.35vw,1.25rem)] leading-relaxed font-light text-pretty text-ink-400">
-          {post.excerpt}
-        </p>
+        <h1 className="type-display-2 mt-6 max-w-[18ch] text-balance">{post.title}</h1>
+        <p className="type-lead measure mt-6 text-ink-2">{post.excerpt}</p>
         <div className="mt-8">
           <Byline authors={post.authorInfo} date={post.publishAt} minutes={post.minutes} media={media} size="md" />
         </div>
-        {cover && item ? (
-          <figure className="mt-12">
-            <img
-              src={cover.src}
-              srcSet={mediaSrcSet(item)}
-              sizes="100vw"
-              width={cover.width}
-              height={cover.height}
-              alt={item.alt}
-              decoding="async"
-              fetchPriority="high"
-              style={{ objectPosition: objectPosition(item) }}
-              className="aspect-[21/9] w-full rounded-[2rem] border border-line object-cover"
-            />
-            {item.caption || item.credit ? (
-              <figcaption className="mt-3 text-[13px] text-ink-500">
-                {[item.caption, item.credit].filter(Boolean).join(" · ")}
-              </figcaption>
-            ) : null}
-          </figure>
-        ) : null}
+      </div>
+      <div className="container-page mt-12 md:mt-16">
+        <ContourCover
+          seed={post.slug}
+          tone={toneFor(post.categoryInfo)}
+          draw
+          light
+          className="aspect-[4/3] w-full rounded-panel border border-line sm:aspect-[2/1] lg:aspect-[12/5]"
+        />
       </div>
     </header>
   );
 }
 
-export function PostBody({
-  post,
-  media,
-  url,
-}: {
-  post: ArticlePost;
-  media: Map<string, MediaItem>;
-  url: string;
-}) {
+export function PostBody({ post, media, url }: { post: ArticlePost; media: Map<string, MediaItem>; url: string }) {
   const toc = post.toc.filter((h): h is ContentHeading & { depth: 2 | 3 } => h.depth <= 3);
+  const item = post.cover !== undefined ? media.get(key(post.cover)) : undefined;
+  const cover = mediaSrc(item, "wide");
   return (
-    <div className="shell">
-      <div className="grid gap-12 px-6 py-14 md:px-14 md:py-20 xl:grid-cols-[minmax(0,1fr)_16rem]">
+    <div className="container-page">
+      <div className="grid gap-12 py-14 md:py-20 xl:grid-cols-[minmax(0,1fr)_15rem]">
         <div className="min-w-0">
-          <RichText state={post.body} media={media} className="mx-auto max-w-[72ch] text-[1.0625rem]" />
+          {cover && item ? (
+            <figure className="mx-auto mb-12 max-w-[44rem]">
+              <img
+                src={cover.src}
+                srcSet={mediaSrcSet(item)}
+                sizes="(min-width: 768px) 44rem, 100vw"
+                width={cover.width}
+                height={cover.height}
+                alt={item.alt}
+                decoding="async"
+                style={{ objectPosition: objectPosition(item) }}
+                className="aspect-[16/10] w-full rounded-panel border border-line object-cover"
+              />
+              {item.caption || item.credit ? (
+                <figcaption className="type-caption mt-3 text-ink-3">
+                  {[item.caption, item.credit].filter(Boolean).join(" · ")}
+                </figcaption>
+              ) : null}
+            </figure>
+          ) : null}
 
-          <div className="mx-auto mt-14 flex max-w-[72ch] flex-col gap-6 border-t border-line pt-8 text-[1.0625rem] sm:flex-row sm:items-center sm:justify-between">
+          <RichText state={post.body} media={media} className="prose-article mx-auto max-w-[44rem]" />
+
+          <div className="mx-auto mt-16 flex max-w-[44rem] flex-col gap-6 border-t border-line pt-8 sm:flex-row sm:items-center sm:justify-between">
             {post.tagInfo.length ? (
               <ul className="flex flex-wrap gap-2">
                 {post.tagInfo.map((t) => (
                   <li key={t.slug}>
-                    <Link
+                    <AppLink
                       href={`/blog/tag/${t.slug}/`}
-                      className="inline-flex min-h-8 items-center rounded-full border border-line px-3 text-[13px] text-ink-300 transition-colors hover:border-line-strong hover:text-ink-100"
+                      className="type-small inline-flex min-h-9 items-center rounded-pill border border-line px-3.5 text-ink-2 transition-colors hover:border-line-strong hover:text-ink"
                     >
                       #{t.name}
-                    </Link>
+                    </AppLink>
                   </li>
                 ))}
               </ul>
@@ -119,22 +128,22 @@ export function AuthorBios({ authors, media }: { authors: Author[]; media: Map<s
   const withBio = authors.filter((a) => a.bio);
   if (!withBio.length) return null;
   return (
-    <div className="mx-auto flex max-w-[72ch] flex-col gap-4 text-[1.0625rem]">
+    <div className="mx-auto flex max-w-[44rem] flex-col gap-4">
       {withBio.map((a) => {
         const img = mediaSrc(a.avatar !== undefined ? media.get(key(a.avatar)) : undefined, "thumb");
         return (
-          <div key={a.slug} className="flex gap-4 rounded-2xl border border-line bg-surface-card p-5">
+          <div key={a.slug} className="flex gap-4 rounded-panel border border-line bg-bg-raised p-6">
             {img ? (
               <img src={img.src} alt="" width={56} height={56} className="size-14 shrink-0 rounded-full object-cover" />
             ) : null}
-            <div>
-              <p className="text-[15px] font-semibold text-ink-100">
-                <Link href={`/blog/author/${a.slug}/`} className="hover:underline">
+            <div className="flex flex-col gap-1">
+              <p className="type-body font-semibold text-ink">
+                <AppLink href={`/blog/author/${a.slug}/`} className="underline-offset-4 hover:underline">
                   {a.name}
-                </Link>
-                {a.title ? <span className="font-normal text-ink-500"> · {a.title}</span> : null}
+                </AppLink>
+                {a.title ? <span className="font-normal text-ink-3"> · {a.title}</span> : null}
               </p>
-              <p className="mt-1 text-[14px] leading-relaxed text-ink-400">{a.bio}</p>
+              <p className="type-small text-ink-2">{a.bio}</p>
             </div>
           </div>
         );

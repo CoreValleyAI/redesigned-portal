@@ -1,11 +1,17 @@
 /**
  * Blog building blocks: cards, byline, category tabs, pagination.
  * Isomorphic (no hooks, no fs) so the live preview can use them too.
+ *
+ * Every post's art is its own contour print, drawn from its slug and toned
+ * by its category (components/art/contour-cover.tsx): the blog has a look
+ * of its own and no stock photography. A cover image chosen in the CMS
+ * appears inside the post itself, and in its link previews.
  */
-import Link from "next/link";
+import { ContourCover, type ContourTone } from "@/components/art/contour-cover";
+import { AppLink } from "@/components/system/app-link";
 import { Icon } from "@/components/ui";
 import { cn } from "@/lib/cn";
-import { formatDate, mediaSrc, mediaSrcSet, objectPosition } from "@/lib/content/format";
+import { formatDate, mediaSrc } from "@/lib/content/format";
 import { key, type Author, type Category, type MediaItem, type Post } from "@/lib/content/types";
 
 type CardPost = Pick<Post, "slug" | "title" | "excerpt" | "cover" | "publishAt"> & {
@@ -13,6 +19,19 @@ type CardPost = Pick<Post, "slug" | "title" | "excerpt" | "cover" | "publishAt">
   categoryInfo: Category | null;
   minutes: number;
 };
+
+const TONES: ContourTone[] = ["hydro", "glow-2", "glow-3"];
+
+/** A category's colour in the prints: fixed for the two we start with,
+    then a stable pick for any category an editor adds. */
+export function toneFor(category: Pick<Category, "slug"> | null | undefined): ContourTone {
+  const slug = category?.slug ?? "";
+  if (slug === "engineering" || !slug) return "hydro";
+  if (slug === "company") return "glow-2";
+  let h = 0;
+  for (let i = 0; i < slug.length; i++) h = (h * 31 + slug.charCodeAt(i)) >>> 0;
+  return TONES[h % TONES.length]!;
+}
 
 export function Byline({
   authors,
@@ -31,7 +50,7 @@ export function Byline({
 }) {
   const avatar = size === "md" ? "size-9" : "size-7";
   return (
-    <div className={cn("flex flex-wrap items-center gap-x-3 gap-y-2 text-ink-500", size === "md" ? "text-[14px]" : "text-[13px]")}>
+    <div className="type-small flex flex-wrap items-center gap-x-3 gap-y-2 text-ink-3">
       {authors.length ? (
         <span className="flex items-center">
           {authors.map((a, i) => {
@@ -43,13 +62,17 @@ export function Byline({
                 alt=""
                 width={36}
                 height={36}
-                className={cn(avatar, "rounded-full border-2 border-[var(--surface-page,#f4f4f5)] object-cover", i > 0 && "-ml-2")}
+                className={cn(avatar, "rounded-full border-2 border-bg object-cover", i > 0 && "-ml-2")}
               />
             ) : (
               <span
                 key={a.slug}
                 aria-hidden="true"
-                className={cn(avatar, "inline-flex items-center justify-center rounded-full bg-zinc-200 text-[11px] font-semibold text-zinc-600", i > 0 && "-ml-2")}
+                className={cn(
+                  avatar,
+                  "inline-flex items-center justify-center rounded-full border border-line bg-bg-sunken font-mono text-[0.7rem] font-medium text-ink-2",
+                  i > 0 && "-ml-2",
+                )}
               >
                 {a.name.slice(0, 1)}
               </span>
@@ -58,14 +81,17 @@ export function Byline({
         </span>
       ) : null}
       {authors.length ? (
-        <span className="text-ink-300">
+        <span className="text-ink-2">
           {authors.map((a, i) => (
             <span key={a.slug}>
               {i > 0 ? (i === authors.length - 1 ? " and " : ", ") : null}
               {link ? (
-                <Link href={`/blog/author/${a.slug}/`} className="hover:text-ink-100 hover:underline">
+                <AppLink
+                  href={`/blog/author/${a.slug}/`}
+                  className="underline-offset-4 transition-colors hover:text-ink hover:underline"
+                >
                   {a.name}
-                </Link>
+                </AppLink>
               ) : (
                 a.name
               )}
@@ -73,7 +99,7 @@ export function Byline({
           ))}
         </span>
       ) : null}
-      <span aria-hidden="true">·</span>
+      {authors.length ? <span aria-hidden="true">·</span> : null}
       <time dateTime={date}>{formatDate(date)}</time>
       <span aria-hidden="true">·</span>
       <span>{minutes} min read</span>
@@ -88,61 +114,48 @@ export function PostCard({
 }: {
   post: CardPost;
   media: Map<string, MediaItem>;
-  variant?: "grid" | "hero" | "compact";
+  variant?: "grid" | "hero";
 }) {
-  const item = post.cover !== undefined ? media.get(key(post.cover)) : undefined;
-  const img = mediaSrc(item, variant === "hero" ? "wide" : "card");
   const hero = variant === "hero";
   return (
-    <article className={cn("group relative flex h-full flex-col", hero && "md:grid md:grid-cols-[1.25fr_1fr] md:gap-10")}>
-      <div
-        className={cn(
-          "relative overflow-hidden rounded-[1.5rem] border border-line bg-zinc-900",
-          hero ? "aspect-[16/10] md:aspect-auto md:min-h-[22rem]" : "aspect-[16/10]",
-          variant === "compact" && "hidden",
-        )}
-      >
-        {img ? (
-          <img
-            src={img.src}
-            srcSet={mediaSrcSet(item)}
-            sizes={hero ? "(min-width: 768px) 60vw, 100vw" : "(min-width: 1024px) 33vw, (min-width: 768px) 50vw, 100vw"}
-            width={img.width}
-            height={img.height}
-            alt=""
-            loading={hero ? "eager" : "lazy"}
-            decoding="async"
-            style={{ objectPosition: objectPosition(item) }}
-            className="zoom-media absolute inset-0 size-full object-cover"
-          />
-        ) : (
-          <div aria-hidden="true" className="lineart absolute inset-0 opacity-60" />
-        )}
+    <article
+      className={cn(
+        "group relative flex h-full flex-col",
+        hero && "lg:grid lg:grid-cols-[minmax(0,1.35fr)_minmax(0,1fr)] lg:items-center lg:gap-14",
+      )}
+    >
+      <div className="relative overflow-hidden rounded-panel border border-line">
+        <ContourCover
+          seed={post.slug}
+          tone={toneFor(post.categoryInfo)}
+          light={hero}
+          className="aspect-[16/10] w-full transition-transform duration-[var(--dur-spring-smooth)] ease-spring group-hover:scale-[1.035]"
+        />
       </div>
-      <div className={cn("flex flex-1 flex-col", hero ? "mt-6 md:mt-0 md:justify-center" : "mt-5")}>
-        {post.categoryInfo ? (
-          <p className="cv-label text-[10px]">{post.categoryInfo.name}</p>
-        ) : null}
-        <h3
-          className={cn(
-            "mt-3 font-semibold tracking-tight text-balance text-ink-100",
-            hero ? "display text-[clamp(1.9rem,3.4vw,2.8rem)] leading-[1.05]" : "text-[1.2rem] leading-snug",
-          )}
-        >
-          <Link href={`/blog/${post.slug}/`} className="after:absolute after:inset-0 after:content-['']">
+      <div className={cn("flex flex-1 flex-col gap-3", hero ? "mt-7 lg:mt-0" : "mt-5")}>
+        {post.categoryInfo ? <p className="type-kicker text-ink-3">{post.categoryInfo.name}</p> : null}
+        <h3 className={cn("text-balance", hero ? "type-title-1" : "type-title-3")}>
+          <AppLink
+            href={`/blog/${post.slug}/`}
+            className="after:absolute after:inset-0 after:content-[''] focus-visible:outline-none"
+          >
             {post.title}
-          </Link>
+          </AppLink>
         </h3>
-        <p className={cn("mt-3 leading-relaxed text-ink-400", hero ? "text-[16px]" : "line-clamp-3 text-[14.5px]")}>
-          {post.excerpt}
-        </p>
-        <div className="relative z-10 mt-auto pt-5">
+        <p className={cn("text-ink-2", hero ? "type-lead" : "type-small line-clamp-3")}>{post.excerpt}</p>
+        <div className={cn("relative z-10 mt-auto", hero ? "pt-4" : "pt-2")}>
           <Byline authors={post.authorInfo} date={post.publishAt} minutes={post.minutes} media={media} link={false} />
         </div>
       </div>
     </article>
   );
 }
+
+const pill = (on: boolean) =>
+  cn(
+    "type-small inline-flex min-h-11 shrink-0 items-center gap-2 rounded-pill border px-4 font-medium transition-colors duration-[var(--dur-short)]",
+    on ? "border-ink bg-ink text-bg" : "border-line text-ink-2 hover:border-line-strong hover:text-ink",
+  );
 
 export function CategoryTabs({
   categories,
@@ -151,28 +164,21 @@ export function CategoryTabs({
   categories: { slug: string; name: string; count: number }[];
   active?: string;
 }) {
-  const tab = (on: boolean) =>
-    cn(
-      "inline-flex min-h-10 shrink-0 items-center gap-2 rounded-full border px-4 text-[13.5px] font-medium transition-colors duration-300",
-      on
-        ? "border-zinc-900 bg-zinc-900 text-white"
-        : "border-line text-ink-300 hover:border-line-strong hover:text-ink-100",
-    );
   return (
     <nav aria-label="Categories" className="-mx-1 flex gap-2 overflow-x-auto px-1 pb-1">
-      <Link href="/blog/" className={tab(!active)} aria-current={!active ? "page" : undefined}>
+      <AppLink href="/blog/" className={pill(!active)} aria-current={!active ? "page" : undefined}>
         All posts
-      </Link>
+      </AppLink>
       {categories.map((c) => (
-        <Link
+        <AppLink
           key={c.slug}
           href={`/blog/category/${c.slug}/`}
-          className={tab(active === c.slug)}
+          className={pill(active === c.slug)}
           aria-current={active === c.slug ? "page" : undefined}
         >
           {c.name}
-          <span className="font-mono text-[11px] opacity-60">{c.count}</span>
-        </Link>
+          <span className="font-mono text-[0.75em] tabular-nums opacity-60">{c.count}</span>
+        </AppLink>
       ))}
     </nav>
   );
@@ -181,29 +187,23 @@ export function CategoryTabs({
 export function Pagination({ page, pages }: { page: number; pages: number }) {
   if (pages <= 1) return null;
   const href = (n: number) => (n === 1 ? "/blog/" : `/blog/page/${n}/`);
-  const btn =
-    "inline-flex min-h-10 min-w-10 items-center justify-center rounded-full border border-line px-3 text-[13.5px] text-ink-300 transition-colors hover:border-line-strong hover:text-ink-100";
+  const btn = (on = false) => cn(pill(on), "min-w-11 justify-center px-3");
   return (
-    <nav aria-label="Pages" className="mt-14 flex items-center justify-center gap-2">
+    <nav aria-label="Pages" className="mt-16 flex items-center justify-center gap-2">
       {page > 1 ? (
-        <Link href={href(page - 1)} className={btn} rel="prev" aria-label="Newer posts">
+        <AppLink href={href(page - 1)} className={btn()} rel="prev" aria-label="Newer posts">
           <Icon name="arrow-right" size={14} className="rotate-180" />
-        </Link>
+        </AppLink>
       ) : null}
       {Array.from({ length: pages }, (_, i) => i + 1).map((n) => (
-        <Link
-          key={n}
-          href={href(n)}
-          aria-current={n === page ? "page" : undefined}
-          className={cn(btn, n === page && "border-zinc-900 bg-zinc-900 text-white hover:text-white")}
-        >
+        <AppLink key={n} href={href(n)} aria-current={n === page ? "page" : undefined} className={btn(n === page)}>
           {n}
-        </Link>
+        </AppLink>
       ))}
       {page < pages ? (
-        <Link href={href(page + 1)} className={btn} rel="next" aria-label="Older posts">
+        <AppLink href={href(page + 1)} className={btn()} rel="next" aria-label="Older posts">
           <Icon name="arrow-right" size={14} />
-        </Link>
+        </AppLink>
       ) : null}
     </nav>
   );
@@ -211,9 +211,11 @@ export function Pagination({ page, pages }: { page: number; pages: number }) {
 
 export function PostGrid({ posts, media }: { posts: CardPost[]; media: Map<string, MediaItem> }) {
   return (
-    <div className="grid gap-x-6 gap-y-12 sm:grid-cols-2 lg:grid-cols-3">
-      {posts.map((p) => (
-        <PostCard key={p.slug} post={p} media={media} />
+    <div className="grid gap-x-8 gap-y-14 sm:grid-cols-2 lg:grid-cols-3">
+      {posts.map((p, i) => (
+        <div key={p.slug} data-reveal style={{ "--i": i % 3 } as React.CSSProperties}>
+          <PostCard post={p} media={media} />
+        </div>
       ))}
     </div>
   );

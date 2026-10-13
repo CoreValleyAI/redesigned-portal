@@ -362,6 +362,71 @@
   filter: drop-shadow(0 0 0.4rem color-mix(in oklch, var(--hydro) 40%, transparent));
 }
 
+/* ══ Contour prints, drawn large (components/art/contour-cover.tsx) ════════
+   Each line traces itself in (pathLength 1: the dash is the whole line, the
+   gap a little longer, so a line is fully hidden at the start and has no
+   stray caps). The light is a second, accent-coloured copy of the print,
+   shown only inside a soft circle at the pointer. */
+:root[data-motion="full"] .contour-trace {
+  stroke-dasharray: 1 1.2;
+  animation: cv-trace 2.1s var(--ease-out) var(--d, 0ms) both;
+}
+:root[data-motion="full"] .contour-dot {
+  animation: cv-fade-in 700ms var(--ease-out) var(--d, 0ms) both;
+}
+@keyframes cv-trace {
+  from {
+    stroke-dashoffset: 1.06;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+@property --mx {
+  syntax: "<length-percentage>";
+  inherits: true;
+  initial-value: 50%;
+}
+@property --my {
+  syntax: "<length-percentage>";
+  inherits: true;
+  initial-value: 50%;
+}
+.contour-light__glow {
+  -webkit-mask: radial-gradient(circle 12rem at var(--mx) var(--my), #000, transparent);
+  mask: radial-gradient(circle 12rem at var(--mx) var(--my), #000, transparent);
+  opacity: 0;
+  transition: opacity 600ms var(--ease-out);
+}
+.contour-light[data-lit] .contour-light__glow {
+  opacity: 1;
+}
+/* Touch screens have no pointer to follow: the light drifts by itself. */
+@media (hover: none) {
+  :root[data-motion="full"] .contour-light__glow {
+    opacity: 0.85;
+    animation: cv-drift 18s ease-in-out infinite alternate;
+  }
+}
+@keyframes cv-drift {
+  0% {
+    --mx: 15%;
+    --my: 72%;
+  }
+  35% {
+    --mx: 58%;
+    --my: 26%;
+  }
+  70% {
+    --mx: 38%;
+    --my: 82%;
+  }
+  100% {
+    --mx: 88%;
+    --my: 38%;
+  }
+}
+
 /* ── Metro map (platform): the line fills, then a light runs along it ──── */
 @keyframes cv-metro-fill {
   from {

@@ -1,7 +1,8 @@
-import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ButtonLink, Icon } from "@/components/ui";
-import { TitledSection as Section } from "@/components/system/page-hero";
+import { Page } from "@/components/motion/page";
+import { AppLink } from "@/components/system/app-link";
+import { Cta } from "@/components/system/cta";
+import { SectionHead } from "@/components/system/section";
 import { AuthorBios, PostBody, PostHeader } from "@/components/blog/post-article";
 import { PostGrid } from "@/components/blog/post-parts";
 import { JsonLd, blogPostingJsonLd, breadcrumbJsonLd } from "@/components/seo/json-ld";
@@ -65,7 +66,7 @@ export default async function PostPage({ params }: Params) {
   const cover = mediaSrc(coverItem, "wide");
 
   return (
-    <>
+    <Page>
       <JsonLd
         data={[
           blogPostingJsonLd({
@@ -95,56 +96,50 @@ export default async function PostPage({ params }: Params) {
         <PostBody post={post} media={media} url={absoluteUrl(path)} />
       </article>
 
-      <div className="shell px-6 md:px-14">
+      <div className="container-page">
         <AuthorBios authors={post.authorInfo} media={media} />
         {newer || older ? (
-          <nav
-            aria-label="More posts"
-            className="mx-auto mt-10 grid max-w-[72ch] gap-3 text-[1.0625rem] sm:grid-cols-2"
-          >
+          <nav aria-label="More posts" className="mx-auto mt-10 grid max-w-[44rem] gap-3 sm:grid-cols-2">
             {older ? (
-              <Link
+              <AppLink
                 href={`/blog/${older.slug}/`}
-                className="rounded-2xl border border-line p-5 transition-colors hover:border-line-strong"
+                className="flex flex-col gap-2 rounded-panel border border-line p-5 transition-colors hover:border-line-strong"
               >
-                <span className="cv-label text-[10px]">Previous</span>
-                <span className="mt-2 block text-[15px] font-medium text-ink-100">{older.title}</span>
-              </Link>
+                <span className="type-kicker text-ink-3">Previous</span>
+                <span className="type-body font-medium text-ink">{older.title}</span>
+              </AppLink>
             ) : (
               <span />
             )}
             {newer ? (
-              <Link
+              <AppLink
                 href={`/blog/${newer.slug}/`}
-                className="rounded-2xl border border-line p-5 text-right transition-colors hover:border-line-strong"
+                className="flex flex-col gap-2 rounded-panel border border-line p-5 text-right transition-colors hover:border-line-strong"
               >
-                <span className="cv-label text-[10px]">Next</span>
-                <span className="mt-2 block text-[15px] font-medium text-ink-100">{newer.title}</span>
-              </Link>
+                <span className="type-kicker text-ink-3">Next</span>
+                <span className="type-body font-medium text-ink">{newer.title}</span>
+              </AppLink>
             ) : null}
           </nav>
         ) : null}
       </div>
 
       {related.length ? (
-        <Section eyebrow="Keep reading" title="Related posts.">
-          <PostGrid posts={related} media={media} />
-        </Section>
+        <section aria-labelledby="related-title" className="section-y">
+          <div className="container-page">
+            <SectionHead id="related-title" kicker="Keep reading" title="Related posts." size="title-2" />
+            <div className="mt-10">
+              <PostGrid posts={related} media={media} />
+            </div>
+          </div>
+        </section>
       ) : null}
 
-      <Section>
-        <div className="flex flex-col items-start gap-6 border-t border-line pt-12 md:flex-row md:items-end md:justify-between">
-          <div className="max-w-[46ch]">
-            <h2 className="type-title-1">Run your model in Nepal.</h2>
-            <p className="type-lead mt-3 text-ink-2">
-              Tell us what you want to run, and we will plan the capacity with you.
-            </p>
-          </div>
-          <ButtonLink href="/contact" size="lg" iconRight={<Icon name="arrow-right" size={17} />}>
-            Request access
-          </ButtonLink>
-        </div>
-      </Section>
-    </>
+      <Cta
+        title="Run your model in Nepal."
+        lead="Tell us what you want to run, and we will plan the capacity with you."
+        action={{ href: "/contact", label: "Request access" }}
+      />
+    </Page>
   );
 }

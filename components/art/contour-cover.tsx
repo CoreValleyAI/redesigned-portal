@@ -1,20 +1,50 @@
 "use client";
 
 /**
- * A generative contour print (S14) — the cover art for posts and use cases,
+ * A generative contour print (S14): the cover art for posts and use cases,
  * drawn from the slug (lib/art/contours.ts). Computed in the browser when the
- * cover comes near the viewport, so a page of fifteen stories ships no
- * path data at all; the box holds its size from the start (no layout
- * shift). Theme-aware through CSS colours: hairline contours in ink, one
- * level in hydro, dots on the high ground. Decorative.
+ * cover comes near the viewport, so a page of fifteen stories ships no path
+ * data at all; the box holds its size from the start (no layout shift).
+ * Theme-aware through CSS colours: hairline contours in ink, one level in
+ * the accent tone, dots on the high ground. Decorative.
+ *
+ * Two extras for a print shown large (a post's header):
+ *
+ *  · draw   every contour line traces itself in, end to end, as if a
+ *           plotter were drawing the map; the levels follow one another
+ *           from the valley floor up. Reduced motion: the finished print.
+ *  · light  a soft light follows the pointer and the lines under it glow in
+ *           the accent tone. On touch screens it drifts across by itself.
  */
 import { useEffect, useRef, useState } from "react";
 import { contourArt, type ContourArt } from "@/lib/art/contours";
 import { cn } from "@/lib/cn";
 
-export function ContourCover({ seed, className }: { seed: string; className?: string }) {
+export type ContourTone = "hydro" | "glow-2" | "glow-3";
+
+const TONE: Record<ContourTone, { stroke: string; fill: string }> = {
+  hydro: { stroke: "stroke-hydro", fill: "fill-hydro" },
+  "glow-2": { stroke: "stroke-glow-2", fill: "fill-glow-2" },
+  "glow-3": { stroke: "stroke-glow-3", fill: "fill-glow-3" },
+};
+
+export function ContourCover({
+  seed,
+  className,
+  tone = "hydro",
+  draw = false,
+  light = false,
+}: {
+  seed: string;
+  className?: string;
+  tone?: ContourTone;
+  draw?: boolean;
+  light?: boolean;
+}) {
   const ref = useRef<HTMLDivElement>(null);
   const [art, setArt] = useState<ContourArt | null>(null);
+  // Drawn large, strokes are set in screen pixels from the print's scale.
+  const [scale, setScale] = useState(1);
 
   useEffect(() => {
     const el = ref.current;
@@ -31,32 +61,122 @@ export function ContourCover({ seed, className }: { seed: string; className?: st
     return () => io.disconnect();
   }, [seed]);
 
-  return (
-    <div ref={ref} aria-hidden="true" className={cn("relative overflow-hidden bg-bg-sunken", className)}>
-      {art && (
-        <svg
-          viewBox={`0 0 ${art.width} ${art.height}`}
-          preserveAspectRatio="xMidYMid slice"
-          focusable="false"
-          className="absolute inset-0 h-full w-full"
-          style={{ animation: "cv-fade-in 700ms var(--ease-out) both" }}
+  useEffect(() => {
+    const el = ref.current;
+    if (!el || !draw) return;
+    // "slice": the print covers the box, so its scale is the larger ratio.
+    const ro = new ResizeObserver(([e]) => {
+      const r = e?.contentRect;
+      if (r) setScale(Math.max(r.width / 640, r.height / 400) || 1);
+    });
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [draw]);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el || !light) return;
+    const onMove = (e: PointerEvent) => {
+      const r = el.getBoundingClientRect();
+      el.style.setProperty("--mx", `${e.clientX - r.left}px`);
+      el.style.setProperty("--my", `${e.clientY - r.top}px`);
+      el.dataset.lit = "";
+    };
+    const onLeave = () => delete el.dataset.lit;
+    el.addEventListener("pointermove", onMove, { passive: true });
+    el.addEventListener("pointerleave", onLeave, { passive: true });
+    return () => {
+      el.removeEventListener("pointermove", onMove);
+      el.removeEventListener("pointerleave", onLeave);
+    };
+  }, [light]);
+
+  const t = TONE[tone];
+  const px = 1 / scale; // one screen pixel, in print units
+
+  const lines = (lit: boolean) =>
+    art!.levels.map((l, i) => {
+      const accent = i === art!.accent;
+      const common = {
+        fill: "none",
+        strokeLinecap: "round" as const,
+        strokeLinejoin: "round" as const,
+        className: lit || accent ? t.stroke : "stroke-ink-3",
+      };
+      if (!draw) {
+        return (
+          <path
+            key={i}
+            d={l.d}
+            {...common}
+            strokeWidth={accent ? 1.6 : 0.9}
+            opacity={accent ? 1 : 0.22 + l.t * 0.45}
+            vectorEffect="non-scaling-stroke"
+          />
+        );
+      }
+      return (
+        <g
+          key={i}
+          strokeWidth={(accent ? 1.75 : 1) * px}
+          opacity={lit ? 0.95 : accent ? 1 : 0.24 + l.t * 0.5}
+          {...common}
         >
-          {art.levels.map((l, i) => (
+          {l.lines.map((d, j) => (
             <path
-              key={i}
-              d={l.d}
-              fill="none"
-              strokeLinecap="round"
-              className={i === art.accent ? "stroke-hydro" : "stroke-ink-3"}
-              strokeWidth={i === art.accent ? 1.6 : 0.9}
-              opacity={i === art.accent ? 1 : 0.22 + l.t * 0.45}
-              vectorEffect="non-scaling-stroke"
+              key={j}
+              d={d}
+              pathLength={1}
+              className="contour-trace"
+              style={{ "--d": `${i * 110 + ((j * 37) % 23) * 9}ms` } as React.CSSProperties}
             />
           ))}
-          {art.dots.map((d, i) => (
-            <circle key={i} cx={d.x} cy={d.y} r={d.r} className="fill-ink-2" opacity="0.55" />
-          ))}
-        </svg>
+        </g>
+      );
+    });
+
+  return (
+    <div
+      ref={ref}
+      aria-hidden="true"
+      className={cn("relative overflow-hidden bg-bg-sunken", light && "contour-light", className)}
+    >
+      {art && (
+        <>
+          <svg
+            viewBox={`0 0 ${art.width} ${art.height}`}
+            preserveAspectRatio="xMidYMid slice"
+            focusable="false"
+            className="absolute inset-0 h-full w-full"
+            style={draw ? undefined : { animation: "cv-fade-in 700ms var(--ease-out) both" }}
+          >
+            {lines(false)}
+            {art.dots.map((d, i) => (
+              <circle
+                key={i}
+                cx={d.x}
+                cy={d.y}
+                r={draw ? d.r * 1.2 * Math.max(px, 0.6) : d.r}
+                className={cn("fill-ink-2", draw && "contour-dot")}
+                opacity="0.55"
+                style={draw ? ({ "--d": `${900 + (i % 17) * 60}ms` } as React.CSSProperties) : undefined}
+              />
+            ))}
+          </svg>
+          {light && (
+            <svg
+              viewBox={`0 0 ${art.width} ${art.height}`}
+              preserveAspectRatio="xMidYMid slice"
+              focusable="false"
+              className="contour-light__glow absolute inset-0 h-full w-full"
+            >
+              {lines(true)}
+              {art.dots.map((d, i) => (
+                <circle key={i} cx={d.x} cy={d.y} r={d.r * 1.6} className={t.fill} />
+              ))}
+            </svg>
+          )}
+        </>
       )}
     </div>
   );
