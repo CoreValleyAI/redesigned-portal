@@ -61,24 +61,30 @@ export function Hero() {
         </div>
       </div>
 
+      {/* The facts, on a pane of liquid glass: drawn by the valley itself
+          once it is running (lib/gl/glass.ts), CSS glass until then. */}
       <div
-        className="absolute inset-x-0 bottom-0 z-10"
+        className="absolute inset-x-0 bottom-0 z-10 pb-[clamp(1rem,3.5vh,2.25rem)]"
         style={{ animation: "cv-fade-in 1100ms var(--ease-out) 1000ms both" }}
       >
-        <ul aria-label="In short" className="container-page grid grid-cols-3">
-          {h.facts.map((f, i) => (
-            <li
-              key={f.value}
-              className={cn(
-                "flex flex-col gap-1 border-t border-line/70 py-5 pr-3 md:py-7",
-                i > 0 && "border-l pl-4 md:pl-8",
-              )}
-            >
-              <span className="type-small font-semibold text-ink md:text-[1.0625rem]">{f.value}</span>
-              <span className="type-caption text-ink-3">{f.label}</span>
-            </li>
-          ))}
-        </ul>
+        <div className="container-page">
+          <ul aria-label="In short" data-glass-panel className="lg grid grid-cols-3 rounded-panel">
+            {h.facts.map((f, i) => (
+              <li
+                key={f.value}
+                className={cn(
+                  "flex min-w-0 flex-col gap-0.5 px-3.5 py-3.5 sm:px-6 sm:py-5 md:px-8",
+                  i > 0 && "border-l border-ink/10",
+                )}
+              >
+                <span className="text-[0.875rem] leading-snug font-semibold text-ink sm:text-[1rem] md:text-[1.0625rem]">
+                  {f.value}
+                </span>
+                <span className="type-caption leading-snug text-ink-2">{f.label}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
       </div>
     </section>
   );

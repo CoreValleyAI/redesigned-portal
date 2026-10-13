@@ -21,7 +21,10 @@ export function ValleyStage() {
       }}
       onShown={(shown) => {
         const hero = document.getElementById("hero");
-        if (hero) hero.dataset.gl = shown ? "on" : "off";
+        if (!hero) return;
+        hero.dataset.gl = shown ? "on" : "off";
+        // Without the scene, its glass panels go back to CSS glass.
+        if (!shown) for (const el of hero.querySelectorAll<HTMLElement>("[data-glass]")) delete el.dataset.glass;
       }}
     />
   );

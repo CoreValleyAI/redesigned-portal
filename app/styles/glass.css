@@ -1,0 +1,178 @@
+/* ══════════════════════════════════════════════════════════════════════════
+   Liquid glass (05 §4, revised 13 Oct 2026). The site's floating material:
+   a tint thick enough to hold text contrast on any backdrop, the backdrop
+   blurred and saturated behind it, a lit rim (bright toward the top-left
+   light, softer opposite) and a soft lift.
+
+   One material, three places to use it:
+     .lg          panels and pills that float over content or a scene
+     .lg-button   round controls (carousel arrows, pause)
+     glass        the header bar (an @utility in globals.css)
+
+   Everywhere it is real backdrop blur; Chromium also refracts the backdrop
+   at the rim (lib/glass/refract.ts, added from script because Safari and
+   Firefox parse `backdrop-filter: url()` and then drop the whole value).
+   Over our own WebGL scenes the scene draws the glass itself, refraction
+   and all, in every browser (lib/gl/glass.ts); the element then hands its
+   backdrop to the scene ([data-glass="gl"]).
+
+   Values in backdrop-filter are literal on purpose: WebKit drops var()-
+   based backdrop filters in some versions (WebKit 297620).
+   Tints: white ≥ 0.50 keeps ink text at 4.5:1 over black; night ≥ 0.57
+   keeps white text at 4.5:1 over white.
+   ══════════════════════════════════════════════════════════════════════════ */
+
+.lg,
+.lg-button {
+  position: relative;
+  isolation: isolate;
+  background: rgb(255 255 255 / 0.56);
+  -webkit-backdrop-filter: blur(16px) saturate(175%);
+  backdrop-filter: blur(16px) saturate(175%);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.8),
+    inset 0 -1px 0 rgb(255 255 255 / 0.3),
+    0 0 0 1px rgb(24 27 33 / 0.07),
+    0 14px 34px -16px rgb(15 23 42 / 0.32);
+}
+:root[data-theme="dark"] :is(.lg, .lg-button) {
+  background: rgb(15 19 25 / 0.6);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.14),
+    inset 0 -1px 0 rgb(255 255 255 / 0.05),
+    0 0 0 1px rgb(255 255 255 / 0.08),
+    0 16px 36px -16px rgb(0 0 0 / 0.75);
+}
+
+/* The rim: a one-pixel ring lit from the top-left, fading around. */
+.lg::before,
+.lg-button::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(
+    135deg,
+    rgb(255 255 255 / 0.95),
+    rgb(255 255 255 / 0) 36%,
+    rgb(255 255 255 / 0) 64%,
+    rgb(255 255 255 / 0.45)
+  );
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  mask-composite: exclude;
+  pointer-events: none;
+}
+:root[data-theme="dark"] :is(.lg, .lg-button)::before {
+  opacity: 0.42;
+}
+
+/* Controls answer the hand like glass under a fingertip: they swell a
+   little on the spring and brighten. */
+.lg-button {
+  transition:
+    transform var(--dur-spring-snappy) var(--ease-spring),
+    background-color var(--dur-short) var(--ease-out);
+}
+@media (hover: hover) and (pointer: fine) {
+  .lg-button:hover {
+    transform: scale(1.06);
+    background: rgb(255 255 255 / 0.72);
+  }
+  :root[data-theme="dark"] .lg-button:hover {
+    background: rgb(30 36 45 / 0.7);
+  }
+}
+.lg-button:active {
+  transform: scale(0.94);
+}
+.lg-button:focus-visible {
+  outline: 2px solid var(--hydro);
+  outline-offset: 3px;
+}
+
+/* Handed to the WebGL scene beneath: the scene draws the glass. */
+:root[data-theme] [data-glass="gl"] .lg,
+:root[data-theme] .lg[data-glass="gl"] {
+  background: transparent;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  box-shadow: none;
+}
+:root[data-theme] [data-glass="gl"] .lg::before,
+:root[data-theme] .lg[data-glass="gl"]::before {
+  display: none;
+}
+
+/* No backdrop filters: an opaque tint instead. */
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .lg,
+  .lg-button {
+    background: rgb(255 255 255 / 0.94);
+  }
+  :root[data-theme="dark"] :is(.lg, .lg-button) {
+    background: rgb(15 19 25 / 0.94);
+  }
+}
+/* More contrast, or less transparency, asked for: solid. */
+@media (prefers-contrast: more), (prefers-reduced-transparency: reduce) {
+  .lg,
+  .lg-button {
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+    background: rgb(255 255 255 / 0.97);
+    box-shadow: 0 0 0 1px rgb(24 27 33 / 0.5);
+  }
+  :root[data-theme="dark"] :is(.lg, .lg-button) {
+    background: rgb(15 19 25 / 0.97);
+    box-shadow: 0 0 0 1px rgb(255 255 255 / 0.5);
+  }
+  .lg::before,
+  .lg-button::before {
+    display: none;
+  }
+}
+@media (forced-colors: active) {
+  .lg,
+  .lg-button {
+    background: Canvas;
+    color: CanvasText;
+    border: 1px solid CanvasText;
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+    box-shadow: none;
+  }
+  .lg::before,
+  .lg-button::before {
+    display: none;
+  }
+}
+
+/* ── The carousel's moving parts (components/use-cases/carousel.tsx) ──── */
+.uc-track {
+  padding-inline: max(var(--page-x), calc((100% - var(--content-max)) / 2));
+  scroll-padding-inline: max(var(--page-x), calc((100% - var(--content-max)) / 2));
+}
+.uc-card {
+  transform: scale(var(--s, 1));
+  opacity: var(--o, 1);
+  transform-origin: left center;
+}
+.uc-seg.is-running {
+  animation: uc-fill var(--dur) linear both;
+}
+@keyframes uc-fill {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}

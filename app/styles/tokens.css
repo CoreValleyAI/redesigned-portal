@@ -25,7 +25,7 @@
   --bg-sunken: oklch(0.955 0.006 240);
   --bg-elevated: oklch(1 0 0);
   /* Translucent chrome (header bar, sheets): the page colour at 72 %. */
-  --bg-glass: oklch(0.985 0.004 240 / 0.8);
+  --bg-glass: oklch(0.985 0.004 240 / 0.72);
 
   /* ── Lines ────────────────────────────────────────────── */
   --line: oklch(0.88 0.008 240);
@@ -75,7 +75,7 @@
   --bg-raised: oklch(0.205 0.014 252);
   --bg-sunken: oklch(0.135 0.012 252);
   --bg-elevated: oklch(0.235 0.014 252);
-  --bg-glass: oklch(0.165 0.014 252 / 0.82);
+  --bg-glass: oklch(0.165 0.014 252 / 0.74);
 
   --line: oklch(0.3 0.012 252);
   --line-soft: oklch(0.25 0.012 252);
@@ -114,7 +114,7 @@
     --bg-raised: oklch(0.205 0.014 252);
     --bg-sunken: oklch(0.135 0.012 252);
     --bg-elevated: oklch(0.235 0.014 252);
-    --bg-glass: oklch(0.165 0.014 252 / 0.82);
+    --bg-glass: oklch(0.165 0.014 252 / 0.74);
     --line: oklch(0.3 0.012 252);
     --line-soft: oklch(0.25 0.012 252);
     --line-strong: oklch(0.52 0.014 252);

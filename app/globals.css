@@ -16,6 +16,10 @@
 @import "./styles/base.css" layer(base);
 @import "./prose.css";
 @import "./styles/motion.css";
+@import "./styles/controls.css";
+@import "./styles/visuals.css";
+@import "./styles/vignettes.css";
+@import "./styles/glass.css";
 
 @source "../app";
 @source "../components";
@@ -253,11 +257,14 @@
   max-width: var(--text-max);
 }
 
-/* Floating chrome: the only glass on the site (05 §4). */
+/* Floating chrome: the header bar's liquid glass (05 §4; the material for
+   panels and controls is .lg in styles/glass.css). Literal backdrop-filter
+   values on purpose: WebKit drops var()-based ones (WebKit 297620). */
 @utility glass {
   background: var(--bg-glass);
-  -webkit-backdrop-filter: blur(20px) saturate(160%);
-  backdrop-filter: blur(20px) saturate(160%);
+  -webkit-backdrop-filter: blur(22px) saturate(185%);
+  backdrop-filter: blur(22px) saturate(185%);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.35);
 }
 
 /* A hairline that fades out at both ends, instead of a hard border. */

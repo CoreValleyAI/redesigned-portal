@@ -107,11 +107,20 @@ export function SiteHeader() {
           if (e.pointerType === "mouse") keepOpen();
         }}
       >
-        {/* The bar's glass, faded in rather than switched. */}
+        {/* The bar's glass, faded in rather than switched. It is twice the
+            bar's height and masked back to it, so the blur already knows what
+            is about to slide under the bar (no pop-in at its lower edge). */}
         <div
           aria-hidden="true"
           className={cn(
-            "glass absolute inset-x-0 top-0 h-full border-b border-line/70 transition-opacity duration-[var(--dur-base)] ease-out",
+            "glass pointer-events-none absolute inset-x-0 top-0 h-[200%] [mask-image:linear-gradient(to_bottom,#000_50%,transparent_50%)] transition-opacity duration-[var(--dur-base)] ease-out",
+            solid ? "opacity-100" : "opacity-0",
+          )}
+        />
+        <div
+          aria-hidden="true"
+          className={cn(
+            "pointer-events-none absolute inset-x-0 top-[var(--header-h)] h-px bg-line/70 transition-opacity duration-[var(--dur-base)] ease-out",
             solid ? "opacity-100" : "opacity-0",
           )}
         />
@@ -432,7 +441,8 @@ function MobileMenu({ pathname }: { pathname: string }) {
           if (e.target === e.currentTarget) hide();
         }}
         className={cn(
-          "fixed inset-0 m-0 h-dvh max-h-none w-full max-w-none bg-bg p-0 text-ink",
+          // Liquid glass over the page it came from: the sheet blurs what is behind it.
+          "glass fixed inset-0 m-0 h-dvh max-h-none w-full max-w-none p-0 text-ink",
           "translate-y-full transition-[transform,display,overlay] transition-discrete duration-[var(--dur-spring-gentle)] ease-spring",
           "open:translate-y-0 starting:open:translate-y-full backdrop:bg-transparent",
         )}
