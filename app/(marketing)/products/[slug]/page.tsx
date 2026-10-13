@@ -1,5 +1,7 @@
 import { notFound } from "next/navigation";
 import { ViewTransition } from "react";
+import { MeterTeaser } from "@/components/home/meter-teaser";
+import { SliceTeaser } from "@/components/home/slice-teaser";
 import { Page } from "@/components/motion/page";
 import { ProductCard } from "@/components/products/product-card";
 import { JsonLd, serviceJsonLd } from "@/components/seo/json-ld";
@@ -15,8 +17,22 @@ import { SpecList } from "@/components/system/spec-list";
 import { Status } from "@/components/system/status";
 import { TextLink } from "@/components/system/text-link";
 import { PRODUCTS, productBySlug } from "@/copy/en/products";
-import { fact } from "@/lib/facts";
+import { fact, v } from "@/lib/facts";
 import { pageMetadata } from "@/lib/seo";
+
+/** Products whose idea can be shown working, not only described. */
+const DEMOS: Partial<Record<string, { title: string; continuation: string; demo: () => React.ReactNode }>> = {
+  "mig-slicing": {
+    title: "One GPU, seven ways.",
+    continuation: "Each slice isolated in hardware.",
+    demo: () => <SliceTeaser memory={v("gpu.memory")} slice={v("gpu.migSize")} />,
+  },
+  "on-demand": {
+    title: "The meter runs while your job does.",
+    continuation: "Not a second longer.",
+    demo: () => <MeterTeaser />,
+  },
+};
 
 export function generateStaticParams() {
   return PRODUCTS.map((p) => ({ slug: p.slug }));
@@ -106,6 +122,21 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
           </ol>
         </div>
       </section>
+
+      {DEMOS[product.slug] && (
+        <section aria-labelledby="see-title" className="section-y">
+          <div className="container-page flex flex-col items-center gap-14">
+            <SectionHead
+              id="see-title"
+              kicker="See it"
+              title={DEMOS[product.slug]!.title}
+              continuation={DEMOS[product.slug]!.continuation}
+              align="center"
+            />
+            {DEMOS[product.slug]!.demo()}
+          </div>
+        </section>
+      )}
 
       {/* What you get */}
       <section aria-labelledby="get-title" className="section-y">
