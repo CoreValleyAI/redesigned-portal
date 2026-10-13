@@ -3,7 +3,11 @@
  * never a product render or a logo (05 §6).
  *
  *  GpuArt          the H200 NVL board seen from above, stylised: the GPU die,
- *                  its memory stacks, the PCIe edge, the airflow fins.
+ *                  its memory stacks, the PCIe edge, the airflow fins. Inside
+ *                  <GpuLive> (gpu-live.tsx) it answers the pointer: the die's
+ *                  compute dots heat up under it and the memory streams; the
+ *                  classes and per-dot variables here are what the CSS
+ *                  (app/styles/motion.css, .gpu-*) works from.
  *  ClusterDiagram  the first cluster as a calm diagram: two GPU servers of
  *                  four GPUs, the storage, the network — no wiring, ports or
  *                  addresses (those stay private).
@@ -47,8 +51,8 @@ export function GpuArt({ className }: { className?: string }) {
           strokeLinecap="round"
         />
       ))}
-      {/* Die glow */}
-      <circle cx="280" cy="190" r="120" fill="url(#gpu-glow)" />
+      {/* Die glow: drifts toward the pointer inside <GpuLive>. */}
+      <circle cx="280" cy="190" r="120" fill="url(#gpu-glow)" className="gpu-glow" />
       {/* GPU die */}
       <rect x="225" y="140" width="110" height="100" rx="8" className="fill-hydro" />
       {Array.from({ length: 5 }, (_, r) =>
@@ -58,8 +62,8 @@ export function GpuArt({ className }: { className?: string }) {
             cx={240 + c * 16}
             cy={155 + r * 17.5}
             r="2.2"
-            className="fill-on-hydro"
-            opacity="0.55"
+            className="gpu-sm fill-on-hydro"
+            style={{ "--x": 240 + c * 16, "--y": 155 + r * 17.5, "--i": r + c } as React.CSSProperties}
           />
         )),
       )}
@@ -78,7 +82,14 @@ export function GpuArt({ className }: { className?: string }) {
           <rect x={x} y={y} width="48" height="38" rx="5" className="fill-bg stroke-hydro" strokeWidth="1.4" />
           {Array.from({ length: 3 }, (_, r) =>
             Array.from({ length: 4 }, (_, c) => (
-              <circle key={`${r}-${c}`} cx={x + 9 + c * 10} cy={y + 9 + r * 10} r="1.8" className="fill-hydro" />
+              <circle
+                key={`${r}-${c}`}
+                cx={x + 9 + c * 10}
+                cy={y + 9 + r * 10}
+                r="1.8"
+                className="gpu-hbm fill-hydro"
+                style={{ "--i": i * 3 + r + (x > 280 ? 3 - c : c) } as React.CSSProperties}
+              />
             )),
           )}
         </g>

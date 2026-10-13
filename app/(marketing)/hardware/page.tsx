@@ -1,6 +1,7 @@
 import { EngineerSwitch } from "@/components/chrome/pref-switch";
 import { ExplodedServer } from "@/components/hardware/exploded-server";
-import { ClusterDiagram, GpuArt } from "@/components/hardware/visuals";
+import { GpuLive } from "@/components/hardware/gpu-live";
+import { ClusterDiagram } from "@/components/hardware/visuals";
 import { Page } from "@/components/motion/page";
 import { BlinkBar } from "@/components/system/blink-bar";
 import { ButtonLink } from "@/components/system/button";
@@ -55,7 +56,7 @@ export default function HardwarePage() {
             </div>
           </div>
           <div style={{ animation: "cv-rise-in 900ms var(--ease-expo) 200ms both" }}>
-            <GpuArt />
+            <GpuLive />
           </div>
         </div>
       </section>
