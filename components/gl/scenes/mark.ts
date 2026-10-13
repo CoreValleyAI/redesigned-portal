@@ -8,31 +8,45 @@
  *    the mark coming online. It plays again whenever the mark comes back.
  *  · React. The pointer parts the dots and lights them, leaving a short
  *    afterglow; they spring home with a little overshoot when it moves on.
- *    On touch screens a soft light drifts across the mark by itself, a held
- *    finger parts the dots, and scrolling sloshes them like water in a glass.
- *  · Still. With reduced motion: the finished mark, drawn once.
+ *    On touch screens a soft light drifts across the mark by itself, a
+ *    finger on the screen parts the dots (through a swipe, as the page
+ *    scrolls), and scrolling sloshes them like water in a glass.
+ *  · Still. With reduced motion: the finished mark; a hand or a finger
+ *    still parts the dots (direct manipulation), nothing moves by itself.
  *
  * Snow mode (the 404 page, S18): the dots start as snow falling through the
  * field, and the pointer gathers them back into the mark as it passes; a
  * sideways swipe does on a phone, and left alone the snow slowly gathers
  * itself. Once most of it is home the rest follows, and onGathered fires.
  *
- * The dots come from the logo's own paths (components/brand/paths.ts),
+ * Water (the Reservoir, S3: the wordmark at the foot of every page): the
+ * dots are dry, in the quiet dot colour, until water rises through them
+ * with the host's progress (the page reaching its end), lighting them hydro.
+ * The surface is a row of coupled springs: the pointer or a finger dips it
+ * and leaves waves, a tap drops a stone in, a change of scroll speed sloshes
+ * it from side to side, and at rest it breathes a little.
+ *
+ * The dots come from a shape's own paths (components/brand/paths.ts),
  * rasterised at grid resolution with 4× supersampling, so there is no image
- * request. Coverage is weighted by the logo's gradient, so the light
- * upper-left of the mark carries the fuller dots. The physics runs on the
- * CPU (a couple of thousand springs); the field is one buffer upload and
- * one draw call per frame.
+ * request. For the mark, coverage is weighted by its gradient, so the light
+ * upper-left carries the fuller dots. The physics runs on the CPU (a couple
+ * of thousand springs); the field is one buffer upload and one draw call
+ * per frame.
  */
-import { BRANDMARK } from "@/components/brand/paths";
+import { BRANDMARK, type DotShape } from "@/components/brand/paths";
 import { clamp01, compileProgram, smoothstep, uniforms } from "@/lib/gl/core";
 import type { FrameInfo, Scene, SceneContext, SceneFactory } from "@/lib/gl/stage";
 import { damp } from "@/lib/motion/spring";
 import { encodeSrgb, type RGB } from "@/lib/theme";
 
 export interface MarkOptions {
+  /** The shape to draw (the brand mark by default). */
+  shape?: DotShape;
   /** Grid pitch, CSS px. */
   cell?: number;
+  /** Or: dots across the shape's width (the pitch follows the size), with
+      the pitch kept within [min, max] CSS px. Overrides `cell`. */
+  columns?: { count: number; min: number; max: number };
   /** Cells below this share of the peak coverage stay empty. */
   threshold?: number;
   /** Exponent on coverage: below 1 lifts the faint edge cells. */
@@ -52,6 +66,8 @@ export interface MarkOptions {
   mode?: "assemble" | "snow";
   /** Snow mode: the mark is whole again. */
   onGathered?: () => void;
+  /** Water rises through the dots with the host's progress (the Reservoir). */
+  water?: boolean;
 }
 
 const VS = /* glsl */ `#version 300 es
@@ -60,7 +76,7 @@ layout(location = 0) in vec2 a_pos;    // CSS px
 layout(location = 1) in float a_size;  // diameter, CSS px
 layout(location = 2) in float a_alpha;
 layout(location = 3) in float a_lit;
-layout(location = 4) in float a_home;  // 0 snow … 1 part of the mark
+layout(location = 4) in float a_home;  // 0 snow (or dry) … 1 the mark (or wet)
 uniform vec2 u_res;                    // CSS px
 uniform float u_dpr;
 uniform vec3 u_color;
@@ -79,8 +95,7 @@ void main() {
 /* Night Valley: the live site's dot, a solid core to 28 % of the radius,
    a shoulder to 50 %, then a halo falling to nothing at the edge; summed
    additively, the halos are the glow. Glacier (u_paper): light does not
-   glow on paper, so a crisp disc with an anti-aliased rim, like the dots of
-   the Reservoir below it. */
+   glow on paper, so a crisp disc with an anti-aliased rim. */
 const FS = /* glsl */ `#version 300 es
 precision mediump float;
 uniform float u_paper;
@@ -101,13 +116,19 @@ void main() {
 
 /** Floats per dot in the vertex buffer: x, y, size, alpha, lit, home. */
 const STRIDE = 6;
-/** Supersampling per cell when rasterising the mark. */
+/** Supersampling per cell when rasterising the shape. */
 const SS = 4;
 /** The dots' spring: stiff, a touch under critical damping (≈ 6 % overshoot). */
 const K = 170;
 const C = 2 * 0.66 * Math.sqrt(K);
 /** Scroll slosh: share of a change in scroll speed passed to the dots. */
 const SLOSH = 0.07;
+
+/** The water surface: columns across the shape, and its physics. */
+const WN = 84;
+const WAVE = 2600; // neighbour coupling (wave speed²), columns²/s²
+const LEVEL_K = 9; // pull back to level
+const WATER_DAMP = 2.1;
 
 type Phase = "waiting" | "assembling" | "snow" | "done";
 
@@ -126,11 +147,11 @@ function mulberry32(seed: number) {
 }
 
 /**
- * Coverage per cell of the mark drawn into a cols × rows grid at (ox, oy),
- * gw × gh cells. Supersampled, then box-averaged, so every source pixel gets
- * a share of its cell; lighter parts of the gradient count for more.
+ * Coverage per cell of the shape drawn into a cols × rows grid at (ox, oy),
+ * gw cells wide. Supersampled, then box-averaged, so every source pixel gets
+ * a share of its cell; lighter parts of a gradient count for more.
  */
-function rasterise(cols: number, rows: number, ox: number, oy: number, gw: number): Float32Array {
+function rasterise(shape: DotShape, cols: number, rows: number, ox: number, oy: number, gw: number): Float32Array {
   const W = cols * SS;
   const H = rows * SS;
   const canvas: OffscreenCanvas | HTMLCanvasElement =
@@ -142,15 +163,19 @@ function rasterise(cols: number, rows: number, ox: number, oy: number, gw: numbe
   const cov = new Float32Array(cols * rows);
   if (!g) return cov;
 
-  const [vx, vy, vw] = BRANDMARK.viewBox;
+  const [vx, vy, vw] = shape.viewBox;
   const k = (gw * SS) / vw;
   g.setTransform(k, 0, 0, k, ox * SS - vx * k, oy * SS - vy * k);
-  const G = BRANDMARK.gradient;
-  const grad = g.createLinearGradient(G.x1, G.y1, G.x2, G.y2);
-  grad.addColorStop(0, G.from);
-  grad.addColorStop(1, G.to);
-  g.fillStyle = grad;
-  for (const d of BRANDMARK.paths) g.fill(new Path2D(d));
+  const G = shape.gradient;
+  if (G) {
+    const grad = g.createLinearGradient(G.x1, G.y1, G.x2, G.y2);
+    grad.addColorStop(0, G.from);
+    grad.addColorStop(1, G.to);
+    g.fillStyle = grad;
+  } else {
+    g.fillStyle = "#fff";
+  }
+  for (const d of shape.paths) g.fill(new Path2D(d));
 
   const data = g.getImageData(0, 0, W, H).data;
   for (let r = 0; r < rows; r++) {
@@ -171,7 +196,7 @@ function rasterise(cols: number, rows: number, ox: number, oy: number, gw: numbe
 }
 
 export function createMarkScene(options: MarkOptions = {}): SceneFactory {
-  const cell = options.cell ?? 4;
+  const shape = options.shape ?? BRANDMARK;
   const threshold = options.threshold ?? 0.08;
   const gamma = options.gamma ?? 0.6;
   const intensity = options.intensity ?? 1;
@@ -180,6 +205,7 @@ export function createMarkScene(options: MarkOptions = {}): SceneFactory {
   const bleed = options.bleed ?? 90;
   const replay = options.replay ?? true;
   const snowMode = options.mode === "snow";
+  const water = options.water ?? false;
 
   return (ctx: SceneContext): Scene => {
     const { gl, canvas } = ctx;
@@ -205,6 +231,7 @@ export function createMarkScene(options: MarkOptions = {}): SceneFactory {
     gl.bindVertexArray(null);
 
     // The field, as parallel arrays.
+    let cell = options.cell ?? 4;
     let n = 0;
     let hx = new Float32Array(0); // home
     let hy = new Float32Array(0);
@@ -228,11 +255,19 @@ export function createMarkScene(options: MarkOptions = {}): SceneFactory {
     let ph = new Float32Array(0);
     let gat = new Float32Array(0);
     let verts = new Float32Array(0);
+    // Water: the surface's offset from level (px, down is positive) and its
+    // velocity, per column; the level itself, eased.
+    const wh = new Float32Array(WN);
+    const wv = new Float32Array(WN);
+    let level = 0;
+    let lastTap = -1;
+    let lastPX = 0;
+    let lastPY = 0;
 
     let cssW = 1;
     let cssH = 1;
     let dpr = 1;
-    // The mark's box inside the canvas, CSS px.
+    // The shape's box inside the canvas, CSS px.
     const box = { x: 0, y: 0, w: 1, h: 1 };
 
     let reduced = ctx.reduced;
@@ -279,6 +314,11 @@ export function createMarkScene(options: MarkOptions = {}): SceneFactory {
     };
 
     const build = () => {
+      const aspect = shape.viewBox[2] / shape.viewBox[3];
+      if (options.columns) {
+        const { count, min, max } = options.columns;
+        cell = Math.min(max, Math.max(min, Math.max(1, cssW - bleed * 2) / count));
+      }
       const cols = Math.max(1, Math.floor(cssW / cell));
       const rows = Math.max(1, Math.floor(cssH / cell));
       const gx = (cssW - cols * cell) / 2;
@@ -286,7 +326,6 @@ export function createMarkScene(options: MarkOptions = {}): SceneFactory {
       const bc = Math.round(bleed / cell);
       const ic = Math.max(1, cols - bc * 2);
       const ir = Math.max(1, rows - bc * 2);
-      const aspect = BRANDMARK.viewBox[2] / BRANDMARK.viewBox[3];
       let gw = ic;
       let gh = Math.round(ic / aspect);
       if (gh > ir) {
@@ -300,7 +339,7 @@ export function createMarkScene(options: MarkOptions = {}): SceneFactory {
       box.w = gw * cell;
       box.h = gh * cell;
 
-      const cov = rasterise(cols, rows, ox, oy, gw);
+      const cov = rasterise(shape, cols, rows, ox, oy, gw);
       let peak = 0;
       for (let i = 0; i < cov.length; i++) peak = Math.max(peak, cov[i]!);
       const keep: number[] = [];
@@ -385,6 +424,26 @@ export function createMarkScene(options: MarkOptions = {}): SceneFactory {
     );
     io.observe(canvas);
 
+    /** Water: one step of the surface (semi-implicit Euler). Returns whether
+        it is still moving. */
+    const stepWater = (h: number, drive: number, time: number) => {
+      let moving = false;
+      for (let j = 0; j < WN; j++) {
+        const left = wh[j > 0 ? j - 1 : j]!;
+        const right = wh[j < WN - 1 ? j + 1 : j]!;
+        // At rest the surface breathes: two slow swells, a pixel or two.
+        const rest = drive * (1.3 * Math.sin(time * 1.1 + j * 0.31) + 0.8 * Math.sin(time * 0.67 - j * 0.53));
+        const acc = WAVE * (left + right - 2 * wh[j]!) / (WN * 0.5) - LEVEL_K * (wh[j]! - rest) - WATER_DAMP * wv[j]!;
+        wv[j] = wv[j]! + acc * h;
+      }
+      for (let j = 0; j < WN; j++) {
+        wh[j] = Math.max(-box.h * 0.45, Math.min(box.h * 0.45, wh[j]! + wv[j]! * h));
+        if (Math.abs(wv[j]!) > 0.4) moving = true;
+      }
+      return moving;
+    };
+    const columnAt = (px: number) => Math.min(WN - 1, Math.max(0, Math.floor(((px - box.x) / box.w) * WN)));
+
     return {
       resize(width, height, d) {
         dpr = d;
@@ -424,14 +483,14 @@ export function createMarkScene(options: MarkOptions = {}): SceneFactory {
           t = f.time - tStart;
         }
 
-        // The pointer, in canvas px; a held finger stays for a moment after
-        // it lifts, so a tap visibly parts the dots.
-        // Only a pointer within reach of the field counts.
+        // The pointer (or finger), in canvas px; a finger stays for a moment
+        // after it lifts, so a tap visibly parts the dots. Only a pointer
+        // within reach of the field counts.
         const px = (f.pointer.x + 1) * 0.5 * cssW;
         const py = (1 - f.pointer.y) * 0.5 * cssH;
         const near = px > -radius && py > -radius && px < cssW + radius && py < cssH + radius;
         if (f.pointer.down && near) holdUntil = f.time + 0.6;
-        const presence = reduced || !near ? 0 : Math.max(f.pointer.presence, holdUntil > f.time ? 1 : 0);
+        const presence = !near ? 0 : Math.max(f.pointer.presence, holdUntil > f.time ? 1 : 0);
         if (lastTouch < 0 || presence > 0.05) lastTouch = f.time;
 
         // Snow: once most flakes are home the rest follow; left alone for a
@@ -467,6 +526,55 @@ export function createMarkScene(options: MarkOptions = {}): SceneFactory {
           lastScroll = scroll;
         }
 
+        // Water: the level follows the host, eased; the surface takes the
+        // pointer, taps and the slosh, and breathes at rest.
+        let waterMoving = false;
+        if (water) {
+          const target = reduced ? 1 : clamp01(f.progress);
+          level = reduced ? 1 : damp(level, target, 0.18, dt);
+          if (Math.abs(level - target) > 0.001) waterMoving = true;
+          if (!reduced) {
+            // A dip that follows the pointer while it is at the surface.
+            const surfaceY = box.y + box.h * (1 - level);
+            const pvx = (px - lastPX) / Math.max(dt, 1 / 240);
+            const pvy = (py - lastPY) / Math.max(dt, 1 / 240);
+            const sources: [number, number, number, number, number][] = [];
+            if (presence > 0.05) sources.push([px, py, pvx, pvy, presence]);
+            if (ambient > 0.05) sources.push([ax, ay, 0, 0, ambient * 0.5]);
+            for (const [sx0, sy0, svx, svy, amt] of sources) {
+              const reach = Math.abs(sy0 - surfaceY);
+              if (sx0 < box.x - 30 || sx0 > box.x + box.w + 30 || reach > box.h * 0.6) continue;
+              const j0 = columnAt(sx0);
+              const prox = 1 - reach / (box.h * 0.6);
+              for (let j = Math.max(0, j0 - 3); j <= Math.min(WN - 1, j0 + 3); j++) {
+                const fallOff = 1 - Math.abs(j - j0) / 4;
+                wv[j] = wv[j]! + (svy * 0.06 + Math.abs(svx) * 0.025) * fallOff * prox * amt;
+              }
+            }
+            // A tap drops a stone in.
+            const tap = f.taps[f.taps.length - 1];
+            if (tap && tap.t > lastTap) {
+              lastTap = tap.t;
+              const tx = (tap.x + 1) * 0.5 * cssW;
+              if (tx >= box.x && tx <= box.x + box.w) {
+                const j0 = columnAt(tx);
+                for (let j = Math.max(0, j0 - 2); j <= Math.min(WN - 1, j0 + 2); j++) wv[j] = wv[j]! + 260;
+              }
+            }
+            // Slosh: a change of scroll speed tips the water.
+            if (kick !== 0) for (let j = 0; j < WN; j++) wv[j] = wv[j]! + kick * 1.6 * ((j / (WN - 1)) * 2 - 1);
+            const subs = Math.max(1, Math.ceil(dt / (1 / 120)));
+            const drive = level > 0.02 && level < 0.995 ? 1 : 0;
+            for (let s = 0; s < subs; s++) if (stepWater(dt / subs, drive, f.time)) waterMoving = true;
+            if (drive) waterMoving = true;
+          } else {
+            wh.fill(0);
+            wv.fill(0);
+          }
+          lastPX = px;
+          lastPY = py;
+        }
+
         // Nothing new to show (the Stage also calls when its own pointer
         // moves, wherever it is): keep the last frame on screen.
         const pal = f.palette;
@@ -477,7 +585,16 @@ export function createMarkScene(options: MarkOptions = {}): SceneFactory {
             Math.abs(color[1] - drawn.color[1]) +
             Math.abs(color[2] - drawn.color[2]) <
             1e-4;
-        if (settled && !dirty && sameLook && phase === "done" && presence === 0 && ambient === 0 && kick === 0) {
+        if (
+          settled &&
+          !dirty &&
+          sameLook &&
+          phase === "done" &&
+          presence === 0 &&
+          ambient === 0 &&
+          kick === 0 &&
+          !waterMoving
+        ) {
           return false;
         }
 
@@ -487,6 +604,7 @@ export function createMarkScene(options: MarkOptions = {}): SceneFactory {
         let moving = false;
         const landing = phase === "assembling";
         let landed = true;
+        const restY = box.y + box.h * (1 - level);
 
         for (let i = 0; i < n; i++) {
           // Where the dot wants to be: home, on its way home, or pushed aside.
@@ -578,14 +696,25 @@ export function createMarkScene(options: MarkOptions = {}): SceneFactory {
           glow[i] = g < 0.004 ? 0 : g;
           if (g > 0.004) moving = true;
 
+          // Wet below the surface, with a bright line of foam along it.
+          let wet = homeAmt;
+          let foam = 0;
+          if (water) {
+            const surface = restY + wh[columnAt(hx[i]!)]!;
+            const below = hy[i]! - surface;
+            wet = smoothstep(-cell * 0.7, cell * 0.7, below);
+            foam = level > 0.01 && level < 0.995 ? Math.exp(-((below / (cell * 1.4)) ** 2)) * 0.55 : 0;
+          }
+
           const o = i * STRIDE;
           const wi = w[i]!;
+          const hot = Math.max(g, foam);
           verts[o] = X;
           verts[o + 1] = Y;
           verts[o + 2] = cell * (0.55 + 0.45 * wi) * (1 + g * 0.9) * 2;
-          verts[o + 3] = Math.min(1, wi * intensity * on + g * 0.7 * on);
-          verts[o + 4] = g;
-          verts[o + 5] = homeAmt;
+          verts[o + 3] = Math.min(1, wi * intensity * on * (water ? 0.55 + 0.45 * wet : 1) + hot * 0.7 * on);
+          verts[o + 4] = hot;
+          verts[o + 5] = wet;
         }
         if (landing && landed) phase = "done";
         if (snowing && home === n) {
@@ -598,7 +727,7 @@ export function createMarkScene(options: MarkOptions = {}): SceneFactory {
 
         // With nothing but the drifting light to show, half the frame rate
         // is plenty (and kinder to a phone's battery).
-        const onlyAmbient = phase === "done" && presence === 0 && kick === 0 && ambient > 0;
+        const onlyAmbient = phase === "done" && presence === 0 && kick === 0 && ambient > 0 && !waterMoving;
         if (onlyAmbient && frames % 2 === 1) return true;
 
         // Colour and blend per frame, so a theme change takes on the next
@@ -607,11 +736,13 @@ export function createMarkScene(options: MarkOptions = {}): SceneFactory {
         const dark = pal.theme === "dark";
         const ink = encodeSrgb(pal.ink);
         const mixHot = dark ? 0.55 : 0.4;
-        const hot: RGB = [
+        const hotColor: RGB = [
           color[0] + (ink[0] - color[0]) * mixHot,
           color[1] + (ink[1] - color[1]) * mixHot,
           color[2] + (ink[2] - color[2]) * mixHot,
         ];
+        // Dry dots (snow, or above the water): the quiet dot colour.
+        const dry = water ? encodeSrgb(pal.dotOff) : dark ? ink : encodeSrgb(pal.ink3);
 
         gl.clearColor(0, 0, 0, 0);
         gl.clear(gl.COLOR_BUFFER_BIT);
@@ -624,8 +755,8 @@ export function createMarkScene(options: MarkOptions = {}): SceneFactory {
         // One device pixel of rim, as a share of a full-weight dot.
         gl.uniform1f(u("u_rim"), 1 / (cell * 2 * dpr));
         gl.uniform3fv(u("u_color"), color);
-        gl.uniform3fv(u("u_hot"), hot);
-        gl.uniform3fv(u("u_snow"), dark ? ink : encodeSrgb(pal.ink3));
+        gl.uniform3fv(u("u_hot"), hotColor);
+        gl.uniform3fv(u("u_snow"), dry);
         gl.bindBuffer(gl.ARRAY_BUFFER, buf);
         gl.bufferSubData(gl.ARRAY_BUFFER, 0, verts);
         gl.bindVertexArray(vao);
@@ -635,7 +766,9 @@ export function createMarkScene(options: MarkOptions = {}): SceneFactory {
         dirty = false;
         drawn = { theme: pal.theme, color };
 
-        return phase === "assembling" || phase === "snow" || moving || presence > 0 || ambient > 0;
+        return (
+          phase === "assembling" || phase === "snow" || moving || presence > 0 || ambient > 0 || waterMoving
+        );
       },
 
       dispose() {
