@@ -45,6 +45,7 @@ uniform vec3 u_cSnow;
 uniform vec3 u_cRiver;
 uniform float u_dark;
 uniform vec2 u_city[3];      // Kathmandu, Lalitpur, Bhaktapur (uv)
+uniform vec3 u_tap[3];       // taps: ndc x, ndc y, age in s (< 0: none)
 out vec3 v_color;
 out float v_alpha;
 
@@ -90,12 +91,22 @@ void main() {
   vec2 ndc = clip.xy / clip.w;
   vec2 dv = (ndc - u_pointer.xy) * vec2(u_aspect, 1.0);
   float glow = u_pointer.z * exp(-dot(dv, dv) / 0.03);
-  pos.y += glow * 0.06;
+
+  // Taps: a ring of light and lift running out from where the finger landed.
+  float ripple = 0.0;
+  for (int i = 0; i < 3; i++) {
+    float age = u_tap[i].z;
+    if (age < 0.0 || age > 2.4) continue;
+    float d = length((ndc - u_tap[i].xy) * vec2(u_aspect, 1.0));
+    float ring = exp(-pow((d - age * 0.85) / 0.06, 2.0)) * (1.0 - age / 2.4);
+    ripple = max(ripple, ring);
+  }
+  pos.y += glow * 0.06 + ripple * 0.05;
   clip = u_viewProj * vec4(pos, 1.0);
 
   float depth = max(clip.w, 0.05);
   float snow = smoothstep(4.4, 5.6, km);
-  float size = u_px / depth * (0.8 + 0.5 * shade + (0.35 + 0.6 * city) * lit * twinkle + 0.7 * riverOn + 1.2 * glow + 1.4 * (front + riverFront) + 0.6 * snow);
+  float size = u_px / depth * (0.8 + 0.5 * shade + (0.35 + 0.6 * city) * lit * twinkle + 0.7 * riverOn + 1.2 * glow + 1.4 * (front + riverFront) + 0.6 * snow + 1.3 * ripple);
   gl_PointSize = clamp(size, 1.0, u_maxPx);
 
   vec3 relief = u_cOff * (0.45 + 1.0 * shade);
@@ -105,6 +116,7 @@ void main() {
   col = mix(col, u_cRiver * (0.6 + 0.5 * flow), riverOn * (1.0 - lit * 0.5));
   col += (u_cLit + 0.35) * (front + riverFront);
   col += mix(u_cLit, vec3(1.0), 0.4) * glow * 0.9;
+  col += mix(u_cLit, vec3(1.0), 0.3) * ripple * 0.85;
   v_color = col;
 
   // Fade the field's edges and the near and far distance.
@@ -112,7 +124,7 @@ void main() {
              * smoothstep(0.0, 0.04, a_uv.y) * smoothstep(1.0, 0.9, a_uv.y);
   float far = mix(0.45 + 0.45 * snow, 1.0, smoothstep(13.0, 5.0, depth));
   float near = smoothstep(0.6, 1.6, depth);
-  float a = (0.42 + 0.45 * shade) + lit * 0.6 + riverOn * 0.5 + snow * 0.5 + glow * 0.6 + front + riverFront;
+  float a = (0.42 + 0.45 * shade) + lit * 0.6 + riverOn * 0.5 + snow * 0.5 + glow * 0.6 + front + riverFront + ripple * 0.7;
   v_alpha = clamp(a, 0.0, 1.0) * edge * far * near * mix(0.85, 1.0, u_dark);
   gl_Position = clip;
 }`;
@@ -228,7 +240,8 @@ export const createValleyScene: SceneFactory = async (ctx: SceneContext): Promis
       // another ~8 s. Instantly, when motion is reduced.
       const power = reduced ? POWER_END : POWER_END * easeOut(clamp01((t - 0.4) / 4.2));
       const reach = reduced ? REACH_END : 0.1 + (REACH_END - 0.1) * easeOut(clamp01((t - 0.2) / 11));
-      const animating = !reduced && (power < POWER_END || reach < REACH_END);
+      const rippling = !reduced && f.taps.some((tap) => f.time - tap.t < 2.4);
+      const animating = !reduced && (power < POWER_END || reach < REACH_END || rippling);
 
       // Once lit, with nobody touching it and no scrolling, half the frame
       // rate is plenty for flowing water (and kinder to batteries).
@@ -305,6 +318,13 @@ export const createValleyScene: SceneFactory = async (ctx: SceneContext): Promis
       gl.uniform3fv(u("u_cRiver"), river);
       gl.uniform1f(u("u_dark"), dark ? 1 : 0);
       gl.uniform2fv(u("u_city[0]"), [...meta.places.Kathmandu, ...meta.places.Lalitpur, ...meta.places.Bhaktapur]);
+      const taps = new Float32Array(9).fill(-1);
+      f.taps.slice(-3).forEach((tap, i) => {
+        taps[i * 3] = tap.x;
+        taps[i * 3 + 1] = tap.y;
+        taps[i * 3 + 2] = f.time - tap.t;
+      });
+      gl.uniform3fv(u("u_tap[0]"), taps);
 
       gl.bindVertexArray(vao);
       gl.drawArrays(gl.POINTS, 0, count);

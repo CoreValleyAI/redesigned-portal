@@ -41,6 +41,15 @@ export interface FrameInfo {
   progress: number;
   palette: GLPalette;
   reduced: boolean;
+  /** Recent taps and clicks on the stage, newest last (at most three):
+      where (normalised device coordinates) and when (`time` units). */
+  taps: readonly Tap[];
+}
+
+export interface Tap {
+  x: number;
+  y: number;
+  t: number;
 }
 
 export interface SceneContext {
@@ -108,6 +117,7 @@ export class Stage {
   private progress = 0;
   private pointer: Pointer = { x: 0, y: 0, presence: 0, down: false };
   private pointerTarget = { x: 0, y: 0, inside: false };
+  private taps: Tap[] = [];
   private palette: GLPalette;
   private paletteTarget: GLPalette;
   private slowFrames = 0;
@@ -217,6 +227,22 @@ export class Stage {
       wake();
     };
     const onDown = (e: PointerEvent) => {
+      // A tap or click on the stage itself (not on a control over it) is
+      // something a scene can answer, like a ripple.
+      const control = e.target instanceof Element && e.target.closest("a, button, input, select, textarea, label");
+      if (!control && !this.reduced) {
+        const r = this.canvas.getBoundingClientRect();
+        this.taps = [
+          ...this.taps.slice(-2),
+          {
+            x: ((e.clientX - r.left) / r.width) * 2 - 1,
+            y: -(((e.clientY - r.top) / r.height) * 2 - 1),
+            t: (performance.now() - this.start) / 1000,
+          },
+        ];
+        this.needs = true;
+        wake();
+      }
       if (e.pointerType === "mouse") return;
       this.pointer.down = true;
       setFrom(e);
@@ -320,6 +346,7 @@ export class Stage {
       progress: this.progress,
       palette: this.palette,
       reduced: this.reduced,
+      taps: this.taps,
     });
     this.needs = more;
     if (!this.ready) {
