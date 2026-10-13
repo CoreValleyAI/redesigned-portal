@@ -184,7 +184,7 @@ void main() {
 }`;
 
 /** Mesh resolution per quality tier (vertices along each side). */
-const MESH: Record<1 | 2 | 3, number> = { 1: 170, 2: 250, 3: 340 };
+const MESH: Record<1 | 2 | 3, number> = { 1: 150, 2: 210, 3: 320 };
 
 export interface ReliefLook {
   sun: readonly [number, number, number];

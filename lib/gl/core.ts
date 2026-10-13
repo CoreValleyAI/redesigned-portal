@@ -42,11 +42,13 @@ export function uniforms(gl: WebGL2RenderingContext, p: WebGLProgram) {
   };
 }
 
-/** Load an image as a data texture: no colour conversion, no premultiply. */
+/** Load an image as a data texture: no colour conversion, no premultiply.
+    With `cpu: false` the pixels go straight to the GPU (no CPU copy, so
+    `pixels` is empty): for large textures nothing reads back. */
 export async function loadDataTexture(
   gl: WebGL2RenderingContext,
   url: string,
-  opts: { filter?: number } = {},
+  opts: { filter?: number; cpu?: boolean } = {},
 ): Promise<{ texture: WebGLTexture; width: number; height: number; pixels: Uint8Array }> {
   const res = await fetch(url);
   if (!res.ok) throw new Error(`${url}: ${res.status}`);
@@ -55,20 +57,24 @@ export async function loadDataTexture(
     colorSpaceConversion: "none",
     premultiplyAlpha: "none",
   });
-  // Keep a CPU copy too, for picking (e.g. the terrain height under the
-  // pointer).
-  const canvas = new OffscreenCanvas(bitmap.width, bitmap.height);
-  const ctx = canvas.getContext("2d", { willReadFrequently: true, colorSpace: "srgb" })!;
-  ctx.drawImage(bitmap, 0, 0);
-  const rgba = ctx.getImageData(0, 0, bitmap.width, bitmap.height).data;
-  const pixels = new Uint8Array(rgba.buffer.slice(0));
-
   const texture = gl.createTexture()!;
   gl.bindTexture(gl.TEXTURE_2D, texture);
   gl.pixelStorei(gl.UNPACK_COLORSPACE_CONVERSION_WEBGL, gl.NONE);
   gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, false);
   gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, false);
-  gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA8, bitmap.width, bitmap.height, 0, gl.RGBA, gl.UNSIGNED_BYTE, pixels);
+  let pixels = new Uint8Array(0);
+  if (opts.cpu === false) {
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA8, gl.RGBA, gl.UNSIGNED_BYTE, bitmap);
+  } else {
+    // Keep a CPU copy too, for picking (e.g. the terrain height under the
+    // pointer).
+    const canvas = new OffscreenCanvas(bitmap.width, bitmap.height);
+    const ctx = canvas.getContext("2d", { willReadFrequently: true, colorSpace: "srgb" })!;
+    ctx.drawImage(bitmap, 0, 0);
+    const rgba = ctx.getImageData(0, 0, bitmap.width, bitmap.height).data;
+    pixels = new Uint8Array(rgba.buffer.slice(0));
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA8, bitmap.width, bitmap.height, 0, gl.RGBA, gl.UNSIGNED_BYTE, pixels);
+  }
   const filter = opts.filter ?? gl.LINEAR;
   gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, filter);
   gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, filter);

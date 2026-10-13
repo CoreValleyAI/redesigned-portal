@@ -487,7 +487,14 @@ export const createValleyScene: SceneFactory = async (ctx: SceneContext): Promis
         relief ??= createReliefPass(gl, tier);
         if (!rivers && !riversLoading) {
           riversLoading = true;
-          loadDataTexture(gl, asset("/gl/valley-rivers.png"))
+          // In idle time, after the first frames: the land first, its rivers after.
+          const w = window as Window & { requestIdleCallback?: Window["requestIdleCallback"] };
+          new Promise<void>((done) =>
+            typeof w.requestIdleCallback === "function"
+              ? w.requestIdleCallback(() => done(), { timeout: 2500 })
+              : window.setTimeout(done, 800),
+          )
+            .then(() => loadDataTexture(gl, asset("/gl/valley-rivers.png"), { cpu: false }))
             .then((t) => {
               rivers = t.texture;
               ctx.invalidate();
