@@ -1,12 +1,14 @@
 /**
- * Dot text — numbers drawn in a 5 × 7 dot-matrix face ("character dots",
- * 06 §4): the 404, section numbers, the Valley Time clock. Lit dots in the
- * current colour, the rest faint, so each figure reads as part of a field.
- * The SVG is decorative; pass the real text as `label` for assistive tech.
+ * Dot text — figures and capitals drawn in a 5 × 7 dot-matrix face
+ * ("character dots", 06 §4): section numbers, the Valley Time clock, the
+ * reference code on a request's plan card. Lit dots in the current colour,
+ * the rest faint, so each figure reads as part of a field. The SVG is
+ * decorative; pass the real text as `label` for assistive tech.
  */
 import { cn } from "@/lib/cn";
 
-const FONT: Record<string, string[]> = {
+/** The face itself, also drawn onto a canvas by the plan card's export. */
+export const DOT_FONT: Record<string, string[]> = {
   "0": [".###.", "#...#", "#..##", "#.#.#", "##..#", "#...#", ".###."],
   "1": ["..#..", ".##..", "..#..", "..#..", "..#..", "..#..", ".###."],
   "2": [".###.", "#...#", "....#", "...#.", "..#..", ".#...", "#####"],
@@ -17,6 +19,33 @@ const FONT: Record<string, string[]> = {
   "7": ["#####", "....#", "...#.", "..#..", ".#...", ".#...", ".#..."],
   "8": [".###.", "#...#", "#...#", ".###.", "#...#", "#...#", ".###."],
   "9": [".###.", "#...#", "#...#", ".####", "....#", "....#", ".###."],
+  A: [".###.", "#...#", "#...#", "#####", "#...#", "#...#", "#...#"],
+  B: ["####.", "#...#", "#...#", "####.", "#...#", "#...#", "####."],
+  C: [".###.", "#...#", "#....", "#....", "#....", "#...#", ".###."],
+  D: ["####.", "#...#", "#...#", "#...#", "#...#", "#...#", "####."],
+  E: ["#####", "#....", "#....", "####.", "#....", "#....", "#####"],
+  F: ["#####", "#....", "#....", "####.", "#....", "#....", "#...."],
+  G: [".###.", "#...#", "#....", "#.###", "#...#", "#...#", ".####"],
+  H: ["#...#", "#...#", "#...#", "#####", "#...#", "#...#", "#...#"],
+  I: [".###.", "..#..", "..#..", "..#..", "..#..", "..#..", ".###."],
+  J: ["..###", "...#.", "...#.", "...#.", "...#.", "#..#.", ".##.."],
+  K: ["#...#", "#..#.", "#.#..", "##...", "#.#..", "#..#.", "#...#"],
+  L: ["#....", "#....", "#....", "#....", "#....", "#....", "#####"],
+  M: ["#...#", "##.##", "#.#.#", "#.#.#", "#...#", "#...#", "#...#"],
+  N: ["#...#", "#...#", "##..#", "#.#.#", "#..##", "#...#", "#...#"],
+  O: [".###.", "#...#", "#...#", "#...#", "#...#", "#...#", ".###."],
+  P: ["####.", "#...#", "#...#", "####.", "#....", "#....", "#...."],
+  Q: [".###.", "#...#", "#...#", "#...#", "#.#.#", "#..#.", ".##.#"],
+  R: ["####.", "#...#", "#...#", "####.", "#.#..", "#..#.", "#...#"],
+  S: [".####", "#....", "#....", ".###.", "....#", "....#", "####."],
+  T: ["#####", "..#..", "..#..", "..#..", "..#..", "..#..", "..#.."],
+  U: ["#...#", "#...#", "#...#", "#...#", "#...#", "#...#", ".###."],
+  V: ["#...#", "#...#", "#...#", "#...#", "#...#", ".#.#.", "..#.."],
+  W: ["#...#", "#...#", "#...#", "#.#.#", "#.#.#", "#.#.#", ".#.#."],
+  X: ["#...#", "#...#", ".#.#.", "..#..", ".#.#.", "#...#", "#...#"],
+  Y: ["#...#", "#...#", ".#.#.", "..#..", "..#..", "..#..", "..#.."],
+  Z: ["#####", "....#", "...#.", "..#..", ".#...", "#....", "#####"],
+  "-": [".....", ".....", ".....", "#####", ".....", ".....", "....."],
   ":": [".....", "..#..", "..#..", ".....", "..#..", "..#..", "....."],
   " ": [".....", ".....", ".....", ".....", ".....", ".....", "....."],
 };
@@ -28,6 +57,7 @@ export function DotText({
   litClassName = "fill-current",
   offClassName = "fill-dot-off",
   charClassName,
+  assemble = false,
 }: {
   text: string;
   label?: string;
@@ -36,15 +66,18 @@ export function DotText({
   offClassName?: string;
   /** A class for one character's group (the clock's blinking colon). */
   charClassName?: (char: string, index: number) => string | undefined;
+  /** Lit dots arrive one after another (app/styles/motion.css, .dt-assemble). */
+  assemble?: boolean;
 }) {
-  const source = Array.from(text);
-  const chars = Array.from(text).map((c) => FONT[c] ?? FONT[" "]!);
+  const source = Array.from(text.toUpperCase());
+  const chars = source.map((c) => DOT_FONT[c] ?? DOT_FONT[" "]!);
   const cellW = 6; // 5 dots + 1 gap
   const w = chars.length * cellW - 1;
+  let lit = 0;
   return (
     <svg
       viewBox={`0 0 ${w * 10} 70`}
-      className={cn("h-auto", className)}
+      className={cn("h-auto", assemble && "dt-assemble", className)}
       role={label ? "img" : undefined}
       aria-label={label}
       aria-hidden={label ? undefined : true}
@@ -61,6 +94,7 @@ export function DotText({
                 r={d === "#" ? 3.8 : 2.2}
                 className={d === "#" ? cn("dt-lit", litClassName) : offClassName}
                 opacity={d === "#" ? 1 : 0.6}
+                style={d === "#" && assemble ? ({ "--k": lit++ } as React.CSSProperties) : undefined}
               />
             )),
           )}

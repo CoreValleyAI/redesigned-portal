@@ -424,6 +424,20 @@
   }
 }
 
+/* Dot text that assembles (the plan card's reference): each lit dot pops
+   in after the one before it. */
+:root[data-motion="full"] .dt-assemble .dt-lit {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: cv-dot-in 420ms var(--ease-spring) calc(var(--k) * 7ms + 250ms) both;
+}
+@keyframes cv-dot-in {
+  from {
+    opacity: 0;
+    transform: scale(0.2);
+  }
+}
+
 /* Valley Time (components/chrome/valley-time.tsx): the colon blinks the
    seconds. */
 :root[data-motion="full"] .dt-blink .dt-lit {

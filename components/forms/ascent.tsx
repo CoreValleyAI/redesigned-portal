@@ -21,6 +21,7 @@ import { useEffect, useId, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/system/button";
 import { DotGlyph, type GlyphName } from "@/components/system/dot-glyph";
+import { PlanCard } from "./plan-card";
 import { CONTACT, type RouteId } from "@/copy/en/contact";
 import { PRODUCTS, type ProductSlug } from "@/copy/en/products";
 import { cn } from "@/lib/cn";
@@ -331,36 +332,25 @@ export function Ascent() {
   const product = PRODUCTS.find((p) => p.slug === draft.product);
   const route = CONTACT.routes.find((r) => r.id === draft.route);
 
-  /* ── Sent ── */
+  /* ── Sent: the plan card (S13) ── */
   if (status === "sent") {
+    const rows = summary(draft, product?.name, route?.title)
+      .filter(([, value, at]) => at !== "you" && value.trim())
+      .map(([label, value]) => ({ label, value }));
+    const again =
+      draft.route === "workloads"
+        ? `/contact?intent=workloads&product=${draft.product}&count=${draft.count}&duration=${encodeURIComponent(draft.duration)}`
+        : undefined;
     return (
-      <div
-        className="rounded-panel border border-line bg-bg-raised p-7 md:p-10"
-        style={{ animation: "cv-rise-in 600ms var(--ease-expo) both" }}
-      >
-        <div className="flex flex-col gap-6">
-          <DotGlyph name="contact" className="size-12" on />
-          <h2 ref={headingRef} tabIndex={-1} className="type-title-1 outline-none">
-            {CONTACT.done.title}
-          </h2>
-          <p className="type-lead text-ink-2">{CONTACT.done.lead}</p>
-          {reference && (
-            <p className="type-mono rounded-card bg-bg-sunken px-4 py-3 text-ink">
-              Reference · <span className="font-semibold">{reference}</span>
-            </p>
-          )}
-          <ol className="flex flex-col gap-3 border-t border-line pt-6">
-            {CONTACT.done.next.map((s, i) => (
-              <li key={s} className="type-body flex gap-4 text-ink-2">
-                <span className="type-kicker mt-1 text-hydro-ink light:text-hydro">
-                  {String(i + 1).padStart(2, "0")}
-                </span>
-                {s}
-              </li>
-            ))}
-          </ol>
-        </div>
-      </div>
+      <PlanCard
+        title={CONTACT.done.title}
+        lead={CONTACT.done.lead}
+        reference={reference}
+        rows={rows}
+        next={CONTACT.done.next}
+        againHref={again}
+        headingRef={headingRef}
+      />
     );
   }
 
