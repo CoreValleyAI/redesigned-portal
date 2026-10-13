@@ -41,7 +41,7 @@ export function ValleyTime({ className }: { className?: string }) {
         <DotText
           text={time}
           className="h-7 w-auto"
-          litClassName="fill-hydro-ink light:fill-hydro"
+          litClassName="text-hydro-ink light:text-hydro"
           charClassName={(c) => (c === ":" ? "dt-blink" : undefined)}
         />
       </time>

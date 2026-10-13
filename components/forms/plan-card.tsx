@@ -108,7 +108,7 @@ export function PlanCard({
               label={`Reference ${reference}`}
               assemble
               className="h-9 w-auto max-w-full self-start md:h-11"
-              litClassName="fill-hydro-ink light:fill-hydro"
+              litClassName="text-hydro-ink light:text-hydro"
             />
           </div>
         )}

@@ -56,7 +56,7 @@ export function RimVisual({ className }: { className?: string }) {
       {rings.map((pts, i) => (
         <path
           key={i}
-          d={`M${pts.map(([x, y]) => `${x.toFixed(1)} ${y.toFixed(1)}`).join("L")}Z`}
+          d={`M${pts.map(([x, y]) => `${Math.round(x)} ${Math.round(y)}`).join("L")}Z`}
           fill="none"
           strokeLinecap="round"
           strokeDasharray={i === 5 ? "0 7" : "0 8.5"}

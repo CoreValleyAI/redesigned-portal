@@ -54,14 +54,15 @@ export function DotText({
   text,
   label,
   className,
-  litClassName = "fill-current",
-  offClassName = "fill-dot-off",
+  litClassName = "text-current",
+  offClassName = "text-dot-off",
   charClassName,
   assemble = false,
 }: {
   text: string;
   label?: string;
   className?: string;
+  /** Colour of the lit dots, as a text colour class (the dots use currentColor). */
   litClassName?: string;
   offClassName?: string;
   /** A class for one character's group (the clock's blinking colon). */
@@ -73,7 +74,7 @@ export function DotText({
   const chars = source.map((c) => DOT_FONT[c] ?? DOT_FONT[" "]!);
   const cellW = 6; // 5 dots + 1 gap
   const w = chars.length * cellW - 1;
-  let lit = 0;
+  let k = 0;
   return (
     <svg
       viewBox={`0 0 ${w * 10} 70`}
@@ -82,24 +83,47 @@ export function DotText({
       aria-label={label}
       aria-hidden={label ? undefined : true}
       focusable="false"
+      fill="none"
+      strokeLinecap="round"
     >
-      {chars.map((rows, ci) => (
-        <g key={ci} className={charClassName?.(source[ci]!, ci)}>
-          {rows.map((row, y) =>
-            Array.from(row).map((d, x) => (
-              <circle
-                key={`${x}-${y}`}
-                cx={(ci * cellW + x) * 10 + 5}
-                cy={y * 10 + 5}
-                r={d === "#" ? 3.8 : 2.2}
-                className={d === "#" ? cn("dt-lit", litClassName) : offClassName}
-                opacity={d === "#" ? 1 : 0.6}
-                style={d === "#" && assemble ? ({ "--k": lit++ } as React.CSSProperties) : undefined}
-              />
-            )),
-          )}
-        </g>
-      ))}
+      {chars.map((rows, ci) => {
+        /* A dot is a zero-length segment with a round cap, so a character is
+           two paths (its faint and its lit dots), not 35 circles. Dots that
+           must animate one by one (assemble) stay circles. */
+        let off = "";
+        let lit = "";
+        const circles: React.ReactNode[] = [];
+        rows.forEach((row, y) =>
+          Array.from(row).forEach((d, x) => {
+            const cx = (ci * cellW + x) * 10 + 5;
+            const cy = y * 10 + 5;
+            if (d !== "#") off += `M${cx} ${cy}h0`;
+            else if (!assemble) lit += `M${cx} ${cy}h0`;
+            else
+              circles.push(
+                <circle
+                  key={`${x}-${y}`}
+                  cx={cx}
+                  cy={cy}
+                  r={3.8}
+                  fill="currentColor"
+                  className={cn("dt-lit", litClassName)}
+                  style={{ "--k": k++ } as React.CSSProperties}
+                />,
+              );
+          }),
+        );
+        return (
+          <g key={ci} className={charClassName?.(source[ci]!, ci)}>
+            <path d={off} stroke="currentColor" strokeWidth={4.4} opacity={0.6} className={offClassName} />
+            {assemble ? (
+              circles
+            ) : (
+              <path d={lit} stroke="currentColor" strokeWidth={7.6} className={cn("dt-lit", litClassName)} />
+            )}
+          </g>
+        );
+      })}
     </svg>
   );
 }
