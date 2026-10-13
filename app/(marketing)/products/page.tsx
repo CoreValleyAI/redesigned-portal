@@ -39,7 +39,8 @@ export default function ProductsPage() {
               Six ways to run AI <span className="text-ink-3">in Nepal.</span>
             </h1>
             <p className="type-lead measure text-ink-2">
-              Whole GPUs, slices of one, endpoints for your models and storage beside them — all on NVIDIA H200 NVL in the Kathmandu Valley, all billed in rupees.
+              Whole GPUs, slices of one, endpoints for your models and storage beside them — all on NVIDIA H200 NVL in
+              the Kathmandu Valley, all billed in rupees.
             </p>
             <Status />
           </div>
@@ -66,7 +67,9 @@ export default function ProductsPage() {
           />
           <div className="mt-12 overflow-x-auto rounded-panel border border-line [scrollbar-width:thin]">
             <table className="w-full min-w-[44rem] border-collapse text-left">
-              <caption className="sr-only">The six products compared by billing, commitment and what they are best for</caption>
+              <caption className="sr-only">
+                The six products compared by billing, commitment and what they are best for
+              </caption>
               <thead>
                 <tr className="border-b border-line bg-bg-sunken">
                   {["Product", "Billing", "Commitment", "Best for"].map((h, i) => (

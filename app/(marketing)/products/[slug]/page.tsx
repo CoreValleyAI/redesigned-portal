@@ -153,7 +153,12 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
       {/* Product questions only (03 §3). */}
       <section aria-labelledby="faq-title" className="section-y">
         <div className="container-page grid gap-10 lg:grid-cols-[1fr_2fr]">
-          <SectionHead id="faq-title" kicker="Questions" title={`About ${product.name.toLowerCase()}.`} size="title-2" />
+          <SectionHead
+            id="faq-title"
+            kicker="Questions"
+            title={`About ${product.name.toLowerCase()}.`}
+            size="title-2"
+          />
           <Faq items={product.faq} />
         </div>
       </section>

@@ -37,15 +37,29 @@ export default function PlatformPage() {
       {/* The layers, top to bottom. */}
       <section aria-labelledby="layers-title" className="section-y">
         <div className="container-page grid gap-12 lg:grid-cols-[1fr_1.6fr] lg:gap-20">
-          <SectionHead id="layers-title" kicker={p.layers.kicker} title={p.layers.title} continuation={p.layers.continuation} />
+          <SectionHead
+            id="layers-title"
+            kicker={p.layers.kicker}
+            title={p.layers.title}
+            continuation={p.layers.continuation}
+          />
           <ol className="flex flex-col">
             {p.layers.items.map((l, i) => (
-              <li key={l.id} className="grid gap-2 border-t border-line py-6 last:border-b md:grid-cols-[2.5rem_1fr] md:items-baseline md:gap-6" data-reveal style={{ "--i": i } as React.CSSProperties}>
+              <li
+                key={l.id}
+                className="grid gap-2 border-t border-line py-6 last:border-b md:grid-cols-[2.5rem_1fr] md:items-baseline md:gap-6"
+                data-reveal
+                style={{ "--i": i } as React.CSSProperties}
+              >
                 <span className="type-kicker text-ink-3">{String(i + 1).padStart(2, "0")}</span>
                 <span className="flex flex-col gap-1.5">
                   <span className="type-title-3 flex items-center gap-3">
                     {l.name}
-                    {l.touch && <span className="type-kicker rounded-pill bg-hydro-wash px-2.5 py-1 text-hydro-ink light:text-hydro">You work here</span>}
+                    {l.touch && (
+                      <span className="type-kicker rounded-pill bg-hydro-wash px-2.5 py-1 text-hydro-ink light:text-hydro">
+                        You work here
+                      </span>
+                    )}
                   </span>
                   <span className="type-body text-ink-2">{l.line}</span>
                 </span>
@@ -58,7 +72,12 @@ export default function PlatformPage() {
       {/* The tools */}
       <section aria-labelledby="tools-title" className="section-y">
         <div className="container-page">
-          <SectionHead id="tools-title" kicker={p.tools.kicker} title={p.tools.title} continuation={p.tools.continuation} />
+          <SectionHead
+            id="tools-title"
+            kicker={p.tools.kicker}
+            title={p.tools.title}
+            continuation={p.tools.continuation}
+          />
           <ul className="mt-12 grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {p.tools.items.map((t, i) => (
               <li
@@ -75,7 +94,9 @@ export default function PlatformPage() {
               </li>
             ))}
           </ul>
-          <p className="type-caption mt-6 text-ink-3">Tool names are trademarks of their owners, shown to say what is included in HPE AI Essentials.</p>
+          <p className="type-caption mt-6 text-ink-3">
+            Tool names are trademarks of their owners, shown to say what is included in HPE AI Essentials.
+          </p>
         </div>
       </section>
 
@@ -93,7 +114,12 @@ export default function PlatformPage() {
           <SectionHead id="iso-title" kicker={p.isolation.kicker} title={p.isolation.title} />
           <ul className="mt-12 grid gap-x-10 gap-y-8 md:grid-cols-3">
             {p.isolation.items.map((it, i) => (
-              <li key={it.title} className="flex flex-col gap-3 border-t border-line pt-6" data-reveal style={{ "--i": i } as React.CSSProperties}>
+              <li
+                key={it.title}
+                className="flex flex-col gap-3 border-t border-line pt-6"
+                data-reveal
+                style={{ "--i": i } as React.CSSProperties}
+              >
                 <h3 className="type-title-3">{it.title}</h3>
                 <p className="type-body text-ink-2">{it.body}</p>
               </li>

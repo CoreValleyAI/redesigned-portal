@@ -32,10 +32,7 @@ export default function JobsPage() {
   return (
     <>
       <JsonLd
-        data={[
-          breadcrumbJsonLd([{ name: "Careers", path: "/jobs" }]),
-          ...(faqs.length ? [faqJsonLd(faqs)] : []),
-        ]}
+        data={[breadcrumbJsonLd([{ name: "Careers", path: "/jobs" }]), ...(faqs.length ? [faqJsonLd(faqs)] : [])]}
       />
       <PageHero eyebrow={page.hero.eyebrow ?? "Careers"} title={page.hero.title} lead={page.hero.lead}>
         <div className="mt-8 flex flex-wrap items-center gap-x-6 gap-y-4">
@@ -67,7 +64,12 @@ export default function JobsPage() {
                 <h2 className="text-2xl font-semibold tracking-tight text-ink-100">{page.generalApplication.title}</h2>
                 <p className="mt-2 text-[15px] leading-relaxed text-ink-400">{page.generalApplication.summary}</p>
               </div>
-              <ButtonLink href={general} variant="secondary" size="lg" iconRight={<Icon name="arrow-right" size={16} />}>
+              <ButtonLink
+                href={general}
+                variant="secondary"
+                size="lg"
+                iconRight={<Icon name="arrow-right" size={16} />}
+              >
                 Apply
               </ButtonLink>
             </div>

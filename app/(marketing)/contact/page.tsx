@@ -28,8 +28,7 @@ const FAQ = [
   },
 ];
 
-const fallbackInput =
-  "type-body h-12 w-full rounded-card border border-line-strong/60 bg-bg px-4 text-ink";
+const fallbackInput = "type-body h-12 w-full rounded-card border border-line-strong/60 bg-bg px-4 text-ink";
 
 export default function ContactPage() {
   const c = CONTACT;
@@ -85,7 +84,10 @@ export default function ContactPage() {
                   <input name="Organisation" autoComplete="organization" className={fallbackInput} />
                 </label>
               </div>
-              <button type="submit" className="type-body h-12 self-start rounded-pill bg-hydro px-6 font-medium text-on-hydro">
+              <button
+                type="submit"
+                className="type-body h-12 self-start rounded-pill bg-hydro px-6 font-medium text-on-hydro"
+              >
                 Send request
               </button>
               <p className="type-caption text-ink-3">{c.disclosure}</p>
@@ -96,7 +98,10 @@ export default function ContactPage() {
           <aside aria-label="Other ways to reach us" className="flex flex-col gap-8 lg:pt-[12.5rem]">
             <div className="flex flex-col gap-2 border-t border-line pt-5">
               <p className="type-kicker text-ink-3">Email</p>
-              <a href={`mailto:${c.inbox}`} className="type-title-3 underline decoration-line-strong underline-offset-4 hover:decoration-hydro">
+              <a
+                href={`mailto:${c.inbox}`}
+                className="type-title-3 underline decoration-line-strong underline-offset-4 hover:decoration-hydro"
+              >
                 {c.inbox}
               </a>
             </div>

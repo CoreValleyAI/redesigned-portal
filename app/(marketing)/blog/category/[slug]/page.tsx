@@ -8,7 +8,10 @@ import { pageMetadata } from "@/lib/seo";
 export const dynamicParams = false;
 
 export function generateStaticParams() {
-  return paramsOrPlaceholder(categoriesInUse().map((c) => ({ slug: c.slug })), "slug");
+  return paramsOrPlaceholder(
+    categoriesInUse().map((c) => ({ slug: c.slug })),
+    "slug",
+  );
 }
 
 type Params = { params: Promise<{ slug: string }> };

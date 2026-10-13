@@ -7,7 +7,10 @@ import { pageMetadata } from "@/lib/seo";
 export const dynamicParams = false;
 
 export function generateStaticParams() {
-  return paramsOrPlaceholder(tagsInUse().map((t) => ({ slug: t.slug })), "slug");
+  return paramsOrPlaceholder(
+    tagsInUse().map((t) => ({ slug: t.slug })),
+    "slug",
+  );
 }
 
 type Params = { params: Promise<{ slug: string }> };

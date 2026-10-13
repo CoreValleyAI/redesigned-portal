@@ -22,18 +22,24 @@ export default function PricingPage() {
       <section className="relative pt-[calc(var(--header-h)+clamp(3rem,8vw,7rem))] pb-[clamp(3rem,7vw,6rem)]">
         <div className="container-page">
           <div className="flex max-w-[60rem] flex-col gap-6">
-          <Kicker>{p.hero.kicker}</Kicker>
-          <h1 className="type-display-2 max-w-[14ch]">{p.hero.title}</h1>
-          <p className="type-lead measure text-ink-2">{p.hero.lead}</p>
-          <Status />
-        </div>
+            <Kicker>{p.hero.kicker}</Kicker>
+            <h1 className="type-display-2 max-w-[14ch]">{p.hero.title}</h1>
+            <p className="type-lead measure text-ink-2">{p.hero.lead}</p>
+            <Status />
+          </div>
         </div>
       </section>
 
       {/* The Meter (S8) */}
       <section aria-labelledby="meter-title" className="pb-[var(--section-y)]">
         <div className="container-page flex flex-col gap-10">
-          <SectionHead id="meter-title" kicker={p.meter.kicker} title={p.meter.title} continuation={p.meter.continuation} size="title-2" />
+          <SectionHead
+            id="meter-title"
+            kicker={p.meter.kicker}
+            title={p.meter.title}
+            continuation={p.meter.continuation}
+            size="title-2"
+          />
           <MeterTeaser />
         </div>
       </section>
@@ -45,7 +51,12 @@ export default function PricingPage() {
             <SectionHead id="pay-title" kicker={p.payFor.kicker} title={p.payFor.title} size="title-2" />
             <ul className="flex flex-col">
               {p.payFor.items.map((it, i) => (
-                <li key={it.title} className="grid gap-1 border-t border-line py-5 sm:grid-cols-[10rem_1fr] sm:gap-6" data-reveal style={{ "--i": i } as React.CSSProperties}>
+                <li
+                  key={it.title}
+                  className="grid gap-1 border-t border-line py-5 sm:grid-cols-[10rem_1fr] sm:gap-6"
+                  data-reveal
+                  style={{ "--i": i } as React.CSSProperties}
+                >
                   <span className="type-body font-semibold text-ink">{it.title}</span>
                   <span className="type-body text-ink-2">{it.body}</span>
                 </li>
@@ -56,7 +67,12 @@ export default function PricingPage() {
             <SectionHead kicker={p.never.kicker} title={p.never.title} size="title-2" />
             <ul className="grid gap-3 sm:grid-cols-2">
               {p.never.items.map((it, i) => (
-                <li key={it.title} className="flex flex-col gap-2 rounded-card border border-line bg-bg-raised p-5" data-reveal style={{ "--i": i } as React.CSSProperties}>
+                <li
+                  key={it.title}
+                  className="flex flex-col gap-2 rounded-card border border-line bg-bg-raised p-5"
+                  data-reveal
+                  style={{ "--i": i } as React.CSSProperties}
+                >
                   <span aria-hidden="true" className="type-kicker text-hydro-ink light:text-hydro">
                     0 NPR
                   </span>

@@ -192,9 +192,7 @@ const PAGES: Record<string, LegalPage> = {
       },
       {
         heading: "What counts as customer data",
-        paragraphs: [
-          "Everything your workload touches:",
-        ],
+        paragraphs: ["Everything your workload touches:"],
         bullets: [
           "Datasets and files on block or object storage.",
           "Model weights, checkpoints and adapters.",
@@ -231,22 +229,14 @@ export function generateStaticParams() {
   return Object.keys(PAGES).map((slug) => ({ slug }));
 }
 
-export async function generateMetadata({
-  params,
-}: {
-  params: Promise<{ slug: string }>;
-}): Promise<Metadata> {
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params;
   const page = PAGES[slug];
   if (!page) return {};
   return pageMetadata({ title: page.title, description: page.lead, path: `/legal/${slug}` });
 }
 
-export default async function LegalPage({
-  params,
-}: {
-  params: Promise<{ slug: string }>;
-}) {
+export default async function LegalPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const page = PAGES[slug];
   if (!page) notFound();
@@ -254,19 +244,14 @@ export default async function LegalPage({
   return (
     <>
       <PageHero eyebrow="Legal" title={page.title} lead={page.lead}>
-        <p className="mt-8 font-mono text-[11.5px] tracking-wide text-ink-600">
-          last updated {page.updated}
-        </p>
+        <p className="mt-8 font-mono text-[11.5px] tracking-wide text-ink-600">last updated {page.updated}</p>
       </PageHero>
 
       <div className="mx-auto max-w-page-xl px-5 py-20 md:px-10 md:py-24">
         <div className="grid gap-12 lg:grid-cols-[220px_1fr] lg:gap-20">
           {/* Section index. Sticky on desktop; on mobile it would just be the
               same list twice, so it is hidden rather than stacked. */}
-          <nav
-            aria-label="On this page"
-            className="hidden lg:sticky lg:top-28 lg:block lg:self-start"
-          >
+          <nav aria-label="On this page" className="hidden lg:sticky lg:top-28 lg:block lg:self-start">
             <p className="cv-label text-[10px]">On this page</p>
             <ul className="mt-5 flex flex-col gap-3">
               {page.sections.map((s) => (
@@ -293,9 +278,7 @@ export default async function LegalPage({
                    jump parks the heading underneath the nav bar. */
                 className="scroll-mt-28 border-t border-line-subtle py-10 first:border-t-0 first:pt-0"
               >
-                <h2 className="text-[1.3rem] font-semibold tracking-tight text-ink-100">
-                  {s.heading}
-                </h2>
+                <h2 className="text-[1.3rem] font-semibold tracking-tight text-ink-100">{s.heading}</h2>
                 {s.paragraphs.map((p) => (
                   <p key={p} className="mt-4 leading-relaxed text-ink-300">
                     {p}
@@ -305,11 +288,7 @@ export default async function LegalPage({
                   <ul className="mt-5 flex flex-col gap-3">
                     {s.bullets.map((b) => (
                       <li key={b} className="flex gap-3 leading-relaxed text-ink-300">
-                        <Icon
-                          name="check"
-                          size={13}
-                          className="mt-1.5 shrink-0 text-ink-600"
-                        />
+                        <Icon name="check" size={13} className="mt-1.5 shrink-0 text-ink-600" />
                         <span>{b}</span>
                       </li>
                     ))}
@@ -322,9 +301,8 @@ export default async function LegalPage({
                 summary presented as a contract is how people get hurt. */}
             <aside className="mt-12 rounded-lg border border-line bg-carbon-800/60 px-6 py-5">
               <p className="text-[13.5px] leading-relaxed text-ink-400">
-                This page is a plain-language summary of how the platform
-                operates. For a contract that binds — an MSA, a DPA, or a
-                signed SLA — write to{" "}
+                This page is a plain-language summary of how the platform operates. For a contract that binds — an MSA,
+                a DPA, or a signed SLA — write to{" "}
                 <a
                   href="mailto:info@corevalley.ai"
                   className="text-hydro underline decoration-hydro/40 underline-offset-4 transition-colors duration-normal hover:text-hydro-300"

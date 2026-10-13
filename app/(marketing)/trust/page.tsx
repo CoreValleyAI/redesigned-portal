@@ -21,10 +21,10 @@ export default function TrustPage() {
       <section className="relative pt-[calc(var(--header-h)+clamp(3rem,8vw,7rem))] pb-[clamp(3rem,7vw,6rem)]">
         <div className="container-page">
           <div className="flex max-w-[60rem] flex-col gap-6">
-          <Kicker>{t.hero.kicker}</Kicker>
-          <h1 className="type-display-2 max-w-[13ch]">{t.hero.title}</h1>
-          <p className="type-lead measure text-ink-2">{t.hero.lead}</p>
-        </div>
+            <Kicker>{t.hero.kicker}</Kicker>
+            <h1 className="type-display-2 max-w-[13ch]">{t.hero.title}</h1>
+            <p className="type-lead measure text-ink-2">{t.hero.lead}</p>
+          </div>
         </div>
       </section>
 
@@ -33,7 +33,12 @@ export default function TrustPage() {
           <SectionHead id="approach-title" kicker={t.approach.kicker} title={t.approach.title} size="title-2" />
           <ul className="mt-10 grid gap-4 md:grid-cols-2">
             {t.approach.items.map((it, i) => (
-              <li key={it.title} className="flex flex-col gap-3 rounded-panel border border-line bg-bg-raised p-6 md:p-8" data-reveal style={{ "--i": i % 2 } as React.CSSProperties}>
+              <li
+                key={it.title}
+                className="flex flex-col gap-3 rounded-panel border border-line bg-bg-raised p-6 md:p-8"
+                data-reveal
+                style={{ "--i": i % 2 } as React.CSSProperties}
+              >
                 <span aria-hidden="true" className="type-kicker text-hydro-ink light:text-hydro">
                   {String(i + 1).padStart(2, "0")}
                 </span>
@@ -47,7 +52,13 @@ export default function TrustPage() {
 
       <section id="compliance" aria-labelledby="compliance-title" className="section-y scroll-mt-[var(--header-h)]">
         <div className="container-page grid gap-10 lg:grid-cols-[1fr_1.6fr] lg:gap-20">
-          <SectionHead id="compliance-title" kicker={t.compliance.kicker} title={t.compliance.title} lead={t.compliance.lead} size="title-2" />
+          <SectionHead
+            id="compliance-title"
+            kicker={t.compliance.kicker}
+            title={t.compliance.title}
+            lead={t.compliance.lead}
+            size="title-2"
+          />
           <div className="overflow-x-auto rounded-panel border border-line">
             <table className="w-full min-w-[30rem] border-collapse text-left">
               <caption className="sr-only">Certification status</caption>
@@ -89,7 +100,10 @@ export default function TrustPage() {
           </div>
           <dl className="flex flex-col">
             {t.data.rows.map((r) => (
-              <div key={r.label} className="grid gap-2 border-t border-line py-5 last:border-b sm:grid-cols-[11rem_1fr] sm:gap-6">
+              <div
+                key={r.label}
+                className="grid gap-2 border-t border-line py-5 last:border-b sm:grid-cols-[11rem_1fr] sm:gap-6"
+              >
                 <dt className="type-body font-semibold text-ink">{r.label}</dt>
                 <dd className="type-body text-ink-2">{r.value}</dd>
               </div>
@@ -100,7 +114,13 @@ export default function TrustPage() {
 
       <section aria-labelledby="sub-title" className="section-y">
         <div className="container-page grid gap-10 lg:grid-cols-[1fr_1.6fr] lg:gap-20">
-          <SectionHead id="sub-title" kicker={t.subprocessors.kicker} title={t.subprocessors.title} lead={t.subprocessors.lead} size="title-2" />
+          <SectionHead
+            id="sub-title"
+            kicker={t.subprocessors.kicker}
+            title={t.subprocessors.title}
+            lead={t.subprocessors.lead}
+            size="title-2"
+          />
           <ul className="grid gap-3 sm:grid-cols-2">
             {t.subprocessors.items.map((s) => (
               <li key={s.name} className="flex flex-col gap-1.5 rounded-card border border-line bg-bg-raised p-5">
@@ -116,15 +136,18 @@ export default function TrustPage() {
       <section aria-labelledby="disclosure-title" className="section-y">
         <div className="container-page">
           <div className="flex max-w-[48rem] flex-col gap-5">
-          <SectionHead id="disclosure-title" kicker={t.disclosure.kicker} title={t.disclosure.title} size="title-2" />
-          <p className="type-lead text-ink-2">{t.disclosure.body}</p>
-          <div className="flex flex-wrap gap-6">
-            <TextLink href="mailto:info@corevalley.ai">info@corevalley.ai</TextLink>
-            <a href={asset("/.well-known/security.txt")} className="type-body font-medium text-ink underline decoration-line-strong underline-offset-4 hover:decoration-hydro">
-              security.txt
-            </a>
+            <SectionHead id="disclosure-title" kicker={t.disclosure.kicker} title={t.disclosure.title} size="title-2" />
+            <p className="type-lead text-ink-2">{t.disclosure.body}</p>
+            <div className="flex flex-wrap gap-6">
+              <TextLink href="mailto:info@corevalley.ai">info@corevalley.ai</TextLink>
+              <a
+                href={asset("/.well-known/security.txt")}
+                className="type-body font-medium text-ink underline decoration-line-strong underline-offset-4 hover:decoration-hydro"
+              >
+                security.txt
+              </a>
+            </div>
           </div>
-        </div>
         </div>
       </section>
 

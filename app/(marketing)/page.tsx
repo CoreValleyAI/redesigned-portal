@@ -51,7 +51,13 @@ export default function HomePage() {
       <section aria-labelledby="slice-title" className="section-y">
         <div className="container-page grid items-center gap-16 lg:grid-cols-2">
           <div className="flex flex-col gap-8">
-            <SectionHead id="slice-title" kicker={s.kicker} title={s.title} continuation={s.continuation} lead={s.lead} />
+            <SectionHead
+              id="slice-title"
+              kicker={s.kicker}
+              title={s.title}
+              continuation={s.continuation}
+              lead={s.lead}
+            />
             <p className="type-body measure border-l-2 border-hydro pl-5 text-ink-2" data-reveal>
               {s.readTime}
               <NoteRef notes={notes} id="readtime" />
@@ -70,7 +76,13 @@ export default function HomePage() {
       <section aria-labelledby="rim-title" className="section-y">
         <div className="container-page grid items-center gap-12 lg:grid-cols-[1fr_1.1fr]">
           <div className="flex flex-col gap-8 lg:order-2">
-            <SectionHead id="rim-title" kicker={HOME.rim.kicker} title={HOME.rim.title} continuation={HOME.rim.continuation} lead={HOME.rim.lead} />
+            <SectionHead
+              id="rim-title"
+              kicker={HOME.rim.kicker}
+              title={HOME.rim.title}
+              continuation={HOME.rim.continuation}
+              lead={HOME.rim.lead}
+            />
             <div>
               <TextLink href={HOME.rim.link.href} arrow>
                 {HOME.rim.link.label}
@@ -85,7 +97,13 @@ export default function HomePage() {
       <section aria-labelledby="meter-title" className="section-y">
         <div className="container-page flex flex-col gap-12">
           <div className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
-            <SectionHead id="meter-title" kicker={HOME.meter.kicker} title={HOME.meter.title} continuation={HOME.meter.continuation} lead={HOME.meter.lead} />
+            <SectionHead
+              id="meter-title"
+              kicker={HOME.meter.kicker}
+              title={HOME.meter.title}
+              continuation={HOME.meter.continuation}
+              lead={HOME.meter.lead}
+            />
             <TextLink href={HOME.meter.link.href} arrow className="shrink-0">
               {HOME.meter.link.label}
             </TextLink>

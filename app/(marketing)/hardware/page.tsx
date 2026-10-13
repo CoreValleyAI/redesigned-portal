@@ -63,7 +63,12 @@ export default function HardwarePage() {
       {/* The Machine (S6) */}
       <section aria-labelledby="machine-title" className="pt-[var(--section-y)]">
         <div className="container-page">
-          <SectionHead id="machine-title" kicker={h.machine.kicker} title={h.machine.title} continuation={h.machine.continuation} />
+          <SectionHead
+            id="machine-title"
+            kicker={h.machine.kicker}
+            title={h.machine.title}
+            continuation={h.machine.continuation}
+          />
         </div>
         <ExplodedServer
           layers={h.machine.layers.map((l) => ({
@@ -114,12 +119,20 @@ export default function HardwarePage() {
       <section aria-labelledby="cluster-title" className="section-y">
         <div className="container-page grid gap-12 lg:grid-cols-[1fr_1.2fr] lg:gap-20">
           <div className="flex flex-col gap-6">
-            <SectionHead id="cluster-title" kicker={h.cluster.kicker} title={h.cluster.title} continuation={h.cluster.continuation} lead={h.cluster.lead} />
+            <SectionHead
+              id="cluster-title"
+              kicker={h.cluster.kicker}
+              title={h.cluster.title}
+              continuation={h.cluster.continuation}
+              lead={h.cluster.lead}
+            />
             <SpecList rows={h.cluster.rows} dense />
           </div>
           <div className="lg:pt-20">
             <ClusterDiagram network={v("cluster.network")} storage={v("cluster.storage")} />
-            <p className="type-caption mt-4 text-ink-3">A simplified drawing of the first cluster. Wiring and addresses are not shown.</p>
+            <p className="type-caption mt-4 text-ink-3">
+              A simplified drawing of the first cluster. Wiring and addresses are not shown.
+            </p>
           </div>
         </div>
       </section>
@@ -127,32 +140,50 @@ export default function HardwarePage() {
       {/* Roadmap */}
       <section id="roadmap" aria-labelledby="roadmap-title" className="section-y scroll-mt-[var(--header-h)]">
         <div className="container-page">
-          <SectionHead id="roadmap-title" kicker={h.roadmap.kicker} title={h.roadmap.title} continuation={h.roadmap.continuation} />
+          <SectionHead
+            id="roadmap-title"
+            kicker={h.roadmap.kicker}
+            title={h.roadmap.title}
+            continuation={h.roadmap.continuation}
+          />
           <div className="relative mt-14">
-          <div aria-hidden="true" className="absolute top-[0.6rem] right-0 left-0 hidden h-px bg-[repeating-linear-gradient(to_right,var(--line-strong)_0_2px,transparent_2px_9px)] md:block" />
-          <ol className="relative grid gap-10 md:grid-cols-3 md:gap-6">
-            {[
-              { ...h.roadmap.now, state: "now" as const },
-              { label: h.roadmap.next.label, title: <F id={h.roadmap.next.fact} />, body: h.roadmap.next.body, state: "next" as const },
-              { ...h.roadmap.later, state: "later" as const },
-            ].map((step, i) => (
-              <li key={i} className="relative flex flex-col gap-3" data-reveal style={{ "--i": i } as React.CSSProperties}>
-                <span
-                  aria-hidden="true"
-                  className={
-                    step.state === "now"
-                      ? "size-5 rounded-full bg-hydro shadow-[0_0_0_6px_var(--hydro-wash)]"
-                      : step.state === "next"
-                        ? "size-5 rounded-full border-2 border-hydro bg-bg"
-                        : "size-5 rounded-full border-2 border-dashed border-line-strong bg-bg"
-                  }
-                />
-                <span className="type-kicker mt-3 text-ink-3">{step.label}</span>
-                <span className="type-title-3">{step.title}</span>
-                <span className="type-small text-ink-2">{step.body}</span>
-              </li>
-            ))}
-          </ol>
+            <div
+              aria-hidden="true"
+              className="absolute top-[0.6rem] right-0 left-0 hidden h-px bg-[repeating-linear-gradient(to_right,var(--line-strong)_0_2px,transparent_2px_9px)] md:block"
+            />
+            <ol className="relative grid gap-10 md:grid-cols-3 md:gap-6">
+              {[
+                { ...h.roadmap.now, state: "now" as const },
+                {
+                  label: h.roadmap.next.label,
+                  title: <F id={h.roadmap.next.fact} />,
+                  body: h.roadmap.next.body,
+                  state: "next" as const,
+                },
+                { ...h.roadmap.later, state: "later" as const },
+              ].map((step, i) => (
+                <li
+                  key={i}
+                  className="relative flex flex-col gap-3"
+                  data-reveal
+                  style={{ "--i": i } as React.CSSProperties}
+                >
+                  <span
+                    aria-hidden="true"
+                    className={
+                      step.state === "now"
+                        ? "size-5 rounded-full bg-hydro shadow-[0_0_0_6px_var(--hydro-wash)]"
+                        : step.state === "next"
+                          ? "size-5 rounded-full border-2 border-hydro bg-bg"
+                          : "size-5 rounded-full border-2 border-dashed border-line-strong bg-bg"
+                    }
+                  />
+                  <span className="type-kicker mt-3 text-ink-3">{step.label}</span>
+                  <span className="type-title-3">{step.title}</span>
+                  <span className="type-small text-ink-2">{step.body}</span>
+                </li>
+              ))}
+            </ol>
           </div>
         </div>
       </section>

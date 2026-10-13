@@ -15,12 +15,16 @@ import { absoluteUrl } from "@/lib/site";
 export const dynamicParams = false;
 
 export function generateStaticParams() {
-  return paramsOrPlaceholder(livePosts().map((p) => ({ slug: p.slug })), "slug");
+  return paramsOrPlaceholder(
+    livePosts().map((p) => ({ slug: p.slug })),
+    "slug",
+  );
 }
 
 type Params = { params: Promise<{ slug: string }> };
 
-const absoluteMedia = (src: string) => (src.startsWith("http") ? src : absoluteUrl(src.replace(process.env.NEXT_PUBLIC_BASE_PATH ?? "", "")));
+const absoluteMedia = (src: string) =>
+  src.startsWith("http") ? src : absoluteUrl(src.replace(process.env.NEXT_PUBLIC_BASE_PATH ?? "", ""));
 
 export async function generateMetadata({ params }: Params) {
   const { slug } = await params;
@@ -36,7 +40,8 @@ export async function generateMetadata({ params }: Params) {
     path: `/blog/${post.slug}`,
     canonical: post.seo.canonical,
     noindex: post.seo.noindex,
-    image: img && item ? { url: absoluteMedia(img.src), width: img.width, height: img.height, alt: item.alt } : undefined,
+    image:
+      img && item ? { url: absoluteMedia(img.src), width: img.width, height: img.height, alt: item.alt } : undefined,
     article: {
       publishedTime: post.publishAt,
       modifiedTime: post.updatedAt,
@@ -77,7 +82,9 @@ export default async function PostPage({ params }: Params) {
           }),
           breadcrumbJsonLd([
             { name: "Blog", path: "/blog" },
-            ...(post.categoryInfo ? [{ name: post.categoryInfo.name, path: `/blog/category/${post.categoryInfo.slug}` }] : []),
+            ...(post.categoryInfo
+              ? [{ name: post.categoryInfo.name, path: `/blog/category/${post.categoryInfo.slug}` }]
+              : []),
             { name: post.title, path },
           ]),
         ]}
@@ -91,9 +98,15 @@ export default async function PostPage({ params }: Params) {
       <div className="shell px-6 md:px-14">
         <AuthorBios authors={post.authorInfo} media={media} />
         {newer || older ? (
-          <nav aria-label="More posts" className="mx-auto mt-10 grid max-w-[72ch] gap-3 text-[1.0625rem] sm:grid-cols-2">
+          <nav
+            aria-label="More posts"
+            className="mx-auto mt-10 grid max-w-[72ch] gap-3 text-[1.0625rem] sm:grid-cols-2"
+          >
             {older ? (
-              <Link href={`/blog/${older.slug}/`} className="rounded-2xl border border-line p-5 transition-colors hover:border-line-strong">
+              <Link
+                href={`/blog/${older.slug}/`}
+                className="rounded-2xl border border-line p-5 transition-colors hover:border-line-strong"
+              >
                 <span className="cv-label text-[10px]">Previous</span>
                 <span className="mt-2 block text-[15px] font-medium text-ink-100">{older.title}</span>
               </Link>
@@ -123,7 +136,9 @@ export default async function PostPage({ params }: Params) {
         <div className="flex flex-col items-start gap-6 border-t border-line pt-12 md:flex-row md:items-end md:justify-between">
           <div className="max-w-[46ch]">
             <h2 className="type-title-1">Run your model in Nepal.</h2>
-            <p className="type-lead mt-3 text-ink-2">Tell us what you want to run, and we will plan the capacity with you.</p>
+            <p className="type-lead mt-3 text-ink-2">
+              Tell us what you want to run, and we will plan the capacity with you.
+            </p>
           </div>
           <ButtonLink href="/contact" size="lg" iconRight={<Icon name="arrow-right" size={17} />}>
             Request access

@@ -21,22 +21,32 @@ export const metadata = pageMetadata({
 
 export default function InfrastructurePage() {
   const p = INFRASTRUCTURE;
-  const notes = createNotes(["place.power", "place.gridHydro", "place.uptime", "gpu.memory", "cluster.network", "place.latency"]);
+  const notes = createNotes([
+    "place.power",
+    "place.gridHydro",
+    "place.uptime",
+    "gpu.memory",
+    "cluster.network",
+    "place.latency",
+  ]);
 
   return (
     <Page>
       {/* Hero */}
       <section className="relative overflow-clip pt-[calc(var(--header-h)+clamp(3rem,8vw,7rem))] pb-[clamp(3rem,7vw,6rem)]">
-        <div aria-hidden="true" className="absolute inset-0 -z-10 opacity-60 [mask-image:linear-gradient(to_bottom,transparent,black_30%,black_70%,transparent)]">
+        <div
+          aria-hidden="true"
+          className="absolute inset-0 -z-10 opacity-60 [mask-image:linear-gradient(to_bottom,transparent,black_30%,black_70%,transparent)]"
+        >
           <ContourCover seed="kathmandu-valley" className="h-full w-full bg-transparent" />
         </div>
         <div className="container-page">
           <div className="flex max-w-[60rem] flex-col gap-6">
-          <Kicker>{p.hero.kicker}</Kicker>
-          <h1 className="type-display-1">{p.hero.title}</h1>
-          <p className="type-lead measure text-ink-2">{p.hero.lead}</p>
-          <Status id="region" />
-        </div>
+            <Kicker>{p.hero.kicker}</Kicker>
+            <h1 className="type-display-1">{p.hero.title}</h1>
+            <p className="type-lead measure text-ink-2">{p.hero.lead}</p>
+            <Status id="region" />
+          </div>
         </div>
       </section>
 
@@ -52,7 +62,13 @@ export default function InfrastructurePage() {
       {/* Power */}
       <section id="power" aria-labelledby="power-title" className="section-y scroll-mt-[var(--header-h)]">
         <div className="container-page grid gap-12 lg:grid-cols-2 lg:gap-20">
-          <SectionHead id="power-title" kicker={p.power.kicker} title={p.power.title} continuation={p.power.continuation} lead={p.power.lead} />
+          <SectionHead
+            id="power-title"
+            kicker={p.power.kicker}
+            title={p.power.title}
+            continuation={p.power.continuation}
+            lead={p.power.lead}
+          />
           <div className="flex flex-col gap-10 lg:pt-10">
             <div className="flex flex-col gap-2 border-t border-line pt-6">
               <p className="type-display-2 tabular">
@@ -66,7 +82,9 @@ export default function InfrastructurePage() {
                 <F id="place.uptime" />
                 <NoteRef notes={notes} id="place.uptime" />
               </p>
-              <p className="type-body text-ink-2">the datacentre facility&apos;s uptime commitment for power, cooling and the building.</p>
+              <p className="type-body text-ink-2">
+                the datacentre facility&apos;s uptime commitment for power, cooling and the building.
+              </p>
             </div>
           </div>
         </div>
@@ -78,7 +96,12 @@ export default function InfrastructurePage() {
           <SectionHead id="dc-title" kicker={p.datacentre.kicker} title={p.datacentre.title} lead={p.datacentre.lead} />
           <ul className="mt-12 grid gap-4 md:grid-cols-2 lg:grid-cols-4">
             {p.datacentre.points.map((pt, i) => (
-              <li key={pt.title} className="flex flex-col gap-3 rounded-panel border border-line bg-bg-raised p-6" data-reveal style={{ "--i": i } as React.CSSProperties}>
+              <li
+                key={pt.title}
+                className="flex flex-col gap-3 rounded-panel border border-line bg-bg-raised p-6"
+                data-reveal
+                style={{ "--i": i } as React.CSSProperties}
+              >
                 <span aria-hidden="true" className="size-2 rounded-full bg-hydro" />
                 <h3 className="type-title-3">{pt.title}</h3>
                 <p className="type-small text-ink-2">{pt.body}</p>
@@ -91,7 +114,13 @@ export default function InfrastructurePage() {
       {/* Network (S10) */}
       <section id="network" aria-labelledby="net-title" className="section-y scroll-mt-[var(--header-h)]">
         <div className="container-page flex flex-col gap-12">
-          <SectionHead id="net-title" kicker={p.network.kicker} title={p.network.title} continuation={p.network.continuation} lead={p.network.lead} />
+          <SectionHead
+            id="net-title"
+            kicker={p.network.kicker}
+            title={p.network.title}
+            continuation={p.network.continuation}
+            lead={p.network.lead}
+          />
           <div className="flex flex-col gap-4">
             <BlinkBar ms={5} label="One round trip inside the valley · under 5 ms" />
             <p className="type-caption text-ink-3">
@@ -106,7 +135,12 @@ export default function InfrastructurePage() {
       <section id="residency" aria-labelledby="res-title" className="section-y scroll-mt-[var(--header-h)]">
         <div className="container-page grid items-center gap-12 lg:grid-cols-2 lg:gap-20">
           <div className="flex flex-col gap-10">
-            <SectionHead id="res-title" kicker={p.residency.kicker} title={p.residency.title} continuation={p.residency.continuation} />
+            <SectionHead
+              id="res-title"
+              kicker={p.residency.kicker}
+              title={p.residency.title}
+              continuation={p.residency.continuation}
+            />
             <div className="grid gap-8 sm:grid-cols-2">
               <div>
                 <h3 className="type-kicker mb-4 flex items-center gap-2 text-hydro-ink light:text-hydro">
