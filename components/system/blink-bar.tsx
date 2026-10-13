@@ -24,7 +24,11 @@ export function BlinkBar({
   const lit = Math.max(1, Math.round((ms / blink) * dots));
   return (
     <figure className={cn("flex flex-col gap-3", className)}>
-      <div aria-hidden="true" className="grid gap-[3px]" style={{ gridTemplateColumns: `repeat(${dots}, minmax(0, 1fr))` }}>
+      <div
+        aria-hidden="true"
+        className="grid gap-[3px]"
+        style={{ gridTemplateColumns: `repeat(${dots}, minmax(0, 1fr))` }}
+      >
         {Array.from({ length: dots }, (_, i) => (
           <span
             key={i}

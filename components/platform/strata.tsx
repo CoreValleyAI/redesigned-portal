@@ -6,7 +6,13 @@
  */
 import { cn } from "@/lib/cn";
 
-export function Strata({ layers, className }: { layers: readonly { id: string; name: string; touch: boolean }[]; className?: string }) {
+export function Strata({
+  layers,
+  className,
+}: {
+  layers: readonly { id: string; name: string; touch: boolean }[];
+  className?: string;
+}) {
   const n = layers.length;
   return (
     <div aria-hidden="true" className={cn("flex flex-col items-center gap-2", className)}>
@@ -29,7 +35,12 @@ export function Strata({ layers, className }: { layers: readonly { id: string; n
                 backgroundPosition: `${i * 3}px 2px`,
               }}
             />
-            <span className={cn("type-kicker relative rounded-chip bg-bg/80 px-2 py-1", l.touch ? "text-hydro-ink light:text-hydro" : "text-ink-2")}>
+            <span
+              className={cn(
+                "type-kicker relative rounded-chip bg-bg/80 px-2 py-1",
+                l.touch ? "text-hydro-ink light:text-hydro" : "text-ink-2",
+              )}
+            >
               {l.name}
             </span>
           </div>

@@ -29,10 +29,7 @@ export function PageHero({
 }) {
   return (
     <section
-      className={cn(
-        "relative pt-[calc(var(--header-h)+clamp(3.5rem,9vw,8rem))] pb-[clamp(3rem,7vw,6rem)]",
-        className,
-      )}
+      className={cn("relative pt-[calc(var(--header-h)+clamp(3.5rem,9vw,8rem))] pb-[clamp(3rem,7vw,6rem)]", className)}
     >
       <div className={cn("container-page", aside && "grid items-end gap-12 lg:grid-cols-[1.4fr_1fr]")}>
         <div className="flex max-w-[60rem] flex-col gap-6">

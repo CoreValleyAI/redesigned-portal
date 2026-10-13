@@ -35,7 +35,8 @@ export default function NotFound() {
             <DotText text="404" label="404" className="w-[min(22rem,70vw)] text-hydro" />
             <h1 className="type-display-2 mt-12 max-w-[16ch]">This trail goes off the map.</h1>
             <p className="type-lead mt-5 max-w-[34rem] text-ink-2">
-              The page isn&apos;t here. It may have moved, or the link is out of date. One of these will get you back on the path.
+              The page isn&apos;t here. It may have moved, or the link is out of date. One of these will get you back on
+              the path.
             </p>
             <div className="mt-9">
               <ButtonLink href="/" size="lg" transitionTypes={["page-up"]}>

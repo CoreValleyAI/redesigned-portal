@@ -241,11 +241,20 @@ export const INDIA = {
   boundary: "We do not host Indian payment, securities or government data.",
   items: [
     { title: "Shared languages", body: "Nepali, Maithili and Bhojpuri models, trained in Nepal on Nepal-origin data." },
-    { title: "Shared rivers", body: "Flood and glacial-lake science for shared basins such as the Koshi, as research compute." },
-    { title: "Power trade", body: "Forecasting cross-border electricity trade from the Nepal side and public market data." },
+    {
+      title: "Shared rivers",
+      body: "Flood and glacial-lake science for shared basins such as the Koshi, as research compute.",
+    },
+    {
+      title: "Power trade",
+      body: "Forecasting cross-border electricity trade from the Nepal side and public market data.",
+    },
     { title: "Nepal subsidiaries", body: "Indian companies' operations in Nepal, with their Nepal data." },
     { title: "Shared heritage", body: "Manuscript and archive projects with research partners." },
-    { title: "Overflow capacity", body: "Reserved capacity for non-personal workloads — open data, synthetic data, simulation and rendering." },
+    {
+      title: "Overflow capacity",
+      body: "Reserved capacity for non-personal workloads — open data, synthetic data, simulation and rendering.",
+    },
   ],
 } as const;
 

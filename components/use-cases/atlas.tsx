@@ -35,7 +35,11 @@ export function Atlas({ cases, covers }: { cases: UseCase[]; covers: Record<stri
 
   return (
     <div className="flex flex-col gap-10">
-      <div role="radiogroup" aria-label="Filter by product" className="-mx-[var(--page-x)] flex gap-2 overflow-x-auto px-[var(--page-x)] pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+      <div
+        role="radiogroup"
+        aria-label="Filter by product"
+        className="-mx-[var(--page-x)] flex gap-2 overflow-x-auto px-[var(--page-x)] pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+      >
         {[{ slug: "all" as const, name: "All stories" }, ...PRODUCTS].map((p) => (
           <button
             key={p.slug}
@@ -45,7 +49,9 @@ export function Atlas({ cases, covers }: { cases: UseCase[]; covers: Record<stri
             onClick={() => choose(p.slug)}
             className={cn(
               "type-small h-10 shrink-0 rounded-pill border px-4 font-medium transition-[background-color,border-color,color,transform] duration-[var(--dur-spring-snappy)] ease-spring active:scale-[0.97]",
-              filter === p.slug ? "border-ink bg-ink text-bg" : "border-line text-ink-2 hover:border-line-strong hover:text-ink",
+              filter === p.slug
+                ? "border-ink bg-ink text-bg"
+                : "border-line text-ink-2 hover:border-line-strong hover:text-ink",
             )}
           >
             {p.name}
@@ -66,12 +72,26 @@ export function Atlas({ cases, covers }: { cases: UseCase[]; covers: Record<stri
                 <h3 className="type-title-3">{u.title}</h3>
                 <p className="type-body text-ink">
                   <span
-                    className={cn(!u.verified && "underline decoration-warn decoration-dotted decoration-2 underline-offset-4")}
+                    className={cn(
+                      !u.verified && "underline decoration-warn decoration-dotted decoration-2 underline-offset-4",
+                    )}
                     title={u.verified ? undefined : "To verify before launch"}
                   >
                     {u.fact}
                   </span>{" "}
-                  <span className="type-caption text-ink-3">— {u.source.url ? <a href={u.source.url} className="underline decoration-line-strong underline-offset-2 hover:text-ink">{u.source.name}</a> : u.source.name}</span>
+                  <span className="type-caption text-ink-3">
+                    —{" "}
+                    {u.source.url ? (
+                      <a
+                        href={u.source.url}
+                        className="underline decoration-line-strong underline-offset-2 hover:text-ink"
+                      >
+                        {u.source.name}
+                      </a>
+                    ) : (
+                      u.source.name
+                    )}
+                  </span>
                 </p>
                 <dl className="flex flex-col gap-3 border-t border-line pt-4">
                   <div>

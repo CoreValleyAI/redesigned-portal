@@ -27,7 +27,11 @@ export function Breadcrumbs({ trail, className }: { trail: Crumb[]; className?: 
                 </span>
               ) : (
                 <>
-                  <Link href={c.href} transitionTypes={["page-up"]} className="rounded-[2px] transition-colors duration-[var(--dur-short)] hover:text-ink">
+                  <Link
+                    href={c.href}
+                    transitionTypes={["page-up"]}
+                    className="rounded-[2px] transition-colors duration-[var(--dur-short)] hover:text-ink"
+                  >
                     {c.label}
                   </Link>
                   <span aria-hidden="true" className="text-ink-4">

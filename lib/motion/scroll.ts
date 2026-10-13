@@ -106,12 +106,7 @@ function start() {
  * Under reduced motion progress still updates, undamped, so pages can
  * switch states — they must not animate continuously with it.
  */
-export function trackScroll(
-  el: HTMLElement,
-  mode: Mode,
-  cb: (p: number) => void,
-  halfLife = 0.08,
-): () => void {
+export function trackScroll(el: HTMLElement, mode: Mode, cb: (p: number) => void, halfLife = 0.08): () => void {
   const reduced = document.documentElement.dataset.motion === "reduce";
   const t: Tracked = { el, top: 0, height: 0, mode, value: 0, target: 0, halfLife: reduced ? 0 : halfLife, cb };
   tracked.add(t);

@@ -27,7 +27,10 @@ export const COMPANY = {
     kicker: "How we work",
     title: "Five principles.",
     items: [
-      { title: "Say what's true.", body: "Coming soon says coming soon. Every number on this site has a source and a date." },
+      {
+        title: "Say what's true.",
+        body: "Coming soon says coming soon. Every number on this site has a source and a date.",
+      },
       { title: "Keep it here.", body: "Your data, our engineers and your bill — in Nepal, in rupees." },
       { title: "Make it simple.", body: "Plain words, clear terms, one place to ask." },
       { title: "Own the whole thing.", body: "From the rack to your notebook, we answer for it." },

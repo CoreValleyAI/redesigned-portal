@@ -21,14 +21,31 @@ export function GpuArt({ className }: { className?: string }) {
         </radialGradient>
       </defs>
       {/* Board */}
-      <rect x="20" y="40" width="520" height="260" rx="22" className="fill-bg-raised stroke-line-strong" strokeWidth="1.5" />
+      <rect
+        x="20"
+        y="40"
+        width="520"
+        height="260"
+        rx="22"
+        className="fill-bg-raised stroke-line-strong"
+        strokeWidth="1.5"
+      />
       {/* PCIe edge */}
       {Array.from({ length: 30 }, (_, i) => (
         <rect key={i} x={120 + i * 9} y="300" width="5" height="16" rx="1" className="fill-ink-3" opacity="0.6" />
       ))}
       {/* Fins */}
       {fins.map((i) => (
-        <line key={i} x1={44 + i * 17.5} y1="62" x2={44 + i * 17.5} y2="98" className="stroke-dot-off" strokeWidth="2" strokeLinecap="round" />
+        <line
+          key={i}
+          x1={44 + i * 17.5}
+          y1="62"
+          x2={44 + i * 17.5}
+          y2="98"
+          className="stroke-dot-off"
+          strokeWidth="2"
+          strokeLinecap="round"
+        />
       ))}
       {/* Die glow */}
       <circle cx="280" cy="190" r="120" fill="url(#gpu-glow)" />
@@ -36,7 +53,14 @@ export function GpuArt({ className }: { className?: string }) {
       <rect x="225" y="140" width="110" height="100" rx="8" className="fill-hydro" />
       {Array.from({ length: 5 }, (_, r) =>
         Array.from({ length: 6 }, (_, c) => (
-          <circle key={`${r}-${c}`} cx={240 + c * 16} cy={155 + r * 17.5} r="2.2" className="fill-on-hydro" opacity="0.55" />
+          <circle
+            key={`${r}-${c}`}
+            cx={240 + c * 16}
+            cy={155 + r * 17.5}
+            r="2.2"
+            className="fill-on-hydro"
+            opacity="0.55"
+          />
         )),
       )}
       {/* Memory stacks (stylised) */}
@@ -53,11 +77,18 @@ export function GpuArt({ className }: { className?: string }) {
         <g key={i}>
           <rect x={x} y={y} width="48" height="38" rx="5" className="fill-bg stroke-hydro" strokeWidth="1.4" />
           {Array.from({ length: 3 }, (_, r) =>
-            Array.from({ length: 4 }, (_, c) => <circle key={`${r}-${c}`} cx={x + 9 + c * 10} cy={y + 9 + r * 10} r="1.8" className="fill-hydro" />),
+            Array.from({ length: 4 }, (_, c) => (
+              <circle key={`${r}-${c}`} cx={x + 9 + c * 10} cy={y + 9 + r * 10} r="1.8" className="fill-hydro" />
+            )),
           )}
         </g>
       ))}
-      <text x="280" y="275" textAnchor="middle" className="fill-ink-3 font-mono text-[11px] tracking-[0.18em] uppercase">
+      <text
+        x="280"
+        y="275"
+        textAnchor="middle"
+        className="fill-ink-3 font-mono text-[11px] tracking-[0.18em] uppercase"
+      >
         GPU · HBM3e
       </text>
     </svg>
@@ -96,21 +127,58 @@ export function ClusterDiagram({
       {server(30, "GPU server · 4 × H200 NVL")}
       {server(150, "GPU server · 4 × H200 NVL")}
       {/* Network spine */}
-      <rect x="480" y="30" width="56" height="216" rx="12" className="fill-bg-sunken stroke-line-strong" strokeWidth="1.4" />
-      <text x="508" y="270" textAnchor="middle" className="fill-ink-3 font-mono text-[10px] tracking-[0.14em] uppercase">
+      <rect
+        x="480"
+        y="30"
+        width="56"
+        height="216"
+        rx="12"
+        className="fill-bg-sunken stroke-line-strong"
+        strokeWidth="1.4"
+      />
+      <text
+        x="508"
+        y="270"
+        textAnchor="middle"
+        className="fill-ink-3 font-mono text-[10px] tracking-[0.14em] uppercase"
+      >
         {network}
       </text>
       {[78, 198].map((y) => (
-        <line key={y} x1="440" y1={y} x2="480" y2={y} className="stroke-hydro" strokeWidth="2" strokeDasharray="2 6" strokeLinecap="round" />
+        <line
+          key={y}
+          x1="440"
+          y1={y}
+          x2="480"
+          y2={y}
+          className="stroke-hydro"
+          strokeWidth="2"
+          strokeDasharray="2 6"
+          strokeLinecap="round"
+        />
       ))}
-      <line x1="536" y1="138" x2="580" y2="138" className="stroke-hydro" strokeWidth="2" strokeDasharray="2 6" strokeLinecap="round" />
+      <line
+        x1="536"
+        y1="138"
+        x2="580"
+        y2="138"
+        className="stroke-hydro"
+        strokeWidth="2"
+        strokeDasharray="2 6"
+        strokeLinecap="round"
+      />
       {/* Storage */}
       <g transform="translate(580 70)">
         <rect width="150" height="136" rx="14" className="fill-bg-raised stroke-line-strong" strokeWidth="1.4" />
         {Array.from({ length: 4 }, (_, r) => (
           <rect key={r} x="18" y={22 + r * 24} width="114" height="14" rx="4" className="fill-dot-off" />
         ))}
-        <text x="75" y="160" textAnchor="middle" className="fill-ink-3 font-mono text-[10px] tracking-[0.14em] uppercase">
+        <text
+          x="75"
+          y="160"
+          textAnchor="middle"
+          className="fill-ink-3 font-mono text-[10px] tracking-[0.14em] uppercase"
+        >
           {storage} all-flash
         </text>
       </g>

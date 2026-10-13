@@ -102,7 +102,10 @@ export const INFRASTRUCTURE = {
       { title: "In the Kathmandu Valley", body: "Inside the rim of the valley, in Nepal." },
       { title: "Being commissioned", body: "The first cluster is coming soon; enterprise early access is open." },
       { title: "99.99 % facility uptime", body: "The facility's commitment for power, cooling and the building." },
-      { title: "Details on request", body: "We don't publish the address or security arrangements. Regulated customers get a written description of their data flows during onboarding." },
+      {
+        title: "Details on request",
+        body: "We don't publish the address or security arrangements. Regulated customers get a written description of their data flows during onboarding.",
+      },
     ],
   },
   network: {

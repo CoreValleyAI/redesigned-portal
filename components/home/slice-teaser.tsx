@@ -22,7 +22,9 @@ export function SliceTeaser({ memory, slice }: { memory: string; slice: string }
     <div className="flex flex-col items-center gap-8">
       <div
         role="img"
-        aria-label={split ? `One H200 NVL split into seven slices of ${slice}` : `One H200 NVL with ${memory} of memory`}
+        aria-label={
+          split ? `One H200 NVL split into seven slices of ${slice}` : `One H200 NVL with ${memory} of memory`
+        }
         className="relative w-full max-w-[34rem]"
       >
         <div

@@ -20,11 +20,13 @@ export default function PricingPage() {
   return (
     <Page>
       <section className="relative pt-[calc(var(--header-h)+clamp(3rem,8vw,7rem))] pb-[clamp(3rem,7vw,6rem)]">
-        <div className="container-page flex max-w-[60rem] flex-col gap-6">
+        <div className="container-page">
+          <div className="flex max-w-[60rem] flex-col gap-6">
           <Kicker>{p.hero.kicker}</Kicker>
           <h1 className="type-display-2 max-w-[14ch]">{p.hero.title}</h1>
           <p className="type-lead measure text-ink-2">{p.hero.lead}</p>
           <Status />
+        </div>
         </div>
       </section>
 

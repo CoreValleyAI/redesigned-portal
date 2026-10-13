@@ -117,8 +117,19 @@ export function PartnersLine() {
 }
 
 const ROUTES: { href: string; title: string; body: string; glyph: GlyphName; primary?: boolean }[] = [
-  { href: "/contact?intent=workloads", title: "Run AI workloads", body: "GPUs, slices, storage or serving.", glyph: "hardware", primary: true },
-  { href: "/contact?intent=partner", title: "Partner with us", body: "Resellers, integrators, universities.", glyph: "company" },
+  {
+    href: "/contact?intent=workloads",
+    title: "Run AI workloads",
+    body: "GPUs, slices, storage or serving.",
+    glyph: "hardware",
+    primary: true,
+  },
+  {
+    href: "/contact?intent=partner",
+    title: "Partner with us",
+    body: "Resellers, integrators, universities.",
+    glyph: "company",
+  },
   { href: "/contact?intent=press", title: "Press", body: "Interviews and information.", glyph: "blog" },
   { href: "/jobs", title: "Careers", body: "Build Nepal's AI infrastructure.", glyph: "careers" },
   { href: "/contact?intent=support", title: "Support", body: "Help with an existing request.", glyph: "services" },
@@ -132,7 +143,12 @@ export function Climb() {
         <SectionHead id="climb-title" kicker={c.kicker} title={c.title} lead={c.lead} align="center" />
         <ul className="mx-auto mt-12 grid max-w-[64rem] gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {ROUTES.map((r, i) => (
-            <li key={r.href} className={cn(r.primary && "sm:col-span-2 lg:col-span-1 lg:row-span-2")} data-reveal style={{ "--i": i } as React.CSSProperties}>
+            <li
+              key={r.href}
+              className={cn(r.primary && "sm:col-span-2 lg:col-span-1 lg:row-span-2")}
+              data-reveal
+              style={{ "--i": i } as React.CSSProperties}
+            >
               <AppLink
                 href={r.href}
                 className={cn(

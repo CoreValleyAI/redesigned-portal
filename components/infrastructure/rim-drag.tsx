@@ -151,8 +151,22 @@ export function RimDrag() {
             opacity={0.5 + i * 0.12}
           />
         ))}
-        <circle cx={C} cy={C} r={RIM} fill="none" className="stroke-ink-2" strokeWidth="2.4" strokeDasharray="2 8" strokeLinecap="round" />
-        <text x={C} y={C - RIM - 14} textAnchor="middle" className="fill-ink-3 font-mono text-[12px] tracking-[0.14em] uppercase">
+        <circle
+          cx={C}
+          cy={C}
+          r={RIM}
+          fill="none"
+          className="stroke-ink-2"
+          strokeWidth="2.4"
+          strokeDasharray="2 8"
+          strokeLinecap="round"
+        />
+        <text
+          x={C}
+          y={C - RIM - 14}
+          textAnchor="middle"
+          className="fill-ink-3 font-mono text-[12px] tracking-[0.14em] uppercase"
+        >
           The rim · Nepal
         </text>
         {/* The data. */}
@@ -164,7 +178,12 @@ export function RimDrag() {
             const r = Math.sqrt(i / 19) * 22;
             return <circle key={i} cx={C + Math.cos(a) * r} cy={C + Math.sin(a) * r} r="3" className="fill-hydro" />;
           })}
-          <text x={C} y={C + 52} textAnchor="middle" className="fill-hydro-ink font-mono text-[11px] tracking-[0.14em] uppercase">
+          <text
+            x={C}
+            y={C + 52}
+            textAnchor="middle"
+            className="fill-hydro-ink font-mono text-[11px] tracking-[0.14em] uppercase"
+          >
             Your data
           </text>
         </g>

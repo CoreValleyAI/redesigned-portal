@@ -11,9 +11,7 @@ import "./globals.css";
 /* Search-console verification tokens are read from the environment so the
    repo never carries them. */
 const verification: Metadata["verification"] = {
-  ...(process.env.NEXT_PUBLIC_GSC_VERIFICATION
-    ? { google: process.env.NEXT_PUBLIC_GSC_VERIFICATION }
-    : {}),
+  ...(process.env.NEXT_PUBLIC_GSC_VERIFICATION ? { google: process.env.NEXT_PUBLIC_GSC_VERIFICATION } : {}),
   ...(process.env.NEXT_PUBLIC_BING_VERIFICATION
     ? { other: { "msvalidate.01": process.env.NEXT_PUBLIC_BING_VERIFICATION } }
     : {}),

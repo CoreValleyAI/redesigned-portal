@@ -41,10 +41,7 @@ export function JourneyRail({
 
   return (
     <div aria-hidden="true" className="hidden lg:block">
-      <div
-        ref={ref}
-        className="sticky top-[calc(var(--header-h)+10svh)] flex h-[72svh] flex-col justify-between py-4"
-      >
+      <div ref={ref} className="sticky top-[calc(var(--header-h)+10svh)] flex h-[72svh] flex-col justify-between py-4">
         {/* The line, and the light travelling down it. */}
         <div className="absolute top-8 bottom-8 left-[1.375rem] w-px bg-[repeating-linear-gradient(to_bottom,var(--line-strong)_0_2px,transparent_2px_8px)] opacity-70" />
         <div

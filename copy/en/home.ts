@@ -93,8 +93,7 @@ export const HOME = {
     title: "141 GB on one GPU.",
     continuation: "Most jobs need a slice of it.",
     lead: "NVIDIA Multi-Instance GPU splits one H200 NVL into as many as seven GPUs, each isolated in hardware. Pay for the slice, not the card.",
-    readTime:
-      "An H200 NVL reads its whole memory in about 29 milliseconds — faster than a blink.",
+    readTime: "An H200 NVL reads its whole memory in about 29 milliseconds — faster than a blink.",
     link: { href: "/products/mig-slicing", label: "MIG slicing" },
   },
 

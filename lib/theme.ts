@@ -86,8 +86,7 @@ export function setTheme(theme: Theme, origin?: { x: number; y: number }) {
   };
   store(STORAGE.theme, theme);
 
-  const canAnimate =
-    origin && readMotion() === "full" && typeof document.startViewTransition === "function";
+  const canAnimate = origin && readMotion() === "full" && typeof document.startViewTransition === "function";
   if (!canAnimate) {
     apply();
     return;

@@ -19,10 +19,12 @@ export default function TrustPage() {
   return (
     <Page>
       <section className="relative pt-[calc(var(--header-h)+clamp(3rem,8vw,7rem))] pb-[clamp(3rem,7vw,6rem)]">
-        <div className="container-page flex max-w-[60rem] flex-col gap-6">
+        <div className="container-page">
+          <div className="flex max-w-[60rem] flex-col gap-6">
           <Kicker>{t.hero.kicker}</Kicker>
           <h1 className="type-display-2 max-w-[13ch]">{t.hero.title}</h1>
           <p className="type-lead measure text-ink-2">{t.hero.lead}</p>
+        </div>
         </div>
       </section>
 
@@ -112,7 +114,8 @@ export default function TrustPage() {
       </section>
 
       <section aria-labelledby="disclosure-title" className="section-y">
-        <div className="container-page flex max-w-[48rem] flex-col gap-5">
+        <div className="container-page">
+          <div className="flex max-w-[48rem] flex-col gap-5">
           <SectionHead id="disclosure-title" kicker={t.disclosure.kicker} title={t.disclosure.title} size="title-2" />
           <p className="type-lead text-ink-2">{t.disclosure.body}</p>
           <div className="flex flex-wrap gap-6">
@@ -121,6 +124,7 @@ export default function TrustPage() {
               security.txt
             </a>
           </div>
+        </div>
         </div>
       </section>
 

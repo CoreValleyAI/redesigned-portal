@@ -34,10 +34,19 @@ function Chips<T extends string>({
             key={o.id}
             className={cn(
               "type-small cursor-pointer rounded-pill border px-4 py-2.5 transition-[background-color,border-color,color,transform] duration-[var(--dur-spring-snappy)] ease-spring has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-hydro active:scale-[0.97]",
-              value === o.id ? "border-ink bg-ink text-bg" : "border-line text-ink-2 hover:border-line-strong hover:text-ink",
+              value === o.id
+                ? "border-ink bg-ink text-bg"
+                : "border-line text-ink-2 hover:border-line-strong hover:text-ink",
             )}
           >
-            <input type="radio" name={name} value={o.id} checked={value === o.id} onChange={() => onChange(o.id)} className="sr-only" />
+            <input
+              type="radio"
+              name={name}
+              value={o.id}
+              checked={value === o.id}
+              onChange={() => onChange(o.id)}
+              className="sr-only"
+            />
             {o.label}
           </label>
         ))}
@@ -131,7 +140,9 @@ export function QuoteBuilder() {
               <dd className="type-title-3">{duration}</dd>
             </div>
           </dl>
-          <p className="type-small border-t border-line pt-5 text-ink-2">A firm quote in rupees within one working day. Billing: {info.billing.toLowerCase()}.</p>
+          <p className="type-small border-t border-line pt-5 text-ink-2">
+            A firm quote in rupees within one working day. Billing: {info.billing.toLowerCase()}.
+          </p>
           <ButtonLink href={`/contact?${params.toString()}`} size="lg" className="w-full" magnetic>
             Get my quote
           </ButtonLink>

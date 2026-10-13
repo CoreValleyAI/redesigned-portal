@@ -36,7 +36,9 @@ export function MetroMap({ lines }: { lines: readonly MetroLine[] }) {
             onClick={() => setActive(l.id)}
             className={cn(
               "type-small h-10 rounded-pill border px-4 font-medium transition-[background-color,border-color,color,transform] duration-[var(--dur-spring-snappy)] ease-spring active:scale-[0.97]",
-              active === l.id ? "border-hydro bg-hydro-wash text-ink" : "border-line text-ink-2 hover:border-line-strong hover:text-ink",
+              active === l.id
+                ? "border-hydro bg-hydro-wash text-ink"
+                : "border-line text-ink-2 hover:border-line-strong hover:text-ink",
             )}
           >
             {l.name}
@@ -59,10 +61,19 @@ export function MetroMap({ lines }: { lines: readonly MetroLine[] }) {
               <span className={cn("type-kicker", on ? "text-hydro-ink light:text-hydro" : "text-ink-3")}>{l.name}</span>
               <div className="relative">
                 {/* The track and the light running along it. */}
-                <div aria-hidden="true" className="absolute top-[0.6875rem] right-3 left-3 h-[3px] rounded-full bg-line" />
+                <div
+                  aria-hidden="true"
+                  className="absolute top-[0.6875rem] right-3 left-3 h-[3px] rounded-full bg-line"
+                />
                 {on && (
-                  <div aria-hidden="true" className="absolute top-[0.6875rem] right-3 left-3 h-[3px] overflow-hidden rounded-full">
-                    <div className="h-full w-full bg-hydro" style={{ animation: "cv-metro-fill 900ms var(--ease-expo) both" }} />
+                  <div
+                    aria-hidden="true"
+                    className="absolute top-[0.6875rem] right-3 left-3 h-[3px] overflow-hidden rounded-full"
+                  >
+                    <div
+                      className="h-full w-full bg-hydro"
+                      style={{ animation: "cv-metro-fill 900ms var(--ease-expo) both" }}
+                    />
                     <div className="absolute inset-0" style={{ animation: "cv-metro-run 2.6s linear 900ms infinite" }}>
                       <span className="absolute top-1/2 right-0 h-[3px] w-16 -translate-y-1/2 rounded-full bg-gradient-to-r from-transparent to-white/90 dark:to-white" />
                     </div>
@@ -72,7 +83,10 @@ export function MetroMap({ lines }: { lines: readonly MetroLine[] }) {
                   {l.stops.map((s, i) => {
                     const shared = (counts.get(s) ?? 0) > 1;
                     return (
-                      <li key={`${s}-${i}`} className="flex w-0 flex-1 flex-col items-center gap-2 first:items-start last:items-end">
+                      <li
+                        key={`${s}-${i}`}
+                        className="flex w-0 flex-1 flex-col items-center gap-2 first:items-start last:items-end"
+                      >
                         <span
                           aria-hidden="true"
                           className={cn(
@@ -82,9 +96,18 @@ export function MetroMap({ lines }: { lines: readonly MetroLine[] }) {
                           )}
                           style={on ? { transitionDelay: `${i * 90}ms` } : undefined}
                         >
-                          {shared && <span className={cn("size-1.5 rounded-full", on ? "bg-hydro" : "bg-line-strong")} />}
+                          {shared && (
+                            <span className={cn("size-1.5 rounded-full", on ? "bg-hydro" : "bg-line-strong")} />
+                          )}
                         </span>
-                        <span className={cn("type-caption max-w-[7rem] text-center text-pretty first:text-left", on ? "text-ink" : "text-ink-3", i === 0 && "text-left", i === l.stops.length - 1 && "text-right")}>
+                        <span
+                          className={cn(
+                            "type-caption max-w-[7rem] text-center text-pretty first:text-left",
+                            on ? "text-ink" : "text-ink-3",
+                            i === 0 && "text-left",
+                            i === l.stops.length - 1 && "text-right",
+                          )}
+                        >
                           {s}
                         </span>
                       </li>
@@ -96,7 +119,9 @@ export function MetroMap({ lines }: { lines: readonly MetroLine[] }) {
           );
         })}
       </ol>
-      <p className="type-caption text-ink-3">Ringed stops are shared by more than one line. Example workflows, for illustration.</p>
+      <p className="type-caption text-ink-3">
+        Ringed stops are shared by more than one line. Example workflows, for illustration.
+      </p>
     </div>
   );
 }

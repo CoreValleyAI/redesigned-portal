@@ -88,7 +88,10 @@ export function MeterTeaser() {
           {Array.from({ length: 60 }, (_, i) => (
             <span
               key={i}
-              className={cn("absolute top-1/2 left-1/2 -mt-0.5 -ml-0.5 size-1 rounded-full", i % 5 === 0 ? "bg-ink-2" : "bg-dot-off")}
+              className={cn(
+                "absolute top-1/2 left-1/2 -mt-0.5 -ml-0.5 size-1 rounded-full",
+                i % 5 === 0 ? "bg-ink-2" : "bg-dot-off",
+              )}
               style={{ transform: `rotate(${i * 6}deg) translateY(calc(-1 * var(--r)))` }}
             />
           ))}
@@ -116,7 +119,9 @@ export function MeterTeaser() {
           </div>
           <div className="rounded-card bg-bg-sunken p-4">
             <dt className="type-kicker text-ink-3">Rounded to the hour</dt>
-            <dd className="type-title-2 tabular mt-2 text-ink-2">{phase === "stopped" ? `${HOUR.toLocaleString("en")} s` : "—"}</dd>
+            <dd className="type-title-2 tabular mt-2 text-ink-2">
+              {phase === "stopped" ? `${HOUR.toLocaleString("en")} s` : "—"}
+            </dd>
           </div>
         </dl>
         <p aria-live="polite" className="type-small min-h-[2.8em] text-ink-2">

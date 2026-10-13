@@ -72,7 +72,12 @@ export function createNotes(entries: (FactId | NoteEntry)[]): Notes {
 export function NoteRef({ notes, id, className }: { notes: Notes; id: string; className?: string }) {
   const n = notes.n(id);
   return (
-    <sup className={cn("ml-0.5 align-super font-sans text-[clamp(0.65rem,0.4em,0.95rem)] font-medium tracking-normal", className)}>
+    <sup
+      className={cn(
+        "ml-0.5 align-super font-sans text-[clamp(0.65rem,0.4em,0.95rem)] font-medium tracking-normal",
+        className,
+      )}
+    >
       <a
         href={`#note-${n}`}
         id={`ref-${n}`}
@@ -96,7 +101,11 @@ export function NoteList({ notes, className }: { notes: Notes; className?: strin
       <ol className="grid gap-3 md:grid-cols-2 md:gap-x-12">
         {notes.list.map((e, i) => (
           <li key={e.key} id={`note-${i + 1}`} className="type-caption flex gap-3 text-ink-3 target:text-ink">
-            <a href={`#ref-${i + 1}`} className="tabular shrink-0 text-ink-2 hover:text-hydro-ink" aria-label={`Back to note ${i + 1} in the text`}>
+            <a
+              href={`#ref-${i + 1}`}
+              className="tabular shrink-0 text-ink-2 hover:text-hydro-ink"
+              aria-label={`Back to note ${i + 1} in the text`}
+            >
               {i + 1}
             </a>
             <span>
@@ -105,7 +114,10 @@ export function NoteList({ notes, className }: { notes: Notes; className?: strin
                 <>
                   {" "}
                   {e.source.url ? (
-                    <a href={e.source.url} className="underline decoration-line-strong underline-offset-2 hover:text-ink">
+                    <a
+                      href={e.source.url}
+                      className="underline decoration-line-strong underline-offset-2 hover:text-ink"
+                    >
                       {e.source.name}
                     </a>
                   ) : (

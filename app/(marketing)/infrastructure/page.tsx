@@ -30,11 +30,13 @@ export default function InfrastructurePage() {
         <div aria-hidden="true" className="absolute inset-0 -z-10 opacity-60 [mask-image:linear-gradient(to_bottom,transparent,black_30%,black_70%,transparent)]">
           <ContourCover seed="kathmandu-valley" className="h-full w-full bg-transparent" />
         </div>
-        <div className="container-page flex max-w-[60rem] flex-col gap-6">
+        <div className="container-page">
+          <div className="flex max-w-[60rem] flex-col gap-6">
           <Kicker>{p.hero.kicker}</Kicker>
           <h1 className="type-display-1">{p.hero.title}</h1>
           <p className="type-lead measure text-ink-2">{p.hero.lead}</p>
           <Status id="region" />
+        </div>
         </div>
       </section>
 

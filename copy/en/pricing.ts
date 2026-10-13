@@ -25,7 +25,10 @@ export const PRICING = {
     kicker: "What you pay for",
     title: "Four things, plainly.",
     items: [
-      { title: "GPU time", body: "On-demand GPUs and MIG slices, per second of running time, with a 60-second minimum." },
+      {
+        title: "GPU time",
+        body: "On-demand GPUs and MIG slices, per second of running time, with a 60-second minimum.",
+      },
       { title: "Reserved terms", body: "Capacity held for you, at a fixed rate for the term you choose." },
       { title: "Storage", body: "The capacity you keep beside the GPUs." },
       { title: "Services", body: "Engineering work, scoped and quoted before it starts." },

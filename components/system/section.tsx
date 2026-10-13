@@ -25,10 +25,7 @@ export function Section({
   tight?: boolean;
 }) {
   return (
-    <section
-      className={cn(tight ? "py-[calc(var(--section-y)*0.5)]" : "section-y", "relative", className)}
-      {...props}
-    >
+    <section className={cn(tight ? "py-[calc(var(--section-y)*0.5)]" : "section-y", "relative", className)} {...props}>
       {bleed ? children : <div className={cn("container-page", inner)}>{children}</div>}
     </section>
   );
@@ -58,13 +55,7 @@ export function SectionHead({
 }) {
   const sizeClass = { "display-2": "type-display-2", "title-1": "type-title-1", "title-2": "type-title-2" }[size];
   return (
-    <header
-      className={cn(
-        "flex flex-col gap-5",
-        align === "center" && "items-center text-center",
-        className,
-      )}
-    >
+    <header className={cn("flex flex-col gap-5", align === "center" && "items-center text-center", className)}>
       {kicker && <Kicker>{kicker}</Kicker>}
       <As id={id} className={cn(sizeClass, "max-w-[21ch]", align === "center" && "mx-auto")} data-reveal>
         {title}

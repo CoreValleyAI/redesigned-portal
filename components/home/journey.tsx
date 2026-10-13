@@ -34,7 +34,10 @@ export function Journey({
         <SectionHead id={`${id}-title`} kicker={kicker} title={title} continuation={continuation} />
 
         <div className="mt-12 grid gap-x-16 lg:mt-16 lg:grid-cols-[minmax(0,4fr)_minmax(0,7fr)]">
-          <JourneyRail listId={`${id}-beats`} beats={beats.map((b) => ({ id: b.id, glyph: b.glyph, label: b.label }))} />
+          <JourneyRail
+            listId={`${id}-beats`}
+            beats={beats.map((b) => ({ id: b.id, glyph: b.glyph, label: b.label }))}
+          />
 
           <ol id={`${id}-beats`} className="relative">
             {beats.map((b, i) => (

@@ -20,9 +20,7 @@ export function SiteFooter() {
         <div className="grid gap-12 md:grid-cols-[1.2fr_repeat(4,1fr)] md:gap-8">
           <div className="flex flex-col gap-6">
             <Brandmark className="w-12" />
-            <p className="type-small max-w-[22ch] text-ink-2">
-              Nepal&apos;s GPU cloud, in the Kathmandu Valley.
-            </p>
+            <p className="type-small max-w-[22ch] text-ink-2">Nepal&apos;s GPU cloud, in the Kathmandu Valley.</p>
           </div>
           {FOOTER.columns.map((col) => (
             <nav key={col.title} aria-label={col.title}>
@@ -31,7 +29,10 @@ export function SiteFooter() {
                 {col.links.map((l) => (
                   <li key={l.href}>
                     {isExternal(l.href) ? (
-                      <a href={l.href} className="type-small text-ink-2 transition-colors duration-[var(--dur-short)] hover:text-ink">
+                      <a
+                        href={l.href}
+                        className="type-small text-ink-2 transition-colors duration-[var(--dur-short)] hover:text-ink"
+                      >
                         {l.label}
                       </a>
                     ) : (
@@ -66,7 +67,11 @@ export function SiteFooter() {
         <ul className="flex flex-wrap gap-x-5 gap-y-2">
           {FOOTER.legal.map((l) => (
             <li key={l.href}>
-              <AppLink href={l.href} transitionTypes={["page"]} className="type-caption text-ink-3 transition-colors hover:text-ink">
+              <AppLink
+                href={l.href}
+                transitionTypes={["page"]}
+                className="type-caption text-ink-3 transition-colors hover:text-ink"
+              >
                 {l.label}
               </AppLink>
             </li>

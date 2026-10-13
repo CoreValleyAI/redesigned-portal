@@ -17,7 +17,8 @@ export default function GlobalError({ error, reset }: { error: Error & { digest?
       <p className="type-kicker text-ink-3">Something went wrong</p>
       <h1 className="type-title-1">This page didn&apos;t load.</h1>
       <p className="type-lead text-ink-2">
-        Trying again usually fixes it. If it keeps happening, send us the reference below and an engineer in Kathmandu will trace it.
+        Trying again usually fixes it. If it keeps happening, send us the reference below and an engineer in Kathmandu
+        will trace it.
       </p>
       {error.digest && (
         <p className="type-mono rounded-card bg-bg-sunken px-4 py-3 text-ink">

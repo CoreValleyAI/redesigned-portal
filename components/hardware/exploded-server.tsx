@@ -36,11 +36,29 @@ function Plate({ id, lit }: { id: string; lit: boolean }) {
           <g key={i} transform={`translate(${30 + i * 62} 26)`}>
             <circle cx="24" cy="24" r="22" fill="none" stroke={stroke} strokeWidth="1.2" />
             {Array.from({ length: 12 }, (_, k) => (
-              <circle key={k} cx={24 + Math.cos((k / 12) * 6.283) * 12} cy={24 + Math.sin((k / 12) * 6.283) * 12} r="1.6" fill={dot} />
+              <circle
+                key={k}
+                cx={24 + Math.cos((k / 12) * 6.283) * 12}
+                cy={24 + Math.sin((k / 12) * 6.283) * 12}
+                r="1.6"
+                fill={dot}
+              />
             ))}
           </g>
         ))}
-      {id === "chassis" && <rect x="30" y="110" width={W - 60} height="160" rx="10" fill="none" stroke={stroke} strokeDasharray="2 6" strokeLinecap="round" />}
+      {id === "chassis" && (
+        <rect
+          x="30"
+          y="110"
+          width={W - 60}
+          height="160"
+          rx="10"
+          fill="none"
+          stroke={stroke}
+          strokeDasharray="2 6"
+          strokeLinecap="round"
+        />
+      )}
       {id === "gpus" &&
         Array.from({ length: 4 }, (_, i) => (
           <g key={i} transform={`translate(28 ${26 + i * 64})`}>
@@ -65,7 +83,9 @@ function Plate({ id, lit }: { id: string; lit: boolean }) {
             <g key={i} transform={`translate(${x} ${y})`}>
               <rect width="70" height="50" rx="6" fill="none" stroke={stroke} strokeWidth="1.4" />
               {Array.from({ length: 4 }, (_, r) =>
-                Array.from({ length: 6 }, (_, c) => <circle key={`${r}-${c}`} cx={10 + c * 10} cy={10 + r * 10} r="2" fill={dot} />),
+                Array.from({ length: 6 }, (_, c) => (
+                  <circle key={`${r}-${c}`} cx={10 + c * 10} cy={10 + r * 10} r="2" fill={dot} />
+                )),
               )}
             </g>
           ))}
@@ -89,7 +109,14 @@ function Plate({ id, lit }: { id: string; lit: boolean }) {
           {Array.from({ length: 8 }, (_, i) => (
             <g key={i} transform={`translate(${40 + i * 44} 40)`}>
               <rect width="30" height="20" rx="3" fill="none" stroke={stroke} strokeWidth="1.4" />
-              <path d={`M15 20 C15 120, ${(W / 2 - 40 - i * 44) * 0.6 + 15} 160, ${W / 2 - 40 - i * 44 + 15} 230`} fill="none" stroke={dot} strokeWidth="1.2" strokeDasharray="1 7" strokeLinecap="round" />
+              <path
+                d={`M15 20 C15 120, ${(W / 2 - 40 - i * 44) * 0.6 + 15} 160, ${W / 2 - 40 - i * 44 + 15} 230`}
+                fill="none"
+                stroke={dot}
+                strokeWidth="1.2"
+                strokeDasharray="1 7"
+                strokeLinecap="round"
+              />
             </g>
           ))}
           <rect x={W / 2 - 70} y="226" width="140" height="44" rx="8" fill={dot} opacity="0.85" />
@@ -125,7 +152,7 @@ export function ExplodedServer({ layers }: { layers: Layer[] }) {
             aria-hidden="true"
             className="relative mx-auto aspect-square w-full max-w-[34rem] [perspective:1600px] max-lg:max-w-[22rem]"
           >
-            <div className="absolute inset-0 [transform-style:preserve-3d] [transform:rotateX(56deg)_rotateZ(-40deg)_translateZ(-8%)]">
+            <div className="absolute inset-0 [transform-style:preserve-3d] [transform:rotateX(56deg)_rotateZ(-40deg)]">
               {layers.map((l, i) => {
                 const lift = i === active ? 1 : 0;
                 return (
@@ -146,25 +173,29 @@ export function ExplodedServer({ layers }: { layers: Layer[] }) {
 
           {/* The words: one layer at a time when pinned, all of them otherwise. */}
           <div>
-          <ol className="relative grid min-h-[16rem] still:min-h-0 still:gap-10">
-            {layers.map((l, i) => (
-              <li
-                key={l.id}
-                aria-current={i === active ? "step" : undefined}
-                className={cn(
-                  "col-start-1 row-start-1 flex flex-col gap-4 transition-[opacity,transform] duration-[var(--dur-base)] ease-out still:col-auto still:row-auto still:!translate-y-0 still:!opacity-100",
-                  i === active ? "translate-y-0 opacity-100" : i < active ? "-translate-y-4 opacity-0" : "translate-y-4 opacity-0",
-                )}
-              >
-                <p className="type-kicker text-ink-3">
-                  {String(i + 1).padStart(2, "0")} / {String(n).padStart(2, "0")} · {l.title}
-                </p>
-                <p className="type-display-2 tabular text-ink">{l.value}</p>
-                <p className="type-small text-ink-3">{l.caption}</p>
-                <p className="type-lead measure text-ink-2">{l.body}</p>
-              </li>
-            ))}
-          </ol>
+            <ol className="relative grid min-h-[16rem] still:min-h-0 still:gap-10">
+              {layers.map((l, i) => (
+                <li
+                  key={l.id}
+                  aria-current={i === active ? "step" : undefined}
+                  className={cn(
+                    "col-start-1 row-start-1 flex flex-col gap-4 transition-[opacity,transform] duration-[var(--dur-base)] ease-out still:col-auto still:row-auto still:!translate-y-0 still:!opacity-100",
+                    i === active
+                      ? "translate-y-0 opacity-100"
+                      : i < active
+                        ? "-translate-y-4 opacity-0"
+                        : "translate-y-4 opacity-0",
+                  )}
+                >
+                  <p className="type-kicker text-ink-3">
+                    {String(i + 1).padStart(2, "0")} / {String(n).padStart(2, "0")} · {l.title}
+                  </p>
+                  <p className="type-display-2 tabular text-ink">{l.value}</p>
+                  <p className="type-small text-ink-3">{l.caption}</p>
+                  <p className="type-lead measure text-ink-2">{l.body}</p>
+                </li>
+              ))}
+            </ol>
             {/* Progress dots. */}
             <div aria-hidden="true" className="mt-8 flex gap-2 still:hidden">
               {layers.map((l, i) => (

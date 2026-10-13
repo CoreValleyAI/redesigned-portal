@@ -95,7 +95,16 @@ export const HARDWARE = {
     title: "HPE Private Cloud AI.",
     continuation: "Built as one system.",
     lead: "The first CoreValley cluster is a complete HPE Private Cloud AI system: GPU servers, a control plane, all-flash storage and NVIDIA networking, with NVIDIA AI Enterprise and HPE AI Essentials on top.",
-    rows: ["cluster.gpus", "cluster.servers", "server.cpu", "server.memory", "cluster.network", "cluster.storage", "cluster.storageAccess", "software.nvaie"] as FactId[],
+    rows: [
+      "cluster.gpus",
+      "cluster.servers",
+      "server.cpu",
+      "server.memory",
+      "cluster.network",
+      "cluster.storage",
+      "cluster.storageAccess",
+      "software.nvaie",
+    ] as FactId[],
   },
   roadmap: {
     kicker: "What comes next",
@@ -103,7 +112,11 @@ export const HARDWARE = {
     continuation: "Built for what follows.",
     now: { label: "Now", title: "NVIDIA H200 NVL", body: "Coming soon · enterprise early access" },
     next: { label: "Next", fact: "roadmap.next" as FactId, body: "No date yet" },
-    later: { label: "Later", title: "New generations as they ship", body: "We'll add GPU generations and larger clusters as demand grows." },
+    later: {
+      label: "Later",
+      title: "New generations as they ship",
+      body: "We'll add GPU generations and larger clusters as demand grows.",
+    },
   },
   faq: [
     {

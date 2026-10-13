@@ -59,7 +59,9 @@ function Choices<T extends string>({
             key={o.id}
             className={cn(
               "type-small cursor-pointer rounded-pill border px-4 py-2.5 transition-[background-color,border-color,color,transform] duration-[var(--dur-spring-snappy)] ease-spring has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-hydro active:scale-[0.97]",
-              value === o.id ? "border-ink bg-ink text-bg" : "border-line text-ink-2 hover:border-line-strong hover:text-ink",
+              value === o.id
+                ? "border-ink bg-ink text-bg"
+                : "border-line text-ink-2 hover:border-line-strong hover:text-ink",
             )}
           >
             <input
@@ -110,14 +112,20 @@ export function FitFinder() {
       </div>
       <div aria-live="polite" className="min-h-[16rem]">
         {product ? (
-          <div className="flex flex-col gap-4" key={product.slug} style={{ animation: "cv-rise-in 520ms var(--ease-expo) both" }}>
+          <div
+            className="flex flex-col gap-4"
+            key={product.slug}
+            style={{ animation: "cv-rise-in 520ms var(--ease-expo) both" }}
+          >
             <p className="type-kicker text-hydro-ink light:text-hydro">Our suggestion</p>
             <ProductCard product={product} detail highlight morph={false} />
             <p className="type-small text-ink-2">{WHY[product.slug]}</p>
           </div>
         ) : (
           <div className="flex h-full min-h-[16rem] items-center justify-center rounded-panel border border-dashed border-line p-8 text-center">
-            <p className="type-small max-w-[22ch] text-ink-3">Answer on the left and the product that fits appears here.</p>
+            <p className="type-small max-w-[22ch] text-ink-3">
+              Answer on the left and the product that fits appears here.
+            </p>
           </div>
         )}
       </div>

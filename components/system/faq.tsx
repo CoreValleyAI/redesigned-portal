@@ -12,15 +12,7 @@ export interface QA {
   a: string;
 }
 
-export function Faq({
-  items,
-  className,
-  jsonLd = true,
-}: {
-  items: QA[];
-  className?: string;
-  jsonLd?: boolean;
-}) {
+export function Faq({ items, className, jsonLd = true }: { items: QA[]; className?: string; jsonLd?: boolean }) {
   return (
     <div className={cn("border-t border-line", className)}>
       {items.map((item) => (

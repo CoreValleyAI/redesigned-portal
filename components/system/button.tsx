@@ -27,8 +27,7 @@ const base =
 
 const variants: Record<Variant, string> = {
   primary: "bg-hydro text-on-hydro hover:bg-hydro-ink",
-  secondary:
-    "border border-line-strong/70 bg-transparent text-ink hover:border-ink hover:bg-bg-sunken",
+  secondary: "border border-line-strong/70 bg-transparent text-ink hover:border-ink hover:bg-bg-sunken",
   ghost: "text-ink-2 hover:bg-bg-sunken hover:text-ink",
   inverse: "bg-ink text-bg hover:bg-ink-2",
 };

@@ -11,13 +11,7 @@
 import type { FactId } from "@/lib/facts";
 import type { GlyphName } from "@/components/system/dot-glyph";
 
-export type ProductSlug =
-  | "reserved"
-  | "on-demand"
-  | "inferencing"
-  | "mig-slicing"
-  | "storage"
-  | "services";
+export type ProductSlug = "reserved" | "on-demand" | "inferencing" | "mig-slicing" | "storage" | "services";
 
 export interface Product {
   slug: ProductSlug;

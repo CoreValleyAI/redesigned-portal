@@ -14,8 +14,7 @@ import "./globals.css";
  * marketing site (header, footer, theme), whose links point back to
  * corevalley.ai, around the documentation shell.
  */
-const DESCRIPTION =
-  "CoreValley documentation: platform guides, hardware specs, billing in NPR and support.";
+const DESCRIPTION = "CoreValley documentation: platform guides, hardware specs, billing in NPR and support.";
 
 export const metadata: Metadata = {
   metadataBase: new URL(`${SITE_URL}/`),
@@ -46,9 +45,7 @@ export const viewport: Viewport = {
   colorScheme: "light dark",
 };
 
-export default function DocsRootLayout({
-  children,
-}: Readonly<{ children: React.ReactNode }>) {
+export default function DocsRootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en" className={`${inter.variable} ${jetbrainsMono.variable}`} suppressHydrationWarning>
       <head>

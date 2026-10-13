@@ -10,8 +10,7 @@ export function generateMetadata() {
     ...pageMetadata({
       title: "Documentation",
       description:
-        page?.lead ||
-        "CoreValley documentation: platform guides, hardware specs, billing in NPR and support.",
+        page?.lead || "CoreValley documentation: platform guides, hardware specs, billing in NPR and support.",
       path: "/",
     }),
     title: { absolute: "Documentation · CoreValley" },

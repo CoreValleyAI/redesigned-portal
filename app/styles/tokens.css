@@ -101,8 +101,7 @@
   --glow-4: oklch(0.83 0.13 75);
 
   --shadow-float:
-    0 1px 0 oklch(1 0 0 / 0.06) inset, 0 0 0 1px oklch(1 0 0 / 0.06),
-    0 16px 40px -12px oklch(0 0 0 / 0.65);
+    0 1px 0 oklch(1 0 0 / 0.06) inset, 0 0 0 1px oklch(1 0 0 / 0.06), 0 16px 40px -12px oklch(0 0 0 / 0.65);
 
   --selection: oklch(0.84 0.19 150 / 0.28);
 }

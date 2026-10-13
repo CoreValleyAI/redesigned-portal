@@ -22,7 +22,12 @@ export function Reveal({
   id?: string;
 }) {
   return (
-    <As id={id} data-reveal className={className} style={delay ? ({ "--reveal-delay": `${delay}ms` } as React.CSSProperties) : undefined}>
+    <As
+      id={id}
+      data-reveal
+      className={className}
+      style={delay ? ({ "--reveal-delay": `${delay}ms` } as React.CSSProperties) : undefined}
+    >
       {children}
     </As>
   );

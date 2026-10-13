@@ -23,7 +23,8 @@ export default function UseCasesPage() {
         <div aria-hidden="true" className="absolute inset-y-0 right-0 -z-10 hidden w-1/2 opacity-70 [mask-image:linear-gradient(to_right,transparent,black_40%)] lg:block">
           <ContourCover seed="use-cases-atlas" className="h-full w-full bg-transparent" />
         </div>
-        <div className="container-page flex max-w-[60rem] flex-col gap-6">
+        <div className="container-page">
+          <div className="flex max-w-[60rem] flex-col gap-6">
           <Kicker>Use cases</Kicker>
           <h1 className="type-display-2 max-w-[13ch]">
             Work that belongs <span className="text-ink-3">in Nepal.</span>
@@ -31,6 +32,7 @@ export default function UseCasesPage() {
           <p className="type-lead measure text-ink-2">
             124 mother tongues, one valley. What teams in Nepal can build on GPUs close to home — each story grounded in one number, with its source.
           </p>
+        </div>
         </div>
       </section>
 

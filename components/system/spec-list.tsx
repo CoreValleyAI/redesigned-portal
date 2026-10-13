@@ -11,15 +11,7 @@ import { F } from "./fact";
 
 export type SpecRow = FactId | { label: ReactNode; value: ReactNode };
 
-export function SpecList({
-  rows,
-  className,
-  dense = false,
-}: {
-  rows: SpecRow[];
-  className?: string;
-  dense?: boolean;
-}) {
+export function SpecList({ rows, className, dense = false }: { rows: SpecRow[]; className?: string; dense?: boolean }) {
   return (
     <dl className={cn("divide-y divide-line border-y border-line", className)}>
       {rows.map((row, i) => {
@@ -29,10 +21,7 @@ export function SpecList({
         return (
           <div
             key={isFact ? row : i}
-            className={cn(
-              "grid gap-1 sm:grid-cols-[minmax(10rem,1fr)_2fr] sm:gap-6",
-              dense ? "py-2.5" : "py-4",
-            )}
+            className={cn("grid gap-1 sm:grid-cols-[minmax(10rem,1fr)_2fr] sm:gap-6", dense ? "py-2.5" : "py-4")}
           >
             <dt className="type-kicker self-center text-ink-3">{label}</dt>
             <dd className="type-body tabular text-ink">{value}</dd>

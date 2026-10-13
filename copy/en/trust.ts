@@ -20,10 +20,22 @@ export const TRUST = {
     kicker: "Our approach",
     title: "Four commitments.",
     items: [
-      { title: "Your data stays in the valley", body: "Workload data is stored and processed in our Kathmandu Valley datacentre, and is not replicated outside Nepal." },
-      { title: "Isolation you can point to", body: "MIG slices are isolated in the GPU itself; reserved GPUs run only your organisation's work." },
-      { title: "We look only when you ask", body: "Our staff look at the contents of your workloads only when you ask us to for support, or when the law requires it." },
-      { title: "We tell you within 72 hours", body: "If an incident affects your data, we tell you within 72 hours of confirming it: what happened, what was involved and what we are doing." },
+      {
+        title: "Your data stays in the valley",
+        body: "Workload data is stored and processed in our Kathmandu Valley datacentre, and is not replicated outside Nepal.",
+      },
+      {
+        title: "Isolation you can point to",
+        body: "MIG slices are isolated in the GPU itself; reserved GPUs run only your organisation's work.",
+      },
+      {
+        title: "We look only when you ask",
+        body: "Our staff look at the contents of your workloads only when you ask us to for support, or when the law requires it.",
+      },
+      {
+        title: "We tell you within 72 hours",
+        body: "If an incident affects your data, we tell you within 72 hours of confirming it: what happened, what was involved and what we are doing.",
+      },
     ],
   },
   compliance: {
@@ -41,9 +53,20 @@ export const TRUST = {
     kicker: "Data handling",
     title: "What we keep, and where.",
     rows: [
-      { label: "Account data", value: "Names, work emails, billing contacts and payment references. Kept in Nepal while the account is open, and afterwards as long as Nepali law requires." },
-      { label: "Workload data", value: "Datasets, models, checkpoints, prompts, outputs and logs. Stored and processed in the Kathmandu Valley; deleted when you ask or when your account closes, as set out in your agreement." },
-      { label: "Training on your data", value: "Never. We do not sell data, and we do not use customer workloads or prompts to train anything." },
+      {
+        label: "Account data",
+        value:
+          "Names, work emails, billing contacts and payment references. Kept in Nepal while the account is open, and afterwards as long as Nepali law requires.",
+      },
+      {
+        label: "Workload data",
+        value:
+          "Datasets, models, checkpoints, prompts, outputs and logs. Stored and processed in the Kathmandu Valley; deleted when you ask or when your account closes, as set out in your agreement.",
+      },
+      {
+        label: "Training on your data",
+        value: "Never. We do not sell data, and we do not use customer workloads or prompts to train anything.",
+      },
     ],
   },
   subprocessors: {

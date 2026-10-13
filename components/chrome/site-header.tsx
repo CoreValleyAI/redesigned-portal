@@ -229,9 +229,7 @@ function DesktopNav({
         if (e.key === "ArrowDown") {
           e.preventDefault();
           if (panel !== id) onToggle(id);
-          requestAnimationFrame(() =>
-            document.querySelector<HTMLAnchorElement>(`#nav-panel-${id} a`)?.focus(),
-          );
+          requestAnimationFrame(() => document.querySelector<HTMLAnchorElement>(`#nav-panel-${id} a`)?.focus());
         }
       }}
     >
@@ -256,9 +254,14 @@ function DesktopNav({
 
   return (
     <nav aria-label="Main" className="ml-4 hidden xl:block">
-      <div ref={navRef} className="relative flex items-center" onPointerLeave={hide} onBlur={(e) => {
-        if (!e.currentTarget.contains(e.relatedTarget as Node)) hide();
-      }}>
+      <div
+        ref={navRef}
+        className="relative flex items-center"
+        onPointerLeave={hide}
+        onBlur={(e) => {
+          if (!e.currentTarget.contains(e.relatedTarget as Node)) hide();
+        }}
+      >
         <span
           ref={pillRef}
           aria-hidden="true"
@@ -396,8 +399,7 @@ function MobileMenu({ pathname }: { pathname: string }) {
     if (!open) ref.current?.close();
   }, [open]);
 
-  const row =
-    "flex min-h-14 items-center justify-between border-b border-line py-3 type-title-3 font-medium text-ink";
+  const row = "flex min-h-14 items-center justify-between border-b border-line py-3 type-title-3 font-medium text-ink";
 
   return (
     <>
@@ -409,7 +411,15 @@ function MobileMenu({ pathname }: { pathname: string }) {
         aria-expanded={open}
         className="grid size-10 place-items-center rounded-full text-ink transition-[background-color,transform] duration-[var(--dur-spring-snappy)] ease-spring hover:bg-bg-sunken active:scale-[0.94] xl:hidden"
       >
-        <svg viewBox="0 0 20 20" className="size-5" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round">
+        <svg
+          viewBox="0 0 20 20"
+          className="size-5"
+          aria-hidden="true"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.6"
+          strokeLinecap="round"
+        >
           <path d="M3 7h14M3 13h14" />
         </svg>
       </button>
@@ -429,7 +439,12 @@ function MobileMenu({ pathname }: { pathname: string }) {
       >
         <div className="flex h-full flex-col">
           <div className="container-page flex h-[var(--header-h)] shrink-0 items-center justify-between">
-            <AppLink href="/" onClick={hide} aria-label="CoreValley — home" className="flex items-center gap-2.5 rounded-chip p-1">
+            <AppLink
+              href="/"
+              onClick={hide}
+              aria-label="CoreValley — home"
+              className="flex items-center gap-2.5 rounded-chip p-1"
+            >
               <Brandmark className="w-8" />
               <Wordmark className="w-[6.75rem] text-ink" />
             </AppLink>
@@ -439,7 +454,15 @@ function MobileMenu({ pathname }: { pathname: string }) {
               aria-label={UI.menu.close}
               className="grid size-10 place-items-center rounded-full transition-colors hover:bg-bg-sunken"
             >
-              <svg viewBox="0 0 20 20" className="size-5" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round">
+              <svg
+                viewBox="0 0 20 20"
+                className="size-5"
+                aria-hidden="true"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.6"
+                strokeLinecap="round"
+              >
                 <path d="m5 5 10 10M15 5 5 15" />
               </svg>
             </button>

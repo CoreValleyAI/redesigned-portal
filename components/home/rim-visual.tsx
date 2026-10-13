@@ -70,7 +70,12 @@ export function RimVisual({ className }: { className?: string }) {
       {CITIES.map((c) => (
         <g key={c.name}>
           <circle cx={c.x} cy={c.y} r="3" className="fill-ink" />
-          <text x={c.anchor === "end" ? c.x - 8 : c.x + 8} y={c.y + 4} textAnchor={c.anchor} className="fill-ink-3 text-[12px]">
+          <text
+            x={c.anchor === "end" ? c.x - 8 : c.x + 8}
+            y={c.y + 4}
+            textAnchor={c.anchor}
+            className="fill-ink-3 text-[12px]"
+          >
             {c.name}
           </text>
         </g>
@@ -80,7 +85,12 @@ export function RimVisual({ className }: { className?: string }) {
       {data.map(([x, y], i) => (
         <circle key={i} cx={x} cy={y} r="2.6" className="fill-hydro" />
       ))}
-      <text x="336" y="302" textAnchor="middle" className="fill-hydro-ink font-mono text-[11px] tracking-[0.14em] uppercase">
+      <text
+        x="336"
+        y="302"
+        textAnchor="middle"
+        className="fill-hydro-ink font-mono text-[11px] tracking-[0.14em] uppercase"
+      >
         Your data
       </text>
     </svg>

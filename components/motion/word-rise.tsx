@@ -26,7 +26,10 @@ export function WordRise({
 }) {
   const words = text.split(" ");
   return (
-    <span className={cn("rise", className)} style={delay ? ({ "--rise-delay": `${delay}ms` } as React.CSSProperties) : undefined}>
+    <span
+      className={cn("rise", className)}
+      style={delay ? ({ "--rise-delay": `${delay}ms` } as React.CSSProperties) : undefined}
+    >
       {words.map((w, i) => (
         <Fragment key={i}>
           <span className="rise__w">

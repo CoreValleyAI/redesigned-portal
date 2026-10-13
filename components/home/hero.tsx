@@ -33,8 +33,7 @@ export function Hero() {
 
         <h1 id="hero-title" className="type-display-1 mt-7 max-w-[13ch] md:mt-9 md:max-w-none">
           <WordRise text={h.title.line1} delay={120} />
-          <br className="hidden sm:block" />{" "}
-          <WordRise text={h.title.line2} start={3} delay={120} />{" "}
+          <br className="hidden sm:block" /> <WordRise text={h.title.line2} start={3} delay={120} />{" "}
           <span className="rise__w rise__w--open">
             <span className="rise__t online" style={{ "--i": 4, "--rise-delay": "120ms" } as React.CSSProperties}>
               {h.title.lit}

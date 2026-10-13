@@ -104,7 +104,13 @@ export const FOOTER = {
 export const UI = {
   skip: "Skip to content",
   menu: { open: "Open menu", close: "Close menu" },
-  theme: { label: "Theme", light: "Light", dark: "Dark", toLight: "Switch to light theme", toDark: "Switch to dark theme" },
+  theme: {
+    label: "Theme",
+    light: "Light",
+    dark: "Dark",
+    toLight: "Switch to light theme",
+    toDark: "Switch to dark theme",
+  },
   motion: { label: "Reduce motion", on: "On", off: "Off" },
   engineer: { label: "Engineer mode" },
   external: "opens another site",

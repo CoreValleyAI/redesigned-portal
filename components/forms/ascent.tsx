@@ -124,7 +124,11 @@ function Field({
         </p>
       )}
       {error && (
-        <p id={`${id}-error`} className="type-caption text-danger" style={{ animation: "cv-shake 280ms var(--ease-out)" }}>
+        <p
+          id={`${id}-error`}
+          className="type-caption text-danger"
+          style={{ animation: "cv-shake 280ms var(--ease-out)" }}
+        >
           {error}
         </p>
       )}
@@ -156,7 +160,10 @@ function Chip({
       )}
     >
       <input type={type} name={name} checked={checked} onChange={onChange} className="sr-only" />
-      <span aria-hidden="true" className={cn("size-1.5 rounded-full transition-colors", checked ? "bg-hydro" : "bg-line-strong")} />
+      <span
+        aria-hidden="true"
+        className={cn("size-1.5 rounded-full transition-colors", checked ? "bg-hydro" : "bg-line-strong")}
+      />
       {children}
     </label>
   );
@@ -208,7 +215,8 @@ export function Ascent() {
     if (product && PRODUCTS.some((p) => p.slug === product)) next = { ...next, product: product as ProductSlug };
     if (count > 0 && count <= 56) next = { ...next, count };
     if (duration && (CONTACT.durations as readonly string[]).includes(duration)) next = { ...next, duration };
-    if (topic === "security" && !next.details) next = { ...next, details: "We'd like to talk about security and data residency for a review." };
+    if (topic === "security" && !next.details)
+      next = { ...next, details: "We'd like to talk about security and data residency for a review." };
     if (topic === "use-case" && !next.details) next = { ...next, details: "We have a use case we'd like to discuss." };
     hydrated.current = true;
     setDraft(next);
@@ -246,11 +254,13 @@ export function Ascent() {
     const e: Record<string, string> = {};
     if (s === "route" && !draft.route) e.route = "Choose one to continue.";
     if (s === "run" && !draft.workload.length) e.workload = "Pick at least one — or “Something else”.";
-    if (s === "message" && draft.message.trim().length < 10) e.message = "A sentence or two, please — at least 10 characters.";
+    if (s === "message" && draft.message.trim().length < 10)
+      e.message = "A sentence or two, please — at least 10 characters.";
     if (s === "you") {
       if (!draft.name.trim()) e.name = "Your name, so we know who to reply to.";
       if (!emailOk(draft.email)) e.email = "An email address like name@company.com.";
-      if ((draft.route === "workloads" || draft.route === "partner") && !draft.org.trim()) e.org = "Your organisation, or “Independent”.";
+      if ((draft.route === "workloads" || draft.route === "partner") && !draft.org.trim())
+        e.org = "Your organisation, or “Independent”.";
     }
     return e;
   };
@@ -324,7 +334,10 @@ export function Ascent() {
   /* ── Sent ── */
   if (status === "sent") {
     return (
-      <div className="rounded-panel border border-line bg-bg-raised p-7 md:p-10" style={{ animation: "cv-rise-in 600ms var(--ease-expo) both" }}>
+      <div
+        className="rounded-panel border border-line bg-bg-raised p-7 md:p-10"
+        style={{ animation: "cv-rise-in 600ms var(--ease-expo) both" }}
+      >
         <div className="flex flex-col gap-6">
           <DotGlyph name="contact" className="size-12" on />
           <h2 ref={headingRef} tabIndex={-1} className="type-title-1 outline-none">
@@ -339,7 +352,9 @@ export function Ascent() {
           <ol className="flex flex-col gap-3 border-t border-line pt-6">
             {CONTACT.done.next.map((s, i) => (
               <li key={s} className="type-body flex gap-4 text-ink-2">
-                <span className="type-kicker mt-1 text-hydro-ink light:text-hydro">{String(i + 1).padStart(2, "0")}</span>
+                <span className="type-kicker mt-1 text-hydro-ink light:text-hydro">
+                  {String(i + 1).padStart(2, "0")}
+                </span>
                 {s}
               </li>
             ))}
@@ -367,7 +382,9 @@ export function Ascent() {
                   done ? "bg-hydro" : here ? "bg-ink" : "bg-line",
                 )}
               />
-              <span className={cn("type-kicker hidden lg:inline", here ? "text-ink" : done ? "text-ink-2" : "text-ink-4")}>
+              <span
+                className={cn("type-kicker hidden lg:inline", here ? "text-ink" : done ? "text-ink-2" : "text-ink-4")}
+              >
                 {STEP_LABEL[s]}
                 <span className="sr-only">{done ? " (done)" : here ? " (current)" : ""}</span>
               </span>
@@ -388,9 +405,20 @@ export function Ascent() {
       >
         <div className="relative overflow-hidden rounded-panel border border-line bg-bg-raised p-6 md:p-10">
           {/* Honeypot: invisible to people, tempting to bots. */}
-          <input type="text" name="_honey" tabIndex={-1} autoComplete="off" aria-hidden="true" className="absolute -left-[9999px] h-px w-px opacity-0" />
+          <input
+            type="text"
+            name="_honey"
+            tabIndex={-1}
+            autoComplete="off"
+            aria-hidden="true"
+            className="absolute -left-[9999px] h-px w-px opacity-0"
+          />
 
-          <fieldset key={step} className="flex min-w-0 flex-col gap-8" style={{ animation: `${dir === 1 ? "cv-step-up" : "cv-step-down"} 520ms var(--ease-expo) both` }}>
+          <fieldset
+            key={step}
+            className="flex min-w-0 flex-col gap-8"
+            style={{ animation: `${dir === 1 ? "cv-step-up" : "cv-step-down"} 520ms var(--ease-expo) both` }}
+          >
             <legend className="contents">
               <h2 ref={headingRef} tabIndex={-1} className="type-title-2 outline-none">
                 {question(step, draft.route)}
@@ -431,13 +459,22 @@ export function Ascent() {
               <div className="flex flex-col gap-6">
                 <div className="flex flex-wrap gap-2">
                   {CONTACT.workloads.map((w) => (
-                    <Chip key={w} name={`${uid}-workload`} checked={draft.workload.includes(w)} onChange={() => toggle("workload", w)}>
+                    <Chip
+                      key={w}
+                      name={`${uid}-workload`}
+                      checked={draft.workload.includes(w)}
+                      onChange={() => toggle("workload", w)}
+                    >
                       {w}
                     </Chip>
                   ))}
                 </div>
                 {errors.workload && <p className="type-caption text-danger">{errors.workload}</p>}
-                <Field id={`${uid}-details`} label="Anything else? (optional)" hint="The model, the data, the deadline — a sentence is plenty.">
+                <Field
+                  id={`${uid}-details`}
+                  label="Anything else? (optional)"
+                  hint="The model, the data, the deadline — a sentence is plenty."
+                >
                   <textarea
                     id={`${uid}-details`}
                     rows={3}
@@ -452,7 +489,12 @@ export function Ascent() {
             {step === "size" && (
               <div className="flex flex-col gap-7">
                 <Field id={`${uid}-product`} label="Product">
-                  <select id={`${uid}-product`} value={draft.product} onChange={(e) => set("product", e.target.value as Draft["product"])} className={inputClass}>
+                  <select
+                    id={`${uid}-product`}
+                    value={draft.product}
+                    onChange={(e) => set("product", e.target.value as Draft["product"])}
+                    className={inputClass}
+                  >
                     <option value="unsure">Not sure — help me choose</option>
                     {PRODUCTS.map((p) => (
                       <option key={p.slug} value={p.slug}>
@@ -462,7 +504,10 @@ export function Ascent() {
                   </select>
                 </Field>
                 <div className="grid gap-7 sm:grid-cols-2">
-                  <Field id={`${uid}-count`} label={draft.product === "mig-slicing" ? "How many slices" : "How many GPUs"}>
+                  <Field
+                    id={`${uid}-count`}
+                    label={draft.product === "mig-slicing" ? "How many slices" : "How many GPUs"}
+                  >
                     <input
                       id={`${uid}-count`}
                       type="number"
@@ -475,7 +520,12 @@ export function Ascent() {
                     />
                   </Field>
                   <Field id={`${uid}-duration`} label="For how long">
-                    <select id={`${uid}-duration`} value={draft.duration} onChange={(e) => set("duration", e.target.value)} className={inputClass}>
+                    <select
+                      id={`${uid}-duration`}
+                      value={draft.duration}
+                      onChange={(e) => set("duration", e.target.value)}
+                      className={inputClass}
+                    >
                       {CONTACT.durations.map((d) => (
                         <option key={d}>{d}</option>
                       ))}
@@ -483,18 +533,25 @@ export function Ascent() {
                   </Field>
                 </div>
                 <p className="type-small rounded-card bg-bg-sunken p-4 text-ink-2">
-                  {product ? product.name : "Not sure yet"} · {draft.count} × {draft.product === "mig-slicing" ? "slice" : "NVIDIA H200 NVL"} ·{" "}
-                  {draft.duration.toLowerCase()}
+                  {product ? product.name : "Not sure yet"} · {draft.count} ×{" "}
+                  {draft.product === "mig-slicing" ? "slice" : "NVIDIA H200 NVL"} · {draft.duration.toLowerCase()}
                 </p>
               </div>
             )}
 
             {step === "data" && (
               <div className="flex flex-col gap-4">
-                <p className="type-body text-ink-2">Tick any that apply — it helps us plan where and how your data is held.</p>
+                <p className="type-body text-ink-2">
+                  Tick any that apply — it helps us plan where and how your data is held.
+                </p>
                 <div className="flex flex-wrap gap-2">
                   {CONTACT.needs.map((n) => (
-                    <Chip key={n.id} name={`${uid}-needs`} checked={draft.needs.includes(n.label)} onChange={() => toggle("needs", n.label)}>
+                    <Chip
+                      key={n.id}
+                      name={`${uid}-needs`}
+                      checked={draft.needs.includes(n.label)}
+                      onChange={() => toggle("needs", n.label)}
+                    >
                       {n.label}
                     </Chip>
                   ))}
@@ -554,10 +611,23 @@ export function Ascent() {
                   />
                 </Field>
                 <Field id={`${uid}-phone`} label="Phone (optional)">
-                  <input id={`${uid}-phone`} type="tel" inputMode="tel" autoComplete="tel" value={draft.phone} onChange={(e) => set("phone", e.target.value)} className={inputClass} />
+                  <input
+                    id={`${uid}-phone`}
+                    type="tel"
+                    inputMode="tel"
+                    autoComplete="tel"
+                    value={draft.phone}
+                    onChange={(e) => set("phone", e.target.value)}
+                    className={inputClass}
+                  />
                 </Field>
                 <Field id={`${uid}-time`} label="Best time to reach you">
-                  <select id={`${uid}-time`} value={draft.time} onChange={(e) => set("time", e.target.value)} className={inputClass}>
+                  <select
+                    id={`${uid}-time`}
+                    value={draft.time}
+                    onChange={(e) => set("time", e.target.value)}
+                    className={inputClass}
+                  >
                     {CONTACT.times.map((t) => (
                       <option key={t}>{t}</option>
                     ))}
@@ -569,11 +639,20 @@ export function Ascent() {
             {step === "review" && (
               <dl className="flex flex-col">
                 {summary(draft, product?.name, route?.title).map(([k, v, to]) => (
-                  <div key={k} className="grid grid-cols-[1fr_auto] items-baseline gap-x-4 gap-y-1 border-t border-line py-4 sm:grid-cols-[9rem_1fr_auto]">
+                  <div
+                    key={k}
+                    className="grid grid-cols-[1fr_auto] items-baseline gap-x-4 gap-y-1 border-t border-line py-4 sm:grid-cols-[9rem_1fr_auto]"
+                  >
                     <dt className="type-kicker text-ink-3">{k}</dt>
-                    <dd className="type-body col-span-2 row-start-2 text-ink sm:col-span-1 sm:row-start-1">{v || "—"}</dd>
+                    <dd className="type-body col-span-2 row-start-2 text-ink sm:col-span-1 sm:row-start-1">
+                      {v || "—"}
+                    </dd>
                     <dd className="row-start-1 sm:col-start-3">
-                      <button type="button" onClick={() => go(to, -1)} className="type-small text-ink-2 underline decoration-line-strong underline-offset-4 hover:text-ink">
+                      <button
+                        type="button"
+                        onClick={() => go(to, -1)}
+                        className="type-small text-ink-2 underline decoration-line-strong underline-offset-4 hover:text-ink"
+                      >
                         Edit<span className="sr-only"> {k}</span>
                       </button>
                     </dd>
@@ -615,7 +694,9 @@ export function Ascent() {
 
 function question(step: Step, route: RouteId | null): string {
   if (step === "message") {
-    return route === "partner" || route === "press" || route === "support" ? CONTACT.steps.message[route] : CONTACT.steps.you;
+    return route === "partner" || route === "press" || route === "support"
+      ? CONTACT.steps.message[route]
+      : CONTACT.steps.you;
   }
   return CONTACT.steps[step];
 }
