@@ -7,14 +7,15 @@
  * uses a view transition where the browser has one, so cards glide into
  * their new places instead of jumping.
  */
-import { useRef, useState, type ReactNode } from "react";
+import { useRef, useState } from "react";
 import { flushSync } from "react-dom";
+import { ContourCover } from "@/components/art/contour-cover";
 import { AppLink } from "@/components/system/app-link";
 import { PRODUCTS, type ProductSlug } from "@/copy/en/products";
 import type { UseCase } from "@/copy/en/use-cases";
 import { cn } from "@/lib/cn";
 
-export function Atlas({ cases, covers }: { cases: UseCase[]; covers: Record<string, ReactNode> }) {
+export function Atlas({ cases }: { cases: UseCase[] }) {
   const [filter, setFilter] = useState<ProductSlug | "all">("all");
   const listRef = useRef<HTMLUListElement>(null);
   const shown = filter === "all" ? cases : cases.filter((c) => c.runsOn.includes(filter));
@@ -66,7 +67,7 @@ export function Atlas({ cases, covers }: { cases: UseCase[]; covers: Record<stri
         {shown.map((u) => (
           <li key={u.slug} id={u.slug} className="scroll-mt-[calc(var(--header-h)+1.5rem)]">
             <article className="flex h-full flex-col overflow-hidden rounded-panel border border-line bg-bg-raised target:border-hydro">
-              <div className="aspect-[16/9] w-full overflow-hidden">{covers[u.slug]}</div>
+              <ContourCover seed={u.slug} className="aspect-[16/9] w-full" />
               <div className="flex flex-1 flex-col gap-4 p-6 md:p-7">
                 <p className="type-kicker text-ink-3">{u.sector}</p>
                 <h3 className="type-title-3">{u.title}</h3>

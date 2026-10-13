@@ -51,18 +51,20 @@ export function RimVisual({ className }: { className?: string }) {
   });
   return (
     <svg viewBox="0 0 640 480" className={className} aria-hidden="true" focusable="false">
-      {rings.map((pts, i) =>
-        pts.map(([x, y], j) => (
-          <circle
-            key={`${i}-${j}`}
-            cx={x}
-            cy={y}
-            r={i === 5 ? 2.1 : 1.6}
-            className={i === 5 ? "fill-ink-2" : "fill-dot-off"}
-            opacity={i === 5 ? 0.9 : 0.55 + i * 0.07}
-          />
-        )),
-      )}
+      {/* Each ring is one dotted stroke: round caps on a zero-length dash
+          draw a dot every few units, so hundreds of dots cost one path. */}
+      {rings.map((pts, i) => (
+        <path
+          key={i}
+          d={`M${pts.map(([x, y]) => `${x.toFixed(1)} ${y.toFixed(1)}`).join("L")}Z`}
+          fill="none"
+          strokeLinecap="round"
+          strokeDasharray={i === 5 ? "0 7" : "0 8.5"}
+          strokeWidth={i === 5 ? 4.2 : 3.2}
+          className={i === 5 ? "stroke-ink-2" : "stroke-dot-off"}
+          opacity={i === 5 ? 0.9 : 0.55 + i * 0.07}
+        />
+      ))}
       {/* The rim, labelled. */}
       <text x="498" y="50" textAnchor="start" className="fill-ink-3 font-mono text-[11px] tracking-[0.14em] uppercase">
         The rim

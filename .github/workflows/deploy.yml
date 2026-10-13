@@ -63,6 +63,7 @@ jobs:
       build: ${{ steps.decide.outputs.build }}
       fingerprint: ${{ steps.decide.outputs.fingerprint }}
       content_sha: ${{ steps.decide.outputs.content_sha }}
+      revamp_sha: ${{ steps.decide.outputs.revamp_sha }}
       now: ${{ steps.decide.outputs.now }}
     steps:
       - name: Content access token
@@ -101,18 +102,21 @@ jobs:
             visible="$(jq -r --arg now "$now" '.schedule[] | select((.from == null or .from <= $now) and (.until == null or .until > $now)) | .path' content/manifest.json | sort | tr '\n' ' ')"
           fi
           preview_sha="$(git ls-remote "https://github.com/$REPO" refs/heads/preview | cut -f1)"
-          fingerprint="$(printf '%s|%s|%s|%s' "$MAIN_SHA" "$preview_sha" "$content_sha" "$visible" | sha256sum | cut -d' ' -f1)"
+          # The redesign in progress (empty when the branch does not exist).
+          revamp_sha="$(git ls-remote "https://github.com/$REPO" refs/heads/revamp | cut -f1)"
+          fingerprint="$(printf '%s|%s|%s|%s|%s' "$MAIN_SHA" "$preview_sha" "$revamp_sha" "$content_sha" "$visible" | sha256sum | cut -d' ' -f1)"
 
           build=true
           if [ "$EVENT" = "schedule" ]; then
             deployed="$(curl -fsS "${SITE_URL%/}/_build.json?t=$(date +%s)" | jq -r '.fingerprint // empty' || true)"
             if [ "$deployed" = "$fingerprint" ]; then build=false; fi
           fi
-          echo "event=$EVENT build=$build content=${content_sha:-none} preview=$preview_sha"
+          echo "event=$EVENT build=$build content=${content_sha:-none} preview=$preview_sha revamp=${revamp_sha:-none}"
           {
             echo "build=$build"
             echo "fingerprint=$fingerprint"
             echo "content_sha=$content_sha"
+            echo "revamp_sha=$revamp_sha"
             echo "now=$now"
           } >> "$GITHUB_OUTPUT"
 
@@ -273,6 +277,37 @@ jobs:
           mkdir -p ../out/preview
           cp -r out/. ../out/preview/
 
+      # The full redesign in progress, built from the `revamp` branch at the
+      # commit the gate pinned and served at /revamp/ (noindex) for review.
+      # It never blocks a deploy: if the branch is missing or its build
+      # fails, the rest of the site ships and /revamp/ is left out.
+      - name: Checkout revamp branch
+        id: revamp_checkout
+        if: needs.gate.outputs.revamp_sha != ''
+        continue-on-error: true
+        uses: actions/checkout@v5
+        with:
+          ref: ${{ needs.gate.outputs.revamp_sha }}
+          path: revamp-src
+
+      - name: Build /revamp
+        if: steps.revamp_checkout.outcome == 'success'
+        continue-on-error: true
+        working-directory: revamp-src
+        env:
+          NEXT_PUBLIC_BASE_PATH: ${{ steps.basepath.outputs.value }}/revamp
+          NEXT_PUBLIC_SITE_URL: ${{ steps.basepath.outputs.site_url }}/revamp
+          # noindex on every page: a staging copy must not compete in search.
+          NEXT_PUBLIC_NOINDEX: "1"
+          CONTENT_DIR: ${{ needs.gate.outputs.content_sha != '' && format('{0}/content-src', github.workspace) || '' }}
+          CONTENT_REQUIRED: ${{ needs.gate.outputs.content_sha != '' && '1' || '' }}
+          CONTENT_NOW: ${{ needs.gate.outputs.now }}
+        run: |
+          npm ci
+          npm run build
+          mkdir -p ../out/revamp
+          cp -r out/. ../out/revamp/
+
       # What this deploy contains. The next scheduled gate compares its
       # fingerprint with this file to decide whether to rebuild.
       - name: Write build record
@@ -282,9 +317,11 @@ jobs:
           NOW: ${{ needs.gate.outputs.now }}
           REASON: ${{ inputs.reason || github.event_name }}
         run: |
+          revamp=""
+          if [ -f out/revamp/index.html ]; then revamp="$(git -C revamp-src rev-parse HEAD)"; fi
           jq -n --arg fp "$FINGERPRINT" --arg content "$CONTENT_SHA" --arg main "$GITHUB_SHA" \
-            --arg preview "$(git -C preview-src rev-parse HEAD)" --arg at "$NOW" --arg reason "$REASON" \
-            '{fingerprint: $fp, content: $content, main: $main, preview: $preview, builtAt: $at, reason: $reason}' > out/_build.json
+            --arg preview "$(git -C preview-src rev-parse HEAD)" --arg revamp "$revamp" --arg at "$NOW" --arg reason "$REASON" \
+            '{fingerprint: $fp, content: $content, main: $main, preview: $preview, revamp: $revamp, builtAt: $at, reason: $reason}' > out/_build.json
           cat out/_build.json
 
       # Packaged here rather than with actions/upload-pages-artifact, whose v4

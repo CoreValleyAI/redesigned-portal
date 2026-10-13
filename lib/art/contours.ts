@@ -57,8 +57,8 @@ function makeNoise(rnd: () => number, size = 64) {
 }
 
 export function contourArt(seed: string, opts: { cols?: number; rows?: number; levels?: number } = {}): ContourArt {
-  const cols = opts.cols ?? 64;
-  const rows = opts.rows ?? 40;
+  const cols = opts.cols ?? 56;
+  const rows = opts.rows ?? 35;
   const nLevels = opts.levels ?? 11;
   const W = 640;
   const H = 400;
@@ -117,7 +117,7 @@ export function contourArt(seed: string, opts: { cols?: number; rows?: number; l
         const bottom: [number, number] = [x + sx * lerp(e, c), y + sy];
         const left: [number, number] = [x, y + sy * lerp(a, e)];
         const seg = (p: [number, number], q: [number, number]) => {
-          d += `M${p[0].toFixed(1)} ${p[1].toFixed(1)}L${q[0].toFixed(1)} ${q[1].toFixed(1)}`;
+          d += `M${Math.round(p[0])} ${Math.round(p[1])}L${Math.round(q[0])} ${Math.round(q[1])}`;
         };
         switch (code) {
           case 1:

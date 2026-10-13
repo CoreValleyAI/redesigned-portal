@@ -3,8 +3,9 @@
  * One per product and per main page; they double as menu micro-visuals.
  *
  * At rest the lit dots are ink and the rest are faint. Inside a `group`
- * that is hovered or focused, the lit dots switch on to hydro in a diagonal
- * wave — the card "comes online". Pure CSS; the SVG is decorative.
+ * that is hovered or focused, the lit dots switch on to hydro in a sweep from
+ * the corner — the card "comes online". The styling lives in app/styles/motion.css
+ * (.dg) so each of the dozens of glyphs on a page costs a few bytes per dot.
  */
 import { cn } from "@/lib/cn";
 
@@ -55,6 +56,29 @@ export type GlyphName = keyof typeof G;
 
 export const GLYPH_NAMES = Object.keys(G) as GlyphName[];
 
+/* Each glyph is three paths: the faint dots, the lit dots in ink, and the
+   lit dots again in hydro, clipped away until the card is hovered, focused
+   or switched on (app/styles/motion.css, .dg). A dot is a zero-length
+   segment with a round cap, so a whole glyph is a few hundred bytes. */
+const PATHS = new Map<GlyphName, { off: string; lit: string }>();
+function pathsOf(name: GlyphName) {
+  let p = PATHS.get(name);
+  if (!p) {
+    let off = "";
+    let lit = "";
+    G[name].forEach((row, y) => {
+      for (let x = 0; x < 7; x++) {
+        const seg = `M${x * 10 + 5} ${y * 10 + 5}h0`;
+        if (row[x] === "#") lit += seg;
+        else off += seg;
+      }
+    });
+    p = { off, lit };
+    PATHS.set(name, p);
+  }
+  return p;
+}
+
 export function DotGlyph({
   name,
   className,
@@ -65,33 +89,18 @@ export function DotGlyph({
   className?: string;
   on?: boolean;
 }) {
-  const rows = G[name];
-  const dots: { x: number; y: number; lit: boolean; d: number }[] = [];
-  rows.forEach((row, y) => {
-    for (let x = 0; x < 7; x++) dots.push({ x, y, lit: row[x] === "#", d: x + y });
-  });
+  const { off, lit } = pathsOf(name);
   return (
     <svg
       viewBox="0 0 70 70"
       aria-hidden="true"
       focusable="false"
-      className={cn("size-7 shrink-0", className)}
+      className={cn("dg size-7 shrink-0", className)}
       data-on={on || undefined}
     >
-      {dots.map(({ x, y, lit, d }) => (
-        <circle
-          key={`${x}-${y}`}
-          cx={x * 10 + 5}
-          cy={y * 10 + 5}
-          r={lit ? 3.6 : 2.2}
-          className={
-            lit
-              ? "fill-ink transition-[fill] duration-300 ease-out group-hover:fill-hydro group-focus-visible:fill-hydro in-data-on:fill-hydro"
-              : "fill-dot-off opacity-70"
-          }
-          style={lit ? { transitionDelay: `${d * 28}ms` } : undefined}
-        />
-      ))}
+      <path className="o" d={off} />
+      <path className="l" d={lit} />
+      <path className="h" d={lit} />
     </svg>
   );
 }

@@ -15,10 +15,6 @@ export const metadata = pageMetadata({
 });
 
 export default function UseCasesPage() {
-  const covers = Object.fromEntries(
-    NEPAL.map((u) => [u.slug, <ContourCover key={u.slug} seed={u.slug} className="h-full w-full" />]),
-  );
-
   return (
     <Page>
       <section className="relative overflow-clip pt-[calc(var(--header-h)+clamp(3rem,8vw,7rem))] pb-[clamp(3rem,7vw,6rem)]">
@@ -44,7 +40,7 @@ export default function UseCasesPage() {
 
       <section aria-label="Stories" className="pb-[var(--section-y)]">
         <div className="container-page">
-          <Atlas cases={NEPAL} covers={covers} />
+          <Atlas cases={NEPAL} />
           <p className="type-caption mt-8 text-ink-3">
             &ldquo;Built for&rdquo; describes who could build each one; it does not name customers or partners.
           </p>
