@@ -1,29 +1,24 @@
-import { ContourCover } from "@/components/art/contour-cover";
 import { Page } from "@/components/motion/page";
 import { Cta } from "@/components/system/cta";
 import { Kicker } from "@/components/system/kicker";
 import { SectionHead } from "@/components/system/section";
 import { Atlas } from "@/components/use-cases/atlas";
-import { INDIA, NEPAL } from "@/copy/en/use-cases";
+import { UseCaseCarousel } from "@/components/use-cases/carousel";
+import { findUseCase, HOME_STORIES, INDIA, NEPAL } from "@/copy/en/use-cases";
 import { pageMetadata } from "@/lib/seo";
 
 export const metadata = pageMetadata({
   title: "Use cases — AI work that belongs in Nepal",
   description:
-    "Language AI for 124 mother tongues, fraud detection, hydropower forecasting, Himalayan hazard science, healthcare triage, universities and more — what teams in Nepal can build on GPUs in the Kathmandu Valley.",
+    "Fraud, AML and KYC for banks and wallets, voice AI in Nepali, private language models, training on local data, universities, startups and IT exporters — what teams in Nepal can build on GPUs in the Kathmandu Valley.",
   path: "/use-cases",
 });
 
 export default function UseCasesPage() {
+  const featured = HOME_STORIES.map((slug) => findUseCase(slug)!);
   return (
     <Page>
-      <section className="relative overflow-clip pt-[calc(var(--header-h)+clamp(3rem,8vw,7rem))] pb-[clamp(3rem,7vw,6rem)]">
-        <div
-          aria-hidden="true"
-          className="absolute inset-y-0 right-0 -z-10 hidden w-1/2 opacity-70 [mask-image:linear-gradient(to_right,transparent,black_40%)] lg:block"
-        >
-          <ContourCover seed="use-cases-atlas" className="h-full w-full bg-transparent" />
-        </div>
+      <section className="relative overflow-clip pt-[calc(var(--header-h)+clamp(3rem,8vw,7rem))] pb-[clamp(2.5rem,5vw,4rem)]">
         <div className="container-page">
           <div className="flex max-w-[60rem] flex-col gap-6">
             <Kicker>Use cases</Kicker>
@@ -31,21 +26,34 @@ export default function UseCasesPage() {
               Work that belongs <span className="text-ink-3">in Nepal.</span>
             </h1>
             <p className="type-lead measure text-ink-2">
-              124 mother tongues, one valley. What teams in Nepal can build on GPUs close to home — each story grounded
-              in one number, with its source.
+              Banks scoring payments, call centres answering in Nepali, teams training on their own data, a class
+              sharing one GPU. What teams in Nepal can run on GPUs close to home — each story grounded in one number,
+              with its source.
             </p>
           </div>
         </div>
       </section>
 
+      <section aria-labelledby="featured-title" className="overflow-x-clip pb-[var(--section-y)]">
+        <h2 id="featured-title" className="sr-only">
+          Featured
+        </h2>
+        <UseCaseCarousel cases={featured} label="Featured use cases" size="lg" linkBase="" />
+      </section>
+
       <section aria-labelledby="stories-title" className="pb-[var(--section-y)]">
-        <div className="container-page">
-          <h2 id="stories-title" className="sr-only">
-            Stories
-          </h2>
+        <div className="container-page flex flex-col gap-10">
+          <SectionHead
+            id="stories-title"
+            kicker="Every story"
+            title="All the work."
+            continuation="Filter by what it runs on."
+            size="title-2"
+          />
           <Atlas cases={NEPAL} />
-          <p className="type-caption mt-8 text-ink-3">
-            &ldquo;Built for&rdquo; describes who could build each one; it does not name customers or partners.
+          <p className="type-caption text-ink-3">
+            &ldquo;Built for&rdquo; describes who could build each one; it does not name customers or partners. The
+            pictures are illustrations with sample data.
           </p>
         </div>
       </section>

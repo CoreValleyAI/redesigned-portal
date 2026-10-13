@@ -1,19 +1,20 @@
 "use client";
 
 /**
- * The use-case atlas (S16, first form): every story as a card with its own
- * contour print, filterable by the product it runs on. Each card is an
+ * The use-case atlas (S16): every story as a card with its picture of the
+ * work (components/use-cases/vignettes.tsx), filterable by the product it
+ * runs on. Each card is an
  * anchor (#slug) so the home page can link straight to a story. Filtering
  * uses a view transition where the browser has one, so cards glide into
  * their new places instead of jumping.
  */
 import { useRef, useState } from "react";
 import { flushSync } from "react-dom";
-import { ContourCover } from "@/components/art/contour-cover";
 import { AppLink } from "@/components/system/app-link";
 import { PRODUCTS, type ProductSlug } from "@/copy/en/products";
 import type { UseCase } from "@/copy/en/use-cases";
 import { cn } from "@/lib/cn";
+import { variantFor, Vignette } from "./vignettes";
 
 export function Atlas({ cases }: { cases: UseCase[] }) {
   const [filter, setFilter] = useState<ProductSlug | "all">("all");
@@ -67,7 +68,11 @@ export function Atlas({ cases }: { cases: UseCase[] }) {
         {shown.map((u) => (
           <li key={u.slug} id={u.slug} className="scroll-mt-[calc(var(--header-h)+1.5rem)]">
             <article className="flex h-full flex-col overflow-hidden rounded-panel border border-line bg-bg-raised target:border-hydro">
-              <ContourCover seed={u.slug} className="aspect-[16/9] w-full" />
+              <Vignette
+                art={u.art}
+                variant={variantFor(u.slug)}
+                className="aspect-[16/10] w-full border-b border-line"
+              />
               <div className="flex flex-1 flex-col gap-4 p-6 md:p-7">
                 <p className="type-kicker text-ink-3">{u.sector}</p>
                 <h3 className="type-title-3">{u.title}</h3>
@@ -107,7 +112,21 @@ export function Atlas({ cases }: { cases: UseCase[] }) {
                     <dt className="type-kicker text-ink-3">Built for</dt>
                     <dd className="type-small mt-1 text-ink-2">{u.who}</dd>
                   </div>
+                  <div>
+                    <dt className="type-kicker text-ink-3">Typical setup</dt>
+                    <dd className="type-small mt-1 text-ink-2">{u.setup}</dd>
+                  </div>
                 </dl>
+                <ul aria-label="Workloads" className="flex flex-wrap gap-1.5">
+                  {u.workloads.map((w) => (
+                    <li
+                      key={w}
+                      className="type-caption rounded-pill border border-line px-2.5 py-1 font-mono text-ink-3"
+                    >
+                      {w}
+                    </li>
+                  ))}
+                </ul>
                 <ul className="mt-auto flex flex-wrap gap-1.5 pt-2">
                   {u.runsOn.map((slug) => {
                     const p = PRODUCTS.find((x) => x.slug === slug)!;
