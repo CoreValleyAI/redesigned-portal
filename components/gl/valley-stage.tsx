@@ -1,7 +1,28 @@
+"use client";
+
 /**
- * Placeholder for the WebGL valley (S1). Replaced by the real stage in the
- * GL phase; the CSS poster in hero-valley.tsx stands in until then.
+ * The WebGL valley behind the home hero (S1). Mounted after first paint;
+ * the CSS poster in hero-valley.tsx shows until the first frame, then the
+ * poster's dot plane fades away (data-gl on the hero section). The pointer
+ * anywhere over the hero lights the valley; scrolling the hero away lowers
+ * the camera into it.
  */
+import { GLStage } from "@/components/gl/gl-stage";
+import { trackScroll } from "@/lib/motion/scroll";
+
 export function ValleyStage() {
-  return null;
+  return (
+    <GLStage
+      load={() => import("@/components/gl/scenes/valley").then((m) => m.createValleyScene)}
+      pointerTarget="hero"
+      progress={(set) => {
+        const hero = document.getElementById("hero");
+        return hero ? trackScroll(hero, "leave", set, 0.06) : () => {};
+      }}
+      onShown={(shown) => {
+        const hero = document.getElementById("hero");
+        if (hero) hero.dataset.gl = shown ? "on" : "off";
+      }}
+    />
+  );
 }

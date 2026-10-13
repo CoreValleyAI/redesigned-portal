@@ -15,7 +15,7 @@ export function HeroValley() {
       <div className="absolute inset-0 bg-[radial-gradient(120%_70%_at_50%_78%,color-mix(in_oklch,var(--hydro)_9%,var(--bg))_0%,var(--bg)_62%)] dark:bg-[radial-gradient(120%_70%_at_50%_78%,color-mix(in_oklch,var(--hydro)_13%,var(--bg))_0%,var(--bg)_60%)]" />
 
       {/* The dot plane, receding to the horizon. */}
-      <div className="absolute inset-x-[-40%] bottom-[-8%] h-[62%] [perspective:520px] [perspective-origin:50%_0%]">
+      <div className="absolute inset-x-[-40%] bottom-[-8%] h-[62%] transition-opacity duration-[1500ms] ease-out [perspective:520px] [perspective-origin:50%_0%] group-data-[gl=on]/hero:opacity-0">
         <div
           className="hero-plane absolute inset-0 origin-top [transform:rotateX(64deg)]"
           style={{
@@ -28,12 +28,12 @@ export function HeroValley() {
       </div>
 
       {/* The horizon line, faintly lit. */}
-      <div className="absolute inset-x-0 top-[38%] h-px bg-[linear-gradient(90deg,transparent,color-mix(in_oklch,var(--hydro)_45%,transparent)_50%,transparent)] opacity-60" />
+      <div className="absolute inset-x-0 top-[38%] h-px bg-[linear-gradient(90deg,transparent,color-mix(in_oklch,var(--hydro)_45%,transparent)_50%,transparent)] opacity-60 transition-opacity duration-[1500ms] group-data-[gl=on]/hero:opacity-0" />
 
       <ValleyStage />
 
       {/* Keep text legible over whatever is drawn behind it. */}
-      <div className="absolute inset-0 bg-[radial-gradient(60%_45%_at_50%_45%,var(--bg)_0%,transparent_100%)] opacity-70" />
+      <div className="absolute inset-0 bg-[radial-gradient(50%_32%_at_50%_42%,var(--bg)_0%,transparent_100%)] opacity-60" />
     </div>
   );
 }

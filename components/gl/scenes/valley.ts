@@ -1,0 +1,316 @@
+/**
+ * Valley Online (S1) — the Kathmandu Valley as a field of dots, switching on.
+ *
+ * Data: public/gl/valley.png (scripts/build-terrain.mjs) — height, rivers and
+ * the time at which power "arrives" at each place, upstream along the
+ * Bagmati from the valley's southern outlet and outward from the rivers.
+ *
+ * The picture is a night view from the southern rim. The hills are relief in
+ * quiet dots, lit from the north-west; the Himalaya stand pale on the
+ * horizon. Then power arrives: it runs up the rivers as a moving light and
+ * spreads across the valley floor, which comes on like the lights of a city —
+ * the valley coming online. The rivers beyond keep carrying light outward.
+ *
+ * Every dot is one vertex; the whole scene is one draw call. Height, relief
+ * shading, colour, the light-up fronts, the river shimmer and the pointer
+ * light are computed in the vertex shader. The pointer is a soft light in
+ * screen space that lifts and brightens the ground; on touch it follows a
+ * held finger. Scroll (the host's progress) lowers the camera into the valley.
+ */
+import { clamp01, compileProgram, lerp, loadDataTexture, lookAt, multiply, perspective, uniforms } from "@/lib/gl/core";
+import type { FrameInfo, Scene, SceneContext, SceneFactory } from "@/lib/gl/stage";
+import { asset } from "@/lib/links";
+
+const VS = /* glsl */ `#version 300 es
+precision highp float;
+layout(location = 0) in vec2 a_uv;
+layout(location = 1) in float a_seed;
+uniform sampler2D u_tex;
+uniform mat4 u_viewProj;
+uniform vec2 u_size;
+uniform float u_exag;
+uniform vec3 u_decode;      // hMin (km), hMax (km), gamma
+uniform float u_texel;
+uniform float u_time;
+uniform float u_power;      // the valley floor's light-up front (arrival units)
+uniform float u_reach;      // the rivers' light-up front
+uniform vec3 u_pointer;     // ndc x, ndc y, presence
+uniform float u_aspect;
+uniform float u_px;
+uniform float u_maxPx;
+uniform vec3 u_cOff;
+uniform vec3 u_cLit;
+uniform vec3 u_cSnow;
+uniform vec3 u_cRiver;
+uniform float u_dark;
+uniform vec2 u_city[3];      // Kathmandu, Lalitpur, Bhaktapur (uv)
+out vec3 v_color;
+out float v_alpha;
+
+float heightKm(vec2 uv) {
+  float hn = pow(texture(u_tex, uv).r, 1.0 / u_decode.z);
+  return mix(u_decode.x, u_decode.y, hn);
+}
+
+void main() {
+  vec4 t = texture(u_tex, a_uv);
+  float hn = pow(t.r, 1.0 / u_decode.z);
+  float km = mix(u_decode.x, u_decode.y, hn);
+  float river = t.g;
+  float arrive = t.b * t.b;
+
+  // Relief: a light from the north-west, from the height gradient.
+  float hx = heightKm(a_uv + vec2(u_texel, 0.0)) - heightKm(a_uv - vec2(u_texel, 0.0));
+  float hz = heightKm(a_uv + vec2(0.0, u_texel)) - heightKm(a_uv - vec2(0.0, u_texel));
+  vec3 n = normalize(vec3(-hx * 6.0, 1.0, -hz * 6.0));
+  float shade = clamp(dot(n, normalize(vec3(-0.6, 0.75, -0.55))), 0.0, 1.0);
+
+  vec3 pos = vec3((a_uv.x - 0.5) * u_size.x, km * 0.1 * u_exag, (a_uv.y - 0.5) * u_size.y);
+
+  // The valley floor: low land close (in arrival) to the Bagmati's outlet.
+  float basin = smoothstep(1.58, 1.44, km) * smoothstep(1.16, 1.24, km) * smoothstep(0.255, 0.235, arrive);
+  // The three cities glow brightest.
+  float city = 0.0;
+  for (int i = 0; i < 3; i++) {
+    vec2 d = (a_uv - u_city[i]) * vec2(1.0, 1.04);
+    city = max(city, exp(-dot(d, d) / (i == 0 ? 0.00022 : 0.00011)));
+  }
+  float lit = smoothstep(arrive - 0.012, arrive, u_power) * basin;
+  float front = exp(-pow((u_power - arrive) * 70.0, 2.0)) * basin * step(u_power, 0.3);
+  float riverOn = smoothstep(arrive - 0.01, arrive, u_reach) * smoothstep(0.12, 0.45, river);
+  float riverFront = exp(-pow((u_reach - arrive) * 60.0, 2.0)) * smoothstep(0.12, 0.45, river);
+
+  // City-light twinkle and water flowing downhill (toward the outlet).
+  float twinkle = 0.72 + 0.28 * sin(u_time * (0.6 + a_seed * 1.7) + a_seed * 40.0);
+  float flow = 0.5 + 0.5 * sin(arrive * 260.0 - u_time * 3.0);
+
+  // The pointer: a soft light in screen space.
+  vec4 clip = u_viewProj * vec4(pos, 1.0);
+  vec2 ndc = clip.xy / clip.w;
+  vec2 dv = (ndc - u_pointer.xy) * vec2(u_aspect, 1.0);
+  float glow = u_pointer.z * exp(-dot(dv, dv) / 0.03);
+  pos.y += glow * 0.06;
+  clip = u_viewProj * vec4(pos, 1.0);
+
+  float depth = max(clip.w, 0.05);
+  float snow = smoothstep(4.4, 5.6, km);
+  float size = u_px / depth * (0.8 + 0.5 * shade + (0.35 + 0.6 * city) * lit * twinkle + 0.7 * riverOn + 1.2 * glow + 1.4 * (front + riverFront) + 0.6 * snow);
+  gl_PointSize = clamp(size, 1.0, u_maxPx);
+
+  vec3 relief = u_cOff * (0.45 + 1.0 * shade);
+  vec3 col = mix(relief, u_cSnow * (0.55 + 0.6 * shade), snow);
+  col = mix(col, u_cLit * twinkle * (0.75 + 0.6 * city), lit);
+  col += vec3(0.25) * city * lit * twinkle;
+  col = mix(col, u_cRiver * (0.6 + 0.5 * flow), riverOn * (1.0 - lit * 0.5));
+  col += (u_cLit + 0.35) * (front + riverFront);
+  col += mix(u_cLit, vec3(1.0), 0.4) * glow * 0.9;
+  v_color = col;
+
+  // Fade the field's edges and the near and far distance.
+  float edge = smoothstep(0.0, 0.12, a_uv.x) * smoothstep(1.0, 0.88, a_uv.x)
+             * smoothstep(0.0, 0.04, a_uv.y) * smoothstep(1.0, 0.9, a_uv.y);
+  float far = mix(0.45 + 0.45 * snow, 1.0, smoothstep(13.0, 5.0, depth));
+  float near = smoothstep(0.6, 1.6, depth);
+  float a = (0.42 + 0.45 * shade) + lit * 0.6 + riverOn * 0.5 + snow * 0.5 + glow * 0.6 + front + riverFront;
+  v_alpha = clamp(a, 0.0, 1.0) * edge * far * near * mix(0.85, 1.0, u_dark);
+  gl_Position = clip;
+}`;
+
+const FS = /* glsl */ `#version 300 es
+precision mediump float;
+in vec3 v_color;
+in float v_alpha;
+out vec4 o;
+void main() {
+  vec2 c = gl_PointCoord - 0.5;
+  float d = length(c) * 2.0;
+  float a = smoothstep(1.0, 0.5, d) * v_alpha;
+  if (a < 0.004) discard;
+  o = vec4(v_color * a, a);
+}`;
+
+const GRID: Record<1 | 2 | 3, [number, number]> = {
+  1: [150, 156],
+  2: [230, 240],
+  3: [320, 334],
+};
+
+interface Meta {
+  size: number;
+  km: [number, number];
+  height: { min: number; max: number; gamma: number };
+  places: Record<"Kathmandu" | "Lalitpur" | "Bhaktapur", [number, number]>;
+}
+
+type V3 = [number, number, number];
+
+/** Camera keys at scroll progress 0 and 1. World units are 10 km. */
+const CAM: { from: { eye: V3; target: V3; fov: number }; to: { eye: V3; target: V3; fov: number } } = {
+  from: { eye: [-0.45, 2.6, 7.2], target: [-0.35, 1.04, 2.41], fov: 30 },
+  to: { eye: [-0.62, 1.15, 4.4], target: [-0.6, 0.42, 1.4], fov: 40 },
+};
+
+/** ?cam=ex,ey,ez,tx,ty,tz,fov overrides the opening shot (for art direction). */
+function camOverride(): typeof CAM.from | null {
+  const q = new URLSearchParams(window.location.search).get("cam");
+  if (!q) return null;
+  const v = q.split(",").map(Number);
+  if (v.length < 7 || v.some((x) => Number.isNaN(x))) return null;
+  return { eye: [v[0]!, v[1]!, v[2]!], target: [v[3]!, v[4]!, v[5]!], fov: v[6]! };
+}
+
+export const createValleyScene: SceneFactory = async (ctx: SceneContext): Promise<Scene> => {
+  const { gl, tier } = ctx;
+  const [meta, tex] = await Promise.all([
+    fetch(asset("/gl/valley.json")).then((r) => r.json() as Promise<Meta>),
+    loadDataTexture(gl, asset("/gl/valley.png")),
+  ]);
+  const override = camOverride();
+  const from = override ?? CAM.from;
+
+  const program = compileProgram(gl, VS, FS);
+  const u = uniforms(gl, program);
+
+  // The grid of dots, with a seed each.
+  const [cols, rows] = GRID[tier];
+  const count = cols * rows;
+  const data = new Float32Array(count * 3);
+  let k = 0;
+  const hash = (a: number, b: number) => {
+    const s = Math.sin(a * 127.1 + b * 311.7) * 43758.5453;
+    return s - Math.floor(s);
+  };
+  for (let r = 0; r < rows; r++) {
+    for (let c = 0; c < cols; c++) {
+      // A touch of jitter breaks the moiré of a perfect grid in perspective.
+      data[k++] = (c + 0.5 + (hash(c, r) - 0.5) * 0.5) / cols;
+      data[k++] = (r + 0.5 + (hash(r, c) - 0.5) * 0.5) / rows;
+      data[k++] = hash(c * 3.1, r * 1.7);
+    }
+  }
+  const vao = gl.createVertexArray()!;
+  gl.bindVertexArray(vao);
+  const buf = gl.createBuffer()!;
+  gl.bindBuffer(gl.ARRAY_BUFFER, buf);
+  gl.bufferData(gl.ARRAY_BUFFER, data, gl.STATIC_DRAW);
+  gl.enableVertexAttribArray(0);
+  gl.vertexAttribPointer(0, 2, gl.FLOAT, false, 12, 0);
+  gl.enableVertexAttribArray(1);
+  gl.vertexAttribPointer(1, 1, gl.FLOAT, false, 12, 8);
+  gl.bindVertexArray(null);
+
+  let width = 1;
+  let height = 1;
+  let dpr = 1;
+  let startedAt = -1;
+  let camX = 0;
+  let frames = 0;
+  let lastProgress = -1;
+  const POWER_END = 0.3;
+  const REACH_END = 1.0;
+
+  return {
+    resize(w, h, d) {
+      width = w;
+      height = h;
+      dpr = d;
+      gl.viewport(0, 0, w, h);
+    },
+
+    frame(f: FrameInfo) {
+      const aspect = width / height;
+      const reduced = f.reduced;
+      if (startedAt < 0) startedAt = f.time;
+      const t = f.time - startedAt;
+
+      // Power reaches the valley floor in ~4 s; the rivers carry it on for
+      // another ~8 s. Instantly, when motion is reduced.
+      const power = reduced ? POWER_END : POWER_END * easeOut(clamp01((t - 0.4) / 4.2));
+      const reach = reduced ? REACH_END : 0.1 + (REACH_END - 0.1) * easeOut(clamp01((t - 0.2) / 11));
+      const animating = !reduced && (power < POWER_END || reach < REACH_END);
+
+      // Once lit, with nobody touching it and no scrolling, half the frame
+      // rate is plenty for flowing water (and kinder to batteries).
+      frames++;
+      const idle = !animating && f.pointer.presence < 0.01 && Math.abs(f.progress - lastProgress) < 1e-4;
+      lastProgress = f.progress;
+      if (idle && !reduced && frames % 2 === 1) return true;
+
+      // Camera: scroll lowers it into the valley; the pointer leans it a little.
+      const p = reduced ? 0 : f.progress;
+      const e = p * p * (3 - 2 * p);
+      camX = lerp(camX, f.pointer.presence * f.pointer.x, 0.06);
+      const portrait = aspect < 0.85;
+      const eye: V3 = [
+        lerp(from.eye[0], CAM.to.eye[0], e) + camX * 0.16,
+        lerp(from.eye[1], CAM.to.eye[1], e) + (portrait ? 0.35 : 0),
+        lerp(from.eye[2], CAM.to.eye[2], e) + (portrait ? 1.1 : 0),
+      ];
+      const target: V3 = [
+        lerp(from.target[0], CAM.to.target[0], e),
+        lerp(from.target[1], CAM.to.target[1], e),
+        lerp(from.target[2], CAM.to.target[2], e),
+      ];
+      const fovDeg = lerp(from.fov, CAM.to.fov, e) * (portrait ? 1.45 : 1);
+      const viewProj = multiply(perspective((fovDeg * Math.PI) / 180, aspect, 0.05, 40), lookAt(eye, target));
+
+      // Palette: additive light on Night Valley, ink dots on Glacier.
+      const pal = f.palette;
+      const dark = pal.theme === "dark";
+      const off = dark ? pal.dotOff.map((v) => v * 1.5) : pal.ink3.map((v) => v * 1.1);
+      const snow = dark ? [0.82, 0.88, 0.95] : pal.glow2.map((v) => v * 0.55);
+      const lit = [...pal.hydro];
+      const river = dark ? pal.glow2.map((v, i) => v * 0.55 + pal.hydro[i]! * 0.45) : pal.hydro.map((v) => v * 0.85);
+
+      gl.clearColor(0, 0, 0, 0);
+      gl.clear(gl.COLOR_BUFFER_BIT);
+      gl.enable(gl.BLEND);
+      if (dark) gl.blendFunc(gl.ONE, gl.ONE);
+      else gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
+
+      gl.useProgram(program);
+      gl.activeTexture(gl.TEXTURE0);
+      gl.bindTexture(gl.TEXTURE_2D, tex.texture);
+      gl.uniform1i(u("u_tex"), 0);
+      gl.uniformMatrix4fv(u("u_viewProj"), false, viewProj);
+      gl.uniform2f(u("u_size"), meta.km[0] / 10, meta.km[1] / 10);
+      gl.uniform1f(u("u_exag"), 2.4);
+      gl.uniform3f(u("u_decode"), meta.height.min / 1000, meta.height.max / 1000, meta.height.gamma);
+      gl.uniform1f(u("u_texel"), 1.5 / meta.size);
+      gl.uniform1f(u("u_time"), f.time);
+      gl.uniform1f(u("u_power"), power);
+      gl.uniform1f(u("u_reach"), reach);
+      gl.uniform3f(u("u_pointer"), f.pointer.x, f.pointer.y, f.pointer.presence);
+      gl.uniform1f(u("u_aspect"), aspect);
+      const density = Math.sqrt((GRID[3][0] * GRID[3][1]) / count);
+      const scale = Math.max(0.8, Math.min(1.3, width / dpr / 1440));
+      gl.uniform1f(u("u_px"), 11 * dpr * density * scale);
+      gl.uniform1f(u("u_maxPx"), 6.5 * dpr);
+      gl.uniform3fv(u("u_cOff"), off);
+      gl.uniform3fv(u("u_cLit"), lit);
+      gl.uniform3fv(u("u_cSnow"), snow);
+      gl.uniform3fv(u("u_cRiver"), river);
+      gl.uniform1f(u("u_dark"), dark ? 1 : 0);
+      gl.uniform2fv(u("u_city[0]"), [...meta.places.Kathmandu, ...meta.places.Lalitpur, ...meta.places.Bhaktapur]);
+
+      gl.bindVertexArray(vao);
+      gl.drawArrays(gl.POINTS, 0, count);
+      gl.bindVertexArray(null);
+
+      // Still (reduced motion): one frame, then sleep until something
+      // changes. Otherwise the water keeps flowing.
+      return animating || !reduced;
+    },
+
+    dispose() {
+      gl.deleteBuffer(buf);
+      gl.deleteVertexArray(vao);
+      gl.deleteTexture(tex.texture);
+      gl.deleteProgram(program);
+    },
+  };
+};
+
+function easeOut(t: number) {
+  return 1 - Math.pow(1 - t, 2.4);
+}

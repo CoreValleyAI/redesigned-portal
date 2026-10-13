@@ -56,3 +56,4 @@ skills-lock.json
 # prepare-content copies out of it. Never committed here.
 /content/
 /public/media/
+/.cache/

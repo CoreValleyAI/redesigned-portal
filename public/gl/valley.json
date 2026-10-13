@@ -1,0 +1,37 @@
+{
+  "source": "Terrain Tiles (Mapzen terrarium, from SRTM and other public data) via AWS Open Data",
+  "bbox": {
+    "west": 84.86,
+    "east": 85.94,
+    "south": 27.42,
+    "north": 28.42
+  },
+  "size": 512,
+  "km": [
+    106.23,
+    110.57
+  ],
+  "height": {
+    "min": 328,
+    "max": 7913,
+    "gamma": 0.55
+  },
+  "outlet": [
+    0.4004,
+    0.8145
+  ],
+  "places": {
+    "Kathmandu": [
+      0.4296,
+      0.7028
+    ],
+    "Lalitpur": [
+      0.4265,
+      0.7556
+    ],
+    "Bhaktapur": [
+      0.5276,
+      0.749
+    ]
+  }
+}

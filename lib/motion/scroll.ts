@@ -32,8 +32,10 @@ interface Tracked {
  *             top (how far it has risen into view).
  *  "center"   from its top crossing the middle of the viewport to its
  *             bottom crossing it (a reading line through a long list).
+ *  "leave"    from its top at the viewport top to its bottom there (how far
+ *             a full-screen section has scrolled away).
  */
-export type Mode = "pin" | "through" | "enter" | "center";
+export type Mode = "pin" | "through" | "enter" | "center" | "leave";
 
 const tracked = new Set<Tracked>();
 let vh = 0;
@@ -57,6 +59,7 @@ function targetOf(t: Tracked, y: number) {
   if (t.mode === "pin") p = (y - t.top) / Math.max(1, t.height - vh);
   else if (t.mode === "through") p = (y + vh - t.top) / (t.height + vh);
   else if (t.mode === "center") p = (y + vh / 2 - t.top) / Math.max(1, t.height);
+  else if (t.mode === "leave") p = (y - t.top) / Math.max(1, t.height);
   else p = (y + vh - t.top) / vh;
   return Math.min(1, Math.max(0, p));
 }

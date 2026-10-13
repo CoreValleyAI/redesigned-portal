@@ -14,7 +14,7 @@ import { HeroValley } from "./hero-valley";
 export function Hero() {
   const h = HOME.hero;
   return (
-    <section aria-labelledby="hero-title" className="relative isolate overflow-clip">
+    <section id="hero" aria-labelledby="hero-title" className="group/hero relative isolate overflow-clip">
       <HeroValley />
 
       <div className="container-page relative flex min-h-[100svh] flex-col items-center justify-center pt-[calc(var(--header-h)+2rem)] pb-[clamp(9rem,22vh,14rem)] text-center">
