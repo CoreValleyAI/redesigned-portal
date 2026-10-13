@@ -1,7 +1,6 @@
 /**
- * Home chapters 6–9: the products, three stories, the partners line and the
- * first step of the climb. Each is a teaser that hands off to the page that
- * owns the subject.
+ * Home chapters: the products and the first step of the climb. Each is a
+ * teaser that hands off to the page that owns the subject.
  */
 import { ViewTransition } from "react";
 import { AppLink } from "@/components/system/app-link";
@@ -9,10 +8,8 @@ import { Arrow } from "@/components/system/button";
 import { DotGlyph, type GlyphName } from "@/components/system/dot-glyph";
 import { SectionHead } from "@/components/system/section";
 import { TextLink } from "@/components/system/text-link";
-import { ContourCover } from "@/components/art/contour-cover";
 import { HOME } from "@/copy/en/home";
 import { PRODUCTS } from "@/copy/en/products";
-import { findUseCase, HOME_STORIES } from "@/copy/en/use-cases";
 import { cn } from "@/lib/cn";
 
 export function ProductsSection() {
@@ -55,63 +52,6 @@ export function ProductsSection() {
           </li>
         ))}
       </ul>
-    </section>
-  );
-}
-
-export function StoriesSection() {
-  const s = HOME.stories;
-  const stories = HOME_STORIES.map((slug) => findUseCase(slug)!);
-  return (
-    <section aria-labelledby="stories-title" className="section-y">
-      <div className="container-page">
-        <div className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
-          <SectionHead id="stories-title" kicker={s.kicker} title={s.title} continuation={s.continuation} />
-          <TextLink href={s.link.href} arrow className="shrink-0">
-            {s.link.label}
-          </TextLink>
-        </div>
-
-        <ul className="mt-12 grid gap-5 md:grid-cols-3">
-          {stories.map((u, i) => (
-            <li key={u.slug} data-reveal style={{ "--i": i } as React.CSSProperties}>
-              <AppLink
-                href={`/use-cases#${u.slug}`}
-                className="group flex h-full flex-col overflow-hidden rounded-panel border border-line bg-bg-raised transition-[border-color,transform] duration-[var(--dur-spring-smooth)] ease-spring hover:-translate-y-0.5 hover:border-line-strong"
-              >
-                <ContourCover seed={u.slug} className="aspect-[16/10] w-full" />
-                <span className="flex flex-1 flex-col gap-3 p-6">
-                  <span className="type-kicker text-ink-3">{u.sector}</span>
-                  <span className="type-title-3 text-ink">{u.title}</span>
-                  <span className="type-small text-ink-2">{u.fact}</span>
-                </span>
-              </AppLink>
-            </li>
-          ))}
-        </ul>
-      </div>
-    </section>
-  );
-}
-
-export function PartnersLine() {
-  const p = HOME.partners;
-  return (
-    <section aria-label="Partners" className="py-[calc(var(--section-y)*0.5)]">
-      <div className="container-page flex flex-col items-center gap-6 text-center">
-        <p className="flex items-center gap-6 md:gap-10">
-          {p.names.map((n, i) => (
-            <span key={n} className="flex items-center gap-6 md:gap-10">
-              {i > 0 && <span aria-hidden="true" className="h-6 w-px bg-line-strong/60" />}
-              <span className="type-title-2 tracking-[-0.02em] text-ink">{n}</span>
-            </span>
-          ))}
-        </p>
-        <p className="type-body max-w-[36rem] text-ink-2">{p.line}</p>
-        <TextLink href={p.link.href} arrow>
-          {p.link.label}
-        </TextLink>
-      </div>
     </section>
   );
 }

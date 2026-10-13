@@ -1,22 +1,14 @@
 /**
- * Home — "The valley is coming online." (docs/revamp/08 §1)
+ * Home — "The valley is coming online." (docs/revamp/08 §1, revised 13 Oct
+ * 2026: no storytelling; each chapter states what is there, technically,
+ * in the "One GPU, seven ways" pattern — a short headline, a grey
+ * continuation, a lead, one clean picture).
  *
- * Teasers only: every chapter states one thing and points to the page that
- * owns the subject. Numbers are fact ids (lib/facts.ts) so the page can
- * footnote them; copy budget per chapter: headline ≤ 8 words, lead ≤ 30.
+ * Teasers only: every chapter points to the page that owns the subject.
+ * Numbers are fact ids (lib/facts.ts) so the page can footnote them; copy
+ * budget per chapter: headline ≤ 8 words, lead ≤ 30.
  */
-import type { GlyphName } from "@/components/system/dot-glyph";
 import type { FactId } from "@/lib/facts";
-
-export interface Beat {
-  id: string;
-  glyph: GlyphName;
-  /** One or two words for the rail. */
-  label: string;
-  title: string;
-  body: string;
-  metric: { fact: FactId; label: string } | null;
-}
 
 export const HOME = {
   meta: {
@@ -31,7 +23,7 @@ export const HOME = {
     title: { line1: "The valley is", line2: "coming", lit: "online." },
     lead: "Nepal's GPU cloud: NVIDIA H200 NVL GPUs on HPE Private Cloud AI, in a datacentre in the Kathmandu Valley.",
     primary: { href: "/contact", label: "Request access" },
-    secondary: { href: "#journey", label: "See how it works" },
+    secondary: { href: "#stack", label: "See how it works" },
     facts: [
       { value: "8 × H200 NVL", label: "in the first cluster" },
       { value: "Per second", label: "billed in rupees" },
@@ -39,53 +31,18 @@ export const HOME = {
     ],
   },
 
-  journey: {
-    kicker: "From snow to token",
-    title: "Power that starts as snow.",
-    continuation: "Answers made in the valley.",
-    beats: [
-      {
-        id: "snow",
-        glyph: "snow",
-        label: "Snow",
-        title: "It starts as snow.",
-        body: "Himalayan snow and glaciers feed the rivers that run through Nepal, all year round.",
-        metric: null,
-      },
-      {
-        id: "water",
-        glyph: "water",
-        label: "Rivers",
-        title: "The rivers turn turbines.",
-        body: "Nepal's electricity grid is built on hydropower.",
-        metric: { fact: "place.gridHydro", label: "of installed capacity is hydro" },
-      },
-      {
-        id: "valley",
-        glyph: "infrastructure",
-        label: "The valley",
-        title: "The valley draws the power.",
-        body: "Our datacentre in the Kathmandu Valley runs on Nepal's hydropower.",
-        metric: { fact: "place.uptime", label: "facility uptime commitment" },
-      },
-      {
-        id: "machine",
-        glyph: "hardware",
-        label: "The machine",
-        title: "The power becomes compute.",
-        body: "Eight NVIDIA H200 NVL GPUs on HPE Private Cloud AI.",
-        metric: { fact: "gpu.memory", label: "of memory on every GPU" },
-      },
-      {
-        id: "token",
-        glyph: "token",
-        label: "Your answer",
-        title: "The compute becomes an answer.",
-        body: "Your request is answered by GPUs inside the valley, close to you.",
-        metric: { fact: "place.latency", label: "round trip inside the valley" },
-      },
-    ] satisfies Beat[] as Beat[],
-    link: { href: "/infrastructure", label: "The whole journey" },
+  builtOn: {
+    label: "Built on",
+    line: "NVIDIA H200 NVL GPUs · HPE Private Cloud AI · NVIDIA AI Enterprise",
+  },
+
+  gpu: {
+    kicker: "The GPU",
+    title: "141 GB on every GPU.",
+    continuation: "HBM3e at 4.8 TB/s.",
+    lead: "Room for large models and long contexts on a single card, Tensor Cores for FP8, BF16 and TF32, and NVIDIA AI Enterprise on top.",
+    specs: ["gpu.memory", "gpu.bandwidth", "gpu.fp8", "gpu.power"] satisfies FactId[] as FactId[],
+    link: { href: "/hardware#gpu", label: "The full specification" },
   },
 
   slice: {
@@ -97,6 +54,14 @@ export const HOME = {
     link: { href: "/products/mig-slicing", label: "MIG slicing" },
   },
 
+  cases: {
+    kicker: "Use cases",
+    title: "Built for the work.",
+    continuation: "Banks, products, classrooms.",
+    lead: "Fraud scoring, voice in Nepali, private language models, training on local data — the work that should run close to home.",
+    link: { href: "/use-cases", label: "All use cases" },
+  },
+
   rim: {
     kicker: "Residency",
     title: "Your data stays in the valley.",
@@ -105,12 +70,24 @@ export const HOME = {
     link: { href: "/infrastructure#residency", label: "What stays, what leaves" },
   },
 
-  meter: {
+  billing: {
     kicker: "Billing",
     title: "Pay for the seconds you use.",
     continuation: "Not the hour you started in.",
-    lead: "GPU time is billed per second, with a 60-second minimum, in Nepalese rupees. Stop the job and the meter stops with it.",
-    link: { href: "/pricing", label: "How billing works" },
+  },
+
+  tools: {
+    kicker: "Your workspace",
+    title: "The tools you already use.",
+    continuation: "Ready on day one.",
+    lead: "HPE AI Essentials puts notebooks, pipelines, training, serving and data tools in one workspace, with NVIDIA AI Enterprise underneath.",
+    link: { href: "/platform", label: "The platform" },
+    groups: [
+      { name: "Notebooks and pipelines", tools: ["JupyterLab", "Kubeflow", "Kale", "Airflow"] },
+      { name: "Training at scale", tools: ["Ray", "Spark", "Katib", "TensorFlow"] },
+      { name: "Serving and tracking", tools: ["KServe", "MLflow", "NVIDIA NIM"] },
+      { name: "Data and analytics", tools: ["Presto", "Superset"] },
+    ],
   },
 
   products: {
@@ -118,19 +95,6 @@ export const HOME = {
     title: "Six ways to run.",
     continuation: "One cluster in the valley.",
     link: { href: "/products", label: "Compare all six" },
-  },
-
-  stories: {
-    kicker: "Built for Nepal",
-    title: "Work that belongs here.",
-    continuation: "Close to the people it serves.",
-    link: { href: "/use-cases", label: "All use cases" },
-  },
-
-  partners: {
-    line: "Built on HPE Private Cloud AI, co-engineered by HPE and NVIDIA.",
-    names: ["HPE", "NVIDIA"],
-    link: { href: "/hardware", label: "The machines" },
   },
 
   climb: {

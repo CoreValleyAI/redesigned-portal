@@ -162,7 +162,7 @@ export function ClusterDiagram({
           y1={y}
           x2="480"
           y2={y}
-          className="stroke-hydro"
+          className="cluster-flow stroke-hydro"
           strokeWidth="2"
           strokeDasharray="2 6"
           strokeLinecap="round"
@@ -173,7 +173,7 @@ export function ClusterDiagram({
         y1="138"
         x2="580"
         y2="138"
-        className="stroke-hydro"
+        className="cluster-flow stroke-hydro"
         strokeWidth="2"
         strokeDasharray="2 6"
         strokeLinecap="round"

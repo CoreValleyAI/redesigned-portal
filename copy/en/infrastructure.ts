@@ -1,16 +1,17 @@
 /**
- * /infrastructure — the place (docs/revamp/08 §5): power, the datacentre,
- * the network and residency. Owner-confirmed claims only, each with its
- * disclaimer (04 §2a): hydropower, 99.99 % facility uptime, < 5 ms inside
- * the valley. No address, coordinates or security arrangements.
+ * /infrastructure — the place and the stack (docs/revamp/08 §5, revised 13
+ * Oct 2026: the facts first, the way infrastructure is presented — a key
+ * facts row, every layer named, the cluster in numbers — and no
+ * storytelling). Owner-confirmed claims only, each with its disclaimer
+ * (04 §2a): hydropower, 99.99 % facility uptime, < 5 ms inside the valley.
+ * No address, coordinates, topology or security arrangements.
  */
-import type { Beat } from "./home";
 
 export const INFRASTRUCTURE = {
   meta: {
     title: "Infrastructure — a hydro-powered datacentre in the Kathmandu Valley",
     description:
-      "Where CoreValley runs: a datacentre in the Kathmandu Valley on Nepal's hydropower, with a 99.99 % facility uptime commitment, 400 Gb/s networking and data kept in Nepal.",
+      "Where CoreValley runs: eight NVIDIA H200 NVL GPUs on HPE Private Cloud AI, in a datacentre in the Kathmandu Valley on Nepal's hydropower, with a 99.99 % facility uptime commitment and 400 Gb/s networking.",
   },
   hero: {
     kicker: "Infrastructure",
@@ -19,76 +20,16 @@ export const INFRASTRUCTURE = {
     portrait:
       "The Kathmandu Valley, contoured every 100 m from public elevation data (SRTM). The highlighted line is 1,400 m, near the edge of the valley floor.",
   },
-  journey: {
-    kicker: "From snow to token",
-    title: "The whole chain,",
-    continuation: "one link at a time.",
-    beats: [
-      {
-        id: "snow",
-        glyph: "snow",
-        label: "Snow",
-        title: "It starts as snow.",
-        body: "Himalayan snow and glaciers feed Nepal's rivers through the year.",
-        metric: null,
-      },
-      {
-        id: "rivers",
-        glyph: "water",
-        label: "Rivers",
-        title: "Rivers fall to the plains.",
-        body: "They drop steeply from the mountains — the head of water that makes hydropower work.",
-        metric: null,
-      },
-      {
-        id: "turbines",
-        glyph: "water",
-        label: "Turbines",
-        title: "Turbines turn.",
-        body: "Nepal's electricity grid is built on hydropower.",
-        metric: { fact: "place.gridHydro", label: "of installed capacity is hydro" },
-      },
-      {
-        id: "grid",
-        glyph: "infrastructure",
-        label: "The grid",
-        title: "The grid carries it to the valley.",
-        body: "Power reaches the Kathmandu Valley over the national grid.",
-        metric: null,
-      },
-      {
-        id: "datacentre",
-        glyph: "infrastructure",
-        label: "The datacentre",
-        title: "Our datacentre draws the power.",
-        body: "In the Kathmandu Valley, running on Nepal's hydropower.",
-        metric: { fact: "place.uptime", label: "facility uptime commitment" },
-      },
-      {
-        id: "machine",
-        glyph: "hardware",
-        label: "The machine",
-        title: "The power becomes compute.",
-        body: "NVIDIA H200 NVL GPUs on HPE Private Cloud AI, each with",
-        metric: { fact: "gpu.memory", label: "of HBM3e memory" },
-      },
-      {
-        id: "network",
-        glyph: "platform",
-        label: "The network",
-        title: "Data moves inside the cluster.",
-        body: "NVIDIA Spectrum Ethernet connects the cluster.",
-        metric: { fact: "cluster.network", label: "NVIDIA Spectrum Ethernet" },
-      },
-      {
-        id: "answer",
-        glyph: "token",
-        label: "Your answer",
-        title: "The answer stays close.",
-        body: "Requests from inside the valley make the round trip in",
-        metric: { fact: "place.latency", label: "inside the Kathmandu Valley" },
-      },
-    ] satisfies Beat[] as Beat[],
+  facts: {
+    kicker: "Key facts",
+    title: "At a glance.",
+  },
+  cluster: {
+    kicker: "The first cluster",
+    title: "Two servers, eight GPUs.",
+    continuation: "One fabric, one store.",
+    lead: "Everything in the first cluster, totalled. Per-card and per-server figures are on the hardware page.",
+    link: { href: "/hardware", label: "The machines in detail" },
   },
   power: {
     kicker: "Power",
@@ -97,7 +38,7 @@ export const INFRASTRUCTURE = {
     lead: "Our datacentre runs on Nepal's grid, which is built on hydropower. We say it plainly and footnote it, rather than dressing it up as a certificate we don't hold.",
   },
   datacentre: {
-    kicker: "The datacentre",
+    kicker: "The facility",
     title: "What we can say about the building.",
     lead: "Enough to judge it, nothing that helps anyone break in.",
     points: [
@@ -146,6 +87,10 @@ export const INFRASTRUCTURE = {
     {
       q: "Where exactly is the data?",
       a: "In our datacentre in the Kathmandu Valley. We don't publish the address; regulated customers get a written description of their data flows during onboarding.",
+    },
+    {
+      q: "What runs there?",
+      a: "Two HPE ProLiant DL380a Gen12 servers with four NVIDIA H200 NVL GPUs each, 400 Gb/s NVIDIA Spectrum Ethernet and 62 TB of usable all-flash storage (HPE Alletra Storage MP X10000), on HPE Private Cloud AI.",
     },
     {
       q: "How fast is the network?",

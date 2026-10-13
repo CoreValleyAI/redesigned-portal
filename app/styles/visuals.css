@@ -1,0 +1,192 @@
+/* ══════════════════════════════════════════════════════════════════════════
+   Visuals: the stack drawing (components/infrastructure/layer-stack.tsx).
+   ══════════════════════════════════════════════════════════════════════════ */
+
+/* ── The stack ───────────────────────────────────────────────────────────
+   --open (0–1) comes from the scroll; each plate's --lift is how far it
+   rises when the stack is fully open. The active plate lifts a little more,
+   on its own property, so the scroll never waits for a transition. */
+.stack-figure {
+  --open: 0;
+}
+.stack-plate {
+  transform: translateY(calc(var(--open) * var(--lift) * -1));
+  translate: 0 0;
+  transition: translate var(--dur-spring-smooth) var(--ease-spring);
+}
+.stack-plate.is-active {
+  translate: 0 -10px;
+}
+.stack-plate__top {
+  fill: var(--bg-raised);
+  stroke: var(--line-strong);
+  stroke-width: 1;
+  stroke-linejoin: round;
+  transition:
+    fill var(--dur-short) var(--ease-out),
+    stroke var(--dur-short) var(--ease-out);
+}
+.stack-plate__side {
+  fill: color-mix(in oklch, var(--line) 55%, var(--bg-raised));
+  stroke: var(--line-strong);
+  stroke-width: 1;
+  stroke-linejoin: round;
+  transition: stroke var(--dur-short) var(--ease-out);
+}
+.stack-plate__side--r {
+  fill: var(--line);
+}
+:root[data-theme="dark"] .stack-plate__side {
+  fill: color-mix(in oklch, var(--bg-raised) 70%, black);
+}
+:root[data-theme="dark"] .stack-plate__side--r {
+  fill: color-mix(in oklch, var(--bg-raised) 55%, black);
+}
+.stack-plate.is-active .stack-plate__top {
+  fill: color-mix(in oklch, var(--hydro) 11%, var(--bg-raised));
+  stroke: var(--hydro);
+}
+.stack-plate.is-active .stack-plate__side {
+  stroke: var(--hydro);
+}
+.stack-plate__num {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  fill: var(--ink-3);
+  transition: fill var(--dur-short) var(--ease-out);
+}
+.stack-plate.is-active .stack-plate__num {
+  fill: var(--hydro);
+}
+
+.stack-dot {
+  fill: var(--ink-4);
+}
+.stack-feed {
+  stroke: var(--hydro);
+  stroke-width: 2.4;
+  stroke-linecap: round;
+  stroke-dasharray: 0.14 0.1;
+  animation: cv-stack-flow 1.6s linear infinite;
+}
+.stack-lane {
+  stroke: var(--ink-3);
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  stroke-dasharray: 5 7;
+  animation: cv-stack-lane 0.9s linear infinite;
+}
+.stack-lane:nth-child(2) {
+  stroke: var(--hydro);
+  animation-duration: 0.7s;
+}
+.stack-block,
+.stack-server {
+  fill: var(--bg-sunken);
+  stroke: var(--line-strong);
+  stroke-width: 1;
+  stroke-linejoin: round;
+}
+.stack-gpu {
+  fill: var(--hydro);
+  animation: cv-stack-gpu 2.6s ease-in-out infinite;
+}
+.stack-gpu:nth-child(3) {
+  animation-delay: -0.6s;
+}
+.stack-gpu:nth-child(4) {
+  animation-delay: -1.2s;
+}
+.stack-gpu:nth-child(5) {
+  animation-delay: -1.8s;
+}
+.stack-tile {
+  fill: var(--bg-sunken);
+  stroke: var(--line);
+  stroke-width: 1;
+}
+.stack-tile.is-on {
+  fill: color-mix(in oklch, var(--hydro) 18%, var(--bg-raised));
+  stroke: var(--hydro);
+}
+.stack-code {
+  stroke: var(--ink-4);
+  stroke-width: 3.2;
+  stroke-linecap: round;
+}
+.stack-code.is-on {
+  stroke: var(--hydro);
+}
+.stack-cursor {
+  fill: var(--hydro);
+  animation: cv-stack-blink 1.1s steps(2, jump-none) infinite;
+}
+/* A packet of light rising through the open stack. */
+.stack-packet {
+  fill: var(--hydro);
+  filter: drop-shadow(0 0 6px var(--hydro));
+  animation: cv-stack-packet 3.4s cubic-bezier(0.55, 0, 0.45, 1) infinite;
+}
+
+@keyframes cv-stack-flow {
+  to {
+    stroke-dashoffset: -0.24;
+  }
+}
+@keyframes cv-stack-lane {
+  to {
+    stroke-dashoffset: -12;
+  }
+}
+@keyframes cv-stack-gpu {
+  0%,
+  100% {
+    opacity: 0.45;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+@keyframes cv-stack-blink {
+  50% {
+    opacity: 0;
+  }
+}
+@keyframes cv-stack-packet {
+  0% {
+    transform: translateY(0);
+    opacity: 0;
+  }
+  12% {
+    opacity: 1;
+  }
+  88% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(calc(-120px - var(--open) * 224px));
+    opacity: 0;
+  }
+}
+
+:root[data-motion="reduce"] :is(.stack-feed, .stack-lane, .stack-gpu, .stack-cursor, .stack-packet) {
+  animation: none;
+}
+:root[data-motion="reduce"] .stack-packet {
+  display: none;
+}
+
+/* ── The cluster drawing (components/hardware/visuals.tsx) ── */
+.cluster-flow {
+  animation: cv-cluster-flow 0.8s linear infinite;
+}
+@keyframes cv-cluster-flow {
+  to {
+    stroke-dashoffset: -8;
+  }
+}
+:root[data-motion="reduce"] .cluster-flow {
+  animation: none;
+}

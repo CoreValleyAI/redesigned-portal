@@ -1,14 +1,20 @@
+import { BuiltOn } from "@/components/home/built-on";
+import { GpuSection } from "@/components/home/gpu-section";
 import { Hero } from "@/components/home/hero";
-import { Journey } from "@/components/home/journey";
-import { MeterTeaser } from "@/components/home/meter-teaser";
 import { RimVisual } from "@/components/home/rim-visual";
-import { Climb, PartnersLine, ProductsSection, StoriesSection } from "@/components/home/sections";
+import { Climb, ProductsSection } from "@/components/home/sections";
 import { SliceTeaser } from "@/components/home/slice-teaser";
+import { ToolsSection } from "@/components/home/tools-section";
+import { LayerStack } from "@/components/infrastructure/layer-stack";
 import { Page } from "@/components/motion/page";
+import { BillingBox } from "@/components/pricing/billing-box";
 import { createNotes, NoteList, NoteRef } from "@/components/system/fact";
 import { SectionHead } from "@/components/system/section";
 import { TextLink } from "@/components/system/text-link";
+import { UseCaseCarousel } from "@/components/use-cases/carousel";
 import { HOME } from "@/copy/en/home";
+import { STACK } from "@/copy/en/stack";
+import { findUseCase, HOME_STORIES } from "@/copy/en/use-cases";
 import { v } from "@/lib/facts";
 import { pageMetadata } from "@/lib/seo";
 
@@ -21,10 +27,8 @@ export const metadata = pageMetadata({
 
 export default function HomePage() {
   const notes = createNotes([
-    "place.gridHydro",
     "place.uptime",
-    "gpu.memory",
-    "place.latency",
+    "gpu.fp8",
     {
       key: "readtime",
       text: `${v("gpu.memory")} of memory read at ${v("gpu.bandwidth")} takes about 29 ms; a blink lasts roughly 100–400 ms.`,
@@ -32,22 +36,37 @@ export default function HomePage() {
       asOf: "2026-10-13",
     },
     "gpu.migSize",
+    "place.latency",
   ]);
   const s = HOME.slice;
+  const stories = HOME_STORIES.map((slug) => findUseCase(slug)!);
 
   return (
     <Page>
       <Hero />
-      <Journey
-        kicker={HOME.journey.kicker}
-        title={HOME.journey.title}
-        continuation={HOME.journey.continuation}
-        beats={HOME.journey.beats}
-        link={HOME.journey.link}
-        notes={notes}
-      />
+      <BuiltOn />
 
-      {/* 3 — One GPU, seven ways (S7 teaser) */}
+      {/* Every layer, named. */}
+      <section id="stack" aria-labelledby="stack-title" className="section-y scroll-mt-[var(--header-h)]">
+        <div className="container-page flex flex-col gap-14">
+          <SectionHead
+            id="stack-title"
+            kicker={STACK.kicker}
+            title={STACK.title}
+            continuation={STACK.continuation}
+            lead={STACK.lead}
+          />
+          <LayerStack compact />
+          <p className="type-caption text-ink-3">
+            The facility&apos;s uptime is its own commitment for power, cooling and the building
+            <NoteRef notes={notes} id="place.uptime" />.
+          </p>
+        </div>
+      </section>
+
+      <GpuSection notes={notes} />
+
+      {/* One GPU, seven ways (S7 teaser) */}
       <section aria-labelledby="slice-title" className="section-y">
         <div className="container-page grid items-center gap-16 lg:grid-cols-2">
           <div className="flex flex-col gap-8">
@@ -68,11 +87,30 @@ export default function HomePage() {
               </TextLink>
             </div>
           </div>
-          <SliceTeaser memory={v("gpu.memory")} slice={v("gpu.migSize")} />
+          <div data-parallax="0.05">
+            <SliceTeaser memory={v("gpu.memory")} slice={v("gpu.migSize")} />
+          </div>
         </div>
       </section>
 
-      {/* 4 — Your data stays in the valley (S9 teaser) */}
+      {/* Use cases, in the owner's order. */}
+      <section aria-labelledby="cases-title" className="section-y overflow-x-clip">
+        <div className="container-page mb-12 flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
+          <SectionHead
+            id="cases-title"
+            kicker={HOME.cases.kicker}
+            title={HOME.cases.title}
+            continuation={HOME.cases.continuation}
+            lead={HOME.cases.lead}
+          />
+          <TextLink href={HOME.cases.link.href} arrow className="shrink-0">
+            {HOME.cases.link.label}
+          </TextLink>
+        </div>
+        <UseCaseCarousel cases={stories} label="Use cases" />
+      </section>
+
+      {/* Your data stays in the valley (S9 teaser) */}
       <section aria-labelledby="rim-title" className="section-y">
         <div className="container-page grid items-center gap-12 lg:grid-cols-[1fr_1.1fr]">
           <div className="flex flex-col gap-8 lg:order-2">
@@ -89,32 +127,27 @@ export default function HomePage() {
               </TextLink>
             </div>
           </div>
-          <RimVisual className="w-full lg:order-1" />
-        </div>
-      </section>
-
-      {/* 5 — Pay for the seconds you use (S8 teaser) */}
-      <section aria-labelledby="meter-title" className="section-y">
-        <div className="container-page flex flex-col gap-12">
-          <div className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
-            <SectionHead
-              id="meter-title"
-              kicker={HOME.meter.kicker}
-              title={HOME.meter.title}
-              continuation={HOME.meter.continuation}
-              lead={HOME.meter.lead}
-            />
-            <TextLink href={HOME.meter.link.href} arrow className="shrink-0">
-              {HOME.meter.link.label}
-            </TextLink>
+          <div className="lg:order-1" data-parallax="0.06">
+            <RimVisual className="w-full" />
           </div>
-          <MeterTeaser />
         </div>
       </section>
 
+      {/* Billing at a glance. */}
+      <section aria-labelledby="billing-title" className="section-y">
+        <div className="container-page flex flex-col gap-12">
+          <SectionHead
+            id="billing-title"
+            kicker={HOME.billing.kicker}
+            title={HOME.billing.title}
+            continuation={HOME.billing.continuation}
+          />
+          <BillingBox more />
+        </div>
+      </section>
+
+      <ToolsSection />
       <ProductsSection />
-      <StoriesSection />
-      <PartnersLine />
       <Climb />
       <NoteList notes={notes} />
     </Page>
