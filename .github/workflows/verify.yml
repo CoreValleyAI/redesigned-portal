@@ -23,6 +23,10 @@ env:
   # Same value the deploy resolves for this project site.
   NEXT_PUBLIC_BASE_PATH: /${{ github.event.repository.name }}
   NEXT_PUBLIC_SITE_URL: https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}
+  # The facts guard (lib/facts.ts) refuses numbers still marked to verify.
+  # Strict on pull requests into main, where it decides what goes live;
+  # relaxed on branch pushes, which are staging work (like /revamp/).
+  NEXT_PUBLIC_FACTS_STRICT: ${{ github.event_name == 'pull_request' && '1' || '0' }}
 
 jobs:
   verify:
