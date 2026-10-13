@@ -56,7 +56,7 @@ export const TRUST = {
       {
         label: "Account data",
         value:
-          "Names, work emails, billing contacts and payment references. Kept in Nepal while the account is open, and afterwards as long as Nepali law requires.",
+          "Names, work emails, billing contacts and payment references. Kept in our own records while the account is open, and afterwards as long as Nepali law requires. Signing in goes through HPE GreenLake cloud and email through Zoho Mail, both outside Nepal.",
       },
       {
         label: "Workload data",
