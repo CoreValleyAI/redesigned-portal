@@ -5,6 +5,7 @@ import { Cta } from "@/components/system/cta";
 import { Faq } from "@/components/system/faq";
 import { Kicker } from "@/components/system/kicker";
 import { SectionHead } from "@/components/system/section";
+import { SpecReadout } from "@/components/system/spec-readout";
 import { Status } from "@/components/system/status";
 import { PRICING } from "@/copy/en/pricing";
 import { pageMetadata } from "@/lib/seo";
@@ -97,6 +98,18 @@ export default function PricingPage() {
             ))}
           </ul>
           <p className="type-small text-ink-3">{p.pay.note}</p>
+          <SpecReadout
+            title="Billing"
+            className="max-w-[44rem]"
+            ids={[
+              "billing.unit",
+              "billing.minimum",
+              "billing.currency",
+              "billing.rails",
+              "billing.rates",
+              "contact.reply",
+            ]}
+          />
         </div>
       </section>
 

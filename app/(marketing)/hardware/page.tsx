@@ -1,4 +1,5 @@
 import { EngineerSwitch } from "@/components/chrome/pref-switch";
+import { SpecReadout } from "@/components/system/spec-readout";
 import { ExplodedServer } from "@/components/hardware/exploded-server";
 import { GpuLive } from "@/components/hardware/gpu-live";
 import { ClusterDiagram } from "@/components/hardware/visuals";
@@ -128,6 +129,23 @@ export default function HardwarePage() {
               lead={h.cluster.lead}
             />
             <SpecList rows={h.cluster.rows} dense />
+            <SpecReadout
+              title="Cluster and servers"
+              ids={[
+                "cluster.platform",
+                "cluster.gpus",
+                "cluster.servers",
+                "cluster.gpusPerServer",
+                "cluster.network",
+                "cluster.storage",
+                "cluster.storageSystem",
+                "cluster.storageAccess",
+                "server.model",
+                "server.cpu",
+                "server.memory",
+                "server.localStorage",
+              ]}
+            />
           </div>
           <div className="lg:pt-20">
             <ClusterDiagram network={v("cluster.network")} storage={v("cluster.storage")} />

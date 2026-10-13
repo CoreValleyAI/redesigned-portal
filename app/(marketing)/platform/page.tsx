@@ -5,6 +5,7 @@ import { Cta } from "@/components/system/cta";
 import { DotGlyph } from "@/components/system/dot-glyph";
 import { Kicker } from "@/components/system/kicker";
 import { SectionHead } from "@/components/system/section";
+import { SpecReadout } from "@/components/system/spec-readout";
 import { Status } from "@/components/system/status";
 import { TextLink } from "@/components/system/text-link";
 import { PLATFORM } from "@/copy/en/platform";
@@ -37,12 +38,26 @@ export default function PlatformPage() {
       {/* The layers, top to bottom. */}
       <section aria-labelledby="layers-title" className="section-y">
         <div className="container-page grid gap-12 lg:grid-cols-[1fr_1.6fr] lg:gap-20">
-          <SectionHead
-            id="layers-title"
-            kicker={p.layers.kicker}
-            title={p.layers.title}
-            continuation={p.layers.continuation}
-          />
+          <div className="flex flex-col gap-8">
+            <SectionHead
+              id="layers-title"
+              kicker={p.layers.kicker}
+              title={p.layers.title}
+              continuation={p.layers.continuation}
+            />
+            <SpecReadout
+              title="The stack"
+              ids={[
+                "software.workspace",
+                "software.nvaie",
+                "cluster.platform",
+                "gpu.model",
+                "cluster.network",
+                "cluster.storageSystem",
+                "cluster.storageAccess",
+              ]}
+            />
+          </div>
           <ol className="flex flex-col">
             {p.layers.items.map((l, i) => (
               <li

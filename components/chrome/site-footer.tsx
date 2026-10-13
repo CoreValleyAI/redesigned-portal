@@ -11,7 +11,7 @@ import { AppLink } from "@/components/system/app-link";
 import { Reservoir } from "@/components/chrome/reservoir";
 import { FOOTER } from "@/copy/en/site";
 import { isExternal } from "@/lib/links";
-import { MotionSwitch } from "./pref-switch";
+import { EngineerSwitch, MotionSwitch } from "./pref-switch";
 import { ThemeToggle } from "./theme-toggle";
 import { ValleyTime } from "./valley-time";
 
@@ -57,7 +57,8 @@ export function SiteFooter() {
 
         <div className="mt-16 flex flex-col gap-6 border-t border-line pt-8 md:flex-row md:items-center md:justify-between">
           <ValleyTime />
-          <div className="flex items-center gap-6">
+          <div className="flex flex-wrap items-center gap-x-8 gap-y-4">
+            <EngineerSwitch className="gap-3" />
             <MotionSwitch className="gap-3" />
             <ThemeToggle />
           </div>

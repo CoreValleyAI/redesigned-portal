@@ -14,6 +14,7 @@ import { Faq } from "@/components/system/faq";
 import { Kicker } from "@/components/system/kicker";
 import { SectionHead } from "@/components/system/section";
 import { SpecList } from "@/components/system/spec-list";
+import { SpecReadout } from "@/components/system/spec-readout";
 import { Status } from "@/components/system/status";
 import { TextLink } from "@/components/system/text-link";
 import { PRODUCTS, productBySlug } from "@/copy/en/products";
@@ -164,6 +165,19 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
           <div className="flex flex-col gap-6">
             <SectionHead id="hood-title" kicker="Under the hood" title="The key numbers." size="title-2" />
             <SpecList rows={product.specs} />
+            <SpecReadout
+              title={product.name}
+              ids={[
+                ...new Set([
+                  ...product.specs,
+                  "gpu.model" as const,
+                  "gpu.memory" as const,
+                  "gpu.bandwidth" as const,
+                  "billing.currency" as const,
+                  "billing.rails" as const,
+                ]),
+              ]}
+            />
             <TextLink href="/hardware" arrow>
               Full specifications
             </TextLink>
