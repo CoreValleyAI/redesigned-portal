@@ -7,8 +7,7 @@ import { cn } from "@/lib/cn";
 import { buttonParts, buttonVariants } from "./button";
 
 export interface ButtonLinkProps
-  extends Omit<React.ComponentPropsWithRef<typeof Link>, "color">,
-    VariantProps<typeof buttonVariants> {
+  extends Omit<React.ComponentPropsWithRef<typeof Link>, "color">, VariantProps<typeof buttonVariants> {
   iconLeft?: React.ReactNode;
   iconRight?: React.ReactNode;
 }
@@ -26,10 +25,7 @@ export function ButtonLink({
 }: ButtonLinkProps) {
   const { pad, content } = buttonParts({ variant, size, iconLeft, iconRight, children });
   return (
-    <Link
-      className={cn(buttonVariants({ variant, size, mono, fullWidth }), pad, className)}
-      {...rest}
-    >
+    <Link className={cn(buttonVariants({ variant, size, mono, fullWidth }), pad, className)} {...rest}>
       {content}
     </Link>
   );

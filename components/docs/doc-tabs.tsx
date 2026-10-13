@@ -11,8 +11,8 @@ import { Tabs } from "@/components/ui";
  */
 export function DocTabs({ children }: { children: React.ReactNode }) {
   const id = React.useId();
-  const panels = React.Children.toArray(children).filter(
-    (c): c is React.ReactElement<{ "data-title"?: string }> => React.isValidElement(c),
+  const panels = React.Children.toArray(children).filter((c): c is React.ReactElement<{ "data-title"?: string }> =>
+    React.isValidElement(c),
   );
   const tabs = panels.map((p, i) => ({
     id: String(i),
@@ -28,14 +28,7 @@ export function DocTabs({ children }: { children: React.ReactNode }) {
       {panels.map((panel, i) => {
         const on = String(i) === active;
         return (
-          <div
-            key={i}
-            role="tabpanel"
-            id={`${id}-panel-${i}`}
-            hidden={!on}
-            tabIndex={0}
-            className="pt-4"
-          >
+          <div key={i} role="tabpanel" id={`${id}-panel-${i}`} hidden={!on} tabIndex={0} className="pt-4">
             {panel}
           </div>
         );

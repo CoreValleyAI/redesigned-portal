@@ -373,7 +373,7 @@ export function Ascent() {
                 )}
               />
               <span
-                className={cn("type-kicker hidden lg:inline", here ? "text-ink" : done ? "text-ink-2" : "text-ink-4")}
+                className={cn("type-kicker hidden lg:inline", here ? "text-ink" : done ? "text-ink-2" : "text-ink-3")}
               >
                 {STEP_LABEL[s]}
                 <span className="sr-only">{done ? " (done)" : here ? " (current)" : ""}</span>

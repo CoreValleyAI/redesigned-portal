@@ -21,7 +21,7 @@ export function SpecReadout({ title, ids, className }: { title: string; ids: Fac
     >
       <figcaption className="type-kicker flex items-center justify-between gap-4 border-b border-line px-4 py-2.5 text-ink-3">
         <span>{title}</span>
-        <span className="text-ink-4">Specification readout</span>
+        <span>Specification readout</span>
       </figcaption>
       <dl className="grid grid-cols-[minmax(0,20ch)_minmax(0,1fr)] gap-x-5 gap-y-3 px-4 py-4 font-mono text-[0.8125rem] leading-snug">
         {rows.map(({ id, f }) => (
@@ -29,7 +29,7 @@ export function SpecReadout({ title, ids, className }: { title: string; ids: Fac
             <dt className="text-ink-3">{f.label}</dt>
             <dd className="text-ink">
               {f.value}
-              <span className="block text-[0.75rem] text-ink-4">
+              <span className="block text-[0.75rem] text-ink-3">
                 # {f.source.name}, {asOfLabel(f.asOf)}
               </span>
             </dd>

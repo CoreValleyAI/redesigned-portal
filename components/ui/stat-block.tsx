@@ -32,14 +32,7 @@ export function StatBlock({
   ...rest
 }: StatBlockProps) {
   return (
-    <div
-      className={cn(
-        align === "center" && "text-center",
-        align === "right" && "text-right",
-        className,
-      )}
-      {...rest}
-    >
+    <div className={cn(align === "center" && "text-center", align === "right" && "text-right", className)} {...rest}>
       <div
         className={cn(
           // `nums` pins tabular figures so a value that animates or refreshes
@@ -54,11 +47,7 @@ export function StatBlock({
         {value}
       </div>
       <div className="mt-2.5 cv-label">{label}</div>
-      {sub ? (
-        <div className="mt-1.5 text-[13px] text-ink-400">
-          {sub}
-        </div>
-      ) : null}
+      {sub ? <div className="mt-1.5 text-[13px] text-ink-400">{sub}</div> : null}
     </div>
   );
 }

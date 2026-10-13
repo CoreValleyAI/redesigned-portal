@@ -29,9 +29,7 @@ export function Tabs({
   className,
   "aria-label": ariaLabel,
 }: TabsProps) {
-  const [internal, setInternal] = React.useState(
-    defaultValue ?? tabs[0]?.id ?? "",
-  );
+  const [internal, setInternal] = React.useState(defaultValue ?? tabs[0]?.id ?? "");
   const active = controlled === undefined ? internal : controlled;
 
   function pick(id: string) {
@@ -40,11 +38,7 @@ export function Tabs({
   }
 
   return (
-    <div
-      role="tablist"
-      aria-label={ariaLabel}
-      className={cn("flex gap-1 border-b border-line", className)}
-    >
+    <div role="tablist" aria-label={ariaLabel} className={cn("flex gap-1 border-b border-line", className)}>
       {tabs.map((t) => {
         const on = t.id === active;
         return (
@@ -59,9 +53,7 @@ export function Tabs({
               "border-b-2 px-3.5 py-2.75 font-mono text-[13px] font-medium tracking-[0.01em]",
               "transition-colors duration-fast ease-standard",
               "focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-hydro",
-              on
-                ? "border-b-hydro text-ink-100"
-                : "border-b-transparent text-fg-muted hover:text-ink-200",
+              on ? "border-b-hydro text-ink-100" : "border-b-transparent text-fg-muted hover:text-ink-200",
             )}
           >
             {t.label}

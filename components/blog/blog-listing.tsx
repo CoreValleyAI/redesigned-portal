@@ -43,8 +43,11 @@ export function BlogListing({
         </div>
       </section>
 
-      <section aria-label="Posts" className="pb-[var(--section-y)]">
+      <section aria-labelledby="posts-title" className="pb-[var(--section-y)]">
         <div className="container-page">
+          <h2 id="posts-title" className="sr-only">
+            Posts
+          </h2>
           <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
             <CategoryTabs categories={categories} active={activeCategory} />
             <BlogSearch className="shrink-0 self-start md:self-auto" />

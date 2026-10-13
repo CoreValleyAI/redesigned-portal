@@ -36,7 +36,8 @@ export function ValleyTime({ className }: { className?: string }) {
   const time = React.useSyncExternalStore(subscribe, nptNow, () => "--:--");
   return (
     <p className={cn("flex items-center gap-3.5", className)}>
-      <time className="flex" aria-label={time === "--:--" ? undefined : `${time} in ${UI.valleyTime.place}`}>
+      <time className="flex">
+        {time !== "--:--" && <span className="sr-only">{time}</span>}
         <DotText
           text={time}
           className="h-7 w-auto"

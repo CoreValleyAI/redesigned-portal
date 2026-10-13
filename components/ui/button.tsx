@@ -24,10 +24,8 @@ const buttonVariants = cva(
           "border-transparent bg-[var(--btn-bg)] text-[var(--btn-fg)] hover:shadow-[0_12px_32px_-12px_rgb(0_0_0/0.45)]",
         secondary:
           "border-[var(--btn2-border)] bg-[var(--btn2-bg)] text-[var(--btn2-fg)] backdrop-blur-md hover:bg-[var(--btn2-hover)]",
-        ghost:
-          "border-transparent bg-transparent text-ink-300 hover:bg-[var(--btn2-hover)] hover:text-ink-100",
-        danger:
-          "border-line bg-transparent text-danger hover:bg-danger/10",
+        ghost: "border-transparent bg-transparent text-ink-300 hover:bg-[var(--btn2-hover)] hover:text-ink-100",
+        danger: "border-line bg-transparent text-danger hover:bg-danger/10",
       },
       size: {
         sm: "h-9 gap-2 px-4 text-[13px]",
@@ -70,8 +68,7 @@ const ORB_SIZE: Record<Size, string> = {
 const ICON_SLOT: Record<Size, string> = { sm: "size-3.5", md: "size-4", lg: "size-4.5" };
 
 const orbTone: Record<string, string> = {
-  primary:
-    "bg-[var(--btn-orb)] text-[var(--btn-orb-fg)] group-hover/btn:bg-[var(--btn-orb-hover)]",
+  primary: "bg-[var(--btn-orb)] text-[var(--btn-orb-fg)] group-hover/btn:bg-[var(--btn-orb-hover)]",
   secondary: "bg-[var(--btn-bg)] text-[var(--btn-fg)]",
   ghost: "bg-[var(--btn2-hover)] text-ink-100",
   danger: "bg-danger/10 text-danger",
@@ -96,9 +93,7 @@ export function buttonParts({
     pad: iconRight ? ORB_PAD[s] : "",
     content: (
       <>
-        {iconLeft ? (
-          <span className={cn("inline-flex shrink-0 items-center", ICON_SLOT[s])}>{iconLeft}</span>
-        ) : null}
+        {iconLeft ? <span className={cn("inline-flex shrink-0 items-center", ICON_SLOT[s])}>{iconLeft}</span> : null}
         {children}
         {iconRight ? (
           <span
@@ -117,8 +112,7 @@ export function buttonParts({
 }
 
 export interface ButtonProps
-  extends Omit<React.ComponentPropsWithRef<"button">, "color">,
-    VariantProps<typeof buttonVariants> {
+  extends Omit<React.ComponentPropsWithRef<"button">, "color">, VariantProps<typeof buttonVariants> {
   iconLeft?: React.ReactNode;
   iconRight?: React.ReactNode;
 }
@@ -137,11 +131,7 @@ export function Button({
 }: ButtonProps) {
   const { pad, content } = buttonParts({ variant, size, iconLeft, iconRight, children });
   return (
-    <button
-      type={type}
-      className={cn(buttonVariants({ variant, size, mono, fullWidth }), pad, className)}
-      {...rest}
-    >
+    <button type={type} className={cn(buttonVariants({ variant, size, mono, fullWidth }), pad, className)} {...rest}>
       {content}
     </button>
   );

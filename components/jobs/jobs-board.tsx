@@ -216,7 +216,7 @@ export function JobsBoard({ jobs, generalHref }: { jobs: JobListItem[]; generalH
                 className="type-kicker flex items-baseline gap-3 border-b border-line pb-3 text-ink-3"
               >
                 {g.name}
-                <span className="tabular-nums text-ink-4">{g.jobs.length}</span>
+                <span className="tabular-nums">{g.jobs.length}</span>
               </h3>
               <ul>
                 {g.jobs.map((j) => (

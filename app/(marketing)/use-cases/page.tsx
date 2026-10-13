@@ -38,8 +38,11 @@ export default function UseCasesPage() {
         </div>
       </section>
 
-      <section aria-label="Stories" className="pb-[var(--section-y)]">
+      <section aria-labelledby="stories-title" className="pb-[var(--section-y)]">
         <div className="container-page">
+          <h2 id="stories-title" className="sr-only">
+            Stories
+          </h2>
           <Atlas cases={NEPAL} />
           <p className="type-caption mt-8 text-ink-3">
             &ldquo;Built for&rdquo; describes who could build each one; it does not name customers or partners.

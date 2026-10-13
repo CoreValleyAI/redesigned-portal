@@ -10,8 +10,7 @@ const SIZES = {
   lg: { box: "h-12 px-3.5", text: "text-[15px]" },
 } as const;
 
-export interface InputProps
-  extends Omit<React.ComponentPropsWithRef<"input">, "size" | "prefix"> {
+export interface InputProps extends Omit<React.ComponentPropsWithRef<"input">, "size" | "prefix"> {
   /** JetBrains Mono, for CLI-flavoured entry. */
   mono?: boolean;
   /** Leading adornment; recolours to Hydro on focus. */

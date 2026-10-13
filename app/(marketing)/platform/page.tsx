@@ -71,7 +71,7 @@ export default function PlatformPage() {
                   <span className="type-title-3 flex items-center gap-3">
                     {l.name}
                     {l.touch && (
-                      <span className="type-kicker rounded-pill bg-hydro-wash px-2.5 py-1 text-hydro-ink light:text-hydro">
+                      <span className="type-kicker rounded-pill bg-hydro-wash px-2.5 py-1 text-hydro-ink">
                         You work here
                       </span>
                     )}

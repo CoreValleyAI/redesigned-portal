@@ -18,19 +18,10 @@ export interface TagProps {
   style?: React.CSSProperties;
 }
 
-export function Tag({
-  children,
-  selected = false,
-  onRemove,
-  onClick,
-  className,
-  style,
-}: TagProps) {
+export function Tag({ children, selected = false, onRemove, onClick, className, style }: TagProps) {
   /* Selected = Hydro text on a 10% Hydro wash behind a Hydro hairline; rest
      = Ink on the raised Carbon surface. Straight from Tag.jsx. */
-  const tone = selected
-    ? "text-hydro bg-hydro/10 border-hydro"
-    : "text-ink-300 bg-carbon-600 border-line";
+  const tone = selected ? "text-hydro bg-hydro/10 border-hydro" : "text-ink-300 bg-carbon-600 border-line";
 
   const body = (
     <>

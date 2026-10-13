@@ -20,13 +20,7 @@ export interface TerminalProps extends React.ComponentPropsWithRef<"div"> {
   cursor?: boolean;
 }
 
-export function Terminal({
-  lines = [],
-  title = "",
-  cursor = true,
-  className,
-  ...rest
-}: TerminalProps) {
+export function Terminal({ lines = [], title = "", cursor = true, className, ...rest }: TerminalProps) {
   return (
     <div
       className={cn(
@@ -42,9 +36,7 @@ export function Terminal({
           <span aria-hidden="true" className="size-2.25 rounded-pill bg-ink-700" />
           <span aria-hidden="true" className="size-2.25 rounded-pill bg-ink-700" />
           <span aria-hidden="true" className="size-2.25 rounded-pill bg-ink-700" />
-          <span className="ml-2 text-xs tracking-[0.02em] text-fg-muted">
-            {title}
-          </span>
+          <span className="ml-2 text-xs tracking-[0.02em] text-fg-muted">{title}</span>
         </div>
       ) : null}
 

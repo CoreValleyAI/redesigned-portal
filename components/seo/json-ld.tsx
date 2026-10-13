@@ -101,12 +101,7 @@ export function faqJsonLd(items: { q: string; a: string }[]): Graph {
 }
 
 /** A product page. Compute is a service, so `Service`, offered by the org. */
-export function serviceJsonLd(opts: {
-  path: string;
-  name: string;
-  description: string;
-  audience: string;
-}): Graph {
+export function serviceJsonLd(opts: { path: string; name: string; description: string; audience: string }): Graph {
   return {
     "@type": "Service",
     "@id": `${absoluteUrl(opts.path)}#service`,
@@ -143,7 +138,9 @@ export function jobPostingJsonLd(opts: {
   locations: { city: string; region?: string; country: string }[];
   team?: string;
 }): Graph {
-  const places = opts.locations.length ? opts.locations : [{ city: ORG.locality, region: ORG.region, country: ORG.country }];
+  const places = opts.locations.length
+    ? opts.locations
+    : [{ city: ORG.locality, region: ORG.region, country: ORG.country }];
   return {
     "@type": "JobPosting",
     "@id": `${absoluteUrl(opts.path)}#job`,

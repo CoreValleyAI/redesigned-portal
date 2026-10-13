@@ -13,9 +13,7 @@ export function DocsToc({ headings }: { headings: DocHeading[] }) {
   const [active, setActive] = React.useState<string>(() => headings[0]?.id ?? "");
 
   React.useEffect(() => {
-    const els = headings
-      .map((h) => document.getElementById(h.id))
-      .filter((el): el is HTMLElement => el !== null);
+    const els = headings.map((h) => document.getElementById(h.id)).filter((el): el is HTMLElement => el !== null);
     if (!els.length || typeof IntersectionObserver === "undefined") return;
 
     // Initialise from the hash, then from whatever is in view.
@@ -56,9 +54,7 @@ export function DocsToc({ headings }: { headings: DocHeading[] }) {
                 className={cn(
                   "-ml-px block border-l-2 py-1 text-[13px] leading-snug transition-colors duration-normal",
                   h.depth === 3 ? "pl-6" : "pl-3",
-                  on
-                    ? "border-l-hydro text-ink-100"
-                    : "border-l-transparent text-ink-500 hover:text-ink-200",
+                  on ? "border-l-hydro text-ink-100" : "border-l-transparent text-ink-500 hover:text-ink-200",
                 )}
               >
                 {h.text}

@@ -164,13 +164,7 @@ export interface IconProps {
   color?: string;
 }
 
-export function Icon({
-  name,
-  size = 18,
-  weight = "regular",
-  className,
-  color,
-}: IconProps) {
+export function Icon({ name, size = 18, weight = "regular", className, color }: IconProps) {
   const Glyph = ICONS[name];
   return (
     <Glyph

@@ -21,10 +21,7 @@ export function DocArticle({ page }: { page: DocPage }) {
         </div>
 
         {page.prev || page.next ? (
-          <nav
-            aria-label="Pagination"
-            className="mt-14 grid gap-4 border-t border-line-subtle pt-8 sm:grid-cols-2"
-          >
+          <nav aria-label="Pagination" className="mt-14 grid gap-4 border-t border-line-subtle pt-8 sm:grid-cols-2">
             {page.prev ? (
               <Link
                 href={page.prev.url}
@@ -66,14 +63,14 @@ export function DocArticle({ page }: { page: DocPage }) {
           <div className="flex items-start gap-3">
             <Icon name="info" size={18} weight="duotone" className="mt-0.5 shrink-0 text-info" />
             <p className="text-[13.5px] leading-relaxed text-ink-400">
-              These docs cover the platform as it ships today. For anything not
-              documented here, email{" "}
+              These docs cover the platform as it ships today. For anything not documented here, email{" "}
               <a
                 href="mailto:info@corevalley.ai"
                 className="text-hydro underline decoration-hydro/40 underline-offset-4 transition-colors duration-normal hover:text-hydro-300"
               >
                 info@corevalley.ai
-              </a>.
+              </a>
+              .
             </p>
           </div>
         </Card>

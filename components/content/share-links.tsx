@@ -42,20 +42,20 @@ export function ShareLinks({ url, title, className }: { url: string; title: stri
         href={`https://www.linkedin.com/sharing/share-offsite/?url=${u}`}
         target="_blank"
         rel="noopener noreferrer"
-        aria-label="Share on LinkedIn"
         title="Share on LinkedIn"
       >
-        in
+        <span aria-hidden="true">in</span>
+        <span className="sr-only">Share on LinkedIn</span>
       </a>
       <a
         className={cn(item, "font-mono text-[12px] font-semibold")}
         href={`https://x.com/intent/post?url=${u}&text=${t}`}
         target="_blank"
         rel="noopener noreferrer"
-        aria-label="Share on X"
         title="Share on X"
       >
-        X
+        <span aria-hidden="true">X</span>
+        <span className="sr-only">Share on X</span>
       </a>
       <a className={item} href={`mailto:?subject=${t}&body=${u}`} aria-label="Share by email" title="Share by email">
         <Icon name="send" size={15} />

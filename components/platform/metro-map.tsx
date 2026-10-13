@@ -53,10 +53,7 @@ export function MetroMap({ lines }: { lines: readonly MetroLine[] }) {
             <li
               key={l.id}
               aria-current={on ? "true" : undefined}
-              className={cn(
-                "grid gap-4 transition-opacity duration-[var(--dur-base)] md:grid-cols-[11rem_1fr] md:items-center md:gap-8",
-                on ? "opacity-100" : "opacity-45",
-              )}
+              className={cn("grid gap-4 md:grid-cols-[11rem_1fr] md:items-center md:gap-8")}
             >
               <span className={cn("type-kicker", on ? "text-hydro-ink light:text-hydro" : "text-ink-3")}>{l.name}</span>
               <div className="relative">

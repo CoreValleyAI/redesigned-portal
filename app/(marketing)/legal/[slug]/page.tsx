@@ -91,7 +91,7 @@ export default async function LegalRoute({ params }: { params: Promise<{ slug: s
                     href={`#${slugify(s.heading)}`}
                     className="type-small flex gap-3 text-ink-2 transition-colors duration-[var(--dur-short)] hover:text-ink"
                   >
-                    <span aria-hidden="true" className="font-mono text-ink-4 tabular-nums">
+                    <span aria-hidden="true" className="font-mono text-ink-3 tabular-nums">
                       {String(i + 1).padStart(2, "0")}
                     </span>
                     {s.heading}

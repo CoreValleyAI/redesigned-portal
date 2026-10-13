@@ -83,11 +83,7 @@ export function Card({
   }
 
   return (
-    <div
-      className={classes}
-      style={{ padding, ...style }}
-      {...(rest as React.ComponentPropsWithRef<"div">)}
-    >
+    <div className={classes} style={{ padding, ...style }} {...(rest as React.ComponentPropsWithRef<"div">)}>
       {inner}
     </div>
   );

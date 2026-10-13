@@ -27,9 +27,7 @@ export function DocsNav({ groups }: { groups: NavGroup[] }) {
       {groups.map((group, gi) => (
         <div key={group.title ?? `top-${gi}`}>
           {group.title ? (
-            <p className="mb-2 px-2.5 font-mono text-[10px] tracking-label text-ink-600 uppercase">
-              {group.title}
-            </p>
+            <p className="mb-2 px-2.5 font-mono text-[10px] tracking-label text-ink-600 uppercase">{group.title}</p>
           ) : null}
           <ul className="space-y-0.5">
             {group.items.map((item) => {

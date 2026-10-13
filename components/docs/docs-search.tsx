@@ -210,20 +210,13 @@ export function DocsSearch({ docs }: { docs: SearchDoc[] }) {
           </kbd>
         </div>
 
-        <ul
-          id="docs-search-results"
-          role="listbox"
-          aria-label="Results"
-          className="max-h-[50vh] overflow-y-auto p-2"
-        >
+        <ul id="docs-search-results" role="listbox" aria-label="Results" className="max-h-[50vh] overflow-y-auto p-2">
           {!terms.length ? (
             <li className="px-2.5 py-8 text-center text-[13px] text-ink-500">
               Type to search {docs.length} sections across the docs.
             </li>
           ) : !hits.length ? (
-            <li className="px-2.5 py-8 text-center text-[13px] text-ink-500">
-              No results for “{query.trim()}”.
-            </li>
+            <li className="px-2.5 py-8 text-center text-[13px] text-ink-500">No results for “{query.trim()}”.</li>
           ) : (
             groups.map((g) => (
               <li key={g.page} role="presentation">
