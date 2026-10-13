@@ -4,6 +4,8 @@ Built in phases, each ending with a demo on the staging URL (`corevalley.ai/reva
 
 Effort is given in **build sessions** (a focused working block of several hours with review). Phases can overlap where noted.
 
+> **Status, 13 Oct 2026.** Phases 0–6 are built on `revamp` and staged at `corevalley.ai/revamp/` (noindex): every page, both themes, mobile, the valley hero, the Living Mark, the 404 snow, the Dew cursor and magnetic buttons, Valley Time, the plan card, engineer mode, contour prints for the blog and use cases, and the live GPU on the hardware page. Every page passes an axe audit in both themes. Still open: the owner's questions (12 §1); the full slicer (S7, needs the MIG profiles, Q16) and a WebGL journey (S4); Lighthouse budgets and visual baselines in CI; Phase 8, going live, which is the owner's decision.
+
 ---
 
 ## Phase 0 — Foundations (≈ 3–4 sessions)

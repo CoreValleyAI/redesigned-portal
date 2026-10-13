@@ -2,6 +2,13 @@
 
 How the site is built so it can be this alive *and* this fast. Versions verified on npm on 13 Oct 2026.
 
+> **As built (13 Oct 2026).** The build departed from this plan in a few deliberate ways; where they differ, the code is the source of truth.
+>
+> - **No GSAP, Lenis, three.js or React Three Fiber.** Motion runs on one requestAnimationFrame clock (`lib/motion/clock.ts`), with springs generated as CSS `linear()` curves (`lib/motion/spring.ts`) and scroll progress read from cached geometry (`lib/motion/scroll.ts`); scrolling is native everywhere. WebGL is a small WebGL2 layer of our own (`lib/gl/core.ts`, `lib/gl/stage.ts`): one canvas per GL moment, inside its own DOM box (no fixed full-viewport canvas), and each scene a plain module in `components/gl/scenes/`: the valley hero (real elevation data, `scripts/build-terrain.mjs`) and the Living Mark (footer, and the 404's snow).
+> - **Copy lives in `copy/en/*`**, not `content/en/*`: `/content/` is the CMS checkout and is gitignored.
+> - **Palette for WebGL** is read from the CSS tokens in any colour syntax (the CSS build rewrites `oklch()` as `lab()`); scenes lit additively work in linear light, scenes printed on paper write gamma-encoded colour.
+> - **Quality gates in CI** (`.github/workflows/verify.yml`): typecheck, lint, the static export with sample content, and an axe-core audit of every main page in both themes (`npm run audit:a11y`). The facts guard is strict on pull requests into main.
+
 ---
 
 ## 1. Stack
