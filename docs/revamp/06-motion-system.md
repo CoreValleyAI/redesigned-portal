@@ -158,13 +158,21 @@ Implementation: one full-screen fragment shader in the persistent canvas (SDF ro
 
 ---
 
+## 9a. Touch is a first-class pointer (13 Oct 2026)
+
+On a phone nothing hovers, so a site built on hover feels static. Every interactive scene answers the finger as well as the mouse, and the page answers the scroll:
+
+- **The finger.** WebGL stages follow the finger while it is down, through a whole swipe as the page scrolls under it (`lib/motion/input.ts`: touch events keep coming during a scroll; pointer events are cancelled). The valley lights under it; the Living Mark and the Reservoir part around it.
+- **Scroll speed.** Scenes feel it: wind runs across the valley, the marks slosh, the Reservoir's water tips from side to side.
+- **Scroll position.** `[data-parallax]` pictures drift against the scroll (`components/motion/parallax-observer.tsx`); the stack drawing pulls apart as it enters; carousel cards ease back and dim as they leave.
+
 ## 10. Reduced motion and comfort
 
-When `prefers-reduced-motion: reduce` **or** the site's own "Reduce motion" toggle (footer + menu, remembered) is on:
+When `prefers-reduced-motion: reduce` **or** the site's own "Reduce motion" toggle (footer + menu, remembered) is on, motion is **reduced, not removed** (revised 13 Oct 2026, after the owner found the site static on a phone):
 
-- No Lenis, no scrubbing, no parallax, no cursor layer, no tilt, no idle breath.
-- Pinned chapters become a vertical sequence of static frames with short crossfades between states triggered by intersection.
-- WebGL renders a single still frame per scene (or a poster), updates only on theme change.
+- No scrubbing, no parallax, no camera moves, no fly-ins, no carousel autoplay, no cursor layer.
+- Direct manipulation stays, as Apple's guidance has it: light that follows a hand or a finger, dots that part under it.
+- Slow luminance changes stay: the valley's lights twinkle at a third of the pace; nothing travels across the screen by itself.
 - Text effects resolve instantly; NumberFlow shows final values.
 - Page transitions: 150 ms crossfade.
 

@@ -104,7 +104,7 @@ Rules: headlines weight 600, never 700+; no Light/Thin below 20 px; numbers alwa
 
 ## 4. Materials
 
-- **Glass only on floating chrome**: the header bar, the mobile menu sheet, popovers. `backdrop-filter: blur(20px) saturate(160%)` over a 70 % theme background. Respect `prefers-reduced-transparency` (solid).
+- **Liquid glass on floating surfaces** (owner, 13 Oct 2026: "incorporate liquid glass throughout the site"). One material (`app/styles/glass.css`): a tint that holds text contrast on any backdrop (white ≥ 0.50, night ≥ 0.57), backdrop blur and saturation with literal values (WebKit 297620), a rim lit from the top-left, a soft lift. Used on the header bar (with a 200 % backdrop masked back to the bar, so nothing pops in under it), the mobile menu sheet, the mega panels, the hero's fact strip and the carousel's controls. Over our own WebGL scenes the scene draws the glass itself (`lib/gl/glass.ts`): its own pixels blurred (dual Kawase) and refracted at a convex-squircle bezel by Snell's law, with a per-pixel scrim that keeps the text at 4.5:1 — exact in every browser, unlike `backdrop-filter: url()` refraction, which only Chromium paints. No glass library: the snapshot libraries go stale on dynamic pages, and the SVG ones refract only in Chromium. Respect `prefers-reduced-transparency` and `prefers-contrast: more` (solid), and `forced-colors`.
 - **Content surfaces are solid**: `--bg-raised` cards with hairline or no border.
 - **No grain, no noise overlays, no glow on cards.**
 

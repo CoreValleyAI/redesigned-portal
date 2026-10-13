@@ -120,7 +120,7 @@ Public-safe facts, approved for naming HPE and NVIDIA:
 12. **"123 languages"** (it is 124 mother tongues); hundi percentages; wallet "users" (they are accounts).
 13. **Tax advantage over foreign clouds** — 13 % VAT applies locally too.
 14. **Buzzwords**: "AI factory", "superintelligence", "revolutionary", "world-class", "cutting-edge", "seamless", "unleash".
-15. **HPE/NVIDIA logos** — only per their brand guidelines and partner-program approval; text names are fine (owner approved naming).
+15. **HPE/NVIDIA logos** — the owner approved using both logos on 13 Oct 2026. Use the official artwork unaltered (`components/brand/partner-logos.tsx`, from the launch film's `assets/partners`): only the neutral parts follow the theme, NVIDIA green and HPE green stay fixed. Show them to say what the cloud is built on ("Built on"); never claim a partner designation ("NVIDIA Cloud Partner", "Preferred Partner") unless one is held.
 
 ---
 
