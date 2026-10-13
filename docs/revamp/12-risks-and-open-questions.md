@@ -19,6 +19,9 @@
 | Q13 | When will **rates** be published (to show prices in the Meter and console)? | Pricing | Pricing |
 | Q14 | Is the "**region being commissioned**" wording acceptable until the first GPU is live? | Status wording everywhere | All |
 | Q15 | The datacentre's **99.99 % facility uptime** vs the Terms' **99.5 % service target** — keep both (facility vs service), or update the Terms? | Never contradict the Terms | Infrastructure, Trust, Legal |
+| Q16 | The **MIG profiles** exactly as `nvidia-smi mig -lgip` lists them on our H200 NVL GPUs | The full slicer (S7) shows only real profiles; until then it shows the two documented states | Products (MIG) |
+| Q17 | What the **HPE GreenLake cloud** connection carries in our deployment: do customer users sign in through it, and what telemetry does it receive? | The privacy and residency pages say only what the HPE briefing states (sign-in and updates need it; no customer data stored there) | Legal, Trust |
+| Q18 | The **business terms** the Terms summary now leaves to "your agreement": payment terms, notice before suspension, time to retrieve data after closing, maintenance notice | The summary must not invent numbers | Legal |
 
 ### Answered on 13 Oct 2026
 
@@ -31,6 +34,7 @@
 | Q7 | Keep "< 5 ms inside the Kathmandu Valley" with a disclaimer |
 | Q10 | Support hours to come from the owner later |
 | — | New fact: 99.99 % uptime commitment from the datacentre (facility) |
+| Q15 | Resolved in the rewrite of the legal pages: the Terms state the facility's 99.99 % commitment and leave CoreValley's service levels to the agreement; the 99.5 % / 99.9 % tiers are gone |
 
 ## 2. Risks register
 
