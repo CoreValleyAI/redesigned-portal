@@ -195,7 +195,7 @@ export interface GLPalette {
  */
 export function readPalette(): GLPalette {
   const cs = getComputedStyle(html());
-  const get = (name: string, fallback: RGB): RGB => parseOklch(cs.getPropertyValue(name)) ?? fallback;
+  const get = (name: string, fallback: RGB): RGB => parseColor(cs.getPropertyValue(name)) ?? fallback;
   return {
     theme: readTheme(),
     bg: get("--bg", [0.01, 0.012, 0.02]),
@@ -208,6 +208,41 @@ export function readPalette(): GLPalette {
   };
 }
 
+/**
+ * Parse a CSS colour into linear sRGB. The tokens are written as oklch(),
+ * but the CSS build may hand them back in another syntax (Lightning CSS
+ * rewrites oklch() as lab()), so anything other than oklch() is resolved by
+ * the browser itself, through a 1 px canvas.
+ */
+export function parseColor(value: string): RGB | null {
+  const v = value.trim();
+  if (!v) return null;
+  return parseOklch(v) ?? canvasColor(v);
+}
+
+let probe: CanvasRenderingContext2D | null | undefined;
+function canvasColor(value: string): RGB | null {
+  if (typeof document === "undefined") return null;
+  if (probe === undefined) {
+    const c = document.createElement("canvas");
+    c.width = c.height = 1;
+    probe = c.getContext("2d", { willReadFrequently: true });
+  }
+  if (!probe) return null;
+  const sentinel = "#010203";
+  probe.fillStyle = sentinel;
+  probe.fillStyle = value; // an unknown colour leaves the sentinel in place
+  if (probe.fillStyle === sentinel) return null;
+  probe.clearRect(0, 0, 1, 1);
+  probe.fillRect(0, 0, 1, 1);
+  const [r = 0, g = 0, b = 0] = probe.getImageData(0, 0, 1, 1).data;
+  const lin = (c: number) => {
+    const x = c / 255;
+    return x <= 0.04045 ? x / 12.92 : Math.pow((x + 0.055) / 1.055, 2.4);
+  };
+  return [lin(r), lin(g), lin(b)];
+}
+
 /** Parse `oklch(L C H [/ A])` into linear sRGB (clamped to the gamut). */
 export function parseOklch(value: string): RGB | null {
   const m = /oklch\(\s*([\d.]+)%?\s+([\d.]+)\s+([\d.]+)/i.exec(value);
@@ -215,6 +250,16 @@ export function parseOklch(value: string): RGB | null {
   let L = Number(m[1]);
   if (value.includes("%") && L > 1) L /= 100;
   return oklchToLinearSrgb(L, Number(m[2]), Number(m[3]));
+}
+
+/**
+ * Gamma-encode a linear colour. The canvas stores sRGB, so a scene that
+ * must match a token exactly on screen (a logo, a UI colour) writes the
+ * encoded value; scenes lit in linear light write the palette as is.
+ */
+export function encodeSrgb(c: RGB): RGB {
+  const e = (x: number) => (x <= 0.0031308 ? 12.92 * x : 1.055 * Math.pow(x, 1 / 2.4) - 0.055);
+  return [e(c[0]), e(c[1]), e(c[2])];
 }
 
 export function oklchToLinearSrgb(L: number, C: number, H: number): RGB {

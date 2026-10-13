@@ -20,6 +20,7 @@
 import { clamp01, compileProgram, lerp, loadDataTexture, lookAt, multiply, perspective, uniforms } from "@/lib/gl/core";
 import type { FrameInfo, Scene, SceneContext, SceneFactory } from "@/lib/gl/stage";
 import { asset } from "@/lib/links";
+import { encodeSrgb } from "@/lib/theme";
 
 const VS = /* glsl */ `#version 300 es
 precision highp float;
@@ -254,13 +255,25 @@ export const createValleyScene: SceneFactory = async (ctx: SceneContext): Promis
       const fovDeg = lerp(from.fov, CAM.to.fov, e) * (portrait ? 1.45 : 1);
       const viewProj = multiply(perspective((fovDeg * Math.PI) / 180, aspect, 0.05, 40), lookAt(eye, target));
 
-      // Palette: additive light on Night Valley, ink dots on Glacier.
+      // Palette. Night Valley is light summed additively, so it works in
+      // linear values: overlapping dots add up to the bright token colours.
+      // On Glacier the dots are ink laid over paper and must match the
+      // page's own ink and hydro, so they are written gamma-encoded.
       const pal = f.palette;
       const dark = pal.theme === "dark";
-      const off = dark ? pal.dotOff.map((v) => v * 1.5) : pal.ink3.map((v) => v * 1.1);
-      const snow = dark ? [0.82, 0.88, 0.95] : pal.glow2.map((v) => v * 0.55);
-      const lit = [...pal.hydro];
-      const river = dark ? pal.glow2.map((v, i) => v * 0.55 + pal.hydro[i]! * 0.45) : pal.hydro.map((v) => v * 0.85);
+      let off: number[], snow: number[], lit: number[], river: number[];
+      if (dark) {
+        off = pal.dotOff.map((v) => v * 1.5);
+        snow = [0.82, 0.88, 0.95];
+        lit = [...pal.hydro];
+        river = pal.glow2.map((v, i) => v * 0.55 + pal.hydro[i]! * 0.45);
+      } else {
+        const hydro = encodeSrgb(pal.hydro);
+        off = encodeSrgb(pal.ink3).map((v) => v * 0.9);
+        snow = encodeSrgb(pal.glow2).map((v) => v * 0.55);
+        lit = [...hydro];
+        river = hydro.map((v) => v * 0.85);
+      }
 
       gl.clearColor(0, 0, 0, 0);
       gl.clear(gl.COLOR_BUFFER_BIT);
