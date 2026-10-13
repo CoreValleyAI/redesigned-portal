@@ -167,7 +167,11 @@ export function UseCaseCarousel({
             aria-label={`${i + 1} of ${cases.length}: ${u.title}`}
             className={cn("uc-card shrink-0 snap-start", width)}
           >
-            <article className="group relative flex h-full flex-col overflow-hidden rounded-panel border border-line bg-bg-raised transition-[border-color,box-shadow] duration-[var(--dur-short)] hover:border-line-strong">
+            <article
+              data-refract
+              data-refract-bezel="18"
+              className="lg lg-card group relative flex h-full flex-col overflow-hidden rounded-panel"
+            >
               <Vignette
                 art={u.art}
                 variant={variantFor(u.slug)}

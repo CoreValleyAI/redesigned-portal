@@ -9,6 +9,7 @@ import { LayerStack } from "@/components/infrastructure/layer-stack";
 import { Page } from "@/components/motion/page";
 import { BillingBox } from "@/components/pricing/billing-box";
 import { createNotes, NoteList, NoteRef } from "@/components/system/fact";
+import { GlassLight } from "@/components/system/glass-light";
 import { SectionHead } from "@/components/system/section";
 import { TextLink } from "@/components/system/text-link";
 import { UseCaseCarousel } from "@/components/use-cases/carousel";
@@ -94,7 +95,8 @@ export default function HomePage() {
       </section>
 
       {/* Use cases, in the owner's order. */}
-      <section aria-labelledby="cases-title" className="section-y overflow-x-clip">
+      <section aria-labelledby="cases-title" className="section-y relative isolate overflow-x-clip">
+        <GlassLight />
         <div className="container-page mb-12 flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
           <SectionHead
             id="cases-title"
@@ -134,7 +136,8 @@ export default function HomePage() {
       </section>
 
       {/* Billing at a glance. */}
-      <section aria-labelledby="billing-title" className="section-y">
+      <section aria-labelledby="billing-title" className="section-y relative isolate">
+        <GlassLight variant="b" />
         <div className="container-page flex flex-col gap-12">
           <SectionHead
             id="billing-title"

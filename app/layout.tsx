@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import { GlassRefraction } from "@/components/motion/glass-refraction";
 import { ParallaxObserver } from "@/components/motion/parallax-observer";
 import { PointerFx } from "@/components/motion/pointer-fx";
 import { RevealObserver } from "@/components/motion/reveal-observer";
@@ -99,6 +100,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
 
         <RevealObserver />
         <ParallaxObserver />
+        <GlassRefraction />
         <PointerFx />
       </body>
     </html>

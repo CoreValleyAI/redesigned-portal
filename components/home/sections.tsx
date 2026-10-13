@@ -6,6 +6,7 @@ import { ViewTransition } from "react";
 import { AppLink } from "@/components/system/app-link";
 import { Arrow } from "@/components/system/button";
 import { DotGlyph, type GlyphName } from "@/components/system/dot-glyph";
+import { GlassLight } from "@/components/system/glass-light";
 import { SectionHead } from "@/components/system/section";
 import { TextLink } from "@/components/system/text-link";
 import { HOME } from "@/copy/en/home";
@@ -15,7 +16,8 @@ import { cn } from "@/lib/cn";
 export function ProductsSection() {
   const p = HOME.products;
   return (
-    <section aria-labelledby="products-title" className="section-y">
+    <section aria-labelledby="products-title" className="section-y relative isolate">
+      <GlassLight variant="c" />
       <div className="container-page">
         <div className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
           <SectionHead id="products-title" kicker={p.kicker} title={p.title} continuation={p.continuation} />
@@ -36,7 +38,9 @@ export function ProductsSection() {
           >
             <AppLink
               href={`/products/${product.slug}`}
-              className="group flex h-full flex-col gap-10 rounded-panel border border-line bg-bg-raised p-6 transition-[border-color,background-color,transform] duration-[var(--dur-spring-smooth)] ease-spring hover:-translate-y-0.5 hover:border-line-strong md:p-7 dark:hover:bg-bg-elevated"
+              data-refract
+              data-refract-bezel="18"
+              className="lg lg-card group flex h-full flex-col gap-10 rounded-panel p-6 md:p-7"
             >
               <ViewTransition name={`product-glyph-${product.slug}`} share="morph" default="none">
                 <DotGlyph name={product.glyph} className="size-11" />

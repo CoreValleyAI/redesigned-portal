@@ -4,6 +4,7 @@ import { QuoteBuilder } from "@/components/pricing/quote-builder";
 import { Cta } from "@/components/system/cta";
 import { Faq } from "@/components/system/faq";
 import { Kicker } from "@/components/system/kicker";
+import { GlassLight } from "@/components/system/glass-light";
 import { SectionHead } from "@/components/system/section";
 import { SpecReadout } from "@/components/system/spec-readout";
 import { Status } from "@/components/system/status";
@@ -32,7 +33,8 @@ export default function PricingPage() {
       </section>
 
       {/* Billing at a glance. */}
-      <section aria-labelledby="billing-title" className="pb-[var(--section-y)]">
+      <section aria-labelledby="billing-title" className="relative isolate pb-[var(--section-y)]">
+        <GlassLight variant="b" />
         <div className="container-page flex flex-col gap-10">
           <SectionHead
             id="billing-title"

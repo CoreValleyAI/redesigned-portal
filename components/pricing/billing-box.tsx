@@ -34,7 +34,7 @@ const CELLS = [
 
 export function BillingBox({ className, more = false }: { className?: string; more?: boolean }) {
   return (
-    <div className={cn("overflow-hidden rounded-panel border border-line bg-bg-raised", className)}>
+    <div data-refract data-refract-bezel="20" className={cn("lg overflow-hidden rounded-panel", className)}>
       <dl className="grid sm:grid-cols-2 lg:grid-cols-4">
         {CELLS.map((c, i) => (
           <div
@@ -57,7 +57,7 @@ export function BillingBox({ className, more = false }: { className?: string; mo
           </div>
         ))}
       </dl>
-      <div className="flex flex-col gap-4 border-t border-line bg-bg-sunken/50 px-6 py-5 sm:flex-row sm:items-center sm:justify-between md:px-7">
+      <div className="flex flex-col gap-4 border-t border-line px-6 py-5 sm:flex-row sm:items-center sm:justify-between md:px-7">
         <p className="type-small text-ink-2">
           <span className="font-semibold text-ink">Rates are {v("billing.rates").toLowerCase()}.</span> Every request
           gets a firm quote in rupees {v("contact.reply").toLowerCase()}.

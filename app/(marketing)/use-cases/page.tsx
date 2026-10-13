@@ -1,6 +1,7 @@
 import { Page } from "@/components/motion/page";
 import { Cta } from "@/components/system/cta";
 import { Kicker } from "@/components/system/kicker";
+import { GlassLight } from "@/components/system/glass-light";
 import { SectionHead } from "@/components/system/section";
 import { Atlas } from "@/components/use-cases/atlas";
 import { UseCaseCarousel } from "@/components/use-cases/carousel";
@@ -34,7 +35,8 @@ export default function UseCasesPage() {
         </div>
       </section>
 
-      <section aria-labelledby="featured-title" className="overflow-x-clip pb-[var(--section-y)]">
+      <section aria-labelledby="featured-title" className="relative isolate overflow-x-clip pb-[var(--section-y)]">
+        <GlassLight />
         <h2 id="featured-title" className="sr-only">
           Featured
         </h2>

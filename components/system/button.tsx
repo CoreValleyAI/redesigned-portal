@@ -1,6 +1,8 @@
 /**
- * Buttons (05 §7). One primary action per view, in hydro; everything else
- * is secondary (outlined) or quiet (ghost). Over a scene they can be liquid
+ * Buttons (05 §7). One primary action per view, in hydro glass; everything
+ * else is secondary (clear glass) or quiet (ghost). Glass buttons also
+ * refract the page through their rim where the browser can (data-refract,
+ * components/motion/glass-refraction.tsx). Over a scene they can be liquid
  * glass: "glass-hydro" for the primary action, "glass" for the secondary
  * (app/styles/glass.css; over the hero's valley the scene draws the glass
  * itself when the button carries data-glass-panel).
@@ -29,8 +31,10 @@ const base =
   "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-hydro";
 
 const variants: Record<Variant, string> = {
-  primary: "bg-hydro text-on-hydro hover:bg-hydro-ink",
-  secondary: "border border-line-strong/70 bg-transparent text-ink hover:border-ink hover:bg-bg-sunken",
+  // Liquid glass (app/styles/glass.css): the primary action tinted hydro,
+  // the secondary clear.
+  primary: "lg-hydro text-on-hydro",
+  secondary: "lg text-ink",
   ghost: "text-ink-2 hover:bg-bg-sunken hover:text-ink",
   inverse: "bg-ink text-bg hover:bg-ink-2",
   glass: "lg text-ink",
@@ -42,6 +46,8 @@ const sizes: Record<Size, string> = {
   md: "h-11 px-5 text-[0.9375rem] tracking-[-0.01em]",
   lg: "h-13 px-7 text-[1.0625rem] tracking-[-0.012em]",
 };
+
+const isGlass = (v: Variant) => v === "primary" || v === "secondary" || v === "glass" || v === "glass-hydro";
 
 export function buttonClasses(variant: Variant = "primary", size: Size = "md", className?: string) {
   return cn(base, variants[variant], sizes[size], className);
@@ -83,6 +89,8 @@ export function Button({
     <button
       type="button"
       data-magnetic={magnetic || undefined}
+      data-refract={isGlass(variant) || undefined}
+      data-refract-bezel={isGlass(variant) ? 10 : undefined}
       className={buttonClasses(variant, size, className)}
       {...props}
     >
@@ -124,7 +132,14 @@ export function ButtonLink({
   );
   if (plain) {
     return (
-      <a href={resolved} className={cls} data-magnetic={magnetic || undefined} {...props}>
+      <a
+        href={resolved}
+        className={cls}
+        data-magnetic={magnetic || undefined}
+        data-refract={isGlass(variant) || undefined}
+        data-refract-bezel={isGlass(variant) ? 10 : undefined}
+        {...props}
+      >
         {content}
         {external && <span className="sr-only"> (opens another site)</span>}
       </a>
@@ -135,6 +150,8 @@ export function ButtonLink({
       href={href}
       className={cls}
       data-magnetic={magnetic || undefined}
+      data-refract={isGlass(variant) || undefined}
+      data-refract-bezel={isGlass(variant) ? 10 : undefined}
       transitionTypes={transitionTypes ?? ["page"]}
       {...props}
     >

@@ -98,8 +98,7 @@ export function SiteHeader() {
     <>
       <header
         ref={headerRef}
-        style={{ viewTransitionName: "site-header" }}
-        className="fixed inset-x-0 top-0 z-50"
+        className="site-header fixed inset-x-0 top-0 z-50"
         onPointerLeave={(e) => {
           if (e.pointerType === "mouse") hoverClose();
         }}
@@ -107,58 +106,53 @@ export function SiteHeader() {
           if (e.pointerType === "mouse") keepOpen();
         }}
       >
-        {/* The bar's glass, faded in rather than switched. It is twice the
-            bar's height and masked back to it, so the blur already knows what
-            is about to slide under the bar (no pop-in at its lower edge). */}
-        <div
-          aria-hidden="true"
-          className={cn(
-            "glass pointer-events-none absolute inset-x-0 top-0 h-[200%] [mask-image:linear-gradient(to_bottom,#000_50%,transparent_50%)] transition-opacity duration-[var(--dur-base)] ease-out",
-            solid ? "opacity-100" : "opacity-0",
-          )}
-        />
-        <div
-          aria-hidden="true"
-          className={cn(
-            "pointer-events-none absolute inset-x-0 top-[var(--header-h)] h-px bg-line/70 transition-opacity duration-[var(--dur-base)] ease-out",
-            solid ? "opacity-100" : "opacity-0",
-          )}
-        />
-        <div className="container-page relative flex h-[var(--header-h)] items-center gap-4 xl:gap-6">
-          <AppLink
-            href="/"
-            transitionTypes={["page-up"]}
-            aria-label="CoreValley — home"
-            className="group/logo -ml-1 flex shrink-0 items-center gap-2.5 rounded-chip p-1"
+        {/* The bar: a floating pill of liquid glass, a little more opaque
+            once the page has scrolled (Chromium also bends the page through
+            its rim: data-refract). */}
+        <div className="px-2 pt-2 sm:px-[max(0.5rem,calc(var(--page-x)-0.875rem))] sm:pt-2.5">
+          <div
+            data-refract
+            data-refract-bezel="16"
+            className={cn(
+              "lg-nav relative mx-auto flex h-[var(--header-h)] max-w-[calc(var(--content-max)+1.75rem)] items-center gap-4 rounded-[1.25rem] pr-2 pl-3 sm:pl-4 xl:gap-6",
+              solid && "is-solid",
+            )}
           >
-            <Brandmark className="w-8 transition-transform duration-[var(--dur-spring-smooth)] ease-spring group-hover/logo:scale-[1.06]" />
-            <Wordmark className="w-[6.75rem] text-ink" />
-          </AppLink>
-
-          <DesktopNav
-            pathname={pathname}
-            panel={panel}
-            onToggle={(id) => setPanel((p) => (p === id ? null : id))}
-            onHoverOpen={hoverOpen}
-          />
-
-          <div className="ml-auto flex items-center gap-1 xl:gap-2">
-            <a
-              href={NAV.docs.href}
-              className="group/btn type-small hidden h-9 items-center gap-1 rounded-pill px-3 text-ink-2 transition-colors duration-[var(--dur-short)] hover:bg-bg-sunken hover:text-ink xl:inline-flex"
+            <AppLink
+              href="/"
+              transitionTypes={["page-up"]}
+              aria-label="CoreValley — home"
+              className="group/logo -ml-1 flex shrink-0 items-center gap-2.5 rounded-chip p-1"
             >
-              {NAV.docs.label}
-              <Arrow external />
-              <span className="sr-only"> ({UI.external})</span>
-            </a>
-            <ThemeToggle />
-            <ButtonLink href={NAV.cta.href} size="sm" className="ml-1 hidden sm:inline-flex" magnetic>
-              {NAV.cta.label}
-            </ButtonLink>
-            <ButtonLink href={NAV.cta.href} size="sm" className="ml-1 px-3.5 sm:hidden">
-              {NAV.cta.short}
-            </ButtonLink>
-            <MobileMenu pathname={pathname} />
+              <Brandmark className="w-8 transition-transform duration-[var(--dur-spring-smooth)] ease-spring group-hover/logo:scale-[1.06]" />
+              <Wordmark className="w-[6.75rem] text-ink" />
+            </AppLink>
+
+            <DesktopNav
+              pathname={pathname}
+              panel={panel}
+              onToggle={(id) => setPanel((p) => (p === id ? null : id))}
+              onHoverOpen={hoverOpen}
+            />
+
+            <div className="ml-auto flex items-center gap-1 xl:gap-2">
+              <a
+                href={NAV.docs.href}
+                className="group/btn type-small hidden h-9 items-center gap-1 rounded-pill px-3 text-ink-2 transition-colors duration-[var(--dur-short)] hover:bg-bg-sunken hover:text-ink xl:inline-flex"
+              >
+                {NAV.docs.label}
+                <Arrow external />
+                <span className="sr-only"> ({UI.external})</span>
+              </a>
+              <ThemeToggle />
+              <ButtonLink href={NAV.cta.href} size="sm" className="ml-1 hidden sm:inline-flex" magnetic>
+                {NAV.cta.label}
+              </ButtonLink>
+              <ButtonLink href={NAV.cta.href} size="sm" className="ml-1 px-3.5 sm:hidden">
+                {NAV.cta.short}
+              </ButtonLink>
+              <MobileMenu pathname={pathname} />
+            </div>
           </div>
         </div>
 
@@ -315,14 +309,14 @@ function Panel({
       inert={!open}
       onPointerEnter={onEnter}
       className={cn(
-        "glass absolute inset-x-0 top-full hidden border-b border-line/70 shadow-chrome xl:block",
+        "absolute inset-x-0 top-full hidden px-[max(0.5rem,calc(var(--page-x)-0.875rem))] pt-2 xl:block",
         "origin-top transition-[clip-path,opacity] duration-[var(--dur-spring-smooth)] ease-spring",
         open ? "[clip-path:inset(0_0_0_0)] opacity-100" : "pointer-events-none [clip-path:inset(0_0_100%_0)] opacity-0",
       )}
     >
       <div
         className={cn(
-          "container-page py-8 transition-[transform,opacity] duration-[var(--dur-spring-smooth)] ease-spring",
+          "lg-nav is-solid mx-auto max-w-[calc(var(--content-max)+1.75rem)] rounded-[1.25rem] px-8 py-8 transition-[transform,opacity] duration-[var(--dur-spring-smooth)] ease-spring",
           open ? "translate-y-0 opacity-100" : "-translate-y-2 opacity-0",
         )}
       >

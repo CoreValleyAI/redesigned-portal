@@ -104,9 +104,11 @@ output {
   display: none !important;
 }
 
-/* Reduced transparency: the glass chrome becomes solid. */
+/* Reduced transparency: the glass chrome becomes denser (still frosted,
+   like Apple's own "Reduce transparency"); only "more contrast" makes it
+   solid (app/styles/glass.css). */
 @media (prefers-reduced-transparency: reduce) {
   :root {
-    --bg-glass: var(--bg);
+    --bg-glass: color-mix(in oklch, var(--bg) 88%, transparent);
   }
 }
