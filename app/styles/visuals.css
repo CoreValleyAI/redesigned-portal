@@ -403,6 +403,96 @@
   stroke-width: 1.6;
   stroke-linecap: round;
 }
+/* ── The protection map (components/home/protection-map.tsx) ── */
+/* Larger type than the data path: this drawing is read, not glanced at. */
+.pm .dp-item,
+.pm .dp-name {
+  font-size: 12px;
+}
+.pm .dp-sub {
+  font-size: 10px;
+}
+.pm .dp-label {
+  font-size: 10.5px;
+}
+.pm-space {
+  fill: color-mix(in oklch, var(--hydro) 5%, transparent);
+  stroke: var(--hydro);
+  stroke-width: 1.2;
+  stroke-dasharray: 6 4;
+}
+.pm-x {
+  fill: none;
+  stroke: var(--ink-2);
+  stroke-width: 1.6;
+  stroke-linecap: round;
+}
+.pm-notice {
+  fill: none;
+  stroke: var(--line-strong);
+  stroke-width: 1;
+  stroke-dasharray: 3 4;
+}
+.pm-envelope {
+  fill: var(--bg-raised);
+  stroke: var(--line-strong);
+  stroke-width: 0.8;
+}
+.pm-envelope__flap,
+.pm-lock__shackle {
+  fill: none;
+  stroke: var(--ink-3);
+  stroke-width: 0.9;
+  stroke-linejoin: round;
+}
+.pm-gate {
+  fill: none;
+  stroke: var(--ink-2);
+  stroke-width: 2.4;
+  stroke-linecap: round;
+}
+.pm-lock {
+  fill: var(--bg-raised);
+  stroke: var(--ink-3);
+  stroke-width: 0.9;
+}
+.pm-verdict {
+  fill: var(--ink-2);
+}
+/* One commitment lit: its part in hydro, everything else stepped back. */
+.pm :is(.pm-part, .pm-base) {
+  transition: opacity var(--dur-base) var(--ease-out);
+}
+.pm.has-active .pm-part:not(.is-on) {
+  opacity: 0.25;
+}
+.pm.has-active .pm-base {
+  opacity: 0.55;
+}
+.pm-part.is-on :is(.pm-target, .pm-envelope, .pm-lock) {
+  stroke: var(--hydro);
+}
+.pm-part.is-on :is(.pm-x, .pm-gate, .pm-notice, .dp-blocked, .pm-envelope__flap, .pm-lock__shackle) {
+  stroke: var(--hydro);
+}
+.pm-part.is-on .pm-notice {
+  stroke-dasharray: 2 6;
+  stroke-width: 1.6;
+  animation: dp-flow 1.2s linear infinite;
+}
+.pm-part.is-on .pm-verdict {
+  fill: var(--hydro-ink);
+}
+:root[data-theme="light"] .pm-part.is-on .pm-verdict {
+  fill: var(--hydro);
+}
+.pm-part.is-on .pm-space {
+  stroke-width: 2;
+  fill: color-mix(in oklch, var(--hydro) 9%, transparent);
+}
+:root[data-motion="reduce"] .pm-part.is-on .pm-notice {
+  animation: none;
+}
 @keyframes dp-flow {
   to {
     stroke-dashoffset: -16;

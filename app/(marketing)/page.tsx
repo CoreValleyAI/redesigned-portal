@@ -1,7 +1,7 @@
 import { BuiltOn } from "@/components/home/built-on";
 import { GpuSection } from "@/components/home/gpu-section";
 import { Hero } from "@/components/home/hero";
-import { SafeVisual } from "@/components/home/safe-visual";
+import { ProtectionMap } from "@/components/home/protection-map";
 import { Climb, ProductsSection } from "@/components/home/sections";
 import { SliceTeaser } from "@/components/home/slice-teaser";
 import { ToolsSection } from "@/components/home/tools-section";
@@ -61,8 +61,8 @@ export default function HomePage() {
           <LayerStack compact />
           <p className="type-caption text-ink-3">
             The five layers are NVIDIA&apos;s framing
-            <NoteRef notes={notes} id="cake" />. The facility&apos;s uptime is its own commitment for power,
-            cooling and the building
+            <NoteRef notes={notes} id="cake" />. The facility&apos;s uptime is its own commitment for power, cooling and
+            the building
             <NoteRef notes={notes} id="place.uptime" />.
           </p>
         </div>
@@ -115,10 +115,10 @@ export default function HomePage() {
         <UseCaseCarousel cases={stories} label="Use cases" />
       </section>
 
-      {/* Your data is safe with us (S9 teaser) */}
+      {/* Your data is safe with us: the protections, drawn and listed. */}
       <section aria-labelledby="rim-title" className="section-y">
-        <div className="container-page grid items-center gap-12 lg:grid-cols-[1fr_1.1fr]">
-          <div className="flex flex-col gap-8 lg:order-2">
+        <div className="container-page">
+          <ProtectionMap items={HOME.rim.items} link={HOME.rim.link}>
             <SectionHead
               id="rim-title"
               kicker={HOME.rim.kicker}
@@ -126,15 +126,7 @@ export default function HomePage() {
               continuation={HOME.rim.continuation}
               lead={HOME.rim.lead}
             />
-            <div>
-              <TextLink href={HOME.rim.link.href} arrow>
-                {HOME.rim.link.label}
-              </TextLink>
-            </div>
-          </div>
-          <div className="lg:order-1" data-parallax="0.06">
-            <SafeVisual className="w-full" />
-          </div>
+          </ProtectionMap>
         </div>
       </section>
 

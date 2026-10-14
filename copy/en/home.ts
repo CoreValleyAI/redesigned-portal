@@ -8,6 +8,7 @@
  * Numbers are fact ids (lib/facts.ts) so the page can footnote them; copy
  * budget per chapter: headline ≤ 8 words, lead ≤ 30.
  */
+import type { Protection } from "@/components/home/protection-map";
 import type { FactId } from "@/lib/facts";
 
 export const HOME = {
@@ -66,7 +67,35 @@ export const HOME = {
     kicker: "Data protection",
     title: "Your data is safe with us.",
     continuation: "Protected at every step.",
-    lead: "Your datasets, models, prompts and answers are isolated from other customers, seen only when you ask us to, and never used to train anything.",
+    lead: "Five commitments for your datasets, models, prompts and answers, in plain words.",
+    /** Each one matches /trust (copy/en/trust.ts); ids light the drawing. */
+    items: [
+      {
+        id: "isolated",
+        title: "Isolated in hardware",
+        body: "Your GPU, or your MIG slice, runs only your work. Slices are separated inside the GPU itself.",
+      },
+      {
+        id: "access",
+        title: "Seen only when you ask",
+        body: "Our staff open your workloads only for support you ask for, or when the law requires it.",
+      },
+      {
+        id: "training",
+        title: "Never used for training",
+        body: "We don't sell your data, and we don't train anything on your workloads or prompts.",
+      },
+      {
+        id: "abroad",
+        title: "No copies abroad",
+        body: "Stored and processed in our own datacentre in Nepal, and never replicated outside it.",
+      },
+      {
+        id: "incident",
+        title: "Told within 72 hours",
+        body: "If an incident affects your data, you hear what happened and what we are doing within 72 hours.",
+      },
+    ] satisfies Protection[] as Protection[],
     link: { href: "/trust", label: "How we protect it" },
   },
 
