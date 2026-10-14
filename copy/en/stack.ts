@@ -1,78 +1,87 @@
 /**
- * "Every layer, named" — the stack from the facility to your work, each
- * layer with its real parts (docs/revamp/04 §2). Shown on the home page and
- * on /infrastructure (components/infrastructure/layer-stack.tsx). Values
- * come from lib/facts.ts; nothing here may name a part the HPE briefing or
- * the owner has not confirmed (no NVLink, no switch models, no topology).
+ * "Every layer, named" — CoreValley on NVIDIA's five-layer cake of AI
+ * (Jensen Huang: energy, chips, infrastructure, models, applications). Shown
+ * on the home page and on /infrastructure
+ * (components/infrastructure/layer-stack.tsx).
+ *
+ * CTO ruling, 14 Oct 2026: no detailed specifications. Name the GPU and its
+ * headline memory only; no GPU or server counts, server, network or storage
+ * details, platform product names or software licensing.
  */
+import type { NoteEntry } from "@/components/system/fact";
 import type { FactId } from "@/lib/facts";
-import { fact, v } from "@/lib/facts";
+import { v } from "@/lib/facts";
 
-export type LayerId = "work" | "software" | "compute" | "fabric" | "facility";
+export type LayerId = "applications" | "models" | "infrastructure" | "chips" | "energy";
 
 export interface Layer {
   id: LayerId;
   /** Short name for the list and the plate. */
   name: string;
-  /** The parts, in one line. */
+  /** What the layer is at CoreValley, in one line. */
   parts: string;
   /** A sentence of what it does for you. */
   body: string;
-  /** Facts this layer states, for footnotes and engineer mode. */
+  /** Facts this layer states, for footnotes. */
   facts: FactId[];
   href: string;
 }
 
-const gpus = Number(v("cluster.gpus"));
-const hbm = gpus * parseFloat(v("gpu.memory"));
-
 /** Top to bottom: the order the eye reads the drawing. */
 export const LAYERS: Layer[] = [
   {
-    id: "work",
-    name: "Your workspace",
-    parts: `${v("software.workspace")} · JupyterLab, Kubeflow, Ray, Spark, MLflow, KServe`,
-    body: "Notebooks, pipelines, training, serving and data tools, together in one workspace.",
-    facts: ["software.workspace"],
+    id: "applications",
+    name: "Applications",
+    parts: "Fraud scoring · voice in Nepali · assistants · forecasting",
+    body: "What you build: the products and services your customers use.",
+    facts: [],
+    href: "/use-cases",
+  },
+  {
+    id: "models",
+    name: "Models",
+    parts: "Open models · your fine-tunes · your own",
+    body: "Train, fine-tune and serve models with the tools you already know: JupyterLab, Kubeflow, Ray, MLflow.",
+    facts: [],
     href: "/platform",
   },
   {
-    id: "software",
-    name: "AI software",
-    parts: `${v("software.nvaie")} · NVIDIA NIM · ${v("cluster.platform")}`,
-    body: "NVIDIA's supported AI stack and model microservices, on HPE's private cloud platform.",
-    facts: ["software.nvaie", "cluster.platform"],
-    href: "/platform",
-  },
-  {
-    id: "compute",
-    name: "Compute",
-    parts: `${v("cluster.servers")} × ${v("server.model")} · ${gpus} × ${v("gpu.model")} · ${hbm.toLocaleString("en-US")} GB HBM3e`,
-    body: `Each server: ${v("cluster.gpusPerServer")} GPUs, ${v("server.cpu")} processors, ${v("server.memory")} of memory and local NVMe.`,
-    facts: ["cluster.servers", "server.model", "cluster.gpus", "gpu.memory", "server.cpu", "server.memory"],
-    href: "/hardware",
-  },
-  {
-    id: "fabric",
-    name: "Network and storage",
-    parts: `${v("cluster.network")} ${fact("cluster.network").label} · ${v("cluster.storage")} all-flash`,
-    body: `${v("cluster.storageSystem")}: S3-compatible object and file storage, beside the GPUs.`,
-    facts: ["cluster.network", "cluster.storage", "cluster.storageSystem", "cluster.storageAccess"],
-    href: "/hardware",
-  },
-  {
-    id: "facility",
-    name: "The facility",
-    parts: `${v("place.location")} · ${v("place.power")} · ${v("place.uptime")} facility uptime`,
-    body: "A datacentre inside the rim of the valley, being commissioned now.",
-    facts: ["place.location", "place.power", "place.uptime"],
+    id: "infrastructure",
+    name: "Infrastructure",
+    parts: "Datacentre · cooling · networking · storage · scheduling",
+    body: "What turns chips into one machine, run by our engineers in Kathmandu.",
+    facts: [],
     href: "/infrastructure",
+  },
+  {
+    id: "chips",
+    name: "Chips",
+    parts: `${v("gpu.model")} · ${v("gpu.memory")} ${v("gpu.memoryType")} per GPU`,
+    body: "Whole GPUs, or up to seven isolated slices of one with NVIDIA MIG.",
+    facts: ["gpu.model", "gpu.memory", "gpu.migCount"],
+    href: "/hardware",
+  },
+  {
+    id: "energy",
+    name: "Energy",
+    parts: `${v("place.power")} · ${v("place.uptime")} facility uptime`,
+    body: "Where every AI stack starts. Ours runs on Nepal's hydro-dominated grid.",
+    facts: ["place.power", "place.uptime"],
+    href: "/infrastructure#power",
   },
 ];
 
 export const STACK = {
-  kicker: "The stack",
+  kicker: "The five-layer cake",
   title: "Every layer, named.",
-  continuation: "All of it in the valley.",
-  lead: "From the building and its power to the notebook you open: every part named, every part running in the valley.",
+  continuation: "From energy to your app.",
+  lead: "NVIDIA's Jensen Huang describes AI as a five-layer cake: energy, chips, infrastructure, models and applications. Here is each layer at CoreValley.",
 } as const;
+
+/** The footnote that credits the framing. */
+export const STACK_NOTE: NoteEntry = {
+  key: "cake",
+  text: "The five layers (energy, chips, infrastructure, models, applications) are NVIDIA's framing, from Jensen Huang.",
+  source: { name: "NVIDIA, “AI Is a 5-Layer Cake”", url: "https://blogs.nvidia.com/blog/ai-5-layer-cake/" },
+  asOf: "2026-10-14",
+};

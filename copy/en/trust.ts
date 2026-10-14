@@ -9,7 +9,7 @@ export const TRUST = {
   meta: {
     title: "Trust — security, data handling and compliance status",
     description:
-      "How CoreValley handles your data: stored and processed in the Kathmandu Valley, isolated in hardware, accessed only when you ask. Our subprocessors, incident promise and how to report a vulnerability.",
+      "How CoreValley keeps your data safe: stored and processed in Nepal, isolated in hardware, accessed only when you ask. Our subprocessors, incident promise and how to report a vulnerability.",
   },
   hero: {
     kicker: "Trust",
@@ -21,8 +21,8 @@ export const TRUST = {
     title: "Four commitments.",
     items: [
       {
-        title: "Your data stays in the valley",
-        body: "Workload data is stored and processed in our Kathmandu Valley datacentre, and is not replicated outside Nepal.",
+        title: "Your data is safe with us",
+        body: "Workload data is stored and processed in our own datacentre in Nepal, and is not replicated outside Nepal.",
       },
       {
         title: "Isolation you can point to",

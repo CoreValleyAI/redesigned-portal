@@ -11,7 +11,7 @@ import { pageMetadata } from "@/lib/seo";
 export const metadata = pageMetadata({
   title: "Use cases — AI work that belongs in Nepal",
   description:
-    "Fraud, AML and KYC for banks and wallets, voice AI in Nepali, private language models, training on local data, universities, startups and IT exporters — what teams in Nepal can build on GPUs in the Kathmandu Valley.",
+    "Fraud, AML and KYC for banks and wallets, voice AI in Nepali, private language models, hydropower forecasting, training on local data, universities, startups and IT exporters — what teams in Nepal can build on GPUs close to home.",
   path: "/use-cases",
 });
 
@@ -27,9 +27,8 @@ export default function UseCasesPage() {
               Work that belongs <span className="text-ink-3">in Nepal.</span>
             </h1>
             <p className="type-lead measure text-ink-2">
-              Banks scoring payments, call centres answering in Nepali, teams training on their own data, a class
-              sharing one GPU. What teams in Nepal can run on GPUs close to home — each story grounded in one number,
-              with its source.
+              Banks checking payments, call centres answering in Nepali, rivers forecast days ahead, a class sharing one
+              GPU. What teams in Nepal can run on GPUs close to home, each story grounded in one fact with its source.
             </p>
           </div>
         </div>
@@ -55,7 +54,7 @@ export default function UseCasesPage() {
           <Atlas cases={NEPAL} />
           <p className="type-caption text-ink-3">
             &ldquo;Built for&rdquo; describes who could build each one; it does not name customers or partners. The
-            pictures are illustrations with sample data.
+            pictures are simple illustrations, not real data.
           </p>
         </div>
       </section>

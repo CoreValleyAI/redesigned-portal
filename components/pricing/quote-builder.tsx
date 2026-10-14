@@ -10,9 +10,10 @@
  * console works with a keyboard and a screen reader exactly as a form does:
  *
  *  · What: six product tiles (a radio group).
- *  · How many: the first cluster itself — two servers of four GPUs — where
- *    picking a GPU lights it and every one before it; MIG slices on a range
- *    across all eight GPUs, seven slices each; storage as a capacity band.
+ *  · How many: a row of GPUs, where picking one lights it and every one
+ *    before it, and "More" for anything larger (no cluster layout or size:
+ *    CTO ruling, 14 Oct 2026); MIG slices on a range, seven per GPU;
+ *    storage as a capacity band.
  *  · How long, and the work: segmented controls whose lens slides between
  *    the options.
  */
@@ -28,8 +29,10 @@ type Slug = (typeof QUOTE_PRODUCTS)[number]["slug"];
 
 const GPU_GB = parseFloat(v("gpu.memory"));
 const SLICE_GB = parseFloat(v("gpu.migSize"));
-const GPUS = Number(v("cluster.gpus"));
-const PER_SERVER = Number(v("cluster.gpusPerServer"));
+/** GPUs offered one by one in the picker; anything larger is "More". */
+const GPUS = 4;
+/** The picker's value for "more than GPUS". */
+const MORE = 0;
 const SLICES_PER_GPU = Number(v("gpu.migCount"));
 
 const focusRing =
@@ -102,81 +105,79 @@ function ProductTiles({ value, onChange }: { value: Slug; onChange: (v: Slug) =>
   );
 }
 
-/** How many GPUs: the cluster as it is, two servers of four. */
+/** How many GPUs: one to four, lit in order, or more. */
 function GpuPicker({ value, onChange }: { value: number; onChange: (n: number) => void }) {
   const name = useId();
-  const servers = Math.ceil(GPUS / PER_SERVER);
+  const options = [...Array.from({ length: GPUS }, (_, g) => g + 1), MORE];
   return (
     <div className="flex flex-col gap-4">
-      <div className="grid gap-3 sm:grid-cols-2">
-        {Array.from({ length: servers }, (_, s) => (
-          <div key={s} className="rounded-card border border-line bg-bg-sunken/60 p-3">
-            <p className="type-caption mb-2.5 flex justify-between font-mono text-ink-3">
-              <span>Server {s + 1}</span>
-              <span className="hidden md:inline">ProLiant DL380a Gen12</span>
-            </p>
-            <div className="grid grid-cols-4 gap-2">
-              {Array.from({ length: PER_SERVER }, (_, g) => {
-                const n = s * PER_SERVER + g + 1;
-                const lit = n <= value;
-                return (
-                  <label
-                    key={n}
-                    className={cn(
-                      "relative flex aspect-[3/4] cursor-pointer flex-col justify-between overflow-hidden rounded-chip border p-1.5 transition-[background-color,border-color,transform] ease-spring active:scale-[0.95]",
-                      focusRing,
-                      lit
-                        ? "border-hydro bg-hydro text-bg"
-                        : "border-line bg-bg-raised text-ink-3 hover:border-line-strong hover:text-ink-2",
-                    )}
-                    style={{
-                      transitionDuration: "var(--dur-spring-snappy)",
-                      transitionDelay: lit ? `${(n - 1) * 28}ms` : "0ms",
-                    }}
-                  >
-                    <input
-                      type="radio"
-                      name={name}
-                      value={n}
-                      checked={value === n}
-                      onChange={() => onChange(n)}
-                      className="sr-only"
-                      aria-label={`${n} ${n === 1 ? "GPU" : "GPUs"}`}
-                    />
-                    <span aria-hidden="true" className="font-mono text-[0.625rem] leading-none tabular">
-                      {String(n).padStart(2, "0")}
-                    </span>
-                    {/* The card's memory, as a stack of dots. */}
-                    <span aria-hidden="true" className="grid grid-cols-3 gap-[3px] self-center">
-                      {Array.from({ length: 9 }, (_, i) => (
-                        <span
-                          key={i}
-                          className={cn("size-[3px] rounded-full", lit ? "bg-bg/80" : "bg-current opacity-45")}
-                        />
-                      ))}
-                    </span>
-                  </label>
-                );
-              })}
-            </div>
-          </div>
-        ))}
+      <div className="grid grid-cols-5 gap-2 rounded-card border border-line bg-bg-sunken/60 p-3">
+        {options.map((n) => {
+          const lit = value === MORE || (n !== MORE && n <= value);
+          return (
+            <label
+              key={n}
+              className={cn(
+                "relative flex aspect-[3/4] cursor-pointer flex-col justify-between overflow-hidden rounded-chip border p-1.5 transition-[background-color,border-color,transform] ease-spring active:scale-[0.95]",
+                focusRing,
+                lit
+                  ? "border-hydro bg-hydro text-bg"
+                  : "border-line bg-bg-raised text-ink-3 hover:border-line-strong hover:text-ink-2",
+              )}
+              style={{
+                transitionDuration: "var(--dur-spring-snappy)",
+                transitionDelay: lit ? `${((n === MORE ? GPUS + 1 : n) - 1) * 28}ms` : "0ms",
+              }}
+            >
+              <input
+                type="radio"
+                name={name}
+                value={n}
+                checked={value === n}
+                onChange={() => onChange(n)}
+                className="sr-only"
+                aria-label={n === MORE ? `More than ${GPUS} GPUs` : `${n} ${n === 1 ? "GPU" : "GPUs"}`}
+              />
+              <span aria-hidden="true" className="font-mono text-[0.625rem] leading-none tabular">
+                {n === MORE ? "More" : String(n).padStart(2, "0")}
+              </span>
+              {/* The card's memory, as a stack of dots. */}
+              <span aria-hidden="true" className="grid grid-cols-3 gap-[3px] self-center">
+                {Array.from({ length: 9 }, (_, i) => (
+                  <span
+                    key={i}
+                    className={cn("size-[3px] rounded-full", lit ? "bg-bg/80" : "bg-current opacity-45")}
+                  />
+                ))}
+              </span>
+            </label>
+          );
+        })}
       </div>
       <p className="type-small text-ink-2" aria-live="polite">
-        <span className="font-semibold text-ink tabular">{value} × H200 NVL</span> · {fmt(value * GPU_GB)} GB of HBM3e
+        {value === MORE ? (
+          <>
+            <span className="font-semibold text-ink">More than {GPUS} × H200 NVL</span> · we&apos;ll plan it with you
+          </>
+        ) : (
+          <>
+            <span className="font-semibold text-ink tabular">{value} × H200 NVL</span> · {fmt(value * GPU_GB)} GB of
+            HBM3e
+          </>
+        )}
       </p>
     </div>
   );
 }
 
-/** How many slices: a range across the cluster, seven slices per GPU. */
+/** How many slices: a range across up to four GPUs, seven slices each. */
 function SlicePicker({ value, onChange }: { value: number; onChange: (n: number) => void }) {
   const id = useId();
   const max = GPUS * SLICES_PER_GPU;
   const gpus = Math.ceil(value / SLICES_PER_GPU);
   return (
     <div className="flex flex-col gap-4">
-      <div aria-hidden="true" className="grid grid-cols-4 gap-2 sm:grid-cols-8">
+      <div aria-hidden="true" className="grid grid-cols-4 gap-2">
         {Array.from({ length: GPUS }, (_, g) => (
           <div key={g} className="flex flex-col gap-1 rounded-chip border border-line bg-bg-sunken/60 p-1.5">
             {Array.from({ length: SLICES_PER_GPU }, (_, s) => {
@@ -299,7 +300,7 @@ export function QuoteBuilder() {
   const sized = def.unit === "gpus" || def.unit === "slices";
   const unitLabel = def.unit === "slices" ? (count === 1 ? "slice" : "slices") : "H200 NVL";
   const params = new URLSearchParams({ intent: "workloads", product, duration, workload });
-  if (sized) params.set("count", String(count));
+  if (sized) params.set("count", count === MORE ? "more" : String(count));
   if (def.unit === "tb") params.set("capacity", storage);
 
   let n = 1;
@@ -357,10 +358,12 @@ export function QuoteBuilder() {
               <div>
                 <dt className="type-caption text-ink-3">Size</dt>
                 <dd className="type-title-3 tabular">
-                  {count} × {unitLabel}
-                  <span className="type-small ml-2 font-normal text-ink-3">
-                    {def.unit === "slices" ? `≈ ${fmt(count * SLICE_GB)} GB` : `${fmt(count * GPU_GB)} GB HBM3e`}
-                  </span>
+                  {count === MORE ? `More than ${GPUS}` : count} × {unitLabel}
+                  {count !== MORE && (
+                    <span className="type-small ml-2 font-normal text-ink-3">
+                      {def.unit === "slices" ? `≈ ${fmt(count * SLICE_GB)} GB` : `${fmt(count * GPU_GB)} GB HBM3e`}
+                    </span>
+                  )}
                 </dd>
               </div>
             )}

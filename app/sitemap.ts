@@ -38,6 +38,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     entry("/infrastructure", 0.8),
     entry("/platform", 0.8),
     entry("/pricing", 0.9, "weekly"),
+    entry("/solutions", 0.8),
     entry("/use-cases", 0.7),
     entry("/trust", 0.6),
     entry("/company", 0.6),

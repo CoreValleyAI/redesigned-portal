@@ -185,7 +185,7 @@ export const LEGAL: Record<"privacy" | "terms" | "data-residency", LegalPage> = 
         heading: "The commitment",
         paragraphs: [
           "Customer data placed on CoreValley is stored and processed on our systems in our datacentre in the Kathmandu Valley. It is not stored outside Nepal: not replicated, backed up or cached abroad.",
-          "This is how the platform is built, not a setting you switch on. HPE Private Cloud AI runs in our datacentre, and there is no foreign region to schedule into.",
+          "This is how the platform is built, not a setting you switch on. The platform runs in our own datacentre, and there is no foreign region to schedule into.",
         ],
       },
       {

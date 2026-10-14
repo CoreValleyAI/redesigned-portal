@@ -86,11 +86,11 @@ export const QUOTE = {
     what: "What will you run on?",
     whatHint: "Pick one; you can change it later.",
     gpus: "How many GPUs?",
-    gpusHint: "The first cluster: two servers of four.",
+    gpusHint: "Pick one to four, or more for anything larger.",
     slices: "How many slices?",
     slicesHint: "Up to seven isolated slices per GPU.",
     storage: "How much storage?",
-    storageHint: "All-flash, beside the GPUs.",
+    storageHint: "Fast storage, beside the GPUs.",
     duration: "For how long?",
     workload: "What kind of work?",
   },
@@ -107,7 +107,7 @@ export const QUOTE_PRODUCTS: {
   { slug: "reserved", label: "Reserved GPUs", unitLabel: "Held for you · fixed term", unit: "gpus" },
   { slug: "mig-slicing", label: "MIG slices", unitLabel: "Up to 7 per GPU · per second", unit: "slices" },
   { slug: "inferencing", label: "Inferencing", unitLabel: "Models served in Nepal", unit: "gpus" },
-  { slug: "storage", label: "Storage", unitLabel: "All-flash · by capacity", unit: "tb" },
+  { slug: "storage", label: "Storage", unitLabel: "By capacity", unit: "tb" },
   { slug: "services", label: "Services", unitLabel: "Engineers · scoped first", unit: "none" },
 ];
 
@@ -123,8 +123,7 @@ export const QUOTE_DURATIONS = [
 export const QUOTE_STORAGE = [
   { id: "under-1tb", label: "Under 1 TB", short: "< 1 TB" },
   { id: "1-10tb", label: "1–10 TB", short: "1–10" },
-  { id: "10-30tb", label: "10–30 TB", short: "10–30" },
-  { id: "30tb-plus", label: "30 TB +", short: "30 +" },
+  { id: "10tb-plus", label: "10 TB +", short: "10 +" },
 ] as const;
 
 export const QUOTE_WORKLOADS = [

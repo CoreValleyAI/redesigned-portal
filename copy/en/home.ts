@@ -14,35 +14,35 @@ export const HOME = {
   meta: {
     title: "CoreValley — Nepal's GPU cloud, NVIDIA H200 NVL in the Kathmandu Valley",
     description:
-      "NVIDIA H200 NVL GPUs on HPE Private Cloud AI, in a hydro-powered datacentre in the Kathmandu Valley. Billed per second in NPR. Coming soon; early access open.",
+      "NVIDIA H200 NVL GPUs in a hydro-powered datacentre in the Kathmandu Valley. Billed per second in NPR. Coming soon; early access open.",
   },
 
   hero: {
     kicker: ["Kathmandu Valley", "NVIDIA H200 NVL", "Coming soon"],
     /** "The valley is / coming online." — "online." is the lit word. */
     title: { line1: "The valley is", line2: "coming", lit: "online." },
-    lead: "Nepal's GPU cloud: NVIDIA H200 NVL GPUs on HPE Private Cloud AI, in a datacentre in the Kathmandu Valley.",
+    lead: "Nepal's GPU cloud: NVIDIA H200 NVL GPUs, built with HPE and NVIDIA, in a datacentre in the Kathmandu Valley.",
     primary: { href: "/contact", label: "Request access" },
     secondary: { href: "#stack", label: "See how it works" },
     facts: [
-      { value: "8 × H200 NVL", label: "in the first cluster" },
+      { value: "H200 NVL", label: "NVIDIA GPUs" },
       { value: "Per second", label: "billed in rupees" },
-      { value: "In the valley", label: "where your data stays" },
+      { value: "Safe with us", label: "your data, protected" },
     ],
   },
 
   builtOn: {
     label: "Built on",
-    line: "NVIDIA H200 NVL GPUs · HPE Private Cloud AI · NVIDIA AI Enterprise",
+    line: "NVIDIA H200 NVL GPUs, on infrastructure built with HPE",
   },
 
   gpu: {
     kicker: "The GPU",
     title: "141 GB on every GPU.",
     continuation: "HBM3e at 4.8 TB/s.",
-    lead: "Room for large models and long contexts on a single card, Tensor Cores for FP8, BF16 and TF32, and NVIDIA AI Enterprise on top.",
+    lead: "Room for large models and long contexts on a single card, Tensor Cores for FP8, BF16 and TF32, and NVIDIA's AI software on top.",
     specs: ["gpu.memory", "gpu.bandwidth", "gpu.fp8", "gpu.power"] satisfies FactId[] as FactId[],
-    link: { href: "/hardware#gpu", label: "The full specification" },
+    link: { href: "/hardware#gpu", label: "The GPU" },
   },
 
   slice: {
@@ -63,11 +63,11 @@ export const HOME = {
   },
 
   rim: {
-    kicker: "Residency",
-    title: "Your data stays in the valley.",
-    continuation: "Inside the rim, under Nepal's law.",
-    lead: "Datasets, checkpoints, models, prompts and answers are stored and processed in our Kathmandu Valley datacentre. We say exactly what else leaves Nepal, and what doesn't.",
-    link: { href: "/infrastructure#residency", label: "What stays, what leaves" },
+    kicker: "Data protection",
+    title: "Your data is safe with us.",
+    continuation: "Protected at every step.",
+    lead: "Your datasets, models, prompts and answers are isolated from other customers, seen only when you ask us to, and never used to train anything.",
+    link: { href: "/trust", label: "How we protect it" },
   },
 
   billing: {
@@ -80,7 +80,7 @@ export const HOME = {
     kicker: "Your workspace",
     title: "The tools you already use.",
     continuation: "Ready on day one.",
-    lead: "HPE AI Essentials puts notebooks, pipelines, training, serving and data tools in one workspace, with NVIDIA AI Enterprise underneath.",
+    lead: "Notebooks, pipelines, training, serving and data tools in one workspace, ready when you sign in.",
     link: { href: "/platform", label: "The platform" },
     groups: [
       { name: "Notebooks and pipelines", tools: ["JupyterLab", "Kubeflow", "Kale", "Airflow"] },
@@ -93,7 +93,7 @@ export const HOME = {
   products: {
     kicker: "Products",
     title: "Six ways to run.",
-    continuation: "One cluster in the valley.",
+    continuation: "One cloud in Nepal.",
     link: { href: "/products", label: "Compare all six" },
   },
 

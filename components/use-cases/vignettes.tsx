@@ -1,447 +1,410 @@
 "use client";
 
 /**
- * Pictures of the work (S16): each use case shows the workload itself, as a
- * small live screen — a ledger being scored, speech becoming text, a GPU
- * shared by a class, a loss curve falling — instead of stock imagery or
- * abstract art. Product-UI vignettes, in the site's own type and dots.
+ * Pictures of the outcome (S16): one calm drawing per use case — a river
+ * forecast running ahead of today, a payment flagged for review, one GPU
+ * shared by a class, a line of Nepali speech written down. Owner review,
+ * 14 Oct 2026: simple and effective, nothing technical — no pipelines,
+ * readouts, counters or figures that look like real data.
  *
- * Every one is illustrative (sample data, no customer's) and decorative:
- * the card's text carries the meaning. They play only while on screen,
- * pause off it, and with reduced motion show their finished frame. The
- * server renders that finished frame too, so nothing is blank before
- * scripts load.
+ * Every one is decorative (the card's text carries the meaning) and drawn
+ * in the site's tokens, so it reads in both themes. The resting state is
+ * the finished picture: that is what the server renders, what reduced
+ * motion shows, and what an off-screen card holds. The gentle loop runs
+ * only while the picture is on screen ([data-play]), on touch screens as
+ * much as with a mouse, since it needs no pointer at all.
  */
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import type { Art } from "@/copy/en/use-cases";
 import { cn } from "@/lib/cn";
 
-/** A step counter that runs while the element is on screen. Starts (and
-    rests, for reduced motion and the server) on the last step. */
-function useLoop(count: number, ms: number) {
+/** Plays the picture's loop while it is on screen. */
+function usePlay() {
   const ref = useRef<HTMLDivElement>(null);
-  const [step, setStep] = useState(count - 1);
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
     if (document.documentElement.dataset.motion === "reduce") return;
-    let timer = 0;
-    const stop = () => {
-      window.clearInterval(timer);
-      timer = 0;
-      delete el.dataset.play;
-    };
     const io = new IntersectionObserver(
       ([e]) => {
-        if (e?.isIntersecting && !timer) {
-          el.dataset.play = "";
-          setStep(0);
-          timer = window.setInterval(() => setStep((s) => (s + 1) % count), ms);
-        } else if (!e?.isIntersecting && timer) stop();
+        if (e?.isIntersecting) el.dataset.play = "";
+        else delete el.dataset.play;
       },
       { threshold: 0.25 },
     );
     io.observe(el);
-    return () => {
-      io.disconnect();
-      stop();
-    };
-  }, [count, ms]);
-  return [ref, step] as const;
+    return () => io.disconnect();
+  }, []);
+  return ref;
 }
+
+type Tone = "hydro" | "warn" | "ink" | "sky";
 
 function Frame({
   label,
-  meta,
+  legend,
   children,
-  frameRef,
   className,
 }: {
   label: string;
-  meta?: string;
+  legend?: [Tone, string][];
   children: React.ReactNode;
-  frameRef?: React.Ref<HTMLDivElement>;
   className?: string;
 }) {
+  const ref = usePlay();
   return (
-    <div ref={frameRef} aria-hidden="true" className={cn("vg", className)}>
-      <div className="vg__bar">
-        <span className="vg__live" />
-        <span className="vg__label">{label}</span>
-        {meta ? <span className="vg__meta">{meta}</span> : null}
-      </div>
+    <div ref={ref} aria-hidden="true" className={cn("vg", className)}>
+      <p className="vg__label">{label}</p>
       <div className="vg__body">{children}</div>
+      {legend ? (
+        <ul className="vg__legend">
+          {legend.map(([tone, text]) => (
+            <li key={text} data-tone={tone}>
+              {text}
+            </li>
+          ))}
+        </ul>
+      ) : null}
     </div>
   );
 }
 
-/* ── Startups and IT exporters: an API call, streamed back ──────────────── */
-const API_ANSWER =
-  "Namaste! Your order #4471 left our Kathmandu warehouse this morning and should reach Pokhara tomorrow. Anything else?".split(
-    /(?<= )/,
-  );
-function Api() {
-  const [ref, step] = useLoop(API_ANSWER.length + 14, 110);
-  const shown = Math.max(0, Math.min(API_ANSWER.length, step - 5));
-  const done = shown >= API_ANSWER.length;
-  return (
-    <Frame frameRef={ref} label="POST /v1/chat/completions" meta="NVIDIA NIM">
-      <div className="vg-code">
-        <span className="vg-dim">{"{"}</span> <span className="vg-key">&quot;model&quot;</span>:{" "}
-        <span className="vg-str">&quot;your-fine-tune&quot;</span>, <span className="vg-key">&quot;stream&quot;</span>:{" "}
-        <span className="vg-str">true</span> <span className="vg-dim">{"}"}</span>
-      </div>
-      <div className="vg-answer">
-        {API_ANSWER.slice(0, shown).map((t, i) => (
-          <span key={i} className="vg-token">
-            {t}
-          </span>
-        ))}
-        {!done && <span className="vg-caret" />}
-      </div>
-      <div className="vg-foot">
-        <span className={cn("vg-chip", done && "is-on")}>{done ? "200 OK" : "streaming"}</span>
-        <span className="vg-chip">tokens · {Math.round(shown * 1.4)}</span>
-        <span className="vg-chip vg-push">per second · NPR</span>
-      </div>
-    </Frame>
-  );
-}
+const cssVars = (v: Record<string, number | string>) => v as React.CSSProperties;
 
-/* ── Banks and wallets: transactions scored as they arrive ─────────────── */
-const TX = [
-  { t: "10:42:07", ch: "Wallet → Bank", amt: "4,500", s: 0.08 },
-  { t: "10:42:07", ch: "QR · merchant", amt: "1,250", s: 0.04 },
-  { t: "10:42:08", ch: "Bank → Wallet", amt: "98,000", s: 0.94 },
-  { t: "10:42:08", ch: "Remittance in", amt: "62,300", s: 0.21 },
-  { t: "10:42:09", ch: "Wallet → Wallet", amt: "9,999", s: 0.88 },
-  { t: "10:42:09", ch: "Card · e-com", amt: "3,480", s: 0.11 },
-  { t: "10:42:10", ch: "QR · merchant", amt: "640", s: 0.03 },
-  { t: "10:42:10", ch: "Wallet → Bank", amt: "25,000", s: 0.36 },
-];
-function Ledger() {
-  const [ref, step] = useLoop(TX.length, 900);
-  const rows = Array.from({ length: 5 }, (_, i) => TX[(step - i + TX.length * 4) % TX.length]!);
-  const flagged = rows.filter((r) => r.s >= 0.85).length;
-  return (
-    <Frame frameRef={ref} label="Transactions · scored live" meta="NPR">
-      <ul className="vg-rows">
-        {rows.map((r, i) => (
-          <li key={`${step}-${i}`} className={cn("vg-row", i === 0 && "is-new", r.s >= 0.85 && "is-flag")}>
-            <span className="vg-dim vg-hide-sm">{r.t}</span>
-            <span className="vg-ch">{r.ch}</span>
-            <span className="vg-amt">{r.amt}</span>
-            <span className="vg-score">
-              <span className="vg-meter" style={{ "--v": r.s } as React.CSSProperties} />
-              {r.s.toFixed(2)}
-            </span>
-          </li>
-        ))}
-      </ul>
-      <div className="vg-foot">
-        <span className={cn("vg-chip", flagged > 0 && "is-warn")}>
-          {flagged > 0 ? `${flagged} to review · linked accounts` : "no alerts"}
-        </span>
-        <span className="vg-chip vg-push">KYC · name match 0.97 ✓</span>
-      </div>
-    </Frame>
-  );
-}
-
-/* ── Universities: one GPU, a slice for each student ───────────────────── */
-function Slices() {
-  const [ref] = useLoop(1, 100000);
-  const students = ["S01", "S02", "S03", "S04", "S05", "S06", "S07"];
-  return (
-    <Frame frameRef={ref} label="1 × H200 NVL · 7 MIG slices" meta="JupyterLab">
-      <ul className="vg-slices">
-        {students.map((s, i) => (
-          <li key={s} className="vg-slice" style={{ "--i": i } as React.CSSProperties}>
-            <span className="vg-dim">{s}</span>
-            <span className="vg-cells">
-              {Array.from({ length: 12 }, (_, k) => (
-                <span key={k} style={{ "--k": k } as React.CSSProperties} />
-              ))}
-            </span>
-            <span className="vg-mem">16.5 GB</span>
-          </li>
-        ))}
-      </ul>
-      <div className="vg-foot">
-        <span className="vg-chip is-on">7 notebooks running</span>
-        <span className="vg-chip vg-push">isolated in hardware</span>
-      </div>
-    </Frame>
-  );
-}
-
-/* ── Voice: Nepali speech to text, intent, and a spoken reply ──────────── */
-const SAID = ["नमस्ते,", "मेरो", "खाताको", "ब्यालेन्स", "कति", "छ?"];
-function Voice({ variant }: { variant?: string }) {
-  const [ref, step] = useLoop(34, 170);
-  const words = Math.max(0, Math.min(SAID.length, Math.floor((step - 2) / 2)));
-  const heard = words >= SAID.length;
-  const replying = step >= 20;
+/* ── Startups and IT exporters: your product, reaching its customers ───── */
+const REACH = [
+  [64, 18],
+  [72, 68],
+  [104, 34],
+  [112, 8],
+  [124, 58],
+  [148, 24],
+  [150, 72],
+] as const;
+const ORIGIN = [28, 42] as const;
+const reachArc = ([x, y]: readonly [number, number]) => {
+  const [ox, oy] = ORIGIN;
+  return `M${ox},${oy} Q${(ox + x) / 2},${Math.max(0, Math.min(oy, y) - 14)} ${x},${y}`;
+};
+function Reach() {
+  const [ox, oy] = ORIGIN;
   return (
     <Frame
-      frameRef={ref}
-      label={variant === "media" ? "Speech → text · archive" : "Speech → text · नेपाली"}
-      meta="real time"
+      label="Your product, serving customers"
+      legend={[
+        ["hydro", "Your product"],
+        ["ink", "Customers, at home and abroad"],
+      ]}
     >
-      <div className={cn("vg-wave", !heard && "is-live")}>
-        {Array.from({ length: 32 }, (_, i) => (
-          <span key={i} style={{ "--i": i, "--h": 0.25 + ((i * 37) % 11) / 14 } as React.CSSProperties} />
+      <svg viewBox="0 0 160 80" className="vg-svg">
+        {REACH.map((p, i) => (
+          <g key={i} style={cssVars({ "--i": i })}>
+            <path d={reachArc(p)} className="vg-arc" />
+            <path d={reachArc(p)} pathLength={1} className="vg-pulse" />
+            <circle cx={p[0]} cy={p[1]} r={2.6} className="vg-dest" />
+          </g>
         ))}
-      </div>
-      <p className="vg-said" lang="ne">
-        {SAID.slice(0, words).join(" ")}
-        {!heard && <span className="vg-caret" />}
-      </p>
-      <p className={cn("vg-gloss", heard && "is-on")}>“Hello, what&apos;s my account balance?”</p>
-      <div className="vg-foot">
-        <span className={cn("vg-chip", heard && "is-on")}>intent · balance enquiry</span>
-        <span className={cn("vg-chip vg-push", replying && "is-on")} lang="ne">
-          {replying ? "उत्तर: एकछिन, म हेर्छु।" : "…"}
-        </span>
+        <rect x={ox - 12} y={oy - 12} width={24} height={24} rx={6} className="vg-node" />
+        {[
+          [-4, -4],
+          [4, -4],
+          [-4, 4],
+          [4, 4],
+        ].map(([dx, dy], i) => (
+          <circle key={i} cx={ox + dx!} cy={oy + dy!} r={1.8} className="vg-node-dot" />
+        ))}
+      </svg>
+    </Frame>
+  );
+}
+
+/* ── Banks and wallets: payments checked, one sent for review ──────────── */
+const FLAGGED = 2;
+function Payments() {
+  return (
+    <Frame
+      label="Payments, checked as they happen"
+      legend={[
+        ["hydro", "Looks fine"],
+        ["warn", "Sent for review"],
+      ]}
+    >
+      <div className="vg-pay">
+        {[0.8, 0.6, 0.9, 0.7, 0.55].map((w, i) => (
+          <div key={i} className={cn("vg-pay__card", i === FLAGGED && "is-flag")} style={cssVars({ "--i": i })}>
+            <span className="vg-pay__tint" />
+            <span className="vg-pay__sym" lang="ne">
+              रु
+            </span>
+            <span className="vg-pay__line" style={cssVars({ "--w": w })} />
+            <span className="vg-pay__line is-short" />
+            <span className="vg-pay__mark">
+              <svg viewBox="0 0 16 16">
+                {i === FLAGGED ? <path d="M4.5 14V2.5M4.5 3h7l-2 3 2 3h-7" /> : <path d="M3.5 8.5l3 3 6-7" />}
+              </svg>
+            </span>
+          </div>
+        ))}
+        <span className="vg-pay__sweep" />
       </div>
     </Frame>
   );
 }
 
-/* ── Private language models: an answer that cites its sources ─────────── */
-const ANSWER = "Clauses 7.2 and 11.4: either side may end the contract with 30 days' notice, given in writing.".split(
-  /(?<= )/,
-);
-function Assistant({ variant }: { variant?: string }) {
-  const [ref, step] = useLoop(ANSWER.length + 16, 120);
-  const shown = Math.max(0, Math.min(ANSWER.length, step - 4));
-  const done = shown >= ANSWER.length;
-  const q =
-    variant === "tourism"
-      ? "Which teahouses near Ghorepani are open in winter?"
-      : variant === "legal"
-        ? "Which precedents discuss land registration disputes?"
-        : "Which clauses mention termination?";
+/* ── Universities: one GPU, a private slice for each student ───────────── */
+function Classroom() {
   return (
-    <Frame frameRef={ref} label="Assistant · your documents" meta="cited">
-      <p className="vg-q">{q}</p>
-      <p className="vg-a">
-        {variant === "tourism" || variant === "legal" ? (
-          <span className="vg-dim">Searching your documents…</span>
-        ) : (
-          <>
-            {ANSWER.slice(0, shown).join("")}
-            {!done && <span className="vg-caret" />}
-          </>
-        )}
-      </p>
-      <div className="vg-foot">
-        <span className={cn("vg-chip", done && "is-on")}>contract.pdf · p. 4</span>
-        <span className={cn("vg-chip", done && "is-on")}>contract.pdf · p. 9</span>
-        <span className="vg-chip vg-push">stays in Nepal</span>
-      </div>
+    <Frame
+      label="One GPU, shared by a class"
+      legend={[
+        ["hydro", "A slice of the GPU"],
+        ["ink", "One for each student"],
+      ]}
+    >
+      <svg viewBox="0 0 160 80" className="vg-svg">
+        <rect x={16} y={6} width={128} height={30} rx={5} className="vg-gpu" />
+        {Array.from({ length: 7 }, (_, i) => {
+          const x = Math.round((21 + i * 17.2) * 10) / 10;
+          const cx = x + 7.5;
+          return (
+            <g key={i} style={cssVars({ "--i": i })}>
+              <rect x={x} y={11} width={15} height={20} rx={2.5} className="vg-cell" />
+              <path d={`M${cx},36 L${cx},49`} className="vg-link" />
+              <circle cx={cx} cy={54.5} r={3.4} className="vg-person" />
+              <path
+                d={`M${cx - 6.5},72 Q${cx - 6.5},61 ${cx},61 Q${cx + 6.5},61 ${cx + 6.5},72 Z`}
+                className="vg-person"
+              />
+            </g>
+          );
+        })}
+      </svg>
     </Frame>
   );
 }
 
-/* ── Training: a fine-tune on eight GPUs ───────────────────────────────── */
-const LOSS = Array.from({ length: 48 }, (_, i) => {
-  const x = i / 47;
-  const noise = Math.sin(i * 2.7) * 0.025 + Math.sin(i * 1.3) * 0.018;
-  return Math.round((0.12 + 0.78 * Math.exp(-x * 3.4) + noise * (1 - x * 0.6)) * 1000) / 1000;
-});
-const LOSS_D = LOSS.map((y, i) => `${i === 0 ? "M" : "L"}${(i / 47) * 100},${(y * 100).toFixed(1)}`).join(" ");
-function Training() {
-  const [ref, step] = useLoop(60, 110);
-  const p = Math.min(1, step / 48);
-  const steps = Math.round(p * 4000);
+/* ── Voice: Nepali speech, written down ────────────────────────────────── */
+function Voice({ variant }: { variant?: string }) {
+  const label =
+    variant === "media"
+      ? "Archive audio, written down"
+      : variant === "telecom"
+        ? "A caller, understood in Nepali"
+        : "Nepali speech, written down";
   return (
-    <Frame frameRef={ref} label="Fine-tune · your model" meta="8 × H200 NVL">
-      <div className="vg-train">
-        <svg viewBox="-2 -4 104 108" preserveAspectRatio="none" className="vg-loss">
-          <path d="M0,100 L100,100" className="vg-axis" />
-          <path d={LOSS_D} pathLength={1} className="vg-curve" style={{ strokeDashoffset: 1 - p }} />
-        </svg>
-        <div className="vg-gpus">
-          {Array.from({ length: 8 }, (_, i) => (
-            <span key={i} className={cn("vg-gpu", i === 4 && "vg-gap")} style={{ "--i": i } as React.CSSProperties} />
+    <Frame label={label}>
+      <div className="vg-voice">
+        <div className="vg-wave">
+          {Array.from({ length: 28 }, (_, i) => (
+            <span key={i} style={cssVars({ "--i": i, "--h": Math.round((0.3 + ((i * 37) % 11) / 15) * 100) / 100 })} />
           ))}
         </div>
-      </div>
-      <div className="vg-foot">
-        <span className="vg-chip tabular">step {steps.toLocaleString("en-US")} / 4,000</span>
-        <span className={cn("vg-chip", step % 16 > 11 && "is-on")}>checkpoint → S3</span>
-        <span className="vg-chip vg-push tabular">loss {LOSS[Math.min(47, Math.round(p * 47))]!.toFixed(3)}</span>
+        <p className="vg-said" lang="ne">
+          <span className="vg-type">नमस्ते, मेरो खाताको ब्यालेन्स कति छ?</span>
+        </p>
+        <p className="vg-gloss">“Hello, what&apos;s my account balance?”</p>
       </div>
     </Frame>
   );
 }
 
-/* ── Language: a Nepali sentence, tokenised ────────────────────────────── */
-const TOKENS: [string, number][] = [
-  ["हामी", 41823],
-  [" नेपाल", 30961],
-  ["मै", 7714],
-  [" मोड", 52210],
-  ["ेल", 1903],
-  [" तालिम", 66741],
-  [" दिन्छौं", 48802],
-  ["।", 902],
-];
-const LANGS = ["Nepali", "Maithili", "Bhojpuri", "Tamang", "Nepal Bhasa"];
-function Tokens() {
-  const [ref, step] = useLoop(30, 200);
-  const shown = Math.max(0, Math.min(TOKENS.length, step - 1));
+/* ── Private language models: an answer that shows its source ──────────── */
+const CHATS: Record<string, { q: string; a: string; src: string }> = {
+  tourism: {
+    q: "Which teahouses near Ghorepani stay open in winter?",
+    a: "Most of them do. Here are the ones your guide lists, and how to book.",
+    src: "trek-guide.pdf",
+  },
+  legal: {
+    q: "Which rulings deal with land registration?",
+    a: "Several do. Here is a short summary of each, with its page.",
+    src: "rulings.pdf",
+  },
+  default: {
+    q: "Which clauses mention ending the contract?",
+    a: "Two of them. Either side may end it with written notice.",
+    src: "contract.pdf",
+  },
+};
+function Assistant({ variant }: { variant?: string }) {
+  const { q, a, src } = CHATS[variant ?? "default"] ?? CHATS.default!;
   return (
-    <Frame frameRef={ref} label="Tokenizer · Devanagari" meta="124 mother tongues">
-      <p className="vg-said" lang="ne">
-        हामी नेपालमै मोडेल तालिम दिन्छौं।
-      </p>
-      <ul className="vg-tokens">
-        {TOKENS.map(([t, id], i) => (
-          <li key={i} className={cn("vg-tok", i < shown && "is-on")} lang="ne">
-            <span>{t.trim() || "␠"}</span>
-            <span className="vg-dim tabular">{id}</span>
+    <Frame label="Ask your own documents">
+      <div className="vg-chat">
+        <p className="vg-q">{q}</p>
+        <p className="vg-a">
+          <span className="vg-type">{a}</span>
+        </p>
+        <p className="vg-src">
+          <svg viewBox="0 0 16 16">
+            <path d="M4 1.5h5.5l3 3v10H4zM9.5 1.5v3h3" />
+          </svg>
+          {src}
+        </p>
+      </div>
+    </Frame>
+  );
+}
+
+/* ── Training: mistakes falling as the model learns ────────────────────── */
+const LOSS_D = Array.from({ length: 41 }, (_, i) => {
+  const x = i / 40;
+  const y = 52 - 40 * Math.exp(-x * 3.2) + Math.sin(i * 1.9) * 1.2 * (1 - x);
+  return `${i ? "L" : "M"}${Math.round(x * 1000) / 10},${Math.round(y * 10) / 10}`;
+}).join(" ");
+function Training() {
+  return (
+    <Frame label="Your model, learning" legend={[["hydro", "Mistakes, falling as it trains"]]}>
+      <svg viewBox="0 0 100 60" preserveAspectRatio="none" className="vg-svg vg-stretch">
+        <path d="M0,58 L100,58" className="vg-axis" />
+        <path d={`${LOSS_D} L100,58 L0,58 Z`} className="vg-area" />
+        <path d={LOSS_D} className="vg-curve" />
+      </svg>
+    </Frame>
+  );
+}
+
+/* ── Language: the languages of Nepal ──────────────────────────────────── */
+const LANGS: [string, string][] = [
+  ["नेपाली", "Nepali"],
+  ["मैथिली", "Maithili"],
+  ["भोजपुरी", "Bhojpuri"],
+  ["थारू", "Tharu"],
+  ["तामाङ", "Tamang"],
+  ["नेपाल भाषा", "Nepal Bhasa"],
+];
+function Languages() {
+  return (
+    <Frame label="The languages of Nepal">
+      <ul className="vg-langs">
+        {LANGS.map(([ne, en], i) => (
+          <li key={en} style={cssVars({ "--i": i })}>
+            <span lang="ne">{ne}</span>
+            <span className="vg-langs__en">{en}</span>
           </li>
         ))}
+        <li className="is-more">and many more</li>
       </ul>
-      <div className="vg-foot vg-langs">
-        {LANGS.map((l, i) => (
-          <span key={l} className={cn("vg-chip", Math.floor(step / 6) % LANGS.length === i && "is-on")}>
-            {l}
-          </span>
-        ))}
-      </div>
     </Frame>
   );
 }
 
-/* ── Documents: a page read line by line ───────────────────────────────── */
-function Ocr({ variant }: { variant?: string }) {
-  const [ref, step] = useLoop(28, 220);
-  const fields =
-    variant === "heritage"
-      ? [
-          ["Script", "Newar (Prachalit)"],
-          ["Folio", "12 recto"],
-          ["Lines", "7"],
-        ]
-      : variant === "contract"
-        ? [
-            ["Employer", "████ LLC"],
-            ["Salary", "matches offer ✓"],
-            ["Fee clause", "flag ⚑"],
-          ]
-        : [
-            ["नाम", "████ ████"],
-            ["मिति", "२०८१/०४/१२"],
-            ["वडा नं.", "५"],
-          ];
-  const read = Math.max(0, Math.min(fields.length, Math.floor((step - 3) / 4)));
+/* ── Documents: handwriting in, searchable text out ────────────────────── */
+const HAND = [0.92, 0.74, 0.86, 0.58, 0.8].map((w, i) => {
+  const y = 12 + i * 11;
+  const end = 6 + w * 46;
+  let d = `M6,${y}`;
+  for (let x = 6; x < end; x += 6) {
+    const k = ((x * 7 + i * 3) % 5) - 2;
+    d += ` q3,${Math.round((-3 - k * 0.6) * 10) / 10} 6,0`;
+  }
+  return d;
+});
+function Records({ variant }: { variant?: string }) {
   const label =
     variant === "heritage"
-      ? "Manuscript · OCR"
+      ? "A manuscript, made searchable"
       : variant === "contract"
-        ? "Contract · check"
-        : "Record · Devanagari OCR";
+        ? "A job contract, checked"
+        : "A handwritten record, made searchable";
   return (
-    <Frame frameRef={ref} label={label} meta="handwriting">
+    <Frame label={label} legend={variant === "contract" ? [["warn", "A clause worth a second look"]] : undefined}>
       <div className="vg-doc">
-        <div className="vg-page">
-          {[0.92, 0.78, 0.86, 0.6, 0.82, 0.5].map((w, i) => (
-            <span key={i} className="vg-line" style={{ "--w": w } as React.CSSProperties} />
-          ))}
+        <div className={cn("vg-page", variant === "heritage" && "is-old")}>
+          <svg viewBox="0 0 58 66" preserveAspectRatio="none" className="vg-svg vg-stretch">
+            {HAND.map((d, i) => (
+              <path key={i} d={d} className="vg-hand" />
+            ))}
+          </svg>
           <span className="vg-beam" />
         </div>
-        <dl className="vg-fields">
-          {fields.map(([k, val], i) => (
-            <div key={k} className={cn("vg-field", i < read && "is-on")}>
-              <dt className="vg-dim" lang={variant ? undefined : "ne"}>
-                {k}
-              </dt>
-              <dd lang={variant ? undefined : "ne"}>{val}</dd>
-            </div>
+        <span className="vg-doc__arrow" />
+        <div className="vg-text">
+          {[0.9, 0.7, 0.84, 0.52, 0.76].map((w, i) => (
+            <span
+              key={i}
+              className={cn("vg-text__line", variant === "contract" && i === 3 && "is-flag")}
+              style={cssVars({ "--w": w, "--i": i })}
+            />
           ))}
-        </dl>
+        </div>
       </div>
     </Frame>
   );
 }
 
-/* ── Hydropower: inflow, and the forecast ahead ────────────────────────── */
+/* ── Hydropower: river flow, and the forecast ahead of today ───────────── */
 // Rounded, so the server and the browser draw exactly the same path.
 const r2 = (n: number) => Math.round(n * 100) / 100;
 const PAST = Array.from({ length: 30 }, (_, i) => r2(62 - Math.sin(i * 0.33) * 12 - i * 0.6 + Math.sin(i * 1.7) * 3));
 const AHEAD = Array.from({ length: 22 }, (_, i) => r2(PAST[29]! - Math.sin(i * 0.25 + 0.4) * 14 + i * 0.3));
+const fx = (i: number, n: number, off: number) => r2(off + (i / (n - 1)) * (off ? 42 : 58));
+const PAST_D = PAST.map((y, i) => `${i ? "L" : "M"}${fx(i, PAST.length, 0)},${y}`).join(" ");
+const AHEAD_D = AHEAD.map((y, i) => `${i ? "L" : "M"}${fx(i, AHEAD.length, 58)},${y}`).join(" ");
+const BAND_D =
+  AHEAD.map((y, i) => `${i ? "L" : "M"}${fx(i, AHEAD.length, 58)},${r2(y - 3 - i * 0.6)}`).join(" ") +
+  " " +
+  AHEAD.map((y, i) => [y, i] as const)
+    .reverse()
+    .map(([y, i]) => `L${fx(i, AHEAD.length, 58)},${r2(y + 3 + i * 0.6)}`)
+    .join(" ") +
+  " Z";
 function Forecast() {
-  const [ref, step] = useLoop(40, 120);
-  const p = Math.min(1, step / 26);
-  const x = (i: number, n: number, off: number) => r2(off + (i / (n - 1)) * (off ? 42 : 58));
-  const past = PAST.map((y, i) => `${i ? "L" : "M"}${x(i, PAST.length, 0)},${y}`).join(" ");
-  const ahead = AHEAD.map((y, i) => `${i ? "L" : "M"}${x(i, AHEAD.length, 58)},${y}`).join(" ");
-  const band =
-    AHEAD.map((y, i) => `${i ? "L" : "M"}${x(i, AHEAD.length, 58)},${r2(y - 3 - i * 0.6)}`).join(" ") +
-    " " +
-    [...AHEAD]
-      .reverse()
-      .map((y, j) => {
-        const i = AHEAD.length - 1 - j;
-        return `L${x(i, AHEAD.length, 58)},${r2(y + 3 + i * 0.6)}`;
-      })
-      .join(" ") +
-    " Z";
   return (
-    <Frame frameRef={ref} label="River inflow · forecast" meta="+72 h">
-      <svg viewBox="0 18 100 64" preserveAspectRatio="none" className="vg-chart">
-        <path d={past} className="vg-past" />
-        <path d={band} className="vg-band" style={{ opacity: p }} />
-        <path d={ahead} pathLength={1} className="vg-ahead" style={{ strokeDashoffset: 1 - p }} />
-        <path d="M58,18 L58,82" className="vg-now" />
-      </svg>
-      <div className="vg-foot">
-        <span className="vg-chip">observed</span>
-        <span className={cn("vg-chip", p >= 1 && "is-on")}>forecast · hourly</span>
-        <span className="vg-chip vg-push">now</span>
+    <Frame
+      label="River flow, and the days ahead"
+      legend={[
+        ["ink", "What the river did"],
+        ["hydro", "The forecast"],
+      ]}
+    >
+      <div className="vg-forecast">
+        <svg viewBox="0 18 100 64" preserveAspectRatio="none" className="vg-svg vg-stretch">
+          <path d={`${PAST_D} L58,82 L0,82 Z`} className="vg-river" />
+          <path d={PAST_D} className="vg-past" />
+          <path d={BAND_D} className="vg-band" />
+          <path d={AHEAD_D} className="vg-ahead" />
+          <path d="M58,18 L58,82" className="vg-now" />
+        </svg>
+        <span className="vg-forecast__today">Today</span>
       </div>
     </Frame>
   );
 }
 
-/* ── Hazards: radar fringes over a glacial lake ────────────────────────── */
-function Radar() {
-  const [ref] = useLoop(1, 100000);
+/* ── Hazards: a satellite passing over a glacial lake ──────────────────── */
+function Lakes() {
   return (
-    <Frame frameRef={ref} label="InSAR · ground movement" meta="lake watch">
-      <svg viewBox="0 0 100 60" preserveAspectRatio="xMidYMid slice" className="vg-radar">
-        {Array.from({ length: 9 }, (_, i) => (
-          <ellipse
-            key={i}
-            cx={62}
-            cy={30}
-            rx={8 + i * 6}
-            ry={5 + i * 3.6}
-            className="vg-fringe"
-            style={{ "--i": i } as React.CSSProperties}
-          />
-        ))}
-        <path d="M22,34 C26,24 38,22 44,28 C50,34 44,44 34,44 C26,44 20,40 22,34 Z" className="vg-lake" />
-        <circle cx={62} cy={30} r={2.2} className="vg-ping" />
+    <Frame
+      label="Glacial lakes, watched from orbit"
+      legend={[
+        ["sky", "Glacial lake"],
+        ["hydro", "Satellite pass"],
+      ]}
+    >
+      <svg viewBox="0 0 160 80" className="vg-svg">
+        <path
+          d="M0,80 L0,52 L22,34 L36,44 L58,18 L76,38 L92,26 L116,48 L134,30 L160,50 L160,80 Z"
+          className="vg-ridge is-back"
+        />
+        <path d="M58,18 L52,26 L58,24 L64,27 Z M134,30 L129,36 L134,35 L139,37 Z" className="vg-snow" />
+        <path d="M0,80 L0,64 L30,50 L54,60 L76,48 L106,64 L132,54 L160,66 L160,80 Z" className="vg-ridge" />
+        <path d="M84,62 C88,56 104,55 110,60 C114,64 104,68 94,67 C87,67 82,66 84,62 Z" className="vg-lake" />
+        <g className="vg-sat">
+          <path d="M80,12 L68,62 L112,62 Z" className="vg-cone" />
+          <rect x={76} y={6} width={8} height={6} rx={1} className="vg-sat__body" />
+          <rect x={64} y={7.5} width={10} height={3} rx={0.6} className="vg-sat__wing" />
+          <rect x={86} y={7.5} width={10} height={3} rx={0.6} className="vg-sat__wing" />
+        </g>
       </svg>
-      <div className="vg-foot">
-        <span className="vg-chip">glacial lake</span>
-        <span className="vg-chip is-warn">change detected</span>
-        <span className="vg-chip vg-push">satellite pass</span>
-      </div>
     </Frame>
   );
 }
 
-/* ── Health: a triage queue for the radiologist ────────────────────────── */
+/* ── Health: an X-ray moved to the front of the queue ──────────────────── */
 function Xray() {
-  const [ref, step] = useLoop(12, 600);
-  const flagged = step >= 4;
   return (
-    <Frame frameRef={ref} label="Chest X-ray · triage" meta="decision support">
+    <Frame label="Chest X-rays, sorted for the doctor" legend={[["warn", "Look at this one first"]]}>
       <div className="vg-xray">
         <svg viewBox="0 0 60 60" className="vg-film">
           <rect x="0" y="0" width="60" height="60" rx="4" className="vg-film-bg" />
@@ -452,55 +415,40 @@ function Xray() {
             </g>
           ))}
           <path d="M30,10 L30,54" className="vg-spine" />
-          <circle cx="41" cy="27" r="7" className={cn("vg-heat", flagged && "is-on")} />
+          <circle cx="41" cy="27" r="7" className="vg-heat" />
         </svg>
         <ul className="vg-queue">
-          <li className={cn(flagged && "is-flag")}>
-            <span>Study 0142</span>
-            <span>{flagged ? "review first" : "scoring…"}</span>
-          </li>
-          <li>
-            <span>Study 0141</span>
-            <span>routine</span>
-          </li>
-          <li>
-            <span>Study 0140</span>
-            <span>routine</span>
-          </li>
+          <li className="is-flag">First</li>
+          <li>Routine</li>
+          <li>Routine</li>
         </ul>
-      </div>
-      <div className="vg-foot">
-        <span className="vg-chip">a radiologist decides</span>
-        <span className="vg-chip vg-push">not a diagnosis</span>
       </div>
     </Frame>
   );
 }
 
 /* ── Agriculture: a leaf photo, checked ────────────────────────────────── */
-function Vision() {
-  const [ref, step] = useLoop(14, 450);
-  const found = step >= 5;
+function Leaf() {
   return (
-    <Frame frameRef={ref} label="Leaf photo · crop health" meta="from a phone">
-      <div className="vg-leaf-wrap">
-        <svg viewBox="0 0 100 60" className="vg-leaf">
-          <path d="M14,46 C26,10 70,6 88,12 C80,34 54,56 14,46 Z" className="vg-leaf-body" />
-          <path d="M14,46 C40,34 62,22 88,12" className="vg-vein" />
-          {[
-            [52, 26],
-            [58, 30],
-            [49, 33],
-          ].map(([x, y], i) => (
-            <circle key={i} cx={x} cy={y} r={2.4 + i * 0.4} className="vg-spot" />
-          ))}
-          <rect x="43" y="19" width="22" height="19" rx="2" className={cn("vg-box", found && "is-on")} />
-        </svg>
-      </div>
-      <div className="vg-foot">
-        <span className={cn("vg-chip", found && "is-warn")}>{found ? "leaf spot · likely" : "checking…"}</span>
-        <span className={cn("vg-chip vg-push", found && "is-on")}>advice by voice, in Nepali</span>
-      </div>
+    <Frame
+      label="A photo of a leaf, from a phone"
+      legend={[
+        ["warn", "Leaf spot found"],
+        ["hydro", "Advice by voice, in Nepali"],
+      ]}
+    >
+      <svg viewBox="0 0 100 60" className="vg-svg">
+        <path d="M14,46 C26,10 70,6 88,12 C80,34 54,56 14,46 Z" className="vg-leaf" />
+        <path d="M14,46 C40,34 62,22 88,12" className="vg-vein" />
+        {[
+          [52, 26],
+          [58, 30],
+          [49, 33],
+        ].map(([x, y], i) => (
+          <circle key={i} cx={x} cy={y} r={2.4 + i * 0.4} className="vg-spot" />
+        ))}
+        <rect x="43" y="19" width="22" height="19" rx="2" className="vg-find" />
+      </svg>
     </Frame>
   );
 }
@@ -510,30 +458,30 @@ function Vision() {
 export function Vignette({ art, variant, className }: { art: Art; variant?: string; className?: string }) {
   const body = (() => {
     switch (art) {
-      case "api":
-        return <Api />;
-      case "ledger":
-        return <Ledger />;
-      case "slices":
-        return <Slices />;
+      case "reach":
+        return <Reach />;
+      case "payments":
+        return <Payments />;
+      case "classroom":
+        return <Classroom />;
       case "voice":
         return <Voice variant={variant} />;
       case "assistant":
         return <Assistant variant={variant} />;
       case "training":
         return <Training />;
-      case "tokens":
-        return <Tokens />;
-      case "ocr":
-        return <Ocr variant={variant} />;
+      case "languages":
+        return <Languages />;
+      case "records":
+        return <Records variant={variant} />;
       case "forecast":
         return <Forecast />;
-      case "radar":
-        return <Radar />;
+      case "lakes":
+        return <Lakes />;
       case "xray":
         return <Xray />;
-      case "vision":
-        return <Vision />;
+      case "leaf":
+        return <Leaf />;
     }
   })();
   return <div className={cn("vg-box-wrap", className)}>{body}</div>;
@@ -546,6 +494,7 @@ export function variantFor(slug: string): string | undefined {
       heritage: "heritage",
       "migrant-workers": "contract",
       media: "media",
+      telecom: "telecom",
       tourism: "tourism",
       "legal-research": "legal",
     } as Record<string, string>

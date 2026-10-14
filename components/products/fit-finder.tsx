@@ -26,7 +26,7 @@ const WHY: Record<ProductSlug, string> = {
   "on-demand": "Bursts of training fit whole GPUs billed by the second.",
   inferencing: "Endpoints with NVIDIA NIM or KServe, served from inside the valley.",
   "mig-slicing": "A hardware-isolated slice per person is right for notebooks and classes.",
-  storage: "All-flash, S3-compatible storage beside the GPUs.",
+  storage: "Fast, S3-compatible storage beside the GPUs.",
   services: "Our engineers in Kathmandu size it with you and quote it in rupees.",
 };
 

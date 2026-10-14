@@ -2,7 +2,7 @@
 
 /**
  * The use-case carousel (home and /use-cases): one card per story, each
- * with its live picture of the work. A native scroll-snap track, so a swipe
+ * with its simple picture of the outcome. A native scroll-snap track, so a swipe
  * on a phone has the platform's own momentum; buttons, the progress marks
  * and the arrow keys move it too.
  *
@@ -188,17 +188,7 @@ export function UseCaseCarousel({
                   </AppLink>
                 </h3>
                 <p className="type-small text-ink-2">{u.short}</p>
-                <ul className="mt-auto flex flex-wrap gap-1.5 pt-3">
-                  {u.workloads.slice(0, 3).map((w) => (
-                    <li
-                      key={w}
-                      className="type-caption rounded-pill border border-line px-2.5 py-1 font-mono text-ink-3"
-                    >
-                      {w}
-                    </li>
-                  ))}
-                </ul>
-                <p className="type-caption flex items-center gap-1.5 text-ink-3">
+                <p className="type-caption mt-auto flex items-center gap-1.5 pt-3 text-ink-3">
                   Runs on{" "}
                   {u.runsOn
                     .slice(0, 2)

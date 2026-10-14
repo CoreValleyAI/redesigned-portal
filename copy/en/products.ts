@@ -3,10 +3,10 @@
  * /products, the product pages, the header's mega panel, the home page's
  * product chapter and the contact form's choices all read from here.
  *
- * Accuracy (docs/revamp/04 §2): customers work in HPE AI Essentials on HPE
- * Private Cloud AI, with NVIDIA AI Enterprise, on NVIDIA H200 NVL GPUs.
- * Nothing here may describe software, interconnects or terms beyond that.
- * Numbers come from lib/facts.ts by id.
+ * Accuracy (docs/revamp/04 §2): customers work in one AI workspace on
+ * NVIDIA H200 NVL GPUs. CTO ruling, 14 Oct 2026: no detailed specifications
+ * — no GPU or server counts, server, network or storage details, platform
+ * product names or software licensing. Numbers come from lib/facts.ts by id.
  */
 import type { FactId } from "@/lib/facts";
 import type { GlyphName } from "@/components/system/dot-glyph";
@@ -54,7 +54,7 @@ export const PRODUCTS: Product[] = [
       },
       {
         title: "Run on capacity held for you",
-        body: "Your GPUs are reserved in HPE AI Essentials from the first day of the term to the last.",
+        body: "Your GPUs are reserved for you from the first day of the term to the last.",
       },
     ],
     features: [
@@ -64,7 +64,7 @@ export const PRODUCTS: Product[] = [
       },
       {
         title: "From one GPU to a whole server",
-        body: "Reserve a single H200 NVL, or a full HPE ProLiant DL380a Gen12 with four of them.",
+        body: "Reserve a single H200 NVL, or several of them.",
       },
       {
         title: "Nobody else on your GPUs",
@@ -72,7 +72,7 @@ export const PRODUCTS: Product[] = [
       },
       {
         title: "The same workspace",
-        body: "Notebooks, pipelines, training and serving in HPE AI Essentials, on GPUs that are always there.",
+        body: "Notebooks, pipelines, training and serving in your workspace, on GPUs that are always there.",
       },
       {
         title: "Data that stays in Nepal",
@@ -83,7 +83,7 @@ export const PRODUCTS: Product[] = [
         body: "Your quote shows the rate for the term up front, in rupees, with nothing added later.",
       },
     ],
-    specs: ["gpu.model", "gpu.memory", "cluster.gpusPerServer"],
+    specs: ["gpu.model", "gpu.memory", "gpu.bandwidth"],
     faq: [
       {
         q: "How long is a term?",
@@ -95,7 +95,7 @@ export const PRODUCTS: Product[] = [
       },
       {
         q: "What do we work in?",
-        a: "HPE AI Essentials on HPE Private Cloud AI, with NVIDIA AI Enterprise — the same workspace as every CoreValley product.",
+        a: "The same AI workspace as every CoreValley product: JupyterLab, Kubeflow, Ray, MLflow, KServe and more, ready on day one.",
       },
     ],
     meta: {
@@ -116,7 +116,7 @@ export const PRODUCTS: Product[] = [
     billing: "Per second, 60-second minimum",
     commitment: "None",
     steps: [
-      { title: "Open your workspace", body: "A notebook or a pipeline in HPE AI Essentials." },
+      { title: "Open your workspace", body: "A notebook or a pipeline, ready when you sign in." },
       { title: "Start on an H200 NVL", body: "One GPU, or several for a bigger job." },
       { title: "Stop, and the meter stops", body: "You pay for the seconds the work ran, in rupees." },
     ],
@@ -131,7 +131,7 @@ export const PRODUCTS: Product[] = [
       },
       {
         title: "Notebooks and pipelines",
-        body: "JupyterLab, Kubeflow pipelines and Ray jobs, ready in HPE AI Essentials.",
+        body: "JupyterLab, Kubeflow pipelines and Ray jobs, ready in your workspace.",
       },
       {
         title: "No commitment",
@@ -172,17 +172,17 @@ export const PRODUCTS: Product[] = [
     commitment: "None, or a reserved endpoint",
     steps: [
       { title: "Pick a model", body: "An NVIDIA NIM microservice for a popular open model, or your own." },
-      { title: "Deploy an endpoint", body: "With NIM or KServe in HPE AI Essentials." },
-      { title: "Call it from your app", body: "From inside Nepal, to GPUs inside the valley." },
+      { title: "Deploy an endpoint", body: "With NVIDIA NIM or KServe." },
+      { title: "Call it from your app", body: "From inside Nepal, with low latency." },
     ],
     features: [
       {
         title: "NVIDIA NIM microservices",
-        body: "Optimised containers for popular open models, part of NVIDIA AI Enterprise.",
+        body: "Optimised containers for popular open models.",
       },
       {
         title: "Your own models too",
-        body: "Serve fine-tuned or custom models with KServe in HPE AI Essentials.",
+        body: "Serve fine-tuned or custom models with KServe.",
       },
       {
         title: "Familiar APIs",
@@ -197,7 +197,7 @@ export const PRODUCTS: Product[] = [
         body: "Requests are processed on GPUs inside the Kathmandu Valley, under Nepal's law.",
       },
     ],
-    specs: ["software.nvaie", "gpu.memory", "place.latency"],
+    specs: ["gpu.model", "gpu.memory", "place.latency"],
     faq: [
       {
         q: "Which models can we serve?",
@@ -268,10 +268,10 @@ export const PRODUCTS: Product[] = [
   {
     slug: "storage",
     name: "Storage",
-    promise: "All-flash storage beside the GPUs, in Nepal.",
+    promise: "Fast storage beside the GPUs, in Nepal.",
     tagline: "Your data, beside the GPUs.",
     summary:
-      "All-flash storage in the same Kathmandu Valley datacentre as the GPUs, with S3-compatible object and file access. Datasets, checkpoints and models stay in Nepal.",
+      "Fast storage in the same datacentre as the GPUs, with S3-compatible object and file access. Datasets, checkpoints and models are kept safe, in Nepal.",
     glyph: "storage",
     bestFor: "Datasets, checkpoints, model weights",
     billing: "By capacity, in NPR",
@@ -283,23 +283,19 @@ export const PRODUCTS: Product[] = [
     ],
     features: [
       {
-        title: "All flash",
-        body: "HPE Alletra Storage MP X10000 — flash throughout, in the same cluster as the GPUs.",
+        title: "Fast, beside the GPUs",
+        body: "Storage in the same datacentre as the GPUs, so jobs read data without a long trip.",
       },
       {
         title: "S3-compatible",
         body: "Object storage that works with the S3 tools and libraries you already have, plus file access.",
       },
       {
-        title: "Local NVMe for scratch",
-        body: "Every GPU server also has local NVMe for fast temporary files.",
-      },
-      {
-        title: "Stays in Nepal",
-        body: "Nothing is copied abroad. Your data lives in the Kathmandu Valley.",
+        title: "Safe with us",
+        body: "Isolated from other customers, and never copied abroad.",
       },
     ],
-    specs: ["cluster.storage", "cluster.storageAccess", "place.location"],
+    specs: ["place.location"],
     faq: [
       {
         q: "Can we use our existing S3 tools?",
@@ -307,13 +303,13 @@ export const PRODUCTS: Product[] = [
       },
       {
         q: "Where is the data kept?",
-        a: "In our datacentre in the Kathmandu Valley, in the same cluster as the GPUs.",
+        a: "In our datacentre in Nepal, beside the GPUs.",
       },
     ],
     meta: {
-      title: "Storage — all-flash, S3-compatible, in Nepal",
+      title: "Storage — S3-compatible, beside the GPUs, in Nepal",
       description:
-        "All-flash HPE Alletra storage beside NVIDIA H200 NVL GPUs in the Kathmandu Valley, with S3-compatible object and file access. Data stays in Nepal.",
+        "Fast storage beside NVIDIA H200 NVL GPUs in Nepal, with S3-compatible object and file access. Your data is kept safe, in Nepal.",
     },
   },
   {
@@ -322,7 +318,7 @@ export const PRODUCTS: Product[] = [
     promise: "Engineers in Kathmandu, on your project.",
     tagline: "Engineers in Kathmandu, on your project.",
     summary:
-      "Help from the people who run the cluster: sizing capacity, moving work from another cloud, getting a model trained and into production, and setting up GPUs for a class or a lab.",
+      "Help from the people who run the GPUs: sizing capacity, moving work from another cloud, getting a model trained and into production, and setting up GPUs for a class or a lab.",
     glyph: "services",
     bestFor: "Enterprises, public sector, universities",
     billing: "Scoped and quoted in NPR",

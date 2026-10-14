@@ -20,7 +20,7 @@ export const COMPANY = {
     paragraphs: [
       "AI is becoming part of how a country works — how it speaks, banks, learns and governs. The compute behind it has mostly lived abroad, billed in dollars and governed by other countries' laws.",
       "We think Nepal should have its own: GPUs in the Kathmandu Valley, billed in rupees, holding data under Nepal's law, with engineers on Nepal time who pick up when you call.",
-      "We are starting with one HPE Private Cloud AI cluster of NVIDIA H200 NVL GPUs, and building carefully from there.",
+      "We are starting with NVIDIA H200 NVL GPUs, and building carefully from there.",
     ],
   },
   principles: {
@@ -53,7 +53,7 @@ export const COMPANY = {
     title: "Talk to us.",
     lines: [
       { label: "Press", value: "info@corevalley.ai", href: "mailto:info@corevalley.ai" },
-      { label: "Partners", value: "Built on HPE Private Cloud AI, with HPE and NVIDIA" },
+      { label: "Partners", value: "Built with HPE and NVIDIA" },
     ],
   },
   careers: {

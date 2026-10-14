@@ -28,7 +28,7 @@ export const NAV = {
         href: "/hardware",
         label: "Hardware",
         glyph: "hardware",
-        description: "NVIDIA H200 NVL, the cluster, and what comes next.",
+        description: "NVIDIA H200 NVL and what comes next.",
       },
       {
         href: "/products#compare",
@@ -39,6 +39,7 @@ export const NAV = {
     ] satisfies NavLink[],
   },
   primary: [
+    { href: "/solutions", label: "Solutions" },
     { href: "/platform", label: "Platform" },
     { href: "/infrastructure", label: "Infrastructure" },
     { href: "/use-cases", label: "Use cases" },
@@ -69,6 +70,7 @@ export const FOOTER = {
         { href: "/hardware", label: "Hardware" },
         { href: "/infrastructure", label: "Infrastructure" },
         { href: "/platform", label: "Platform" },
+        { href: "/solutions", label: "Solutions" },
         { href: "/use-cases", label: "Use cases" },
         { href: "/pricing", label: "Pricing" },
       ],

@@ -1,10 +1,12 @@
 "use client";
 
 /**
- * "Every layer, named" — the stack as an exploded isometric drawing beside
- * the list of its layers (copy/en/stack.ts): the facility at the bottom,
- * then the network and storage, the servers and their GPUs, the AI
- * software, and your workspace on top.
+ * "Every layer, named" — NVIDIA's five-layer cake of AI (energy, chips,
+ * infrastructure, models, applications) as an exploded isometric drawing
+ * beside the list of its layers (copy/en/stack.ts): the river that powers
+ * it at the bottom, then one GPU package, the datacentre floor, models as
+ * services, and your application on top. Illustrative, not a plan of the
+ * cluster: no counts, no topology.
  *
  * Motion is tied to the reader, on every screen: as the section scrolls
  * into view the plates separate, like a technical drawing pulled apart, and
@@ -78,11 +80,11 @@ function Box({
 }
 
 const CALLOUT: Record<LayerId, string> = {
-  work: "HPE AI Essentials · JupyterLab · Kubeflow",
-  software: "NVIDIA AI Enterprise · NIM",
-  compute: "2 × DL380a Gen12 · 8 × H200 NVL",
-  fabric: "400 Gb/s Spectrum · 62 TB all-flash",
-  facility: "Kathmandu Valley · hydropower",
+  applications: "Your products · your customers",
+  models: "Open models · fine-tunes · serving",
+  infrastructure: "Datacentre · network · storage",
+  chips: "NVIDIA H200 NVL · 141 GB HBM3e",
+  energy: "Nepal's hydropower",
 };
 
 function Plate({ index, id, active }: { index: number; id: LayerId; active: boolean }) {
@@ -137,9 +139,28 @@ function Plate({ index, id, active }: { index: number; id: LayerId; active: bool
 
 /** What stands on each plate. */
 function Details({ id, cy }: { id: LayerId; cy: number }) {
-  if (id === "facility") {
-    // A raised floor of tiles, two rows of racks across a cold aisle, and
-    // the power feed coming in.
+  if (id === "energy") {
+    // A river across the plate, flowing, and the feed it powers.
+    const river = (u0: number, phase: number) => {
+      const p: P[] = [];
+      for (let k = 0; k <= 24; k++) {
+        const t = k / 24;
+        p.push(iso(u0 + 0.05 * Math.sin(t * Math.PI * 4 + phase), -0.9 + 1.8 * t, cy));
+      }
+      return `M${p.map(([x, y]) => `${x.toFixed(1)} ${y.toFixed(1)}`).join(" L")}`;
+    };
+    const [p0, p1] = [iso(0.55, 0.75, cy), iso(0.55, -0.85, cy)];
+    return (
+      <g>
+        {[-0.6, -0.35, -0.1].map((u, k) => (
+          <path key={u} d={river(u, k * 1.3)} className="stack-river" pathLength={1} />
+        ))}
+        <line x1={p0[0]} y1={p0[1]} x2={p1[0]} y2={p1[1]} className="stack-feed" pathLength={1} />
+      </g>
+    );
+  }
+  if (id === "infrastructure") {
+    // A raised floor of tiles and two rows of racks across a cold aisle.
     const tiles: React.ReactNode[] = [];
     for (let i = -6; i <= 6; i++) {
       const [a1, a2] = [iso(i / 7, -0.9, cy), iso(i / 7, 0.9, cy)];
@@ -151,7 +172,6 @@ function Details({ id, cy }: { id: LayerId; cy: number }) {
       { u0: -0.55, u1: -0.3, v },
       { u0: 0.1, u1: 0.35, v },
     ]);
-    const [p0, p1] = [iso(-0.92, 0.75, cy), iso(0.75, 0.75, cy)];
     return (
       <g>
         {tiles}
@@ -165,76 +185,28 @@ function Details({ id, cy }: { id: LayerId; cy: number }) {
             }
           </Box>
         ))}
-        <line x1={p0[0]} y1={p0[1]} x2={p1[0]} y2={p1[1]} className="stack-feed" pathLength={1} />
       </g>
     );
   }
-  if (id === "fabric") {
-    // The switch with its ports, and the all-flash storage shelf with its
-    // drive bays; fibre runs between them.
-    const [c0, c1] = [iso(-0.05, -0.3, cy, 4), iso(0.1, 0.45, cy, 4)];
+  if (id === "chips") {
+    // One GPU package: the substrate, the die in the middle, lit, and the
+    // stacks of HBM memory either side of it.
+    const hbm = [-0.58, 0.38].flatMap((u0) => [-0.44, -0.12, 0.2].map((v0) => ({ u0, v0 })));
     return (
       <g>
-        <Box u0={-0.75} u1={-0.05} v0={-0.55} v1={-0.05} h={9} cy={cy}>
-          {(face) =>
-            Array.from({ length: 12 }, (_, k) => {
-              const [x, y] = face(0.08 + k * 0.075, 0.5);
-              return <rect key={k} x={x - 1.6} y={y - 1.4} width="3.2" height="2.8" rx="0.4" className="stack-port" />;
-            })
-          }
-        </Box>
-        <Box u0={0.1} u1={0.75} v0={0.05} v1={0.75} h={16} cy={cy}>
-          {(face) =>
-            [0.3, 0.7].flatMap((t) =>
-              Array.from({ length: 8 }, (_, k) => {
-                const [a, b] = [face(0.08 + k * 0.11, t - 0.15), face(0.08 + k * 0.11, t + 0.15)];
-                return <line key={`${t}-${k}`} x1={a[0]} y1={a[1]} x2={b[0]} y2={b[1]} className="stack-bay" />;
-              }),
-            )
-          }
-        </Box>
-        <path
-          d={`M${c0[0]} ${c0[1]} Q ${(c0[0] + c1[0]) / 2} ${c0[1] + 18} ${c1[0]} ${c1[1]}`}
-          className="stack-lane"
+        <Box u0={-0.72} u1={0.72} v0={-0.58} v1={0.58} h={4} cy={cy} />
+        <polygon
+          points={pts([iso(-0.26, -0.34, cy, 6), iso(0.26, -0.34, cy, 6), iso(0.26, 0.34, cy, 6), iso(-0.26, 0.34, cy, 6)])}
+          className="stack-gpu"
         />
-      </g>
-    );
-  }
-  if (id === "compute") {
-    // Two 2U servers; on each top, four GPUs in a row, lit.
-    return (
-      <g>
-        {[-0.55, 0.15].map((v0) => (
-          <Box key={v0} u0={-0.75} u1={0.75} v0={v0} v1={v0 + 0.5} h={14} cy={cy}>
-            {(face) => (
-              <>
-                {Array.from({ length: 10 }, (_, k) => {
-                  const [x, y] = face(0.06 + k * 0.09, 0.5);
-                  return <circle key={k} cx={x} cy={y} r="1.7" className="stack-fan" />;
-                })}
-              </>
-            )}
-          </Box>
+        {hbm.map(({ u0, v0 }) => (
+          <Box key={`${u0}${v0}`} u0={u0} u1={u0 + 0.2} v0={v0} v1={v0 + 0.24} h={10} cy={cy} top="stack-tile" />
         ))}
-        {[-0.55, 0.15].flatMap((v0) =>
-          [-0.55, -0.2, 0.15, 0.5].map((u) => (
-            <polygon
-              key={`${v0}-${u}`}
-              points={pts([
-                iso(u - 0.13, v0 + 0.1, cy, 14),
-                iso(u + 0.13, v0 + 0.1, cy, 14),
-                iso(u + 0.13, v0 + 0.4, cy, 14),
-                iso(u - 0.13, v0 + 0.4, cy, 14),
-              ])}
-              className="stack-gpu"
-            />
-          )),
-        )}
       </g>
     );
   }
-  if (id === "software") {
-    // Services as raised tiles, a few of them running.
+  if (id === "models") {
+    // Models as services: raised tiles, a few of them running.
     const tiles: React.ReactNode[] = [];
     for (let i = 0; i < 4; i++)
       for (let j = 0; j < 3; j++) {
@@ -256,7 +228,7 @@ function Details({ id, cy }: { id: LayerId; cy: number }) {
       }
     return <g>{tiles}</g>;
   }
-  // Your workspace: a notebook window — title bar, cells of code, a cursor.
+  // Applications: a window — title bar, lines of content, a cursor.
   const win = pts([iso(-0.8, -0.7, cy, 2), iso(0.8, -0.7, cy, 2), iso(0.8, 0.7, cy, 2), iso(-0.8, 0.7, cy, 2)]);
   const bar = pts([iso(-0.8, -0.7, cy, 2), iso(-0.62, -0.7, cy, 2), iso(-0.62, 0.7, cy, 2), iso(-0.8, 0.7, cy, 2)]);
   const lines = [
@@ -325,10 +297,10 @@ export function LayerStack({ className, compact = false }: { className?: string;
             <rect x="430" y="540" width="282" height="48" rx="2" className="stack-title" />
             <line x1="430" y1="558" x2="712" y2="558" className="stack-title__rule" />
             <text x="439" y="553" className="stack-title__head">
-              CoreValley · the stack
+              CoreValley · five layers of AI
             </text>
             <text x="439" y="575" className="stack-title__sub">
-              Exploded view · illustration · not to scale
+              After NVIDIA&apos;s five-layer cake · not to scale
             </text>
           </g>
         </svg>

@@ -9,6 +9,10 @@
  *    production build (see `fact()`), so nothing unconfirmed can go live.
  *  · Confidential values never enter this file or this repository (it is
  *    public). What is not cleared for the website is simply absent.
+ *  · CTO ruling, 14 Oct 2026: no detailed specifications on the site. The
+ *    GPU is named with its headline figures only; no GPU or server counts,
+ *    server, CPU, memory, network or storage details, platform product
+ *    names or software licensing.
  *  · Each rendered number carries its `asOf` date on the page (a footnote or
  *    caption), and claims with a disclaimer render it (`footnote`).
  */
@@ -41,7 +45,6 @@ const NVIDIA_H200: Source = {
   url: "https://www.nvidia.com/en-us/data-center/h200/",
 };
 const OWNER: Source = { name: "CoreValley (owner confirmation)" };
-const CLUSTER: Source = { name: "CoreValley cluster configuration (HPE Private Cloud AI)" };
 const PUBLISHED: Source = { name: "Published CoreValley terms", url: "https://corevalley.ai/pricing/" };
 
 const D = "2026-10-13";
@@ -89,48 +92,6 @@ const FACTS = {
     owner: "hardware",
     footnote: "Tensor Core figures are NVIDIA's, with sparsity.",
   },
-  "gpu.bf16": {
-    value: "1,671 TFLOPS",
-    label: "BF16 / FP16 Tensor Core",
-    status: "confirmed",
-    source: NVIDIA_H200,
-    asOf: D,
-    owner: "hardware",
-    footnote: "Tensor Core figures are NVIDIA's, with sparsity.",
-  },
-  "gpu.tf32": {
-    value: "835 TFLOPS",
-    label: "TF32 Tensor Core",
-    status: "confirmed",
-    source: NVIDIA_H200,
-    asOf: D,
-    owner: "hardware",
-    footnote: "Tensor Core figures are NVIDIA's, with sparsity.",
-  },
-  "gpu.fp32": {
-    value: "60 TFLOPS",
-    label: "FP32",
-    status: "confirmed",
-    source: NVIDIA_H200,
-    asOf: D,
-    owner: "hardware",
-  },
-  "gpu.fp64": {
-    value: "30 TFLOPS",
-    label: "FP64",
-    status: "confirmed",
-    source: NVIDIA_H200,
-    asOf: D,
-    owner: "hardware",
-  },
-  "gpu.fp64Tensor": {
-    value: "60 TFLOPS",
-    label: "FP64 Tensor Core",
-    status: "confirmed",
-    source: NVIDIA_H200,
-    asOf: D,
-    owner: "hardware",
-  },
   "gpu.power": {
     value: "Up to 600 W",
     label: "Max power (configurable)",
@@ -155,154 +116,8 @@ const FACTS = {
     asOf: D,
     owner: "hardware",
   },
-  "gpu.formFactor": {
-    value: "PCIe, dual-slot, air-cooled",
-    label: "Form factor",
-    status: "confirmed",
-    source: NVIDIA_H200,
-    asOf: D,
-    owner: "hardware",
-  },
-  "gpu.pcie": {
-    value: "PCIe Gen5, 128 GB/s",
-    label: "Host interface",
-    status: "confirmed",
-    source: NVIDIA_H200,
-    asOf: D,
-    owner: "hardware",
-  },
-  "gpu.decoders": {
-    value: "7 NVDEC · 7 JPEG",
-    label: "Media decoders",
-    status: "confirmed",
-    source: NVIDIA_H200,
-    asOf: D,
-    owner: "hardware",
-  },
-  "gpu.confidential": {
-    value: "Supported",
-    label: "Confidential computing",
-    status: "confirmed",
-    source: NVIDIA_H200,
-    asOf: D,
-    owner: "hardware",
-  },
 
-  /* ── The first cluster ──────────────────────────────────────────────── */
-  "cluster.platform": {
-    value: "HPE Private Cloud AI",
-    label: "Platform",
-    status: "confirmed",
-    source: CLUSTER,
-    asOf: D,
-    owner: "hardware",
-  },
-  "cluster.gpus": {
-    value: "8",
-    label: "NVIDIA H200 NVL GPUs",
-    status: "confirmed",
-    source: CLUSTER,
-    asOf: D,
-    owner: "hardware",
-  },
-  "cluster.servers": {
-    value: "2",
-    label: "HPE ProLiant DL380a Gen12 servers",
-    status: "confirmed",
-    source: CLUSTER,
-    asOf: D,
-    owner: "hardware",
-  },
-  "cluster.gpusPerServer": {
-    value: "4",
-    label: "GPUs per server",
-    status: "confirmed",
-    source: CLUSTER,
-    asOf: D,
-    owner: "hardware",
-  },
-  "server.model": {
-    value: "HPE ProLiant DL380a Gen12",
-    label: "GPU server",
-    status: "confirmed",
-    source: CLUSTER,
-    asOf: D,
-    owner: "hardware",
-  },
-  "server.cpu": {
-    value: "2 × Intel Xeon 6",
-    label: "Processors per server",
-    status: "confirmed",
-    source: CLUSTER,
-    asOf: D,
-    owner: "hardware",
-  },
-  "server.memory": {
-    value: "1 TB",
-    label: "System memory per server",
-    status: "confirmed",
-    source: CLUSTER,
-    asOf: D,
-    owner: "hardware",
-  },
-  "server.localStorage": {
-    value: "Local NVMe",
-    label: "Local storage",
-    status: "confirmed",
-    source: CLUSTER,
-    asOf: D,
-    owner: "hardware",
-  },
-  "cluster.network": {
-    value: "400 Gb/s",
-    label: "NVIDIA Spectrum Ethernet",
-    status: "confirmed",
-    source: CLUSTER,
-    asOf: D,
-    owner: "hardware",
-  },
-  "cluster.storage": {
-    value: "62 TB",
-    label: "Usable all-flash storage",
-    status: "confirmed",
-    source: CLUSTER,
-    asOf: D,
-    owner: "hardware",
-  },
-  "cluster.storageSystem": {
-    value: "HPE Alletra Storage MP X10000",
-    label: "Storage system",
-    status: "confirmed",
-    source: CLUSTER,
-    asOf: D,
-    owner: "hardware",
-  },
-  "cluster.storageAccess": {
-    value: "S3-compatible object and file",
-    label: "Storage access",
-    status: "confirmed",
-    source: CLUSTER,
-    asOf: D,
-    owner: "hardware",
-  },
 
-  /* ── The software customers use ─────────────────────────────────────── */
-  "software.workspace": {
-    value: "HPE AI Essentials",
-    label: "Your workspace",
-    status: "confirmed",
-    source: OWNER,
-    asOf: D,
-    owner: "platform",
-  },
-  "software.nvaie": {
-    value: "NVIDIA AI Enterprise",
-    label: "AI software",
-    status: "confirmed",
-    source: CLUSTER,
-    asOf: D,
-    owner: "platform",
-  },
 
   /* ── The place ──────────────────────────────────────────────────────── */
   "place.location": {
@@ -420,15 +235,6 @@ const FACTS = {
     owner: "infrastructure",
   },
 
-  /* ── What comes next ────────────────────────────────────────────────── */
-  "roadmap.next": {
-    value: "NVIDIA RTX PRO 6000 Blackwell",
-    label: "Next GPU",
-    status: "to-verify",
-    source: { name: "Earlier CoreValley roadmap" },
-    asOf: D,
-    owner: "hardware",
-  },
 } as const satisfies Record<string, Fact>;
 
 export type FactId = keyof typeof FACTS;

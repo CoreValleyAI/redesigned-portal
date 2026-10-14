@@ -1,13 +1,9 @@
-import { EngineerSwitch } from "@/components/chrome/pref-switch";
-import { SpecReadout } from "@/components/system/spec-readout";
-import { ExplodedServer } from "@/components/hardware/exploded-server";
 import { GpuLive } from "@/components/hardware/gpu-live";
-import { ClusterDiagram } from "@/components/hardware/visuals";
 import { Page } from "@/components/motion/page";
 import { BlinkBar } from "@/components/system/blink-bar";
 import { ButtonLink } from "@/components/system/button";
 import { Cta } from "@/components/system/cta";
-import { createNotes, F, NoteList, NoteRef } from "@/components/system/fact";
+import { createNotes, NoteList, NoteRef } from "@/components/system/fact";
 import { Faq } from "@/components/system/faq";
 import { Kicker } from "@/components/system/kicker";
 import { SectionHead } from "@/components/system/section";
@@ -34,7 +30,6 @@ export default function HardwarePage() {
       source: fact("gpu.bandwidth").source,
       asOf: fact("gpu.bandwidth").asOf,
     },
-    "cluster.platform",
   ]);
 
   return (
@@ -52,7 +47,7 @@ export default function HardwarePage() {
                 Request access
               </ButtonLink>
               <ButtonLink href="#gpu" variant="secondary" size="lg">
-                The specifications
+                The GPU
               </ButtonLink>
             </div>
           </div>
@@ -60,27 +55,6 @@ export default function HardwarePage() {
             <GpuLive />
           </div>
         </div>
-      </section>
-
-      {/* The Machine (S6) */}
-      <section aria-labelledby="machine-title" className="pt-[var(--section-y)]">
-        <div className="container-page">
-          <SectionHead
-            id="machine-title"
-            kicker={h.machine.kicker}
-            title={h.machine.title}
-            continuation={h.machine.continuation}
-          />
-        </div>
-        <ExplodedServer
-          layers={h.machine.layers.map((l) => ({
-            id: l.id,
-            title: l.title,
-            body: l.body,
-            caption: l.caption,
-            value: <F id={l.fact} />,
-          }))}
-        />
       </section>
 
       {/* The GPU */}
@@ -92,16 +66,8 @@ export default function HardwarePage() {
               Tensor Core figures are NVIDIA&apos;s peak numbers with sparsity
               <NoteRef notes={notes} id="gpu.fp8" />.
             </p>
-            <EngineerSwitch className="max-w-[20rem] rounded-card border border-line bg-bg-raised p-4" />
           </div>
-          <div>
-            <div className="engineer:hidden">
-              <SpecList rows={h.gpu.key} />
-            </div>
-            <div className="hidden engineer:block">
-              <SpecList rows={h.gpu.full} dense />
-            </div>
-          </div>
+          <SpecList rows={h.gpu.key} />
         </div>
       </section>
 
@@ -114,45 +80,6 @@ export default function HardwarePage() {
             Arithmetic from the datasheet
             <NoteRef notes={notes} id="readtime" />
           </p>
-        </div>
-      </section>
-
-      {/* The cluster */}
-      <section aria-labelledby="cluster-title" className="section-y">
-        <div className="container-page grid gap-12 lg:grid-cols-[1fr_1.2fr] lg:gap-20">
-          <div className="flex flex-col gap-6">
-            <SectionHead
-              id="cluster-title"
-              kicker={h.cluster.kicker}
-              title={h.cluster.title}
-              continuation={h.cluster.continuation}
-              lead={h.cluster.lead}
-            />
-            <SpecList rows={h.cluster.rows} dense />
-            <SpecReadout
-              title="Cluster and servers"
-              ids={[
-                "cluster.platform",
-                "cluster.gpus",
-                "cluster.servers",
-                "cluster.gpusPerServer",
-                "cluster.network",
-                "cluster.storage",
-                "cluster.storageSystem",
-                "cluster.storageAccess",
-                "server.model",
-                "server.cpu",
-                "server.memory",
-                "server.localStorage",
-              ]}
-            />
-          </div>
-          <div className="lg:pt-20">
-            <ClusterDiagram network={v("cluster.network")} storage={v("cluster.storage")} />
-            <p className="type-caption mt-4 text-ink-3">
-              A simplified drawing of the first cluster. Wiring and addresses are not shown.
-            </p>
-          </div>
         </div>
       </section>
 
@@ -173,16 +100,11 @@ export default function HardwarePage() {
             <ol className="relative grid gap-10 md:grid-cols-3 md:gap-6">
               {[
                 { ...h.roadmap.now, state: "now" as const },
-                {
-                  label: h.roadmap.next.label,
-                  title: <F id={h.roadmap.next.fact} />,
-                  body: h.roadmap.next.body,
-                  state: "next" as const,
-                },
+                { ...h.roadmap.next, state: "next" as const },
                 { ...h.roadmap.later, state: "later" as const },
               ].map((step, i) => (
                 <li
-                  key={i}
+                  key={step.label}
                   className="relative flex flex-col gap-3"
                   data-reveal
                   style={{ "--i": i } as React.CSSProperties}

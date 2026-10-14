@@ -1,6 +1,5 @@
 import { ValleyPortrait } from "@/components/art/valley-portrait";
 import { HpeLogo, NvidiaLogo } from "@/components/brand/partner-logos";
-import { ClusterDiagram } from "@/components/hardware/visuals";
 import { LayerStack } from "@/components/infrastructure/layer-stack";
 import { DataPath } from "@/components/infrastructure/data-path";
 import { Page } from "@/components/motion/page";
@@ -11,12 +10,10 @@ import { Faq } from "@/components/system/faq";
 import { KeyFacts } from "@/components/system/key-facts";
 import { Kicker } from "@/components/system/kicker";
 import { SectionHead } from "@/components/system/section";
-import { SpecReadout } from "@/components/system/spec-readout";
 import { Status } from "@/components/system/status";
 import { TextLink } from "@/components/system/text-link";
 import { INFRASTRUCTURE } from "@/copy/en/infrastructure";
-import { STACK } from "@/copy/en/stack";
-import { fact, v } from "@/lib/facts";
+import { STACK, STACK_NOTE } from "@/copy/en/stack";
 import { pageMetadata } from "@/lib/seo";
 
 export const metadata = pageMetadata({
@@ -25,55 +22,9 @@ export const metadata = pageMetadata({
   path: "/infrastructure",
 });
 
-const fmt = (n: number, digits = 0) => n.toLocaleString("en-US", { maximumFractionDigits: digits });
-
 export default function InfrastructurePage() {
   const p = INFRASTRUCTURE;
-  const gpus = Number(v("cluster.gpus"));
-  const servers = Number(v("cluster.servers"));
-  const hbm = gpus * parseFloat(v("gpu.memory"));
-  const bandwidth = gpus * parseFloat(v("gpu.bandwidth"));
-  const fp8 = (gpus * parseFloat(v("gpu.fp8").replace(/,/g, ""))) / 1000;
-  const memory = servers * parseFloat(v("server.memory"));
-
-  const notes = createNotes([
-    "place.power",
-    "place.gridHydro",
-    "place.uptime",
-    "place.latency",
-    {
-      key: "totals",
-      text: `Totals are the per-GPU figures from NVIDIA's datasheet multiplied by the ${gpus} GPUs of the first cluster: ${v("gpu.memory")} and ${v("gpu.bandwidth")} each.`,
-      source: fact("gpu.memory").source,
-      asOf: fact("gpu.memory").asOf,
-    },
-    {
-      key: "fp8",
-      text: `The sum of NVIDIA's per-GPU peak, ${v("gpu.fp8")} FP8 Tensor Core with sparsity, across ${gpus} GPUs. A peak figure, not a benchmark.`,
-      source: fact("gpu.fp8").source,
-      asOf: fact("gpu.fp8").asOf,
-    },
-  ]);
-
-  const cluster = [
-    { label: "GPUs", value: `${gpus} × H200 NVL`, caption: v("gpu.formFactor") },
-    { label: "GPU memory", value: <>{fmt(hbm)} GB</>, caption: "HBM3e in total", note: "totals" },
-    {
-      label: "Memory bandwidth",
-      value: <>{fmt(bandwidth, 1)} TB/s</>,
-      caption: "summed across the GPUs",
-      note: "totals",
-    },
-    { label: "FP8 Tensor Core", value: <>{fmt(fp8, 1)} PFLOPS</>, caption: "peak, with sparsity", note: "fp8" },
-    { label: "Servers", value: `${servers} × DL380a Gen12`, caption: "HPE ProLiant" },
-    {
-      label: "Processors and memory",
-      value: `${servers * 2} × Xeon 6 · ${fmt(memory)} TB`,
-      caption: "Intel Xeon 6; system memory",
-    },
-    { label: "Fabric", value: v("cluster.network"), caption: fact("cluster.network").label },
-    { label: "Storage", value: v("cluster.storage"), caption: "usable all-flash, S3 and file" },
-  ];
+  const notes = createNotes([STACK_NOTE, "place.power", "place.gridHydro", "place.uptime", "place.latency"]);
 
   return (
     <Page>
@@ -127,7 +78,7 @@ export default function InfrastructurePage() {
                 ),
                 caption: "power, cooling, building",
               },
-              { label: "Fabric", value: v("cluster.network"), caption: fact("cluster.network").label },
+              { label: "GPUs", value: "NVIDIA H200 NVL", caption: "141 GB HBM3e each" },
               {
                 label: "Latency",
                 value: (
@@ -155,68 +106,43 @@ export default function InfrastructurePage() {
             lead={STACK.lead}
           />
           <LayerStack />
+          <p className="type-caption text-ink-3">
+            The five layers are NVIDIA&apos;s framing
+            <NoteRef notes={notes} id="cake" />.
+          </p>
         </div>
       </section>
 
-      {/* The first cluster, totalled. */}
-      <section id="cluster" aria-labelledby="cluster-title" className="section-y scroll-mt-[var(--header-h)]">
+      {/* Capacity: where we start and where we are going, with no numbers
+          for what runs today (CTO ruling, 14 Oct 2026). */}
+      <section id="capacity" aria-labelledby="capacity-title" className="section-y scroll-mt-[var(--header-h)]">
         <div className="container-page flex flex-col gap-14">
           <div className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
             <SectionHead
-              id="cluster-title"
-              kicker={p.cluster.kicker}
-              title={p.cluster.title}
-              continuation={p.cluster.continuation}
-              lead={p.cluster.lead}
+              id="capacity-title"
+              kicker={p.capacity.kicker}
+              title={p.capacity.title}
+              continuation={p.capacity.continuation}
+              lead={p.capacity.lead}
             />
-            <TextLink href={p.cluster.link.href} arrow className="shrink-0">
-              {p.cluster.link.label}
+            <TextLink href={p.capacity.link.href} arrow className="shrink-0">
+              {p.capacity.link.label}
             </TextLink>
           </div>
-          <div className="grid items-center gap-14 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)] lg:gap-16">
-            <dl className="grid grid-cols-2 gap-x-8 gap-y-8">
-              {cluster.map((c, i) => (
-                <div
-                  key={c.label}
-                  className="flex flex-col gap-1.5 border-t border-line pt-4"
-                  data-reveal
-                  style={{ "--i": i % 4 } as React.CSSProperties}
-                >
-                  <dt className="type-kicker order-1 text-ink-3">{c.label}</dt>
-                  <dd className="order-2 flex flex-col gap-1">
-                    <span className="type-title-2 tabular text-ink">
-                      {c.value}
-                      {c.note ? <NoteRef notes={notes} id={c.note} /> : null}
-                    </span>
-                    <span className="type-caption text-ink-3">{c.caption}</span>
-                  </dd>
-                </div>
-              ))}
-            </dl>
-            <div className="flex flex-col gap-4" data-parallax="0.05">
-              <ClusterDiagram network={v("cluster.network")} storage={v("cluster.storage")} />
-              <p className="type-caption text-ink-3">
-                A simplified drawing of the first cluster. Wiring, topology and addresses are not shown.
-              </p>
-            </div>
-          </div>
-          <SpecReadout
-            title="Cluster and servers"
-            ids={[
-              "cluster.platform",
-              "cluster.gpus",
-              "cluster.servers",
-              "cluster.gpusPerServer",
-              "server.model",
-              "server.cpu",
-              "server.memory",
-              "server.localStorage",
-              "cluster.network",
-              "cluster.storage",
-              "cluster.storageSystem",
-              "cluster.storageAccess",
-            ]}
-          />
+          <ol className="grid gap-4 md:grid-cols-3">
+            {p.capacity.steps.map((step, i) => (
+              <li
+                key={step.label}
+                className="flex flex-col gap-3 rounded-panel border border-line bg-bg-raised p-6"
+                data-reveal
+                style={{ "--i": i } as React.CSSProperties}
+              >
+                <span className="type-kicker text-ink-3">{step.label}</span>
+                <span className="type-title-3">{step.title}</span>
+                <span className="type-small text-ink-2">{step.body}</span>
+              </li>
+            ))}
+          </ol>
         </div>
       </section>
 

@@ -2,8 +2,8 @@
 
 /**
  * The use-case atlas (S16): every story as a card with its picture of the
- * work (components/use-cases/vignettes.tsx), filterable by the product it
- * runs on. Each card is an
+ * outcome (components/use-cases/vignettes.tsx), filterable by the product
+ * it runs on. Each card is an
  * anchor (#slug) so the home page can link straight to a story. Filtering
  * uses a view transition where the browser has one, so cards glide into
  * their new places instead of jumping.
@@ -105,24 +105,17 @@ export function Atlas({ cases }: { cases: UseCase[] }) {
                     <dd className="type-small mt-1 text-ink-2">{u.ai}</dd>
                   </div>
                   <div>
-                    <dt className="type-kicker text-ink-3">Why in Nepal</dt>
+                    <dt className="type-kicker text-ink-3">Why close to home</dt>
                     <dd className="type-small mt-1 text-ink-2">{u.why}</dd>
                   </div>
                   <div>
                     <dt className="type-kicker text-ink-3">Built for</dt>
                     <dd className="type-small mt-1 text-ink-2">{u.who}</dd>
                   </div>
-                  <div>
-                    <dt className="type-kicker text-ink-3">Typical setup</dt>
-                    <dd className="type-small mt-1 text-ink-2">{u.setup}</dd>
-                  </div>
                 </dl>
-                <ul aria-label="Workloads" className="flex flex-wrap gap-1.5">
+                <ul aria-label="What it covers" className="flex flex-wrap gap-1.5">
                   {u.workloads.map((w) => (
-                    <li
-                      key={w}
-                      className="type-caption rounded-pill border border-line px-2.5 py-1 font-mono text-ink-3"
-                    >
+                    <li key={w} className="type-caption rounded-pill border border-line px-2.5 py-1 text-ink-3">
                       {w}
                     </li>
                   ))}

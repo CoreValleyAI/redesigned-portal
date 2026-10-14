@@ -1,11 +1,8 @@
 /**
- * "Your data stays in the valley" (S9 teaser, still form). A contour map of
- * a valley in the dot language: rings of dots rise toward the rim, the
- * three cities sit on the valley floor, and the data — a lit cluster —
- * rests inside the innermost ring. Deterministic (seeded), decorative, and
- * stylised: the shape is not a survey of the real rim and draws no
- * national borders. The interactive version (drag the data toward the rim)
- * lives on /infrastructure.
+ * "Your data is safe with us" (home, residency teaser). Your data — a lit
+ * cluster of dots — rests at the centre of rings of dots, each ring one of
+ * the protections around it, labelled on its crest. Deterministic (seeded)
+ * and decorative: the labels repeat what the copy and /trust say.
  */
 
 function mulberry32(seed: number) {
@@ -33,21 +30,22 @@ function ring(cx: number, cy: number, rx: number, ry: number, wobble: number, se
   return pts;
 }
 
-const CITIES = [
-  { name: "Kathmandu", x: 238, y: 206, anchor: "end" as const },
-  { name: "Lalitpur", x: 252, y: 268, anchor: "end" as const },
-  { name: "Bhaktapur", x: 438, y: 222, anchor: "start" as const },
+/** Ring index → its label, on the ring's crest. */
+const LABELS: { ring: number; text: string; strong?: boolean }[] = [
+  { ring: 1, text: "Isolated in hardware" },
+  { ring: 3, text: "Seen only when you ask" },
+  { ring: 5, text: "Safe with us", strong: true },
 ];
 
-export function RimVisual({ className }: { className?: string }) {
+export function SafeVisual({ className }: { className?: string }) {
   const rings = [0, 1, 2, 3, 4, 5].map((i) =>
-    ring(320, 240, 120 + i * 34, 82 + i * 26, 0.08 + i * 0.012, 11 + i, 64 + i * 22),
+    ring(320, 240, 120 + i * 34, 82 + i * 26, 0.03 + i * 0.006, 11 + i, 64 + i * 22),
   );
   const rnd = mulberry32(42);
   const data = Array.from({ length: 26 }, () => {
     const a = rnd() * Math.PI * 2;
     const r = Math.sqrt(rnd()) * 26;
-    return [336 + Math.cos(a) * r * 1.3, 240 + Math.sin(a) * r] as const;
+    return [320 + Math.cos(a) * r * 1.3, 240 + Math.sin(a) * r] as const;
   });
   return (
     <svg viewBox="0 0 640 480" className={className} aria-hidden="true" focusable="false">
@@ -65,30 +63,37 @@ export function RimVisual({ className }: { className?: string }) {
           opacity={i === 5 ? 0.9 : 0.55 + i * 0.07}
         />
       ))}
-      {/* The rim, labelled. */}
-      <text x="498" y="50" textAnchor="start" className="fill-ink-3 font-mono text-[11px] tracking-[0.14em] uppercase">
-        The rim
-      </text>
-      {CITIES.map((c) => (
-        <g key={c.name}>
-          <circle cx={c.x} cy={c.y} r="3" className="fill-ink" />
-          <text
-            x={c.anchor === "end" ? c.x - 8 : c.x + 8}
-            y={c.y + 4}
-            textAnchor={c.anchor}
-            className="fill-ink-3 text-[12px]"
-          >
-            {c.name}
-          </text>
-        </g>
-      ))}
+      {/* The rings, labelled on their crests. */}
+      {LABELS.map((l) => {
+        // The ring's crest: its point straight above the centre.
+        const pts = rings[l.ring]!;
+        const y = pts[Math.round(pts.length * 0.75) % pts.length]![1];
+        const w = l.text.length * 8.4 + 20;
+        return (
+          <g key={l.ring}>
+            <rect x={320 - w / 2} y={y - 11} width={w} height={22} rx={11} className="fill-bg" />
+            <text
+              x="320"
+              y={y + 4}
+              textAnchor="middle"
+              className={
+                l.strong
+                  ? "fill-hydro-ink font-mono text-[11px] tracking-[0.14em] uppercase light:fill-hydro"
+                  : "fill-ink-3 font-mono text-[11px] tracking-[0.14em] uppercase"
+              }
+            >
+              {l.text}
+            </text>
+          </g>
+        );
+      })}
       {/* Your data. */}
-      <circle cx="336" cy="240" r="40" className="fill-hydro" opacity="0.08" />
+      <circle cx="320" cy="240" r="40" className="fill-hydro" opacity="0.08" />
       {data.map(([x, y], i) => (
         <circle key={i} cx={x} cy={y} r="2.6" className="fill-hydro" />
       ))}
       <text
-        x="336"
+        x="320"
         y="302"
         textAnchor="middle"
         className="fill-hydro-ink font-mono text-[11px] tracking-[0.14em] uppercase"

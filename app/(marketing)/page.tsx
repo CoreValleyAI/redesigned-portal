@@ -1,7 +1,7 @@
 import { BuiltOn } from "@/components/home/built-on";
 import { GpuSection } from "@/components/home/gpu-section";
 import { Hero } from "@/components/home/hero";
-import { RimVisual } from "@/components/home/rim-visual";
+import { SafeVisual } from "@/components/home/safe-visual";
 import { Climb, ProductsSection } from "@/components/home/sections";
 import { SliceTeaser } from "@/components/home/slice-teaser";
 import { ToolsSection } from "@/components/home/tools-section";
@@ -14,7 +14,7 @@ import { SectionHead } from "@/components/system/section";
 import { TextLink } from "@/components/system/text-link";
 import { UseCaseCarousel } from "@/components/use-cases/carousel";
 import { HOME } from "@/copy/en/home";
-import { STACK } from "@/copy/en/stack";
+import { STACK, STACK_NOTE } from "@/copy/en/stack";
 import { findUseCase, HOME_STORIES } from "@/copy/en/use-cases";
 import { v } from "@/lib/facts";
 import { pageMetadata } from "@/lib/seo";
@@ -28,6 +28,7 @@ export const metadata = pageMetadata({
 
 export default function HomePage() {
   const notes = createNotes([
+    STACK_NOTE,
     "place.uptime",
     "gpu.fp8",
     {
@@ -59,7 +60,9 @@ export default function HomePage() {
           />
           <LayerStack compact />
           <p className="type-caption text-ink-3">
-            The facility&apos;s uptime is its own commitment for power, cooling and the building
+            The five layers are NVIDIA&apos;s framing
+            <NoteRef notes={notes} id="cake" />. The facility&apos;s uptime is its own commitment for power,
+            cooling and the building
             <NoteRef notes={notes} id="place.uptime" />.
           </p>
         </div>
@@ -112,7 +115,7 @@ export default function HomePage() {
         <UseCaseCarousel cases={stories} label="Use cases" />
       </section>
 
-      {/* Your data stays in the valley (S9 teaser) */}
+      {/* Your data is safe with us (S9 teaser) */}
       <section aria-labelledby="rim-title" className="section-y">
         <div className="container-page grid items-center gap-12 lg:grid-cols-[1fr_1.1fr]">
           <div className="flex flex-col gap-8 lg:order-2">
@@ -130,7 +133,7 @@ export default function HomePage() {
             </div>
           </div>
           <div className="lg:order-1" data-parallax="0.06">
-            <RimVisual className="w-full" />
+            <SafeVisual className="w-full" />
           </div>
         </div>
       </section>

@@ -2,12 +2,11 @@
  * The data path (residency, S9): where your work lives, as a technical
  * schematic in the style of the GPU and stack drawings. Your team connects
  * from inside Nepal; inside the datacentre boundary, five kinds of work data
- * flow between the GPUs and the all-flash store; nothing is replicated
- * across the border. Labels come from lib/facts.ts. Decorative: the list
- * beside it carries the meaning.
+ * flow between the GPUs and storage; nothing is replicated across the
+ * border. Illustrative only: no counts, capacities or topology (CTO ruling,
+ * 14 Oct 2026). Decorative: the list beside it carries the meaning.
  */
 import { cn } from "@/lib/cn";
-import { v } from "@/lib/facts";
 
 const ITEMS = ["Datasets", "Checkpoints", "Prompts · answers", "Notebooks", "Job logs"];
 
@@ -22,7 +21,6 @@ function Flow({ d, delay = 0 }: { d: string; delay?: number }) {
 }
 
 export function DataPath({ className }: { className?: string }) {
-  const gpus = Number(v("cluster.gpus"));
   const recY = (i: number) => 104 + i * 48;
   return (
     <svg
@@ -71,28 +69,22 @@ export function DataPath({ className }: { className?: string }) {
         Compute
       </text>
       <text x="358" y="138" className="dp-sub">
-        {gpus} × H200 NVL
+        NVIDIA H200 NVL
       </text>
-      {Array.from({ length: gpus }, (_, i) => (
-        <rect
-          key={i}
-          x={358 + (i % 4) * 32.5}
-          y={150 + Math.floor(i / 4) * 30}
-          width="26"
-          height="24"
-          rx="2"
-          className="dp-gpu"
-          style={{ "--i": i } as React.CSSProperties}
-        />
-      ))}
+      {/* One GPU package: the die, and HBM either side of it. */}
+      <rect x="396" y="152" width="46" height="46" rx="2" className="dp-gpu" style={{ "--i": 0 } as React.CSSProperties} />
+      {[0, 1, 2].flatMap((k) => [
+        <rect key={`l${k}`} x="374" y={152 + k * 16} width="16" height="12" rx="1.2" className="dp-bay" />,
+        <rect key={`r${k}`} x="448" y={152 + k * 16} width="16" height="12" rx="1.2" className="dp-bay" />,
+      ])}
 
-      {/* Storage: the all-flash shelf. */}
+      {/* Storage. */}
       <rect x="344" y="270" width="150" height="116" rx="4" className="dp-box" />
       <text x="358" y="292" className="dp-name">
         Storage
       </text>
       <text x="358" y="308" className="dp-sub">
-        {v("cluster.storage")} all-flash
+        Object and file
       </text>
       {Array.from({ length: 3 }, (_, r) =>
         Array.from({ length: 10 }, (_, c) => (

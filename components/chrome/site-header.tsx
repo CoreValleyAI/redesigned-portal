@@ -213,7 +213,7 @@ function DesktopNav({
   };
 
   const item =
-    "type-small relative z-10 inline-flex h-9 items-center gap-1 rounded-pill px-3.5 text-ink-2 transition-colors duration-[var(--dur-short)] hover:text-ink aria-[current=page]:text-ink aria-expanded:text-ink";
+    "type-small relative z-10 inline-flex h-9 shrink-0 items-center gap-1 rounded-pill px-3 whitespace-nowrap text-ink-2 2xl:px-3.5 transition-colors duration-[var(--dur-short)] hover:text-ink aria-[current=page]:text-ink aria-expanded:text-ink";
 
   const trigger = (id: PanelId, label: string, paths: string[]) => (
     <button

@@ -1,7 +1,6 @@
 /**
- * "The tools you already use": what customers work in — HPE AI Essentials
- * on HPE Private Cloud AI, with NVIDIA AI Enterprise — grouped the way a
- * team uses them. Only tools named in the HPE briefing (docs/revamp/04 §2).
+ * "The tools you already use": what customers work in, grouped the way a
+ * team uses them. No platform product names (CTO ruling, 14 Oct 2026).
  */
 import { SectionHead } from "@/components/system/section";
 import { TextLink } from "@/components/system/text-link";

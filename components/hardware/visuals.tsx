@@ -11,9 +11,6 @@
  *                  compute dots heat up under it and the memory streams; the
  *                  classes and per-dot variables here are what the CSS
  *                  (app/styles/motion.css, .gpu-*) works from.
- *  ClusterDiagram  the first cluster as a calm diagram: two GPU servers of
- *                  four GPUs, the storage, the network — no wiring, ports or
- *                  addresses (those stay private).
  */
 import { cn } from "@/lib/cn";
 
@@ -444,102 +441,6 @@ export function GpuArt({ className }: { className?: string }) {
           Illustration · not to scale
         </text>
       </g>
-    </svg>
-  );
-}
-
-export function ClusterDiagram({
-  className,
-  network,
-  storage,
-}: {
-  className?: string;
-  /** e.g. "400 Gb/s" (from lib/facts.ts). */
-  network: string;
-  /** e.g. "62 TB" (from lib/facts.ts). */
-  storage: string;
-}) {
-  const server = (y: number, label: string) => (
-    <g transform={`translate(40 ${y})`}>
-      <rect width="400" height="96" rx="14" className="fill-bg-raised stroke-line-strong" strokeWidth="1.4" />
-      <text x="20" y="28" className="fill-ink-2 font-mono text-[11px] tracking-[0.14em] uppercase">
-        {label}
-      </text>
-      {Array.from({ length: 4 }, (_, i) => (
-        <g key={i} transform={`translate(${20 + i * 92} 42)`}>
-          <rect width="80" height="36" rx="7" className="fill-hydro-wash stroke-hydro" strokeWidth="1.3" />
-          {Array.from({ length: 6 }, (_, k) => (
-            <circle key={k} cx={12 + k * 11} cy="18" r="2.2" className="fill-hydro" />
-          ))}
-        </g>
-      ))}
-    </g>
-  );
-  return (
-    <svg viewBox="0 0 760 360" className={cn("h-auto w-full", className)} aria-hidden="true" focusable="false">
-      {server(30, "GPU server · 4 × H200 NVL")}
-      {server(150, "GPU server · 4 × H200 NVL")}
-      {/* Network spine */}
-      <rect
-        x="480"
-        y="30"
-        width="56"
-        height="216"
-        rx="12"
-        className="fill-bg-sunken stroke-line-strong"
-        strokeWidth="1.4"
-      />
-      <text
-        x="508"
-        y="270"
-        textAnchor="middle"
-        className="fill-ink-3 font-mono text-[10px] tracking-[0.14em] uppercase"
-      >
-        {network}
-      </text>
-      {[78, 198].map((y) => (
-        <line
-          key={y}
-          x1="440"
-          y1={y}
-          x2="480"
-          y2={y}
-          className="cluster-flow stroke-hydro"
-          strokeWidth="2"
-          strokeDasharray="2 6"
-          strokeLinecap="round"
-        />
-      ))}
-      <line
-        x1="536"
-        y1="138"
-        x2="580"
-        y2="138"
-        className="cluster-flow stroke-hydro"
-        strokeWidth="2"
-        strokeDasharray="2 6"
-        strokeLinecap="round"
-      />
-      {/* Storage */}
-      <g transform="translate(580 70)">
-        <rect width="150" height="136" rx="14" className="fill-bg-raised stroke-line-strong" strokeWidth="1.4" />
-        {Array.from({ length: 4 }, (_, r) => (
-          <rect key={r} x="18" y={22 + r * 24} width="114" height="14" rx="4" className="fill-dot-off" />
-        ))}
-        <text
-          x="75"
-          y="160"
-          textAnchor="middle"
-          className="fill-ink-3 font-mono text-[10px] tracking-[0.14em] uppercase"
-        >
-          {storage} all-flash
-        </text>
-      </g>
-      {/* Software band */}
-      <rect x="40" y="290" width="690" height="44" rx="12" className="fill-bg-sunken" />
-      <text x="385" y="317" textAnchor="middle" className="fill-ink-2 text-[13px]">
-        NVIDIA AI Enterprise · HPE AI Essentials
-      </text>
     </svg>
   );
 }

@@ -71,6 +71,29 @@
   stroke-dasharray: 0.14 0.1;
   animation: cv-stack-flow 1.6s linear infinite;
 }
+/* The river on the energy plate. */
+.stack-river {
+  fill: none;
+  stroke: var(--hydro);
+  stroke-width: 1.3;
+  stroke-linecap: round;
+  stroke-dasharray: 0.08 0.04;
+  opacity: 0.75;
+  animation: cv-stack-river 4s linear infinite;
+}
+.stack-river:nth-child(2) {
+  animation-duration: 3.2s;
+  opacity: 0.55;
+}
+.stack-river:nth-child(3) {
+  animation-duration: 4.8s;
+  opacity: 0.4;
+}
+@keyframes cv-stack-river {
+  to {
+    stroke-dashoffset: -0.24;
+  }
+}
 .stack-lane {
   stroke: var(--ink-3);
   stroke-width: 1.6;
@@ -171,7 +194,7 @@
   }
 }
 
-:root[data-motion="reduce"] :is(.stack-feed, .stack-lane, .stack-gpu, .stack-cursor, .stack-packet) {
+:root[data-motion="reduce"] :is(.stack-feed, .stack-river, .stack-lane, .stack-gpu, .stack-cursor, .stack-packet) {
   animation: none;
 }
 :root[data-motion="reduce"] .stack-packet {
@@ -179,17 +202,6 @@
 }
 
 /* ── The cluster drawing (components/hardware/visuals.tsx) ── */
-.cluster-flow {
-  animation: cv-cluster-flow 0.8s linear infinite;
-}
-@keyframes cv-cluster-flow {
-  to {
-    stroke-dashoffset: -8;
-  }
-}
-:root[data-motion="reduce"] .cluster-flow {
-  animation: none;
-}
 
 /* ── The stack, in detail (technical drawing) ── */
 .stack-plate__inset {
@@ -403,61 +415,4 @@
 }
 :root[data-motion="reduce"] :is(.dp-flow, .dp-gpu) {
   animation: none;
-}
-
-/* ── The pipeline board (components/platform/pipeline-board.tsx) ──
-   Connectors with a pulse that runs stage after stage; each node's dot
-   lights as the pulse arrives. One 3.6 s cycle per lane, offset by --d. */
-.pipeline-link {
-  position: relative;
-  display: block;
-  width: 2.25rem;
-  height: 1px;
-  background: var(--line-strong);
-  overflow: hidden;
-}
-.pipeline-link::after {
-  content: "";
-  position: absolute;
-  inset: -1px auto -1px 0;
-  width: 40%;
-  border-radius: 999px;
-  background: linear-gradient(90deg, transparent, var(--hydro), transparent);
-  transform: translateX(-120%);
-  animation: pl-pulse 3.6s cubic-bezier(0.45, 0, 0.55, 1) infinite;
-  animation-delay: var(--d, 0s);
-}
-.pipeline-dot {
-  opacity: 0.45;
-  animation: pl-dot 3.6s ease-in-out infinite;
-  animation-delay: calc(var(--d, 0s) + 0.35s);
-}
-@keyframes pl-pulse {
-  0% {
-    transform: translateX(-120%);
-  }
-  22%,
-  100% {
-    transform: translateX(260%);
-  }
-}
-@keyframes pl-dot {
-  0%,
-  100% {
-    opacity: 0.45;
-    box-shadow: 0 0 0 0 transparent;
-  }
-  8% {
-    opacity: 1;
-    box-shadow: 0 0 0 4px var(--hydro-wash);
-  }
-  30% {
-    opacity: 0.45;
-  }
-}
-:root[data-motion="reduce"] :is(.pipeline-link::after, .pipeline-dot) {
-  animation: none;
-}
-:root[data-motion="reduce"] .pipeline-dot {
-  opacity: 1;
 }
