@@ -4,6 +4,8 @@
  * provide the same shape.
  */
 import { PRODUCTS } from "./products";
+import { SOLUTIONS } from "./solutions";
+import type { IndustryGlyphName } from "@/components/solutions/industry-glyph";
 import type { GlyphName } from "@/components/system/dot-glyph";
 import { DOCS_URL, ORG, SHOW_STATUS, STATUS_URL } from "@/lib/site";
 
@@ -11,6 +13,8 @@ export interface NavLink {
   href: string;
   label: string;
   glyph?: GlyphName;
+  /** An industry pictogram, in place of `glyph`. */
+  industry?: IndustryGlyphName;
   description?: string;
 }
 
@@ -38,8 +42,30 @@ export const NAV = {
       },
     ] satisfies NavLink[],
   },
+  solutions: {
+    label: "Solutions",
+    industries: SOLUTIONS.industries.items.map<NavLink>((i) => ({
+      href: `/solutions#${i.id}`,
+      label: i.name,
+      industry: i.glyph,
+      description: i.promise,
+    })),
+    more: [
+      {
+        href: "/solutions",
+        label: "All solutions",
+        glyph: "platform",
+        description: "Six industries, the work they run and what fits.",
+      },
+      {
+        href: "/solutions#why",
+        label: "Why CoreValley",
+        glyph: "trust",
+        description: "Six reasons, plainly.",
+      },
+    ] satisfies NavLink[],
+  },
   primary: [
-    { href: "/solutions", label: "Solutions" },
     { href: "/platform", label: "Platform" },
     { href: "/infrastructure", label: "Infrastructure" },
     { href: "/use-cases", label: "Use cases" },

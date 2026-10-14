@@ -3,10 +3,11 @@
 /**
  * The site header (docs/revamp/03 §2) — the only glass on the site.
  *
- * Desktop (≥ 1280 px): logo · Products ▾ · Platform · Infrastructure · Use
- * cases · Pricing · Company ▾ · Docs ↗ · theme · Request access. A soft pill
- * slides between nav items under the pointer; Products and Company open
- * full-width panels that grow down from the bar.
+ * Desktop (≥ 1280 px): logo · Products ▾ · Solutions ▾ · Platform ·
+ * Infrastructure · Use cases · Pricing · Company ▾ · Docs ↗ · theme ·
+ * Request access. A soft pill slides between nav items under the pointer;
+ * Products, Solutions and Company open full-width panels that grow down
+ * from the bar.
  *
  * Narrower: logo · Access · menu. The menu is a native <dialog> sheet that
  * rises from the bottom edge (thumb reach), with focus trapping, Escape and
@@ -21,6 +22,7 @@ import { usePathname } from "next/navigation";
 import * as React from "react";
 import { Brandmark, Wordmark } from "@/components/brand/logo";
 import { Arrow, ButtonLink } from "@/components/system/button";
+import { IndustryGlyph } from "@/components/solutions/industry-glyph";
 import { DotGlyph } from "@/components/system/dot-glyph";
 import { Status } from "@/components/system/status";
 import { NAV, UI, type NavLink } from "@/copy/en/site";
@@ -28,10 +30,13 @@ import { cn } from "@/lib/cn";
 import { ThemeToggle } from "./theme-toggle";
 import { MotionSwitch } from "./pref-switch";
 
-type PanelId = "products" | "company";
+type PanelId = "products" | "solutions" | "company";
 
+/** The page a link points to is this one. Links to a section of a page
+    (/solutions#banking) are never "the current page". */
 function isCurrent(pathname: string, href: string) {
-  const clean = href.split("#")[0] ?? href;
+  if (href.includes("#")) return false;
+  const clean = href;
   if (clean === "/") return pathname === "/";
   return pathname === clean || pathname.startsWith(`${clean}/`);
 }
@@ -156,10 +161,13 @@ export function SiteHeader() {
           </div>
         </div>
 
-        <Panel id="products" open={panel === "products"} onEnter={keepOpen}>
+        <Panel id="products" open={panel === "products"} onEnter={keepOpen} onPick={() => setPanel(null)}>
           <ProductsPanel pathname={pathname} />
         </Panel>
-        <Panel id="company" open={panel === "company"} onEnter={keepOpen}>
+        <Panel id="solutions" open={panel === "solutions"} onEnter={keepOpen} onPick={() => setPanel(null)}>
+          <SolutionsPanel pathname={pathname} />
+        </Panel>
+        <Panel id="company" open={panel === "company"} onEnter={keepOpen} onPick={() => setPanel(null)}>
           <CompanyPanel pathname={pathname} />
         </Panel>
       </header>
@@ -271,6 +279,7 @@ function DesktopNav({
           className="pointer-events-none absolute top-0 left-0 h-9 w-[var(--w,0px)] translate-x-[var(--x,0px)] rounded-pill bg-bg-sunken opacity-0 transition-[transform,width,opacity] duration-[var(--dur-spring-smooth)] ease-spring dark:bg-bg-elevated"
         />
         {trigger("products", NAV.products.label, ["/products", "/hardware"])}
+        {trigger("solutions", NAV.solutions.label, ["/solutions"])}
         {NAV.primary.map((l) => (
           <AppLink
             key={l.href}
@@ -294,11 +303,14 @@ function Panel({
   id,
   open,
   onEnter,
+  onPick,
   children,
 }: {
   id: PanelId;
   open: boolean;
   onEnter: () => void;
+  /** A link was chosen: close, even when it only moves within this page. */
+  onPick: () => void;
   children: React.ReactNode;
 }) {
   return (
@@ -308,6 +320,9 @@ function Panel({
       aria-labelledby={`nav-trigger-${id}`}
       inert={!open}
       onPointerEnter={onEnter}
+      onClick={(e) => {
+        if ((e.target as Element).closest("a")) onPick();
+      }}
       className={cn(
         "absolute inset-x-0 top-full hidden px-[max(0.5rem,calc(var(--page-x)-0.875rem))] pt-2 xl:block",
         "origin-top transition-[clip-path,opacity] duration-[var(--dur-spring-smooth)] ease-spring",
@@ -335,7 +350,11 @@ function PanelLink({ link, pathname, i }: { link: NavLink; pathname: string; i: 
       className="group -mx-3 flex items-start gap-4 rounded-card p-3 transition-colors duration-[var(--dur-short)] hover:bg-bg-sunken dark:hover:bg-bg-elevated"
       style={{ "--i": i } as React.CSSProperties}
     >
-      {link.glyph && <DotGlyph name={link.glyph} className="mt-0.5 size-8" />}
+      {link.industry ? (
+        <IndustryGlyph name={link.industry} className="mt-0.5 size-8" />
+      ) : (
+        link.glyph && <DotGlyph name={link.glyph} className="mt-0.5 size-8" />
+      )}
       <span className="flex flex-col gap-1">
         <span className="type-body font-medium text-ink">{link.label}</span>
         {link.description && <span className="type-small text-ink-3">{link.description}</span>}
@@ -363,6 +382,29 @@ function ProductsPanel({ pathname }: { pathname: string }) {
           ))}
         </div>
         <Status className="mt-8" />
+      </div>
+    </div>
+  );
+}
+
+function SolutionsPanel({ pathname }: { pathname: string }) {
+  return (
+    <div className="grid grid-cols-[2fr_1fr] gap-12">
+      <div>
+        <p className="type-kicker mb-4 text-ink-3">By industry</p>
+        <div className="grid grid-cols-2 gap-x-8 gap-y-1">
+          {NAV.solutions.industries.map((l, i) => (
+            <PanelLink key={l.href} link={l} pathname={pathname} i={i} />
+          ))}
+        </div>
+      </div>
+      <div className="border-l border-line pl-12">
+        <p className="type-kicker mb-4 text-ink-3">Solutions</p>
+        <div className="flex flex-col gap-1">
+          {NAV.solutions.more.map((l, i) => (
+            <PanelLink key={l.href} link={l} pathname={pathname} i={i} />
+          ))}
+        </div>
       </div>
     </div>
   );
@@ -483,6 +525,26 @@ function MobileMenu({ pathname }: { pathname: string }) {
                   <li key={l.href}>
                     <AppLink href={l.href} onClick={hide} className="flex items-center gap-3 rounded-chip py-2.5">
                       {l.glyph && <DotGlyph name={l.glyph} className="size-6" on={isCurrent(pathname, l.href)} />}
+                      <span className="type-body text-ink-2">{l.label}</span>
+                    </AppLink>
+                  </li>
+                ))}
+              </ul>
+            </details>
+            <details name="menu" className="group/acc border-b border-line">
+              <summary className={cn(row, "cursor-pointer list-none border-b-0 [&::-webkit-details-marker]:hidden")}>
+                {NAV.solutions.label}
+                <Chevron />
+              </summary>
+              <ul className="flex flex-col gap-1 pb-4">
+                {[...NAV.solutions.industries, ...NAV.solutions.more].map((l: NavLink) => (
+                  <li key={l.href}>
+                    <AppLink href={l.href} onClick={hide} className="flex items-center gap-3 rounded-chip py-2.5">
+                      {l.industry ? (
+                        <IndustryGlyph name={l.industry} className="size-6" />
+                      ) : (
+                        l.glyph && <DotGlyph name={l.glyph} className="size-6" on={isCurrent(pathname, l.href)} />
+                      )}
                       <span className="type-body text-ink-2">{l.label}</span>
                     </AppLink>
                   </li>
