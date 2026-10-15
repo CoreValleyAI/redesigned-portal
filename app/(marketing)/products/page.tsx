@@ -1,60 +1,122 @@
 import { Page } from "@/components/motion/page";
+import { CatalogArt } from "@/components/products/catalog-art";
+import { CatalogCard } from "@/components/products/catalog-card";
 import { FitFinder } from "@/components/products/fit-finder";
-import { ProductCard } from "@/components/products/product-card";
+import { AppLink } from "@/components/system/app-link";
 import { Cta } from "@/components/system/cta";
 import { DotGlyph } from "@/components/system/dot-glyph";
+import { GlassLight } from "@/components/system/glass-light";
+import { KeyFacts } from "@/components/system/key-facts";
 import { Kicker } from "@/components/system/kicker";
 import { SectionHead } from "@/components/system/section";
 import { Status } from "@/components/system/status";
-import { PRODUCTS } from "@/copy/en/products";
+import { PRODUCT_CATALOG, PRODUCTS, SERVICE_TAGS } from "@/copy/en/products";
+import { v } from "@/lib/facts";
 import { pageMetadata } from "@/lib/seo";
 
 export const metadata = pageMetadata({
-  title: "Products — six ways to run AI in Nepal",
+  title: "Products — GPU as a Service, PaaS and serverless AI in Nepal",
   description:
-    "Reserved GPUs, on-demand GPUs billed by the second, inferencing, MIG slicing, storage and engineering services — on NVIDIA H200 NVL in the Kathmandu Valley.",
+    "Run, build and scale AI in Nepal: serverless APIs and managed inference, a managed AI platform with MLOps tools, and GPU, infrastructure, network and storage as a service on NVIDIA H200 NVL. Billed in rupees.",
   path: "/products",
 });
+
+const LIGHTS = ["a", "b", "c"] as const;
 
 export default function ProductsPage() {
   return (
     <Page>
-      {/* Hero: the six glyphs line up as the headline rises. */}
-      <section className="relative pt-[calc(var(--header-h)+clamp(3.5rem,9vw,8rem))] pb-[clamp(3rem,7vw,6rem)]">
+      {/* Hero: what we offer, in the terms clouds are compared by. */}
+      <section className="relative isolate pt-[calc(var(--header-h)+clamp(3.5rem,9vw,8rem))] pb-[clamp(3rem,7vw,6rem)]">
+        <GlassLight />
         <div className="container-page flex flex-col gap-10">
-          <div aria-hidden="true" className="flex flex-wrap gap-3 md:gap-4">
-            {PRODUCTS.map((p, i) => (
-              <span
-                key={p.slug}
-                className="grid size-14 place-items-center rounded-card border border-line bg-bg-raised md:size-16"
-                style={{ animation: `cv-rise-in 700ms var(--ease-expo) ${120 + i * 70}ms both` }}
-              >
-                <DotGlyph name={p.glyph} className="size-8 md:size-9" on />
-              </span>
-            ))}
-          </div>
-          <div className="flex max-w-[56rem] flex-col gap-6">
+          <div className="flex max-w-[60rem] flex-col gap-6">
             <Kicker>Products</Kicker>
             <h1 className="type-display-2">
-              Six ways to run AI <span className="text-ink-3">in Nepal.</span>
+              Run, build and scale AI <span className="text-ink-3">in Nepal.</span>
             </h1>
             <p className="type-lead measure text-ink-2">
-              Whole GPUs, slices of one, endpoints for your models and storage beside them — all on NVIDIA H200 NVL in
-              the Kathmandu Valley, all billed in rupees.
+              From an API call to a whole GPU: serverless and managed inference, a managed AI platform, and GPUs,
+              networking and storage as services — all on NVIDIA H200 NVL, all billed in rupees.
             </p>
             <Status />
           </div>
+          <nav
+            aria-label="Service models"
+            className="-mx-[var(--page-x)] overflow-x-auto px-[var(--page-x)] [scrollbar-width:none]"
+          >
+            <ul className="flex w-max gap-2.5 md:w-auto md:flex-wrap">
+              {SERVICE_TAGS.map((t, i) => (
+                <li key={t.tag} style={{ animation: `cv-rise-in 700ms var(--ease-expo) ${160 + i * 60}ms both` }}>
+                  <AppLink
+                    href={t.href}
+                    className="lg lg-card group flex items-center gap-3 rounded-pill py-2 pr-4 pl-2.5"
+                  >
+                    <span className="type-kicker rounded-pill bg-hydro-wash px-2.5 py-1 normal-case text-hydro-ink light:text-hydro">
+                      {t.tag}
+                    </span>
+                    <span className="type-small whitespace-nowrap text-ink">{t.label}</span>
+                  </AppLink>
+                </li>
+              ))}
+            </ul>
+          </nav>
         </div>
       </section>
 
-      <section aria-label="The six products" className="pb-[var(--section-y)]">
-        <ul className="container-page grid gap-4 md:grid-cols-2 lg:grid-cols-3 lg:gap-5">
-          {PRODUCTS.map((p, i) => (
-            <li key={p.slug} data-reveal style={{ "--i": i % 3 } as React.CSSProperties}>
-              <ProductCard product={p} detail />
-            </li>
-          ))}
-        </ul>
+      {/* Run · Build · Scale */}
+      {PRODUCT_CATALOG.map((g, gi) => (
+        <section
+          key={g.id}
+          id={g.id}
+          aria-labelledby={`${g.id}-title`}
+          className="section-y relative isolate scroll-mt-[var(--header-h)] border-t border-line"
+        >
+          <GlassLight variant={LIGHTS[gi % 3]} />
+          <div className="container-page flex flex-col gap-12">
+            <div className="grid items-center gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] lg:gap-16">
+              <div className="flex flex-col gap-6">
+                <span aria-hidden="true" className="type-display-1 tabular leading-none text-ink-4">
+                  {g.n}
+                </span>
+                <SectionHead
+                  id={`${g.id}-title`}
+                  kicker={g.name}
+                  title={g.title}
+                  continuation={g.continuation}
+                  lead={g.lead}
+                />
+              </div>
+              <div className="lg lg-card rounded-panel p-5 md:p-7" data-parallax="0.04">
+                <CatalogArt band={g.id} />
+              </div>
+            </div>
+            <ul className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 lg:gap-5">
+              {g.items.map((it, i) => (
+                <CatalogCard key={it.id} item={it} i={i} />
+              ))}
+            </ul>
+          </div>
+        </section>
+      ))}
+
+      {/* At a glance. */}
+      <section aria-labelledby="glance-title" className="section-y border-t border-line">
+        <div className="container-page flex flex-col gap-8">
+          <h2 id="glance-title" className="type-kicker text-ink-3">
+            Every product, at a glance
+          </h2>
+          <KeyFacts
+            items={[
+              { label: "GPU", value: "H200 NVL", caption: `NVIDIA · ${v("gpu.memory")} each` },
+              { label: "Billing", value: v("billing.unit"), caption: `minimum ${v("billing.minimum")}` },
+              { label: "Currency", value: "NPR", caption: "Nepalese rupees" },
+              { label: "Ways to pay", value: "Local", caption: v("billing.rails") },
+              { label: "Latency", value: v("place.latency"), caption: "round trip in the valley" },
+              { label: "Power", value: "Hydro", caption: "Nepal's grid" },
+            ]}
+          />
+        </div>
       </section>
 
       <section id="compare" aria-labelledby="compare-title" className="section-y scroll-mt-[var(--header-h)]">
@@ -62,8 +124,8 @@ export default function ProductsPage() {
           <SectionHead
             id="compare-title"
             kicker="Compare"
-            title="Which one fits."
-            continuation="Billing, commitment, and what each is for."
+            title="Compare the six products."
+            continuation="Billing, commitment and what each is for."
           />
           <div className="mt-12 overflow-x-auto rounded-panel border border-line [scrollbar-width:thin]">
             <table className="w-full min-w-[44rem] border-collapse text-left">

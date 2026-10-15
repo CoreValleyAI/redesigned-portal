@@ -506,3 +506,19 @@
 :root[data-motion="reduce"] :is(.dp-flow, .dp-gpu) {
   animation: none;
 }
+
+/* ── The /products band drawings (components/products/catalog-art.tsx) ── */
+.cat-line {
+  stroke: var(--ink-4);
+  stroke-width: 4;
+  stroke-linecap: round;
+}
+.cat-line:first-of-type {
+  stroke: var(--hydro);
+}
+.pm-space-line {
+  fill: none;
+  stroke: var(--hydro);
+  stroke-width: 1.2;
+  stroke-dasharray: 6 4;
+}

@@ -9,6 +9,7 @@
  * product names or software licensing. Numbers come from lib/facts.ts by id.
  */
 import type { FactId } from "@/lib/facts";
+import { v } from "@/lib/facts";
 import type { GlyphName } from "@/components/system/dot-glyph";
 
 export type ProductSlug = "reserved" | "on-demand" | "inferencing" | "mig-slicing" | "storage" | "services";
@@ -372,3 +373,218 @@ export const PRODUCTS: Product[] = [
 export function productBySlug(slug: string): Product | undefined {
   return PRODUCTS.find((p) => p.slug === slug);
 }
+
+/* ── The catalogue (/products): Run · Build · Scale ──────────────────────
+   Every offering in the language buyers compare clouds in (GPUaaS, IaaS,
+   NaaS, PaaS, serverless, storage), mapped onto what we run. Only what we
+   offer: no agentic search, managed databases, CPU-only instances or block
+   volumes. No counts or capacities (CTO ruling, 14 Oct 2026). */
+
+export type ServiceTag = "GPUaaS" | "IaaS" | "NaaS" | "PaaS" | "Serverless" | "STaaS";
+
+export interface CatalogItem {
+  /** Anchor on /products. */
+  id: string;
+  name: string;
+  tag?: ServiceTag;
+  glyph: GlyphName;
+  line: string;
+  includes: string[];
+  links: { href: string; label: string }[];
+  /** Spans two columns on wide screens. */
+  wide?: boolean;
+}
+
+export interface CatalogGroup {
+  id: "run" | "build" | "scale";
+  n: string;
+  name: string;
+  title: string;
+  continuation: string;
+  lead: string;
+  items: CatalogItem[];
+}
+
+export const SERVICE_TAGS: { tag: ServiceTag; label: string; href: string }[] = [
+  { tag: "GPUaaS", label: "GPU as a Service", href: "#gpu-as-a-service" },
+  { tag: "IaaS", label: "Infrastructure as a Service", href: "#infrastructure-as-a-service" },
+  { tag: "NaaS", label: "Network as a Service", href: "#network-as-a-service" },
+  { tag: "PaaS", label: "Platform as a Service", href: "#platform-as-a-service" },
+  { tag: "Serverless", label: "Serverless APIs", href: "#serverless-apis" },
+  { tag: "STaaS", label: "Storage", href: "#storage" },
+];
+
+export const PRODUCT_CATALOG: CatalogGroup[] = [
+  {
+    id: "run",
+    n: "01",
+    name: "Run",
+    title: "Serve and fine-tune models",
+    continuation: "in production.",
+    lead: "Put open and custom models behind an API your products can call, from inside Nepal.",
+    items: [
+      {
+        id: "serverless-apis",
+        name: "Serverless APIs",
+        tag: "Serverless",
+        glyph: "token",
+        line: "Call hosted open models through an API. No GPUs to size, start or stop.",
+        includes: [
+          "OpenAI-compatible endpoints for language models",
+          "Text, speech and vision models",
+          "Requests processed in Nepal",
+        ],
+        links: [{ href: "/products/inferencing", label: "Inferencing" }],
+      },
+      {
+        id: "managed-inference",
+        name: "Managed inference",
+        tag: "PaaS",
+        glyph: "inferencing",
+        line: "Your own or fine-tuned models behind a dedicated endpoint, run by us.",
+        includes: ["NVIDIA NIM and KServe", "Endpoints that grow with your traffic", "On whole GPUs or MIG slices"],
+        links: [{ href: "/products/inferencing", label: "Inferencing" }],
+      },
+      {
+        id: "fine-tuning",
+        name: "Fine-tuning",
+        glyph: "use-cases",
+        line: "Adapt an open model to your own data, then serve it from the same place.",
+        includes: ["Notebooks and pipelines", "Every run tracked in MLflow", "Your data and weights stay yours"],
+        links: [{ href: "/products/on-demand", label: "On-demand GPUs" }],
+      },
+    ],
+  },
+  {
+    id: "build",
+    n: "02",
+    name: "Build",
+    title: "Train, improve and ship",
+    continuation: "custom models.",
+    lead: "A managed workspace with the tools ML teams already use, ready on day one.",
+    items: [
+      {
+        id: "platform-as-a-service",
+        name: "Platform as a Service",
+        tag: "PaaS",
+        glyph: "platform",
+        line: "A managed AI workspace. We run the cluster, the scheduling and the upgrades; you work in notebooks, pipelines and endpoints.",
+        includes: [
+          "Notebooks, pipelines, training and serving in one place",
+          "Your own private workspace, isolated from other customers",
+          "Monitoring of GPU use, jobs and spend",
+          "Engineers in Kathmandu, on Nepal time",
+        ],
+        links: [{ href: "/platform", label: "The platform" }],
+        wide: true,
+      },
+      {
+        id: "orchestration",
+        name: "AI orchestration",
+        glyph: "water",
+        line: "Pipelines and scheduled jobs, from one notebook to a nightly run.",
+        includes: ["Kubeflow pipelines", "Airflow scheduling", "Ray for distributed work"],
+        links: [{ href: "/platform", label: "The platform" }],
+      },
+      {
+        id: "applications",
+        name: "Applications",
+        glyph: "docs",
+        line: "The apps your team opens every day, ready when you sign in.",
+        includes: ["JupyterLab", "Spark and Presto for data", "Superset dashboards, TensorFlow"],
+        links: [{ href: "/platform", label: "The platform" }],
+      },
+      {
+        id: "modelops",
+        name: "ModelOps",
+        glyph: "blog",
+        line: "Track, tune and register models across their whole life.",
+        includes: ["MLflow experiments and model registry", "Katib for tuning", "Kale: notebooks into pipelines"],
+        links: [{ href: "/platform", label: "The platform" }],
+      },
+      {
+        id: "engineering",
+        name: "Engineering services",
+        glyph: "services",
+        line: "Our engineers on your project, from sizing to production.",
+        includes: ["Capacity planning", "Moving work from another cloud", "Training, serving and GPU labs"],
+        links: [{ href: "/products/services", label: "Services & engineering" }],
+      },
+    ],
+  },
+  {
+    id: "scale",
+    n: "03",
+    name: "Scale",
+    title: "Run AI workloads",
+    continuation: "on NVIDIA H200 NVL.",
+    lead: "GPUs, networking and storage as services, billed in rupees and run in Nepal.",
+    items: [
+      {
+        id: "gpu-as-a-service",
+        name: "GPU as a Service",
+        tag: "GPUaaS",
+        glyph: "hardware",
+        line: "Whole NVIDIA H200 NVL GPUs: on demand by the second, or reserved for a term.",
+        includes: [
+          `${v("gpu.memory")} of ${v("gpu.memoryType")} on every GPU`,
+          "Billed per second, in Nepalese rupees",
+          "Reserved GPUs run only your work",
+          "A notebook, pipeline or endpoint in minutes",
+        ],
+        links: [
+          { href: "/products/on-demand", label: "On-demand GPUs" },
+          { href: "/products/reserved", label: "Reserved GPUs" },
+        ],
+        wide: true,
+      },
+      {
+        id: "mig-slices",
+        name: "MIG slices",
+        tag: "GPUaaS",
+        glyph: "mig-slicing",
+        line: `Up to ${v("gpu.migCount")} isolated GPUs from one H200 NVL. Pay for the slice.`,
+        includes: ["Memory and compute isolated in hardware", "Right-sized for inference and classes"],
+        links: [{ href: "/products/mig-slicing", label: "MIG slicing" }],
+      },
+      {
+        id: "infrastructure-as-a-service",
+        name: "Infrastructure as a Service",
+        tag: "IaaS",
+        glyph: "infrastructure",
+        line: "GPU compute with the networking and storage it needs, set up for your organisation.",
+        includes: [
+          "Isolated from other customers",
+          "In a hydro-powered datacentre",
+          `${v("place.uptime")} facility uptime commitment`,
+        ],
+        links: [{ href: "/infrastructure", label: "Infrastructure" }],
+      },
+      {
+        id: "network-as-a-service",
+        name: "Network as a Service",
+        tag: "NaaS",
+        glyph: "contact",
+        line: "Private networking for your workloads, close to your users.",
+        includes: [
+          `${v("place.latency")} round trip inside the Kathmandu Valley`,
+          "Nothing reaches your work unless you allow it",
+        ],
+        links: [{ href: "/infrastructure#network", label: "Network" }],
+      },
+      {
+        id: "storage",
+        name: "Storage",
+        tag: "STaaS",
+        glyph: "storage",
+        line: "S3-compatible object storage and file access, beside the GPUs.",
+        includes: [
+          "Works with the S3 tools you have",
+          "Read by every job, notebook and endpoint",
+          "Never copied abroad",
+        ],
+        links: [{ href: "/products/storage", label: "Storage" }],
+      },
+    ],
+  },
+];
