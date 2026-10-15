@@ -1,6 +1,5 @@
 import { Page } from "@/components/motion/page";
 import { Cta } from "@/components/system/cta";
-import { F } from "@/components/system/fact";
 import { Kicker } from "@/components/system/kicker";
 import { SectionHead } from "@/components/system/section";
 import { TextLink } from "@/components/system/text-link";
@@ -47,46 +46,6 @@ export default function TrustPage() {
               </li>
             ))}
           </ul>
-        </div>
-      </section>
-
-      <section id="compliance" aria-labelledby="compliance-title" className="section-y scroll-mt-[var(--header-h)]">
-        <div className="container-page grid gap-10 lg:grid-cols-[1fr_1.6fr] lg:gap-20">
-          <SectionHead
-            id="compliance-title"
-            kicker={t.compliance.kicker}
-            title={t.compliance.title}
-            lead={t.compliance.lead}
-            size="title-2"
-          />
-          <div className="overflow-x-auto rounded-panel border border-line">
-            <table className="w-full min-w-[30rem] border-collapse text-left">
-              <caption className="sr-only">Certification status</caption>
-              <thead>
-                <tr className="border-b border-line bg-bg-sunken">
-                  <th scope="col" className="type-kicker px-5 py-4 font-medium text-ink-3">
-                    Certification
-                  </th>
-                  <th scope="col" className="type-kicker px-5 py-4 font-medium text-ink-3">
-                    Status
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {t.compliance.items.map((c) => (
-                  <tr key={c.name} className="border-b border-line last:border-b-0">
-                    <th scope="row" className="px-5 py-5 align-top">
-                      <span className="type-body block font-semibold text-ink">{c.name}</span>
-                      <span className="type-small text-ink-3">{c.what}</span>
-                    </th>
-                    <td className="type-small px-5 py-5 align-top text-ink-2">
-                      <F id="trust.certifications" />
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
         </div>
       </section>
 

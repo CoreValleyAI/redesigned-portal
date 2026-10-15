@@ -1,20 +1,19 @@
 /**
  * /trust — for the security review (docs/revamp/08 §9). Plain words, and
  * only what is true: the data handling here matches the privacy and data
- * residency pages. Certifications are listed only with the owner's
- * confirmation (open question Q8); until then their status shows as
- * "to confirm" on staging and blocks the production build.
+ * residency pages. Certifications appear only once the owner confirms
+ * them (open question Q8), each with its date.
  */
 export const TRUST = {
   meta: {
-    title: "Trust — security, data handling and compliance status",
+    title: "Trust — security and data handling",
     description:
       "How CoreValley keeps your data safe: stored and processed in Nepal, isolated in hardware, accessed only when you ask. Our subprocessors, incident promise and how to report a vulnerability.",
   },
   hero: {
     kicker: "Trust",
     title: "Trust, in plain words.",
-    lead: "Where your data lives, who can see it, what we have certified and what we haven't yet. We are early, and this page says exactly where we stand.",
+    lead: "Where your data lives, who can see it, and how to reach us about security. We are early, and this page says exactly where we stand.",
   },
   approach: {
     kicker: "Our approach",
@@ -37,17 +36,6 @@ export const TRUST = {
         body: "If an incident affects your data, we tell you within 72 hours of confirming it: what happened, what was involved and what we are doing.",
       },
     ],
-  },
-  compliance: {
-    kicker: "Compliance status",
-    title: "Certifications, with dates.",
-    lead: "Each one is listed with its date once we hold it. Until then it says so — we never imply a certificate we don't have.",
-    items: [
-      { name: "ISO/IEC 27001", what: "Information security management" },
-      { name: "Datacentre tier certification", what: "The facility's design and operation" },
-      { name: "Government cloud listing", what: "Nepal's list of approved cloud and datacentre providers" },
-    ],
-    status: "To be confirmed",
   },
   data: {
     kicker: "Data handling",

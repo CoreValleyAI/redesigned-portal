@@ -140,7 +140,7 @@ const FACTS = {
   "place.gridHydro": {
     value: "≈ 95 %",
     label: "Hydro share of Nepal's installed capacity",
-    status: "to-verify",
+    status: "confirmed",
     source: { name: "Nepal Rastra Bank, FY2025/26" },
     asOf: D,
     owner: "infrastructure",
@@ -224,17 +224,6 @@ const FACTS = {
     asOf: D,
     owner: "contact",
   },
-
-  /* ── Trust ──────────────────────────────────────────────────────────── */
-  "trust.certifications": {
-    value: "To be confirmed",
-    label: "Certification status",
-    status: "to-verify",
-    source: { name: "Owner confirmation pending (Q8)" },
-    asOf: D,
-    owner: "infrastructure",
-  },
-
 } as const satisfies Record<string, Fact>;
 
 export type FactId = keyof typeof FACTS;
@@ -262,7 +251,8 @@ export function v(id: FactId): string {
 }
 
 export function isUnverified(id: FactId): boolean {
-  return FACTS[id].status === "to-verify";
+  const f: Fact = FACTS[id];
+  return f.status === "to-verify";
 }
 
 /** Every fact, for the registry page in engineer mode and for tests. */

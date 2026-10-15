@@ -103,7 +103,7 @@ export const NAV = {
       { href: "/company", label: "About", glyph: "company", description: "Who we are and where we're going." },
       { href: "/jobs", label: "Careers", glyph: "careers", description: "Build Nepal's AI infrastructure with us." },
       { href: "/blog", label: "Blog", glyph: "blog", description: "Notes from Kathmandu." },
-      { href: "/trust", label: "Trust", glyph: "trust", description: "Security, data handling and compliance status." },
+      { href: "/trust", label: "Trust", glyph: "trust", description: "Security and data handling." },
     ] satisfies NavLink[],
   },
   docs: { href: DOCS_URL, label: "Docs" },

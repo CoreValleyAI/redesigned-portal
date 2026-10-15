@@ -83,7 +83,7 @@ if (missing.length) fail(`Docs pages missing from the export:\n  ${missing.join(
 
 /* ── 3. Finish for GitHub Pages ─────────────────────────────────────────── */
 
-for (const legacy of ["about.html", "contact.html", "pricing.html", "services.html", "redesigned-portal"]) {
+for (const legacy of ["about.html", "contact.html", "pricing.html", "services.html", "redesigned-portal", "products"]) {
   fs.rmSync(path.join(OUT, legacy), { recursive: true, force: true });
 }
 
