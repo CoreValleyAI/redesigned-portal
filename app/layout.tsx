@@ -63,20 +63,21 @@ export const metadata: Metadata = {
   ...(Object.keys(verification).length ? { verification } : {}),
 };
 
-/* Browser chrome follows the theme: the OS preference by default (these
-   media queries), the visitor's saved choice once they make one (the
-   bootstrap and lib/theme.ts rewrite the meta). */
+/* Browser chrome follows the theme: dark by default, the visitor's saved
+   choice once they make one (the bootstrap and lib/theme.ts rewrite it). */
 export const viewport: Viewport = {
-  themeColor: [
-    { media: "(prefers-color-scheme: light)", color: THEME_COLOR.light },
-    { media: "(prefers-color-scheme: dark)", color: THEME_COLOR.dark },
-  ],
-  colorScheme: "light dark",
+  themeColor: THEME_COLOR.dark,
+  colorScheme: "dark light",
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en" className={`${inter.variable} ${jetbrainsMono.variable}`} suppressHydrationWarning>
+    <html
+      lang="en"
+      data-theme="dark"
+      className={`${inter.variable} ${jetbrainsMono.variable}`}
+      suppressHydrationWarning
+    >
       <head>
         {/* Theme, motion and engineer-mode preferences, stamped on <html>
             before the first paint (lib/theme.ts). */}

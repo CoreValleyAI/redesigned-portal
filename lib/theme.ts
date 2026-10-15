@@ -12,7 +12,7 @@
  * PREFERENCE_BOOTSTRAP stamps all four before first paint (inlined in the
  * <head> by app/layout.tsx), so there is never a flash of the wrong theme or
  * of content that is about to animate. A saved choice wins; otherwise the
- * OS decides. Choices are stored in localStorage on this device only (the
+ * site is dark by default. Choices are stored in localStorage on this device only (the
  * privacy page says so).
  */
 import * as React from "react";
@@ -34,7 +34,7 @@ export const THEME_COLOR: Record<Theme, string> = {
 
 /* Dependency-free ES5, wrapped in try/catch because storage throws in some
    private modes. Keep it short: it blocks the first paint. */
-export const PREFERENCE_BOOTSTRAP = `(function(){var d=document.documentElement,t=null,m=null,e=null;try{t=localStorage.getItem("${STORAGE.theme}");m=localStorage.getItem("${STORAGE.motion}");e=localStorage.getItem("${STORAGE.engineer}")}catch(x){}function q(s){return!!(window.matchMedia&&matchMedia(s).matches)}if(t!=="light"&&t!=="dark")t=q("(prefers-color-scheme: dark)")?"dark":"light";if(m!=="full"&&m!=="reduce")m=q("(prefers-reduced-motion: reduce)")?"reduce":"full";d.setAttribute("data-theme",t);d.setAttribute("data-motion",m);d.setAttribute("data-engineer",e==="on"?"on":"off");d.setAttribute("data-js","")})();`;
+export const PREFERENCE_BOOTSTRAP = `(function(){var d=document.documentElement,t=null,m=null,e=null;try{t=localStorage.getItem("${STORAGE.theme}");m=localStorage.getItem("${STORAGE.motion}");e=localStorage.getItem("${STORAGE.engineer}")}catch(x){}function q(s){return!!(window.matchMedia&&matchMedia(s).matches)}if(t!=="light"&&t!=="dark")t="dark";if(m!=="full"&&m!=="reduce")m=q("(prefers-reduced-motion: reduce)")?"reduce":"full";d.setAttribute("data-theme",t);d.setAttribute("data-motion",m);d.setAttribute("data-engineer",e==="on"?"on":"off");d.setAttribute("data-js","")})();`;
 
 /** Kept for the docs layout, which shares the bootstrap. */
 export const THEME_BOOTSTRAP = PREFERENCE_BOOTSTRAP;
@@ -107,12 +107,11 @@ export function setTheme(theme: Theme, origin?: { x: number; y: number }) {
   });
 }
 
-/** Forget the saved theme and follow the OS again. */
+/** Forget the saved theme and go back to the default (dark). */
 export function followSystemTheme() {
   store(STORAGE.theme, null);
-  const dark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-  html().dataset.theme = dark ? "dark" : "light";
-  syncThemeColor(dark ? "dark" : "light");
+  html().dataset.theme = "dark";
+  syncThemeColor("dark");
 }
 
 export function setMotion(pref: MotionPref) {
