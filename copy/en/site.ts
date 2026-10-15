@@ -152,7 +152,7 @@ export const FOOTER = {
     { href: "/legal/data-residency", label: "Data residency" },
   ],
   copyright: `© ${new Date().getFullYear()} ${ORG.legalName}, Kathmandu`,
-  credits: "Partners are named for identification; NVIDIA and HPE marks belong to their owners.",
+  credits: "Partners are named for identification; NVIDIA marks belong to their owner.",
 } as const;
 
 export const UI = {

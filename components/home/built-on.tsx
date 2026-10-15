@@ -1,9 +1,9 @@
 /**
- * "Built on": the partners' own marks under the hero, and what each one
+ * "Built on": the partner's own mark under the hero, and what it
  * contributes, in one quiet band. Names are for identification; no partner
  * designation is claimed (docs/revamp/04 §4).
  */
-import { HpeLogo, NvidiaLogo } from "@/components/brand/partner-logos";
+import { NvidiaLogo } from "@/components/brand/partner-logos";
 import { HOME } from "@/copy/en/home";
 
 export function BuiltOn() {
@@ -14,8 +14,6 @@ export function BuiltOn() {
         <p className="type-kicker text-ink-3">{b.label}</p>
         <div className="flex items-center gap-8 text-ink md:gap-12" data-reveal>
           <NvidiaLogo className="h-7 md:h-8" />
-          <span aria-hidden="true" className="h-8 w-px bg-line-strong" />
-          <HpeLogo className="h-6 md:h-7" />
         </div>
         <p className="type-small max-w-[36ch] text-ink-2 md:text-right">{b.line}</p>
       </div>

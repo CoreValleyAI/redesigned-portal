@@ -68,7 +68,7 @@ const og = page(
     </div>
     <div style="position:absolute;left:80px;top:196px;font-family:'JetBrains Mono',monospace;font-size:17px;letter-spacing:.16em;text-transform:uppercase;color:${NIGHT.ink3}">Kathmandu Valley · NVIDIA H200 NVL · Coming soon</div>
     <div style="position:absolute;left:80px;top:236px;font-family:Inter,sans-serif;font-optical-sizing:auto;font-size:84px;font-weight:650;letter-spacing:-0.035em;line-height:1.02;color:${NIGHT.ink}">The valley is<br>coming <span style="color:${NIGHT.hydro};text-shadow:0 0 .45em rgba(89,236,133,.38)">online.</span></div>
-    <div style="position:absolute;left:80px;top:440px;font-family:Inter,sans-serif;font-size:24px;line-height:1.42;color:${NIGHT.ink2};max-width:600px">Nepal&rsquo;s GPU cloud: NVIDIA H200 NVL GPUs on HPE Private Cloud AI, in a datacentre in the Kathmandu Valley.</div>
+    <div style="position:absolute;left:80px;top:440px;font-family:Inter,sans-serif;font-size:24px;line-height:1.42;color:${NIGHT.ink2};max-width:600px">Nepal&rsquo;s GPU cloud: NVIDIA H200 NVL GPUs in a datacentre in the Kathmandu Valley.</div>
     <div style="position:absolute;left:80px;bottom:40px;font-family:'JetBrains Mono',monospace;font-size:18px;letter-spacing:.16em;text-transform:uppercase;color:${NIGHT.hydro}">corevalley.ai</div>
   </div>`,
   1200,

@@ -87,7 +87,7 @@ export const INFRASTRUCTURE = {
     },
     {
       q: "What runs there?",
-      a: "NVIDIA H200 NVL GPUs, on infrastructure built with HPE and NVIDIA. We don't publish the detailed configuration; customers get what they need during onboarding.",
+      a: "NVIDIA H200 NVL GPUs. We don't publish the detailed configuration; customers get what they need during onboarding.",
     },
     {
       q: "How fast is the network?",

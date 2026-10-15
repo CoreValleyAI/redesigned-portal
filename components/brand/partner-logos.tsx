@@ -1,15 +1,14 @@
 /**
- * Partner marks: NVIDIA and HPE, from their official artwork (the launch
- * film's assets/partners), unaltered in shape. Only the neutral parts follow
- * the theme (black on Glacier, white on Night Valley), as the two companies'
- * own black and white versions do; NVIDIA green and HPE green stay fixed.
+ * Partner marks: NVIDIA, from its official artwork (the launch film's
+ * assets/partners), unaltered in shape. Only the neutral parts follow the
+ * theme (black on Glacier, white on Night Valley), as NVIDIA's own black and
+ * white versions do; NVIDIA green stays fixed.
  * Shown to say what the cloud is built on, never to claim a partner
  * designation (docs/revamp/04 §4). Owner approved their use on 13 Oct 2026.
  */
 import { cn } from "@/lib/cn";
 
 const NVIDIA_GREEN = "#76B900";
-const HPE_GREEN = "#01A982";
 
 /** The NVIDIA logo: the eye and the wordmark (viewBox 0 0 164 30). */
 export function NvidiaLogo({ className, title = "NVIDIA" }: { className?: string; title?: string }) {
@@ -34,17 +33,3 @@ export function NvidiaLogo({ className, title = "NVIDIA" }: { className?: string
   );
 }
 
-/** The HPE logo (2025): the letters and the green element (viewBox 0 0 630 180). */
-export function HpeLogo({ className, title = "HPE" }: { className?: string; title?: string }) {
-  return (
-    <svg viewBox="0 0 630 180" role="img" aria-label={title} className={cn("h-6 w-auto", className)}>
-      <path
-        fill="none"
-        strokeWidth={36}
-        stroke="currentColor"
-        d="M18 180V0m154 180V0M18 89h137m95 91V0m0 18h102a32 32 0 0 1 0 100H250m222-67V18h158"
-      />
-      <path fill="none" strokeWidth={36} stroke={HPE_GREEN} d="M630 162H472V86h158" />
-    </svg>
-  );
-}

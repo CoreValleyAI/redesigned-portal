@@ -53,7 +53,7 @@ export const COMPANY = {
     title: "Talk to us.",
     lines: [
       { label: "Press", value: "info@corevalley.ai", href: "mailto:info@corevalley.ai" },
-      { label: "Partners", value: "Built with HPE and NVIDIA" },
+      { label: "Partners", value: "Built on NVIDIA" },
     ],
   },
   careers: {

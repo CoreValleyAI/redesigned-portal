@@ -22,7 +22,7 @@ export const HOME = {
     kicker: ["Kathmandu Valley", "NVIDIA H200 NVL", "Coming soon"],
     /** "The valley is / coming online." — "online." is the lit word. */
     title: { line1: "The valley is", line2: "coming", lit: "online." },
-    lead: "Nepal's GPU cloud: NVIDIA H200 NVL GPUs, built with HPE and NVIDIA, in a datacentre in the Kathmandu Valley.",
+    lead: "Nepal's GPU cloud: NVIDIA H200 NVL GPUs in a datacentre in the Kathmandu Valley.",
     primary: { href: "/contact", label: "Request access" },
     secondary: { href: "#stack", label: "See how it works" },
     facts: [
@@ -34,7 +34,7 @@ export const HOME = {
 
   builtOn: {
     label: "Built on",
-    line: "NVIDIA H200 NVL GPUs, on infrastructure built with HPE",
+    line: "NVIDIA H200 NVL GPUs, in a datacentre in the Kathmandu Valley",
   },
 
   gpu: {

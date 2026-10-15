@@ -20,7 +20,7 @@ export const HARDWARE = {
   hero: {
     kicker: "Hardware",
     title: "The GPU.",
-    lead: "NVIDIA H200 NVL: 141 GB of fast memory on every card, on infrastructure built with HPE and NVIDIA, in a datacentre in the Kathmandu Valley.",
+    lead: "NVIDIA H200 NVL: 141 GB of fast memory on every card, in a datacentre in the Kathmandu Valley.",
   },
   gpu: {
     kicker: "The GPU",

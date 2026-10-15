@@ -44,7 +44,7 @@ export const TRUST = {
       {
         label: "Account data",
         value:
-          "Names, work emails, billing contacts and payment references. Kept in our own records while the account is open, and afterwards as long as Nepali law requires. Signing in goes through HPE GreenLake cloud and email through our email provider, both outside Nepal.",
+          "Names, work emails, billing contacts and payment references. Kept in our own records while the account is open, and afterwards as long as Nepali law requires. Signing in goes through our platform vendor's hosted management service and email through our email provider, both outside Nepal.",
       },
       {
         label: "Workload data",
@@ -63,8 +63,8 @@ export const TRUST = {
     lead: "None of these see your workload data.",
     items: [
       {
-        name: "Hewlett Packard Enterprise",
-        role: "HPE GreenLake cloud: signing in and software updates for the platform",
+        name: "Platform vendor",
+        role: "A hosted management service: signing in and software updates for the platform",
         where: "Outside Nepal",
       },
       { name: "Website and email providers", role: "Serve this website, deliver its forms and host our email", where: "Outside Nepal" },

@@ -2,8 +2,8 @@
  * The legal pages: privacy, terms and data residency.
  *
  * Plain-language summaries of how CoreValley actually works, kept to what
- * is confirmed (docs/revamp/04): the facts registry, the HPE Private Cloud
- * AI briefing and the owner's answers. Anything that belongs to a contract
+ * is confirmed (docs/revamp/04): the facts registry, the platform vendor's
+ * briefing and the owner's answers. Anything that belongs to a contract
  * (payment terms, service levels, notice periods) points to the customer's
  * agreement rather than inventing numbers. Each page says at the bottom
  * that it is a summary, not the contract.
@@ -22,12 +22,12 @@ export interface LegalPage {
   sections: LegalSection[];
 }
 
-const UPDATED = "13 October 2026";
+const UPDATED = "15 October 2026";
 
 /** Where CoreValley's own systems depend on a service abroad: said the same
     way on every page that lists them. */
-const GREENLAKE =
-  "HPE GreenLake cloud, Hewlett Packard Enterprise's hosted management service, outside Nepal: the platform needs it for signing in and for software updates, and it holds the inventory of our systems and their administrators' accounts. No customer data is stored there.";
+const VENDOR_SERVICE =
+  "Our platform vendor's hosted management service, outside Nepal: the platform needs it for signing in and for software updates, and it holds the inventory of our systems and their administrators' accounts. No customer data is stored there.";
 
 export const LEGAL: Record<"privacy" | "terms" | "data-residency", LegalPage> = {
   privacy: {
@@ -75,7 +75,7 @@ export const LEGAL: Record<"privacy" | "terms" | "data-residency", LegalPage> = 
         paragraphs: [
           "When your organisation uses CoreValley, we hold two kinds of data, kept apart. Account data identifies your organisation and its users: names, work email addresses, billing contacts, tax registration and payment references. Customer data is what your work brings and produces: datasets, model weights and checkpoints, prompts and outputs, notebooks and logs.",
           "Customer data is stored and processed on our systems in our datacentre in the Kathmandu Valley, and is not stored outside Nepal. It is yours: we delete it when you ask, or when your account closes, as set out in your agreement.",
-          "Account data is kept in our own records while the account is open, and afterwards for as long as Nepali law requires. The platform's software signs users in through HPE GreenLake cloud, outside Nepal, which may process your users' sign-in details. Email about your account goes through our email provider.",
+          "Account data is kept in our own records while the account is open, and afterwards for as long as Nepali law requires. The platform's software signs users in through its vendor's hosted management service, outside Nepal, which may process your users' sign-in details. Email about your account goes through our email provider.",
           "Payments are handled by the payment provider or bank you choose. They see the transaction, not your work.",
         ],
       },
@@ -94,7 +94,7 @@ export const LEGAL: Record<"privacy" | "terms" | "data-residency", LegalPage> = 
           "Website hosting: serves the websites and sees visitors' IP addresses.",
           "A form service: delivers contact-form enquiries and job applications.",
           "Email hosting: for @corevalley.ai addresses.",
-          GREENLAKE,
+          VENDOR_SERVICE,
         ],
       },
       {
@@ -206,7 +206,7 @@ export const LEGAL: Record<"privacy" | "terms" | "data-residency", LegalPage> = 
           "Being specific about the edges is the point. These cross the border, and none of them store your customer data:",
         ],
         bullets: [
-          GREENLAKE,
+          VENDOR_SERVICE,
           "This website, docs.corevalley.ai and status.corevalley.ai are served by a web host outside Nepal, which sees visitors' IP addresses.",
           "Enquiries and job applications sent through the forms on this website are delivered by a third-party form service outside Nepal. They carry what you type and attach, so keep confidential details for a secure channel.",
           "Email to and from @corevalley.ai addresses, including invoices and notifications, is hosted by an email provider outside Nepal. It carries what is written in the email.",

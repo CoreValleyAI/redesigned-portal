@@ -1,5 +1,5 @@
 import { ValleyPortrait } from "@/components/art/valley-portrait";
-import { HpeLogo, NvidiaLogo } from "@/components/brand/partner-logos";
+import { NvidiaLogo } from "@/components/brand/partner-logos";
 import { LayerStack } from "@/components/infrastructure/layer-stack";
 import { DataPath } from "@/components/infrastructure/data-path";
 import { Page } from "@/components/motion/page";
@@ -38,8 +38,6 @@ export default function InfrastructurePage() {
             <Status id="region" />
             <div className="mt-4 flex items-center gap-6 text-ink-2">
               <NvidiaLogo className="h-6" />
-              <span aria-hidden="true" className="h-6 w-px bg-line-strong" />
-              <HpeLogo className="h-5" />
             </div>
           </div>
           <figure className="flex flex-col gap-3" data-parallax="0.05">
