@@ -21,6 +21,8 @@ import { AppLink } from "@/components/system/app-link";
 import { usePathname } from "next/navigation";
 import * as React from "react";
 import { Brandmark, Wordmark } from "@/components/brand/logo";
+import { NvidiaLogo } from "@/components/brand/partner-logos";
+import { GpuArt } from "@/components/hardware/visuals";
 import { Arrow, ButtonLink } from "@/components/system/button";
 import { IndustryGlyph } from "@/components/solutions/industry-glyph";
 import { DotGlyph } from "@/components/system/dot-glyph";
@@ -331,7 +333,7 @@ function Panel({
     >
       <div
         className={cn(
-          "lg-nav is-solid mx-auto max-w-[calc(var(--content-max)+1.75rem)] rounded-[1.25rem] px-8 py-8 transition-[transform,opacity] duration-[var(--dur-spring-smooth)] ease-spring",
+          "lg-nav is-solid is-panel mx-auto max-w-[calc(var(--content-max)+1.75rem)] rounded-[1.25rem] px-8 py-8 transition-[transform,opacity] duration-[var(--dur-spring-smooth)] ease-spring",
           open ? "translate-y-0 opacity-100" : "-translate-y-2 opacity-0",
         )}
       >
@@ -341,47 +343,106 @@ function Panel({
   );
 }
 
-function PanelLink({ link, pathname, i }: { link: NavLink; pathname: string; i: number }) {
+function PanelLink({
+  link,
+  pathname,
+  i,
+  compact = false,
+}: {
+  link: NavLink;
+  pathname: string;
+  i: number;
+  /** Tighter, for the Products panel's rows. */
+  compact?: boolean;
+}) {
   return (
     <AppLink
       href={link.href}
       transitionTypes={["page"]}
       aria-current={isCurrent(pathname, link.href) ? "page" : undefined}
-      className="group -mx-3 flex items-start gap-4 rounded-card p-3 transition-colors duration-[var(--dur-short)] hover:bg-bg-sunken dark:hover:bg-bg-elevated"
+      className={cn(
+        "group flex items-start rounded-card transition-colors duration-[var(--dur-short)] hover:bg-bg-sunken dark:hover:bg-bg-elevated",
+        compact ? "-mx-2.5 gap-3.5 p-2.5" : "-mx-3 gap-4 p-3",
+      )}
       style={{ "--i": i } as React.CSSProperties}
     >
       {link.industry ? (
         <IndustryGlyph name={link.industry} className="mt-0.5 size-8" />
       ) : (
-        link.glyph && <DotGlyph name={link.glyph} className="mt-0.5 size-8" />
+        link.glyph && <DotGlyph name={link.glyph} className={cn("mt-0.5 shrink-0", compact ? "size-7" : "size-8")} />
       )}
-      <span className="flex flex-col gap-1">
-        <span className="type-body font-medium text-ink">{link.label}</span>
-        {link.description && <span className="type-small text-ink-3">{link.description}</span>}
+      <span className={cn("flex flex-col", compact ? "gap-0.5" : "gap-1")}>
+        <span className={cn("font-medium text-ink", compact ? "type-small" : "type-body")}>{link.label}</span>
+        {link.description && (
+          <span className={cn("text-ink-3", compact ? "type-caption" : "type-small")}>{link.description}</span>
+        )}
       </span>
     </AppLink>
   );
 }
 
+/** Products: Run, Build and Scale as rows — the group named on the left,
+    its offerings across — with NVIDIA's card in the Scale row and a way
+    to the whole catalogue at the foot. */
 function ProductsPanel({ pathname }: { pathname: string }) {
+  const p = NAV.products;
+  let n = 0;
   return (
-    <div className="grid grid-cols-[2fr_1fr] gap-12">
-      <div>
-        <p className="type-kicker mb-4 text-ink-3">Ways to run</p>
-        <div className="grid grid-cols-2 gap-x-8 gap-y-1">
-          {NAV.products.ways.map((l, i) => (
-            <PanelLink key={l.href} link={l} pathname={pathname} i={i} />
+    <div className="flex flex-col">
+      {p.groups.map((g, gi) => (
+        <div
+          key={g.name}
+          className="grid grid-cols-[10rem_1fr] gap-8 border-t 2xl:grid-cols-[12.5rem_1fr] 2xl:gap-10 border-line py-5 first:border-t-0 first:pt-0"
+        >
+          <div className="flex flex-col gap-1.5 pt-2.5">
+            <p className="type-title-3 text-ink">{g.name}</p>
+            <p className="type-small text-ink-3">{g.line}</p>
+          </div>
+          <div className="grid grid-cols-3 gap-x-6 gap-y-0.5">
+            {g.items.map((l) => (
+              <PanelLink key={l.href} link={l} pathname={pathname} i={n++} compact />
+            ))}
+            {gi === p.groups.length - 1 && (
+              <AppLink
+                href={p.featured.href}
+                transitionTypes={["page"]}
+                className="lg lg-card group flex items-center gap-4 rounded-card p-2.5 pr-4"
+              >
+                <span className="grid h-[4.25rem] w-[6.5rem] shrink-0 place-items-center overflow-hidden rounded-chip bg-bg-sunken">
+                  <GpuArt className="w-[7.5rem]" />
+                </span>
+                <span className="flex min-w-0 flex-col gap-1">
+                  <NvidiaLogo className="h-3.5 self-start text-ink" />
+                  <span className="type-small font-medium text-ink">{p.featured.title}</span>
+                  <span className="type-caption text-ink-3">{p.featured.body}</span>
+                </span>
+              </AppLink>
+            )}
+          </div>
+        </div>
+      ))}
+      <div className="flex items-center justify-between gap-8 border-t border-line pt-5">
+        <div className="flex items-center gap-7">
+          <AppLink
+            href={p.all.href}
+            transitionTypes={["page"]}
+            className="type-small group inline-flex items-center gap-2 font-semibold text-ink"
+          >
+            {p.all.label}
+            <Arrow className="transition-transform duration-[var(--dur-spring-snappy)] ease-spring group-hover:translate-x-1" />
+          </AppLink>
+          {p.footer.map((l) => (
+            <AppLink
+              key={l.href}
+              href={l.href}
+              transitionTypes={["page"]}
+              className="type-small text-ink-3 transition-colors duration-[var(--dur-short)] hover:text-ink"
+            >
+              {l.label}
+            </AppLink>
           ))}
         </div>
-      </div>
-      <div className="border-l border-line pl-12">
-        <p className="type-kicker mb-4 text-ink-3">The machines</p>
-        <div className="flex flex-col gap-1">
-          {NAV.products.machines.map((l, i) => (
-            <PanelLink key={l.href} link={l} pathname={pathname} i={i} />
-          ))}
-        </div>
-        <Status className="mt-8" />
+        <Status />
       </div>
     </div>
   );
@@ -520,16 +581,35 @@ function MobileMenu({ pathname }: { pathname: string }) {
                 {NAV.products.label}
                 <Chevron />
               </summary>
-              <ul className="flex flex-col gap-1 pb-4">
-                {[...NAV.products.ways, ...NAV.products.machines].map((l) => (
-                  <li key={l.href}>
-                    <AppLink href={l.href} onClick={hide} className="flex items-center gap-3 rounded-chip py-2.5">
-                      {l.glyph && <DotGlyph name={l.glyph} className="size-6" on={isCurrent(pathname, l.href)} />}
-                      <span className="type-body text-ink-2">{l.label}</span>
-                    </AppLink>
-                  </li>
+              <div className="flex flex-col gap-5 pb-5">
+                <AppLink
+                  href={NAV.products.all.href}
+                  onClick={hide}
+                  className="type-body flex items-center justify-between rounded-card bg-bg-sunken px-4 py-3 font-semibold text-ink"
+                >
+                  {NAV.products.all.label}
+                  <Arrow className="text-ink-3" />
+                </AppLink>
+                {NAV.products.groups.map((g) => (
+                  <div key={g.name} className="flex flex-col gap-1">
+                    <p className="type-kicker text-ink-3">{g.name}</p>
+                    <ul className="flex flex-col">
+                      {g.items.map((l) => (
+                        <li key={l.href}>
+                          <AppLink href={l.href} onClick={hide} className="flex items-center gap-3 rounded-chip py-2">
+                            {l.glyph && <DotGlyph name={l.glyph} className="size-6" />}
+                            <span className="type-body text-ink-2">{l.label}</span>
+                          </AppLink>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
                 ))}
-              </ul>
+                <AppLink href="/hardware" onClick={hide} className="flex items-center gap-3 rounded-chip py-2">
+                  <DotGlyph name="hardware" className="size-6" />
+                  <span className="type-body text-ink-2">Hardware · NVIDIA H200 NVL</span>
+                </AppLink>
+              </div>
             </details>
             <details name="menu" className="group/acc border-b border-line">
               <summary className={cn(row, "cursor-pointer list-none border-b-0 [&::-webkit-details-marker]:hidden")}>

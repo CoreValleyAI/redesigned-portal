@@ -3,7 +3,8 @@
  * (docs/revamp/03 §2). Typed so a later locale (copy/hi, copy/ne) has to
  * provide the same shape.
  */
-import { PRODUCTS } from "./products";
+import { PRODUCT_CATALOG, PRODUCTS } from "./products";
+import { v } from "@/lib/facts";
 import { SOLUTIONS } from "./solutions";
 import type { IndustryGlyphName } from "@/components/solutions/industry-glyph";
 import type { GlyphName } from "@/components/system/dot-glyph";
@@ -18,28 +19,53 @@ export interface NavLink {
   description?: string;
 }
 
+/** One line per offering, short enough for the Products panel. */
+const CATALOG_SHORT: Record<string, string> = {
+  "serverless-apis": "Hosted open models, one API call away",
+  "managed-inference": "Your models behind a dedicated endpoint",
+  "fine-tuning": "Adapt open models to your own data",
+  "platform-as-a-service": "A managed AI workspace, run by us",
+  orchestration: "Pipelines with Kubeflow, Airflow and Ray",
+  applications: "JupyterLab, Spark, Superset and more",
+  modelops: "MLflow tracking and registry, Katib tuning",
+  engineering: "Our engineers on your project",
+  "gpu-as-a-service": "Whole H200 NVL GPUs, on demand or reserved",
+  "mig-slices": `Up to ${v("gpu.migCount")} isolated GPUs from one`,
+  "infrastructure-as-a-service": "Compute, network and storage, set up for you",
+  "network-as-a-service": `Private networking, ${v("place.latency")} in the valley`,
+  storage: "S3-compatible object and file storage",
+};
+
+export interface NavGroup {
+  name: string;
+  line: string;
+  items: NavLink[];
+}
+
 export const NAV = {
   products: {
     label: "Products",
-    ways: PRODUCTS.map<NavLink>((p) => ({
-      href: `/products/${p.slug}`,
-      label: p.name,
-      glyph: p.glyph,
-      description: p.promise,
+    /** The Products panel: Run, Build, Scale. */
+    groups: PRODUCT_CATALOG.map<NavGroup>((g) => ({
+      name: g.name,
+      line: `${g.title} ${g.continuation}`,
+      items: g.items.map((i) => ({
+        href: `/products#${i.id}`,
+        label: i.name,
+        glyph: i.glyph,
+        description: CATALOG_SHORT[i.id] ?? i.line,
+      })),
     })),
-    machines: [
-      {
-        href: "/hardware",
-        label: "Hardware",
-        glyph: "hardware",
-        description: "NVIDIA H200 NVL and what comes next.",
-      },
-      {
-        href: "/products#compare",
-        label: "Compare products",
-        glyph: "platform",
-        description: "Billing, commitment and what each one is best for.",
-      },
+    all: { href: "/products", label: "All products" },
+    featured: {
+      href: "/hardware",
+      title: "Powered by NVIDIA",
+      body: `H200 NVL · ${v("gpu.memory")} ${v("gpu.memoryType")} on every GPU`,
+    },
+    footer: [
+      { href: "/products#compare", label: "Compare products" },
+      { href: "/pricing", label: "Pricing" },
+      { href: "/contact?intent=workloads", label: "Talk to us" },
     ] satisfies NavLink[],
   },
   solutions: {
