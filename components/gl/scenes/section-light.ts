@@ -53,14 +53,17 @@ float ign(vec2 p) { return fract(52.9829189 * fract(dot(p, vec2(0.06711056, 0.00
 float silk(vec2 px, out float turn) {
   vec2 p = px / u_silkScale;
   float t = u_time;
-  p += 0.35 * vec2(sin(p.y * 1.1 + t * 0.07), cos(p.x * 0.8 - t * 0.05));
-  float f1 = p.y * 1.6 + 0.55 * sin(p.x * 1.3 + t * 0.11) + 0.35 * sin(p.x * 2.7 - t * 0.08);
-  float f2 = p.y * 1.1 - 0.45 * sin(p.x * 0.9 - t * 0.06 + 1.7) + 0.3 * sin(p.x * 2.1 + t * 0.09);
-  float r1 = pow(0.5 + 0.5 * sin(f1 * 3.1), 5.0);
-  float r2 = pow(0.5 + 0.5 * sin(f2 * 2.3 + 1.3), 7.0);
-  float base = 0.18 * (0.5 + 0.5 * sin(f1 * 1.05 - 0.6));
-  turn = 0.5 + 0.5 * sin(p.x * 0.6 + p.y * 0.45 + t * 0.04);
-  return clamp(0.8 * r1 + 0.6 * r2 + base, 0.0, 1.0);
+  // Turned a little off level: long folds that run across the page.
+  vec2 q = mat2(0.906, -0.423, 0.423, 0.906) * p;
+  float ph1 = q.y * 2.2 + 0.9 * sin(q.x * 0.55 + t * 0.06) + 0.45 * sin(q.x * 1.3 - t * 0.045 + q.y * 0.6);
+  float ph2 = q.y * 1.3 - 0.7 * sin(q.x * 0.4 - t * 0.05 + 2.0) + 0.25 * sin(q.x * 1.7 + t * 0.07);
+  float f1 = 0.5 + 0.5 * sin(ph1 * 2.0);
+  float f2 = 0.5 + 0.5 * sin(ph2 * 1.6 + 1.0);
+  // Each fold: a soft body, and a fine line of sheen along its crest.
+  float s1 = 0.55 * pow(f1, 3.0) + 0.45 * pow(f1, 18.0);
+  float s2 = 0.45 * pow(f2, 4.0) + 0.4 * pow(f2, 22.0);
+  turn = 0.5 + 0.5 * sin(q.x * 0.35 + q.y * 0.5 + t * 0.03);
+  return clamp(max(s1, s2) + 0.12 * f1 * f2, 0.0, 1.0);
 }
 
 float roundBox(vec2 p, vec4 b, float r) {
