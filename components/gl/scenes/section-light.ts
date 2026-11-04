@@ -13,8 +13,11 @@
  * contrast. The canvas is otherwise transparent: the page shows through,
  * and a theme switch never flashes a block.
  *
- * Nothing breathes or drifts: with the pointer still and nothing moving the
- * scene sleeps (frame() returns false) and costs nothing.
+ * Silk draft (branch preview-silk, served at /preview-silk/): beneath the
+ * light, slow folds of hydro-to-teal sheen drift across the section, almost
+ * imperceptibly, and the glass bends them at its rims. Because the silk
+ * drifts, a visible section keeps drawing (the Stage stops drawing it when
+ * it is off screen); under reduced motion it holds one moment and sleeps.
  */
 import { compileProgramAsync, uniforms } from "@/lib/gl/core";
 import { createGlassPassAsync, FULLSCREEN_VS, type GlassStyle } from "@/lib/gl/glass";
@@ -29,6 +32,9 @@ uniform vec2 u_res;
 uniform vec2 u_pos;
 uniform float u_radius;
 uniform vec3 u_color;
+uniform vec3 u_color2;     // the silk's second colour (teal)
+uniform float u_time;
+uniform float u_silkScale; // px per unit of the silk's pattern
 uniform float u_alpha;
 uniform vec4 u_box;        // the panes' box: x, y, w, h (px)
 uniform float u_boxR;
@@ -42,6 +48,21 @@ out vec4 o;
 // black never bands.
 float ign(vec2 p) { return fract(52.9829189 * fract(dot(p, vec2(0.06711056, 0.00583715)))); }
 
+// Silk: two slow layers of folded sheen, warped a little so no fold runs
+// straight. Returns 0-1, and how far the colour has turned to teal.
+float silk(vec2 px, out float turn) {
+  vec2 p = px / u_silkScale;
+  float t = u_time;
+  p += 0.35 * vec2(sin(p.y * 1.1 + t * 0.07), cos(p.x * 0.8 - t * 0.05));
+  float f1 = p.y * 1.6 + 0.55 * sin(p.x * 1.3 + t * 0.11) + 0.35 * sin(p.x * 2.7 - t * 0.08);
+  float f2 = p.y * 1.1 - 0.45 * sin(p.x * 0.9 - t * 0.06 + 1.7) + 0.3 * sin(p.x * 2.1 + t * 0.09);
+  float r1 = pow(0.5 + 0.5 * sin(f1 * 3.1), 5.0);
+  float r2 = pow(0.5 + 0.5 * sin(f2 * 2.3 + 1.3), 7.0);
+  float base = 0.18 * (0.5 + 0.5 * sin(f1 * 1.05 - 0.6));
+  turn = 0.5 + 0.5 * sin(p.x * 0.6 + p.y * 0.45 + t * 0.04);
+  return clamp(0.8 * r1 + 0.6 * r2 + base, 0.0, 1.0);
+}
+
 float roundBox(vec2 p, vec4 b, float r) {
   vec2 c = b.xy + b.zw * 0.5;
   vec2 q = abs(p - c) - (b.zw * 0.5 - r);
@@ -53,8 +74,13 @@ void main() {
   vec2 d = px - u_pos;
   float d2 = dot(d, d);
   float r2 = u_radius * u_radius;
-  // A core and a wide, faint halo.
-  float a = (exp(-d2 / r2) + 0.35 * exp(-d2 / (9.0 * r2))) / 1.35 * u_alpha;
+  // The silk, and over it a faint light where the hand is (so the glass
+  // still answers it); together never brighter than u_alpha.
+  float turn;
+  float sheen = silk(px, turn);
+  float hand = (exp(-d2 / r2) + 0.35 * exp(-d2 / (9.0 * r2))) / 1.35;
+  float a = clamp(0.9 * sheen + 0.4 * hand, 0.0, 1.0) * u_alpha;
+  vec3 colour = mix(u_color, u_color2, turn);
   // Gathered under the panes: full inside their box, fading just beyond it.
   if (u_hasBox > 0.5) {
     float bd = max(roundBox(px, u_box, u_boxR), 0.0);
@@ -63,7 +89,7 @@ void main() {
   // Nothing at the canvas's top and bottom: sections never seam.
   a *= smoothstep(0.0, u_edge, px.y) * smoothstep(0.0, u_edge, u_res.y - px.y);
   a = clamp(a + (ign(gl_FragCoord.xy) - 0.5) / 255.0, 0.0, 1.0);
-  o = vec4(u_color * a, a);
+  o = vec4(colour * a, a);
 }`;
 
 const LUMA = (c: RGB) => 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2];
@@ -92,7 +118,10 @@ export const createSectionLightScene: SceneFactory = async (ctx) => {
   const scroller = canvas.closest<HTMLElement>("[data-glass-host]");
   const view = scroller ? () => scroller.getBoundingClientRect() : null;
 
-  const [glass, program] = await Promise.all([createGlassPassAsync(gl), compileProgramAsync(gl, FULLSCREEN_VS, LIGHT_FS)]);
+  const [glass, program] = await Promise.all([
+    createGlassPassAsync(gl),
+    compileProgramAsync(gl, FULLSCREEN_VS, LIGHT_FS),
+  ]);
   const u = uniforms(gl, program);
   const vao = gl.createVertexArray()!;
   const panels = createPanels({ canvas, host, invalidate: ctx.invalidate, cull: view ?? undefined });
@@ -118,6 +147,7 @@ export const createSectionLightScene: SceneFactory = async (ctx) => {
       const dark = pal.theme === "dark";
       const bg = encodeSrgb(pal.bg);
       const hydro = encodeSrgb(pal.hydro);
+      const teal = encodeSrgb(pal.glow2);
       // Clear glass is judged against the quietest text it carries (ink-3),
       // so every word on a pane keeps 4.5:1 however bright the light.
       const clearText = LUMA(pal.ink3);
@@ -162,7 +192,7 @@ export const createSectionLightScene: SceneFactory = async (ctx) => {
       // needs the page light around it).
       const alpha = dark ? 0.36 : 0.07;
       // Beyond the panes' reach, never brighter than the quietest text allows.
-      const floor = dark ? Math.min(0.3, keepFloor(hydro, alpha, 0.022)) : 1;
+      const floor = dark ? Math.min(0.3, keepFloor(hydro, alpha, 0.022), keepFloor(teal, alpha, 0.022)) : 1;
 
       gl.bindFramebuffer(gl.FRAMEBUFFER, null);
       gl.viewport(0, 0, width, height);
@@ -175,6 +205,10 @@ export const createSectionLightScene: SceneFactory = async (ctx) => {
       gl.uniform2f(u("u_pos"), pos.x, pos.y);
       gl.uniform1f(u("u_radius"), R);
       gl.uniform3f(u("u_color"), hydro[0], hydro[1], hydro[2]);
+      gl.uniform3f(u("u_color2"), teal[0], teal[1], teal[2]);
+      // Almost still: under reduced motion it holds one moment.
+      gl.uniform1f(u("u_time"), f.reduced ? 24 : f.time);
+      gl.uniform1f(u("u_silkScale"), 520 * dpr);
       gl.uniform1f(u("u_alpha"), alpha);
       gl.uniform4f(u("u_box"), b?.x ?? 0, b?.y ?? 0, b?.w ?? 0, b?.h ?? 0);
       gl.uniform1f(u("u_boxR"), Math.min(28 * dpr, (b?.w ?? 0) / 2, (b?.h ?? 0) / 2));
@@ -208,7 +242,8 @@ export const createSectionLightScene: SceneFactory = async (ctx) => {
           panels.handoff(true);
         }
       }
-      return busy || moving;
+      // The silk drifts, so a visible section keeps drawing (not under reduced motion).
+      return busy || moving || !f.reduced;
     },
 
     dispose() {
